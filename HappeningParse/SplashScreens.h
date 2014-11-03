@@ -10,6 +10,7 @@
 #import <MapKit/MapKit.h>
 #import <FacebookSDK/FacebookSDK.h>
 #import <Parse/Parse.h>
+#import "AppDelegate.h"
 
 @interface SplashScreens : UIViewController <CLLocationManagerDelegate>
 

@@ -60,7 +60,7 @@
     datePicker.maximumDate = [[NSDate alloc]initWithTimeIntervalSinceNow:17280000]; //200 days
     
     
-    self.hashtagData  = [[NSArray alloc]initWithObjects:@"Nightlife",@"Sports",@"Music", @"Shopping", @"Freebies", @"HappyHour", @"Dining", @"Entertainment", @"Fundraiser", @"Meetup", @"Other", nil];
+    self.hashtagData  = [[NSArray alloc]initWithObjects:@"Nightlife",@"Sports",@"Music", @"Shopping", @"Freebies", @"Happy Hour", @"Dining", @"Entertainment", @"Fundraiser", @"Meetup", @"Other", nil];
     
     Event = [PFObject objectWithClassName:@"Event"];
     //Default, in case picker is not changed:
@@ -68,7 +68,7 @@
     
     
     AppDelegate *appDelegate=(AppDelegate *)[UIApplication sharedApplication].delegate;
-    NSLog(@"%@", appDelegate.item);
+    //NSLog(@"%@", appDelegate.item);
     
     locTitle.text = appDelegate.item.name;
     locSubtitle.font = [locSubtitle.font fontWithSize:17.0];
@@ -112,7 +112,6 @@
     Event[@"Title"] = self.titleField.text;
     Event[@"Subtitle"] = self.subtitleField.text;
     //Event[@"Location"] = self.locationField.text;
-    Event[@"Hashtag"] = @"Nightlife";
     Event[@"Date"] = self.datePicker.date;
     //Event[@"EndTime"] = self.endTimePicker.date;
     Event[@"CreatedByName"] = @"";
@@ -352,10 +351,10 @@ clickedButtonAtIndex:(NSInteger)buttonIndex{
     
     NSLog(@"Selected Row %ld: %@", (long)row, [self.hashtagData objectAtIndex:row]);
 
-            Event[@"Hashtag"] = [self.hashtagData objectAtIndex:row];
-            NSString *img = [NSString stringWithFormat:([self.hashtagData objectAtIndex:row])];
-            img = [img stringByAppendingString:@".jpg"];
-            imageView.image = [UIImage imageNamed:img];
+    Event[@"Hashtag"] = [self.hashtagData objectAtIndex:row];
+    //NSString *img = [NSString stringWithFormat:([self.hashtagData objectAtIndex:row])];
+    UIImage *image = [UIImage imageNamed:[self.hashtagData objectAtIndex:row]];
+    imageView.image = image;
     
 }
 

@@ -410,7 +410,7 @@
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="X5i-6H-bm3" id="p3v-HE-qZ3">
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="Nightlife.jpg" translatesAutoresizingMaskIntoConstraints="NO" id="jih-Lq-rcD">
+                                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="Nightlife" translatesAutoresizingMaskIntoConstraints="NO" id="jih-Lq-rcD">
                                                     <rect key="frame" x="15" y="32" width="290" height="163"/>
                                                 </imageView>
                                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="R5A-WW-Br8">
@@ -892,7 +892,7 @@
     </scenes>
     <resources>
         <image name="Calendar" width="32" height="22"/>
-        <image name="Nightlife.jpg" width="500" height="334"/>
+        <image name="Nightlife" width="500" height="334"/>
         <image name="Settings" width="64" height="64"/>
         <image name="add" width="24" height="24"/>
         <image name="arrow" width="32" height="32"/>
