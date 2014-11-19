@@ -1,24 +1,23 @@
 //
-//  LocationSearching.m
+//  SettingsChoosingLoc.m
 //  HappeningParse
 //
-//  Created by Max on 10/6/14.
+//  Created by Max on 11/10/14.
 //  Copyright (c) 2014 Happening. All rights reserved.
 //
 
-#import "LocationSearching.h"
-#import "AppDelegate.h"
+#import "SettingsChoosingLoc.h"
 
-@interface LocationSearching () <UISearchDisplayDelegate, UISearchBarDelegate, UISearchResultsUpdating, UISearchControllerDelegate, CLLocationManagerDelegate>
+@interface SettingsChoosingLoc () <UISearchDisplayDelegate, UISearchBarDelegate, UISearchResultsUpdating, UISearchControllerDelegate, CLLocationManagerDelegate>
 
 @end
 
-@implementation LocationSearching {
+@implementation SettingsChoosingLoc {
     MKLocalSearch *localSearch;
     MKLocalSearchResponse *results;
 }
 
-@synthesize Event;
+@synthesize user;
 @synthesize delegate;
 @synthesize locManager;
 
@@ -29,7 +28,7 @@
     [super viewDidLoad];
     [self.searchDisplayController setDelegate:self];
     [self.searchBar setDelegate:self];
-    Event = [PFObject objectWithClassName:@"Event"];
+    user = [PFUser currentUser];
     
     if(self.locManager==nil){
         locManager = [[CLLocationManager alloc] init];
@@ -69,21 +68,21 @@
         
         [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
         /*
-        if (error != nil) {
-            [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Map Error",nil)
-                                        message:[error localizedDescription]
-                                       delegate:nil
-                              cancelButtonTitle:NSLocalizedString(@"OK",nil) otherButtonTitles:nil] show];
-            return;
-        }
-        
-        if ([response.mapItems count] == 0) {
-            [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"No Results",nil)
-                                        message:nil
-                                       delegate:nil
-                              cancelButtonTitle:NSLocalizedString(@"OK",nil) otherButtonTitles:nil] show];
-            return;
-        } */
+         if (error != nil) {
+         [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Map Error",nil)
+         message:[error localizedDescription]
+         delegate:nil
+         cancelButtonTitle:NSLocalizedString(@"OK",nil) otherButtonTitles:nil] show];
+         return;
+         }
+         
+         if ([response.mapItems count] == 0) {
+         [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"No Results",nil)
+         message:nil
+         delegate:nil
+         cancelButtonTitle:NSLocalizedString(@"OK",nil) otherButtonTitles:nil] show];
+         return;
+         } */
         
         results = response;
         
@@ -107,15 +106,22 @@
     }
     
     MKMapItem *item = results.mapItems[indexPath.row];
-    
+    user[@"userLocTitle"] = item.name;
     cell.textLabel.text = item.name;
+    
     NSString *cityName = item.placemark.addressDictionary[@"City"];
     NSString *stateName = item.placemark.addressDictionary[@"State"];
     NSString *zipCode = item.placemark.addressDictionary[@"ZIP"];
     NSString *country = item.placemark.addressDictionary[@"Country"];
-    if (zipCode)
+    
+    if (zipCode) {
         cell.detailTextLabel.text = [NSString stringWithFormat:@"%@, %@ %@, %@", cityName, stateName, zipCode, country];
-    else cell.detailTextLabel.text = [NSString stringWithFormat:@"%@, %@, %@", cityName, stateName, country];
+        user[@"userLocSubtitle"] = cell.detailTextLabel.text;
+    } else {
+        cell.detailTextLabel.text = [NSString stringWithFormat:@"%@, %@, %@", cityName, stateName, country];
+        user[@"userLocSubtitle"] = cell.detailTextLabel.text;
+        
+    }
     return cell;
 }
 
@@ -125,27 +131,28 @@
     NSLog(@"Location was selected");
     
     AppDelegate *appDelegate=(AppDelegate *)[UIApplication sharedApplication].delegate;
-    appDelegate.item = results.mapItems[indexPath.row];
-    PFGeoPoint *loc = [PFGeoPoint geoPointWithLocation:appDelegate.item.placemark.location];
-    Event[@"GeoLoc"] = loc;
+    appDelegate.userLocation = results.mapItems[indexPath.row];
+    PFGeoPoint *loc = [PFGeoPoint geoPointWithLocation:appDelegate.userLocation.placemark.location];
+    user[@"userLoc"] = loc;
+    [user saveInBackground];
     
     [self dismissViewControllerAnimated:YES completion:nil];
     /*
-    MKMapItem *item = results.mapItems[indexPath.row];
-    [self.ibMapView addAnnotation:item.placemark];
-    [self.ibMapView selectAnnotation:item.placemark animated:YES];
-    
-    [self.ibMapView setCenterCoordinate:item.placemark.location.coordinate animated:YES];
-    
-    [self.ibMapView setUserTrackingMode:MKUserTrackingModeNone];
-    */
+     MKMapItem *item = results.mapItems[indexPath.row];
+     [self.ibMapView addAnnotation:item.placemark];
+     [self.ibMapView selectAnnotation:item.placemark animated:YES];
+     
+     [self.ibMapView setCenterCoordinate:item.placemark.location.coordinate animated:YES];
+     
+     [self.ibMapView setUserTrackingMode:MKUserTrackingModeNone];
+     */
 }
 
 - (IBAction)didClick:(UIBarButtonItem *)sender {
     /*
-    [self.delegate addItemViewController:self didFinishEnteringItem:item];
-    LocationSearching *locationSearching = [[LocationSearching alloc]initWithNibName:@"LocationSearching" bundle:nil];
-    locationSearching.delegate = self;
+     [self.delegate addItemViewController:self didFinishEnteringItem:item];
+     LocationSearching *locationSearching = [[LocationSearching alloc]initWithNibName:@"LocationSearching" bundle:nil];
+     locationSearching.delegate = self;
      */
     [self dismissViewControllerAnimated:YES completion:nil];
     

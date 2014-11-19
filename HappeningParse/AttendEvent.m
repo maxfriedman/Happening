@@ -55,8 +55,10 @@
     [eventQuery whereKey:@"Date" greaterThan:[NSDate date]];
     [eventQuery orderByAscending:@"Date"];
     
-    eventsArray = [[NSArray alloc]init];
-    eventsArray = [eventQuery findObjects];
+    //eventsArray = [[NSArray alloc]init];
+    //eventsArray = [eventQuery findObjects];
+    
+    [eventQuery findObjectsInBackgroundWithBlock:^(NSArray *eventsArray, NSError *error) {
     
     count = [eventQuery countObjects];
     int sectionCount = 0;
@@ -124,8 +126,9 @@
         rowForSectionCount = 0;
     }
 
-    
-    
+        
+        [self.tableView reloadData];
+    }];
     
     // Uncomment the following line to preserve selection between presentations.
     // self.clearsSelectionOnViewWillAppear = NO;
@@ -171,6 +174,23 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     AttendTableCell *cell = [tableView dequeueReusableCellWithIdentifier:@"tag" forIndexPath:indexPath];
 
+    PFQuery *swipesQuery = [PFQuery queryWithClassName:@"Swipes"];
+    // Query only for current user's events
+    PFUser *user = [PFUser currentUser];
+    [swipesQuery whereKey:@"UserID" equalTo:user.username];
+    [swipesQuery whereKey:@"swipedRight" equalTo:@YES];
+    //NSArray *swipesArray = [swipesQuery findObjects];
+    
+    PFQuery *eventQuery = [PFQuery queryWithClassName:@"Event"];
+    [eventQuery whereKey:@"objectId" matchesKey:@"EventID" inQuery:swipesQuery];
+    [eventQuery whereKey:@"Date" greaterThan:[NSDate date]];
+    [eventQuery orderByAscending:@"Date"];
+    
+    //eventsArray = [[NSArray alloc]init];
+    //eventsArray = [eventQuery findObjects];
+    
+    [eventQuery findObjectsInBackgroundWithBlock:^(NSArray *eventsArray, NSError *error) {
+    
     for (int i = 0; i < eventsArray.count; i++) {
         
         PFObject *Event = eventsArray[i];
@@ -214,20 +234,13 @@
                 }];
         
                 // Location formatting
-                if(self.locManager==nil){
-                    locManager = [[CLLocationManager alloc] init];
-                    locManager.delegate=self;
-                    [locManager requestAlwaysAuthorization];
-                    locManager.desiredAccuracy=kCLLocationAccuracyBest;
-                    locManager.distanceFilter=50;
-                
-                }
-                            
-                // Might want to delete this-- If I do, if someone decides to turn location services off, they will continue to get a message every time they launch the app...
-                if([CLLocationManager locationServicesEnabled]){
+                if(locManager && [CLLocationManager locationServicesEnabled]){
                     [self.locManager startUpdatingLocation];
                     CLLocation *currentLocation = locManager.location;
-                    //NSLog(@"Current Location is: %@", currentLocation);
+                    PFUser *user = [PFUser currentUser];
+                    user[@"userLoc"] = [PFGeoPoint geoPointWithLocation:currentLocation];
+                    NSLog(@"Current Location is: %@", currentLocation);
+                    [user saveInBackground];
                 }
         
                 PFGeoPoint *loc = Event[@"GeoLoc"];
@@ -235,7 +248,8 @@
                 if (loc.latitude == 0) {
                     cell.distance.text = @"";
                 } else {
-                    PFGeoPoint *userLoc = [PFGeoPoint geoPointWithLocation:(locManager.location)];
+                    PFUser *user = [PFUser currentUser];
+                    PFGeoPoint *userLoc = user[@"userLoc"];
                     NSNumber *meters = [NSNumber numberWithDouble:([loc distanceInMilesTo:userLoc])];
                     NSString *distance = [NSString stringWithFormat:(@"%.2f mi"), meters.floatValue];
                     cell.distance.text = distance;
@@ -245,7 +259,8 @@
             }
         }
     }
-        
+    }];
+     
     return cell;
 }
 

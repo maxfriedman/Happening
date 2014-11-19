@@ -1,29 +1,23 @@
 //
-//  LoginView.m
+//  LogInExistingUser.m
 //  HappeningParse
 //
-//  Created by Max on 10/10/14.
+//  Created by Max on 11/10/14.
 //  Copyright (c) 2014 Happening. All rights reserved.
 //
 
-#import "LoginView.h"
+#import "LogInExistingUser.h"
 
-#import "TabBarViewController.h"
+@interface LogInExistingUser ()
 
-@interface LoginView () <UINavigationControllerDelegate>
-
-@property (strong, nonatomic) IBOutlet FBLoginView *fbLoginView;
 @property (strong, nonatomic) NSString *objectID;
-@property (strong, nonatomic) IBOutlet UILabel *labelOne;
-@property (strong, nonatomic) IBOutlet UILabel *labelTwo;
-@property (strong, nonatomic) IBOutlet UIButton *whyFB;
-
 
 @end
 
-@implementation LoginView {
+@implementation LogInExistingUser {
     
     AppDelegate *appDelegate;
+    
 }
 
 @synthesize activityView;
@@ -42,15 +36,16 @@
     
 }
 
+
 - (void)viewWillAppear:(BOOL)animated {
     
     _fbLoginView.alpha = 0;
-    _labelOne.alpha = 0;
-    _labelTwo.alpha = 0;
-    _whyFB.alpha = 0;
+    
+    //_labelOne.alpha = 0;
+    //_labelTwo.alpha = 0;
+    //_whyFB.alpha = 0;
     
 }
-
 
 - (void)viewDidAppear:(BOOL)animated {
     
@@ -58,54 +53,22 @@
     [_fbLoginView setDelegate:self];
     _objectID = nil;
     
+    // Performs the fb login automatically, with no user action taken
+    [_fbLoginView.subviews[0] sendActionsForControlEvents:UIControlEventTouchUpInside];
+    
     NSLog(@"1");
     double delayInSeconds = 1.0;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
     dispatch_after(popTime, dispatch_get_main_queue(), ^{
         NSLog(@"Delaying a second...");
         _fbLoginView.alpha = 1;
-        _labelOne.alpha = 1;
-        _labelTwo.alpha = 1;
-        _whyFB.alpha = 1;
+        //_labelOne.alpha = 1;
+        //_labelTwo.alpha = 1;
+        //_whyFB.alpha = 1;
         [activityView stopAnimating];
         
     });
     NSLog(@"2");
-
-    /*
-    PFUser *currentUser = [PFUser currentUser];
-    
-    PFQuery *query = [PFUser query];
-    
-    if (currentUser) {
-        NSLog(@"CURRENT User exists. LEGGO");
-        [self performSegueWithIdentifier:@"toMain" sender:self];
-
-    }
-    
-    
-    NSArray *users = [[NSArray alloc]init];
-    users = [query findObjects];
-    for (int i = 0; i < users.count; i++) {
-        PFObject *userPF = users[i];
-        //NSLog(@"1:%@ 2:%@",userPF[@"username"], currentUser.username);
-        
-        if ([userPF[@"username"] isEqualToString:currentUser.username]) {
-            NSLog(@"User exists. LEGGO");
-            
-            // Reload user preferences from previous session
-            int sliderVal = [userPF[@"radius"] intValue];
-            NSLog(@"Loading preferences... slider value = %d", sliderVal);
-            appDelegate.sliderValue = sliderVal;
-            
-            [self performSegueWithIdentifier:@"toMain" sender:self];
-        }
-    }
-
-     */
-    
-    
-
     
 }
 
@@ -126,7 +89,7 @@
         if (!error) {
             //[connection start];
             // Success! Include your code to handle the results here
-
+            
             //_nameLabel.text = [NSString stringWithFormat:@"Hey, %@!",[result objectForKey:@"first_name"]];
             PFUser *parseUser = [PFUser user];
             
@@ -150,11 +113,11 @@
             AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
             NSNumber *fifty = [NSNumber numberWithInt:50];
             parseUser[@"radius"] = fifty;
+            //appDelegate.sliderValue = 50;
             
             NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
             [defaults setInteger:50 forKey:@"sliderValue"];
             [defaults synchronize];
-            
             
             [parseUser signUpInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
                 if (!error) {
@@ -162,16 +125,17 @@
                     // Hooray! Let them use the app now.
                     NSLog(@"CU2: %@", parseUser.username);
 
-                    if (parseUser) {
+                    if (parseUser && (parseUser[@"userLoc"]==nil)) {
                         NSLog(@"CU3: %@", parseUser.username);
-
-                        [self performSegueWithIdentifier:@"toChooseLoc" sender:self];
+                        
+                        [self performSegueWithIdentifier:@"toChooseLoc2" sender:self];
                     }
                 } else {
                     NSLog(@"User exists.");
                     // Show the errorString somewhere and let the user try again.
                     NSLog(@"CU4: %@", parseUser.username);
-
+                    
+                    
                     if (parseUser) {
                         NSLog(@"CU5: %@", parseUser.username);
                         
@@ -179,15 +143,20 @@
                                                         block:^(PFUser *user, NSError *error) {
                                                             if (user) {
                                                                 // Do stuff after successful login.
-                                                                [self performSegueWithIdentifier:@"toChooseLoc" sender:self];
+                                                                PFGeoPoint *userLoc = parseUser[@"userLoc"];
+                                                                double latitude = userLoc.latitude;
+                                                                double longitude = userLoc.longitude;
+                                                                MKPlacemark *placemark = [[MKPlacemark alloc] initWithCoordinate:CLLocationCoordinate2DMake(latitude, longitude) addressDictionary:nil];
+                                                                MKMapItem *mapItem = [[MKMapItem alloc] initWithPlacemark:placemark];
+                                                                appDelegate.userLocation = mapItem;
+                                                                
+                                                                [self performSegueWithIdentifier:@"toMainView" sender:self];
                                                             } else {
                                                                 // The login failed. Check error to see why.
                                                                 NSLog(@"%@", error);
                                                             }
                                                         }];
-
-                        //[self performSegueWithIdentifier:@"toChooseLoc" sender:self];
-                    }
+                                            }
                 }
                 
             }];
@@ -203,7 +172,7 @@
             // See: https://developers.facebook.com/docs/ios/errors
         }
     }];
-
+    
 }
 
 - (void)loginView:(FBLoginView *)loginView handleError:(NSError *)error {
@@ -247,21 +216,5 @@
                           otherButtonTitles:nil] show];
     }
 }
-
-
-/*
-- (BOOL)application:(UIApplication *)application
-            openURL:(NSURL *)url
-  sourceApplication:(NSString *)sourceApplication
-         annotation:(id)annotation {
-    return [FBAppCall handleOpenURL:url
-                  sourceApplication:sourceApplication
-                        withSession:[PFFacebookUtils session]];
-}
-
-- (void)applicationDidBecomeActive:(UIApplication *)application {
-    [FBAppCall handleDidBecomeActiveWithSession:[PFFacebookUtils session]];
-}
-*/
 
 @end

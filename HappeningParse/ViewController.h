@@ -7,8 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "SettingsTVC.h"
 
-@interface ViewController : UIViewController
+@interface ViewController : UIViewController <SettingsTVCDelegate>
+
+-(BOOL)didPreferencesChange;
 
 @property (strong, nonatomic) IBOutlet UIBarButtonItem *shareButton;
 

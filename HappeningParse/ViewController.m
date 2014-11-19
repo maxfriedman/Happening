@@ -21,24 +21,31 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+
 }
 
 -(void)viewWillAppear:(BOOL)animated {
     
-    UIActivityIndicatorView *activityView=[[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    // Refresh only if there was a change in preferences or the app has loaded for the first time.
+    if ([defaults boolForKey:@"refreshData"]) {
+
+        UIActivityIndicatorView *activityView=[[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+        activityView.center=self.view.center;
+        [activityView startAnimating];
+        [self.view addSubview:activityView];
     
-    activityView.center=self.view.center;
+        DraggableViewBackground *draggableBackground = [[DraggableViewBackground alloc]initWithFrame:self.view.frame];
+        
+        [self.view addSubview:draggableBackground];
     
-    [activityView startAnimating];
-    
-    [self.view addSubview:activityView];
-    
-    DraggableViewBackground *draggableBackground = [[DraggableViewBackground alloc]initWithFrame:self.view.frame];
-    [self.view addSubview:draggableBackground];
-    
-    [activityView stopAnimating];
+        [activityView stopAnimating];
+        
+        [defaults setBool:NO forKey:@"refreshData"];
+        [defaults synchronize];
+    }
 }
+
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];

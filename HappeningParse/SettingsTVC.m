@@ -15,47 +15,86 @@
 @implementation SettingsTVC {
     
     AppDelegate *appDelegate;
-    
+    PFUser *user;
+    NSInteger sliderVal;
 }
 
+@synthesize locTitle, locSubtitle;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
-    NSString *distanceString = [NSString stringWithFormat:@"%d mi.", appDelegate.sliderValue];
+    NSLog(@"------- Settings Opened -------");
+    
+    [self.delegate didPreferencesChange];
+    
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    sliderVal = [defaults integerForKey:@"sliderValue"];
+    
+    //appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+    NSString *distanceString = [NSString stringWithFormat:@"%ld mi.", (long)sliderVal];
     self.distanceLabel.text = distanceString;
-    self.distanceSlider.value = (float)appDelegate.sliderValue / 5;
+    self.distanceSlider.value = (float)sliderVal / 5;
+    
+    user = [PFUser currentUser];
 }
 
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+- (void)viewWillAppear:(BOOL)animated {
+    
+    //if ([appDelegate.userLocation.name isEqualToString:@"Unknown Location"] || [appDelegate.userLocation.name isEqualToString:@""]) {
+    
+        locTitle.text = user[@"userLocTitle"];
+        locSubtitle.text = user[@"userLocSubtitle"];
+    /*}
+        else {
+        
+            locTitle.text = appDelegate.userLocation.name;
+    
+            NSString *cityName = appDelegate.userLocation.placemark.addressDictionary[@"City"];
+            NSString *stateName = appDelegate.userLocation.placemark.addressDictionary[@"State"];
+            NSString *zipCode = appDelegate.userLocation.placemark.addressDictionary[@"ZIP"];
+            NSString *country = appDelegate.userLocation.placemark.addressDictionary[@"Country"];
+            if (zipCode) {
+                locSubtitle.font = [locSubtitle.font fontWithSize:11.0];
+                locSubtitle.alpha = 1.0;
+                locSubtitle.text = [NSString stringWithFormat:@"%@, %@ %@, %@", cityName, stateName, zipCode, country];
+            }
+            else if (cityName) {
+                locSubtitle.font = [locSubtitle.font fontWithSize:11.0];
+                locSubtitle.alpha = 1.0;
+                locSubtitle.text = [NSString stringWithFormat:@"%@, %@, %@", cityName, stateName, country];
+            }
+
+    } */
 }
 
 - (IBAction)doneButtonPressed:(id)sender {
     
-    // Save user preferences
-    PFUser *user = [PFUser currentUser];
+    // Save user preferences if values were changed
+    if ([self didPreferencesChange]) {
+      
+        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        [defaults setInteger:sliderVal forKey:@"sliderValue"];
+        [defaults setBool:YES forKey:@"refreshData"];
+        [defaults synchronize];
+        NSLog(@"Preferences saved successfully to NSUserDefaults");
+        NSLog(@"Slider value saved: %ld", (long)sliderVal);
+        
+        NSNumber *sliderValueNum = [NSNumber numberWithInteger:sliderVal];
+        [user setValue:sliderValueNum forKey:@"radius"];
+        
+        [user saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+            if (!error) {
+                // The currentUser saved successfully.
+            } else {
+                // There was an error saving the currentUser.
+                NSString *errorString = [error userInfo][@"error"];
+                NSLog(@"Parse error: %@", errorString);
+            }
+        }];
+
+    }
     
-    NSNumber *sliderVal = [NSNumber numberWithInt:appDelegate.sliderValue];
-    
-    //[user setObject:sliderVal forKey:@"radius"];
-    [user setValue:sliderVal forKey:@"radius"];
-
-    [user saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
-        if (!error) {
-            // The currentUser saved successfully.
-        } else {
-            // There was an error saving the currentUser.
-            NSString *errorString = [error userInfo][@"error"];
-            NSLog(@"%@", errorString);
-        }
-    }];
-
-    NSLog(@"Slider value saved: %@", sliderVal);
-
-    NSLog(@"Preferences saved successfully");
     
     // Peace out
     [self dismissViewControllerAnimated:YES completion:nil];
@@ -68,24 +107,36 @@
     
     if (self.distanceSlider.value > 1) {
         
-        appDelegate.sliderValue = (int)self.distanceSlider.value * 5;
-        distanceString = [NSString stringWithFormat:@"%d mi.", appDelegate.sliderValue];
+        sliderVal = (int)self.distanceSlider.value * 5;
+        distanceString = [NSString stringWithFormat:@"%ld mi.", (long)sliderVal];
         self.distanceLabel.text = distanceString;
         
     } else if (self.distanceSlider.value > 0.2) {
         
-        appDelegate.sliderValue = self.distanceSlider.value * 5;
-        distanceString = [NSString stringWithFormat:@"%d mi.", appDelegate.sliderValue];
+        sliderVal = self.distanceSlider.value * 5;
+        distanceString = [NSString stringWithFormat:@"%ld mi.", (long)sliderVal];
         self.distanceLabel.text = distanceString;
         
     } else {
         
-        appDelegate.sliderValue = 1;
+        sliderVal = 1;
         distanceString = @"1 mi.";
         self.distanceLabel.text = distanceString;
         
     }
     
+}
+
+- (BOOL)didPreferencesChange {
+    
+    // Save user preferences if values were changed
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    if ([defaults integerForKey:@"sliderValue"] != sliderVal) {
+        return YES;
+    } else {
+        NSLog(@"No preferences were changed.");
+        return NO;
+    }
 }
 
 

@@ -66,7 +66,10 @@
             AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
             NSNumber *fifty = [NSNumber numberWithInt:50];
             parseUser[@"radius"] = fifty;
-            appDelegate.sliderValue = 50;
+            
+            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+            [defaults setInteger:50 forKey:@"sliderValue"];
+            [defaults synchronize];
             
             
             [parseUser signUpInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {

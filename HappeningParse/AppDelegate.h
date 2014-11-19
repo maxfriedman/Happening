@@ -12,6 +12,7 @@
 #import <MapKit/MapKit.h>
 #import <FacebookSDK/FacebookSDK.h>
 #import <ParseFacebookUtils/PFFacebookUtils.h>
+#import <AddressBook/AddressBook.h>
 
 @interface AppDelegate : UIResponder <UIApplicationDelegate, CLLocationManagerDelegate>
 
@@ -20,6 +21,8 @@
 @property (strong, nonatomic) CLLocationManager *locationManager;
 
 @property (strong, nonatomic) MKMapItem *item;
+
+@property (strong, nonatomic) MKMapItem *userLocation;
 
 @property int sliderValue;
 

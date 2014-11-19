@@ -9,8 +9,6 @@
 /* Begin PBXBuildFile section */
 		5005A39419F4CC9C00BDDFD4 /* SplashScreens.m in Sources */ = {isa = PBXBuildFile; fileRef = 5005A39319F4CC9C00BDDFD4 /* SplashScreens.m */; };
 		500910E119C75EB2006542CA /* EventTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 500910E019C75EB2006542CA /* EventTVC.m */; };
-		500910EA19C9F954006542CA /* GoogleMaps.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 500910E919C9F953006542CA /* GoogleMaps.framework */; };
-		500910EC19C9FBA0006542CA /* GoogleMaps.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 500910EB19C9FBA0006542CA /* GoogleMaps.bundle */; };
 		500910EE19C9FBE9006542CA /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 500910ED19C9FBE9006542CA /* AVFoundation.framework */; };
 		500910F019C9FC06006542CA /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 500910EF19C9FC06006542CA /* CoreData.framework */; };
 		500910F219C9FC69006542CA /* GLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 500910F119C9FC69006542CA /* GLKit.framework */; };
@@ -21,16 +19,12 @@
 		500910FD19C9FE5B006542CA /* MapViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 500910FC19C9FE5B006542CA /* MapViewController.m */; };
 		501A28B619D7698E00ACC2B4 /* ParseFacebookUtils.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 501A28B519D7698E00ACC2B4 /* ParseFacebookUtils.framework */; };
 		501A28B819DB24E600ACC2B4 /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 501A28B719DB24E600ACC2B4 /* MapKit.framework */; };
-		501A948719FC82A200999C2A /* NSDate+CupertinoYankee.m in Sources */ = {isa = PBXBuildFile; fileRef = 501A948619FC82A200999C2A /* NSDate+CupertinoYankee.m */; };
 		501A94901A015BD200999C2A /* SettingsTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 501A948F1A015BD200999C2A /* SettingsTVC.m */; };
 		50248C3C19BBA4C300329910 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 50248C3B19BBA4C300329910 /* main.m */; };
 		50248C3F19BBA4C300329910 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 50248C3E19BBA4C300329910 /* AppDelegate.m */; };
 		50248C4219BBA4C300329910 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50248C4119BBA4C300329910 /* ViewController.m */; };
 		50248C4719BBA4C300329910 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 50248C4619BBA4C300329910 /* Images.xcassets */; };
 		50248C5319BBA4C300329910 /* HappeningParseTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 50248C5219BBA4C300329910 /* HappeningParseTests.m */; };
-		50248C6219BBA8A200329910 /* DraggableViewBackground.m in Sources */ = {isa = PBXBuildFile; fileRef = 50248C5D19BBA8A200329910 /* DraggableViewBackground.m */; };
-		50248C6319BBA8A200329910 /* DraggableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 50248C5F19BBA8A200329910 /* DraggableView.m */; };
-		50248C6419BBA8A200329910 /* OverlayView.m in Sources */ = {isa = PBXBuildFile; fileRef = 50248C6119BBA8A200329910 /* OverlayView.m */; };
 		50248C7219BBAAA500329910 /* Bolts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50248C6F19BBAAA500329910 /* Bolts.framework */; };
 		50248C7319BBAAA500329910 /* Parse.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50248C7019BBAAA500329910 /* Parse.framework */; };
 		50248C7719BBAAE000329910 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50248C7619BBAAE000329910 /* AudioToolbox.framework */; };
@@ -44,6 +38,16 @@
 		50248C8719BBAB3500329910 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50248C8619BBAB3500329910 /* StoreKit.framework */; };
 		50248C8919BBAB3D00329910 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50248C8819BBAB3D00329910 /* SystemConfiguration.framework */; };
 		505AEA3B19E2218B00C8D602 /* AttendEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = 505AEA3A19E2218B00C8D602 /* AttendEvent.m */; };
+		509D5D111A0D745800F0EB61 /* DraggableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 509D5D0A1A0D745800F0EB61 /* DraggableView.m */; };
+		509D5D121A0D745800F0EB61 /* DraggableViewBackground.m in Sources */ = {isa = PBXBuildFile; fileRef = 509D5D0C1A0D745800F0EB61 /* DraggableViewBackground.m */; };
+		509D5D131A0D745800F0EB61 /* NSDate+CupertinoYankee.m in Sources */ = {isa = PBXBuildFile; fileRef = 509D5D0E1A0D745800F0EB61 /* NSDate+CupertinoYankee.m */; };
+		509D5D141A0D745800F0EB61 /* OverlayView.m in Sources */ = {isa = PBXBuildFile; fileRef = 509D5D101A0D745800F0EB61 /* OverlayView.m */; };
+		509D5D191A0D7A5A00F0EB61 /* FirstTimeScreen.m in Sources */ = {isa = PBXBuildFile; fileRef = 509D5D161A0D7A5A00F0EB61 /* FirstTimeScreen.m */; };
+		509D5D1A1A0D7A5A00F0EB61 /* PageContentViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 509D5D181A0D7A5A00F0EB61 /* PageContentViewController.m */; };
+		509D5D1E1A0D801400F0EB61 /* ChoosingLocation.m in Sources */ = {isa = PBXBuildFile; fileRef = 509D5D1D1A0D801400F0EB61 /* ChoosingLocation.m */; };
+		509D5D211A0D889600F0EB61 /* InitialLocationSearch.m in Sources */ = {isa = PBXBuildFile; fileRef = 509D5D201A0D889600F0EB61 /* InitialLocationSearch.m */; };
+		509D5D241A111BE900F0EB61 /* LogInExistingUser.m in Sources */ = {isa = PBXBuildFile; fileRef = 509D5D231A111BE900F0EB61 /* LogInExistingUser.m */; };
+		509D5D271A11390600F0EB61 /* SettingsChoosingLoc.m in Sources */ = {isa = PBXBuildFile; fileRef = 509D5D261A11390600F0EB61 /* SettingsChoosingLoc.m */; };
 		50A3DBF119E3151F001E5E74 /* LocationSearching.m in Sources */ = {isa = PBXBuildFile; fileRef = 50A3DBF019E3151F001E5E74 /* LocationSearching.m */; };
 		50A3DBF419E336D9001E5E74 /* SearchBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 50A3DBF319E336D9001E5E74 /* SearchBar.m */; };
 		50A3DD4719E86314001E5E74 /* Bolts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50A3DC0319E86313001E5E74 /* Bolts.framework */; };
@@ -72,8 +76,6 @@
 		5005A39319F4CC9C00BDDFD4 /* SplashScreens.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SplashScreens.m; sourceTree = "<group>"; };
 		500910DF19C75EB2006542CA /* EventTVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EventTVC.h; sourceTree = "<group>"; };
 		500910E019C75EB2006542CA /* EventTVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EventTVC.m; sourceTree = "<group>"; };
-		500910E919C9F953006542CA /* GoogleMaps.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GoogleMaps.framework; path = "../../Downloads/GoogleMaps-iOS-1.8.1/GoogleMaps.framework"; sourceTree = "<group>"; };
-		500910EB19C9FBA0006542CA /* GoogleMaps.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = GoogleMaps.bundle; path = "../../Downloads/GoogleMaps-iOS-1.8.1/GoogleMaps.framework/Versions/A/Resources/GoogleMaps.bundle"; sourceTree = "<group>"; };
 		500910ED19C9FBE9006542CA /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		500910EF19C9FC06006542CA /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 		500910F119C9FC69006542CA /* GLKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLKit.framework; path = System/Library/Frameworks/GLKit.framework; sourceTree = SDKROOT; };
@@ -85,8 +87,6 @@
 		500910FC19C9FE5B006542CA /* MapViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MapViewController.m; sourceTree = "<group>"; };
 		501A28B519D7698E00ACC2B4 /* ParseFacebookUtils.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ParseFacebookUtils.framework; path = "../../Downloads/parse-library-1-3/ParseFacebookUtils.framework"; sourceTree = "<group>"; };
 		501A28B719DB24E600ACC2B4 /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
-		501A948519FC82A200999C2A /* NSDate+CupertinoYankee.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSDate+CupertinoYankee.h"; path = "../../../Downloads/CupertinoYankee-master/CupertinoYankee/NSDate+CupertinoYankee.h"; sourceTree = "<group>"; };
-		501A948619FC82A200999C2A /* NSDate+CupertinoYankee.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSDate+CupertinoYankee.m"; path = "../../../Downloads/CupertinoYankee-master/CupertinoYankee/NSDate+CupertinoYankee.m"; sourceTree = "<group>"; };
 		501A948E1A015BD200999C2A /* SettingsTVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SettingsTVC.h; sourceTree = "<group>"; };
 		501A948F1A015BD200999C2A /* SettingsTVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SettingsTVC.m; sourceTree = "<group>"; };
 		50248C3619BBA4C300329910 /* HappeningParse.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HappeningParse.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -101,12 +101,6 @@
 		50248C4C19BBA4C300329910 /* HappeningParseTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HappeningParseTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		50248C5119BBA4C300329910 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		50248C5219BBA4C300329910 /* HappeningParseTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HappeningParseTests.m; sourceTree = "<group>"; };
-		50248C5C19BBA8A200329910 /* DraggableViewBackground.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DraggableViewBackground.h; path = "../../../Downloads/TinderSimpleSwipeCards-master/testing swiping/DraggableViewBackground.h"; sourceTree = "<group>"; };
-		50248C5D19BBA8A200329910 /* DraggableViewBackground.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DraggableViewBackground.m; path = "../../../Downloads/TinderSimpleSwipeCards-master/testing swiping/DraggableViewBackground.m"; sourceTree = "<group>"; };
-		50248C5E19BBA8A200329910 /* DraggableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DraggableView.h; path = "../../../Downloads/TinderSimpleSwipeCards-master/testing swiping/DraggableView.h"; sourceTree = "<group>"; };
-		50248C5F19BBA8A200329910 /* DraggableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DraggableView.m; path = "../../../Downloads/TinderSimpleSwipeCards-master/testing swiping/DraggableView.m"; sourceTree = "<group>"; };
-		50248C6019BBA8A200329910 /* OverlayView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OverlayView.h; path = "../../../Downloads/TinderSimpleSwipeCards-master/testing swiping/OverlayView.h"; sourceTree = "<group>"; };
-		50248C6119BBA8A200329910 /* OverlayView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OverlayView.m; path = "../../../Downloads/TinderSimpleSwipeCards-master/testing swiping/OverlayView.m"; sourceTree = "<group>"; };
 		50248C6F19BBAAA500329910 /* Bolts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Bolts.framework; path = "../../Downloads/parse-library-1/Bolts.framework"; sourceTree = "<group>"; };
 		50248C7019BBAAA500329910 /* Parse.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Parse.framework; path = "../../Downloads/parse-library-1/Parse.framework"; sourceTree = "<group>"; };
 		50248C7619BBAAE000329910 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
@@ -121,6 +115,26 @@
 		50248C8819BBAB3D00329910 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		505AEA3919E2218B00C8D602 /* AttendEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AttendEvent.h; sourceTree = "<group>"; };
 		505AEA3A19E2218B00C8D602 /* AttendEvent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AttendEvent.m; sourceTree = "<group>"; };
+		509D5D091A0D745800F0EB61 /* DraggableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DraggableView.h; path = ../../files/DraggableView.h; sourceTree = "<group>"; };
+		509D5D0A1A0D745800F0EB61 /* DraggableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DraggableView.m; path = ../../files/DraggableView.m; sourceTree = "<group>"; };
+		509D5D0B1A0D745800F0EB61 /* DraggableViewBackground.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DraggableViewBackground.h; path = ../../files/DraggableViewBackground.h; sourceTree = "<group>"; };
+		509D5D0C1A0D745800F0EB61 /* DraggableViewBackground.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DraggableViewBackground.m; path = ../../files/DraggableViewBackground.m; sourceTree = "<group>"; };
+		509D5D0D1A0D745800F0EB61 /* NSDate+CupertinoYankee.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSDate+CupertinoYankee.h"; path = "../../files/NSDate+CupertinoYankee.h"; sourceTree = "<group>"; };
+		509D5D0E1A0D745800F0EB61 /* NSDate+CupertinoYankee.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSDate+CupertinoYankee.m"; path = "../../files/NSDate+CupertinoYankee.m"; sourceTree = "<group>"; };
+		509D5D0F1A0D745800F0EB61 /* OverlayView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OverlayView.h; path = ../../files/OverlayView.h; sourceTree = "<group>"; };
+		509D5D101A0D745800F0EB61 /* OverlayView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OverlayView.m; path = ../../files/OverlayView.m; sourceTree = "<group>"; };
+		509D5D151A0D7A5A00F0EB61 /* FirstTimeScreen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FirstTimeScreen.h; sourceTree = "<group>"; };
+		509D5D161A0D7A5A00F0EB61 /* FirstTimeScreen.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FirstTimeScreen.m; sourceTree = "<group>"; };
+		509D5D171A0D7A5A00F0EB61 /* PageContentViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PageContentViewController.h; sourceTree = "<group>"; };
+		509D5D181A0D7A5A00F0EB61 /* PageContentViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PageContentViewController.m; sourceTree = "<group>"; };
+		509D5D1C1A0D801400F0EB61 /* ChoosingLocation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ChoosingLocation.h; sourceTree = "<group>"; };
+		509D5D1D1A0D801400F0EB61 /* ChoosingLocation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ChoosingLocation.m; sourceTree = "<group>"; };
+		509D5D1F1A0D889600F0EB61 /* InitialLocationSearch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InitialLocationSearch.h; sourceTree = "<group>"; };
+		509D5D201A0D889600F0EB61 /* InitialLocationSearch.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = InitialLocationSearch.m; sourceTree = "<group>"; };
+		509D5D221A111BE900F0EB61 /* LogInExistingUser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LogInExistingUser.h; sourceTree = "<group>"; };
+		509D5D231A111BE900F0EB61 /* LogInExistingUser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LogInExistingUser.m; sourceTree = "<group>"; };
+		509D5D251A11390600F0EB61 /* SettingsChoosingLoc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SettingsChoosingLoc.h; sourceTree = "<group>"; };
+		509D5D261A11390600F0EB61 /* SettingsChoosingLoc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SettingsChoosingLoc.m; sourceTree = "<group>"; };
 		50A3DBEF19E3151E001E5E74 /* LocationSearching.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocationSearching.h; sourceTree = "<group>"; };
 		50A3DBF019E3151F001E5E74 /* LocationSearching.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LocationSearching.m; sourceTree = "<group>"; };
 		50A3DBF219E336D9001E5E74 /* SearchBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SearchBar.h; sourceTree = "<group>"; };
@@ -163,7 +177,6 @@
 				50A3DD4719E86314001E5E74 /* Bolts.framework in Frameworks */,
 				501A28B619D7698E00ACC2B4 /* ParseFacebookUtils.framework in Frameworks */,
 				50248C7B19BBAB0300329910 /* CoreGraphics.framework in Frameworks */,
-				500910EA19C9F954006542CA /* GoogleMaps.framework in Frameworks */,
 				50248C7919BBAAF800329910 /* CFNetwork.framework in Frameworks */,
 				50248C7719BBAAE000329910 /* AudioToolbox.framework in Frameworks */,
 				50248C7319BBAAA500329910 /* Parse.framework in Frameworks */,
@@ -203,17 +216,16 @@
 		50248C3819BBA4C300329910 /* HappeningParse */ = {
 			isa = PBXGroup;
 			children = (
+				509D5D1B1A0D7FF100F0EB61 /* Login */,
 				50248C3D19BBA4C300329910 /* AppDelegate.h */,
 				50248C3E19BBA4C300329910 /* AppDelegate.m */,
 				50A3DE3019E88C14001E5E74 /* TabBarViewController.h */,
 				50A3DE3119E88C14001E5E74 /* TabBarViewController.m */,
 				50248C4319BBA4C300329910 /* Main.storyboard */,
+				509D5D251A11390600F0EB61 /* SettingsChoosingLoc.h */,
+				509D5D261A11390600F0EB61 /* SettingsChoosingLoc.m */,
 				501A948E1A015BD200999C2A /* SettingsTVC.h */,
 				501A948F1A015BD200999C2A /* SettingsTVC.m */,
-				5005A39219F4CC9C00BDDFD4 /* SplashScreens.h */,
-				5005A39319F4CC9C00BDDFD4 /* SplashScreens.m */,
-				50A3DE2D19E86779001E5E74 /* LoginView.h */,
-				50A3DE2E19E86779001E5E74 /* LoginView.m */,
 				50E0AB081A06B8E4001D6FD6 /* MyEventsTVC.h */,
 				50E0AB091A06B8E4001D6FD6 /* MyEventsTVC.m */,
 				50E0AB051A06B8AB001D6FD6 /* AttendTableCell.h */,
@@ -222,12 +234,12 @@
 				505AEA3A19E2218B00C8D602 /* AttendEvent.m */,
 				50248C4019BBA4C300329910 /* ViewController.h */,
 				50248C4119BBA4C300329910 /* ViewController.m */,
-				50248C5C19BBA8A200329910 /* DraggableViewBackground.h */,
-				50248C5D19BBA8A200329910 /* DraggableViewBackground.m */,
-				50248C5E19BBA8A200329910 /* DraggableView.h */,
-				50248C5F19BBA8A200329910 /* DraggableView.m */,
-				50248C6019BBA8A200329910 /* OverlayView.h */,
-				50248C6119BBA8A200329910 /* OverlayView.m */,
+				509D5D091A0D745800F0EB61 /* DraggableView.h */,
+				509D5D0A1A0D745800F0EB61 /* DraggableView.m */,
+				509D5D0B1A0D745800F0EB61 /* DraggableViewBackground.h */,
+				509D5D0C1A0D745800F0EB61 /* DraggableViewBackground.m */,
+				509D5D0F1A0D745800F0EB61 /* OverlayView.h */,
+				509D5D101A0D745800F0EB61 /* OverlayView.m */,
 				50248C4619BBA4C300329910 /* Images.xcassets */,
 				50A3DBEF19E3151E001E5E74 /* LocationSearching.h */,
 				50A3DBF019E3151F001E5E74 /* LocationSearching.m */,
@@ -245,8 +257,8 @@
 		50248C3919BBA4C300329910 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				501A948519FC82A200999C2A /* NSDate+CupertinoYankee.h */,
-				501A948619FC82A200999C2A /* NSDate+CupertinoYankee.m */,
+				509D5D0D1A0D745800F0EB61 /* NSDate+CupertinoYankee.h */,
+				509D5D0E1A0D745800F0EB61 /* NSDate+CupertinoYankee.m */,
 				50A3DE2C19E863A9001E5E74 /* Images */,
 				50248C3A19BBA4C300329910 /* Info.plist */,
 				50248C3B19BBA4C300329910 /* main.m */,
@@ -276,7 +288,6 @@
 			children = (
 				50A3DC0219E86313001E5E74 /* FacebookSDK */,
 				501A28B719DB24E600ACC2B4 /* MapKit.framework */,
-				500910E919C9F953006542CA /* GoogleMaps.framework */,
 				500910F919C9FCCD006542CA /* OpenGLES.framework */,
 				500910F719C9FCB4006542CA /* libicucore.dylib */,
 				500910F519C9FCA9006542CA /* libc++.dylib */,
@@ -284,7 +295,6 @@
 				500910F119C9FC69006542CA /* GLKit.framework */,
 				500910EF19C9FC06006542CA /* CoreData.framework */,
 				500910ED19C9FBE9006542CA /* AVFoundation.framework */,
-				500910EB19C9FBA0006542CA /* GoogleMaps.bundle */,
 				50248C8819BBAB3D00329910 /* SystemConfiguration.framework */,
 				50248C8619BBAB3500329910 /* StoreKit.framework */,
 				50248C8419BBAB2F00329910 /* Security.framework */,
@@ -300,6 +310,27 @@
 				50248C6F19BBAAA500329910 /* Bolts.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		509D5D1B1A0D7FF100F0EB61 /* Login */ = {
+			isa = PBXGroup;
+			children = (
+				509D5D151A0D7A5A00F0EB61 /* FirstTimeScreen.h */,
+				509D5D161A0D7A5A00F0EB61 /* FirstTimeScreen.m */,
+				509D5D171A0D7A5A00F0EB61 /* PageContentViewController.h */,
+				509D5D181A0D7A5A00F0EB61 /* PageContentViewController.m */,
+				5005A39219F4CC9C00BDDFD4 /* SplashScreens.h */,
+				5005A39319F4CC9C00BDDFD4 /* SplashScreens.m */,
+				50A3DE2D19E86779001E5E74 /* LoginView.h */,
+				50A3DE2E19E86779001E5E74 /* LoginView.m */,
+				509D5D1C1A0D801400F0EB61 /* ChoosingLocation.h */,
+				509D5D1D1A0D801400F0EB61 /* ChoosingLocation.m */,
+				509D5D1F1A0D889600F0EB61 /* InitialLocationSearch.h */,
+				509D5D201A0D889600F0EB61 /* InitialLocationSearch.m */,
+				509D5D221A111BE900F0EB61 /* LogInExistingUser.h */,
+				509D5D231A111BE900F0EB61 /* LogInExistingUser.m */,
+			);
+			name = Login;
 			sourceTree = "<group>";
 		};
 		50A3DC0219E86313001E5E74 /* FacebookSDK */ = {
@@ -409,7 +440,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				50E0AB0B1A06D297001D6FD6 /* Main.storyboard in Resources */,
-				500910EC19C9FBA0006542CA /* GoogleMaps.bundle in Resources */,
 				50A3DD6619E86314001E5E74 /* README.txt in Resources */,
 				50A3DD6519E86314001E5E74 /* LICENSE in Resources */,
 				50248C4719BBA4C300329910 /* Images.xcassets in Resources */,
@@ -430,24 +460,30 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				50248C6219BBA8A200329910 /* DraggableViewBackground.m in Sources */,
-				50248C6419BBA8A200329910 /* OverlayView.m in Sources */,
+				509D5D1E1A0D801400F0EB61 /* ChoosingLocation.m in Sources */,
+				509D5D271A11390600F0EB61 /* SettingsChoosingLoc.m in Sources */,
 				501A94901A015BD200999C2A /* SettingsTVC.m in Sources */,
+				509D5D241A111BE900F0EB61 /* LogInExistingUser.m in Sources */,
 				500910FD19C9FE5B006542CA /* MapViewController.m in Sources */,
+				509D5D121A0D745800F0EB61 /* DraggableViewBackground.m in Sources */,
 				50248C4219BBA4C300329910 /* ViewController.m in Sources */,
 				50E0AB071A06B8AB001D6FD6 /* AttendTableCell.m in Sources */,
 				50A3DBF419E336D9001E5E74 /* SearchBar.m in Sources */,
 				50E0AB0A1A06B8E4001D6FD6 /* MyEventsTVC.m in Sources */,
 				50248C3F19BBA4C300329910 /* AppDelegate.m in Sources */,
+				509D5D191A0D7A5A00F0EB61 /* FirstTimeScreen.m in Sources */,
 				5005A39419F4CC9C00BDDFD4 /* SplashScreens.m in Sources */,
 				50248C3C19BBA4C300329910 /* main.m in Sources */,
 				50A3DE2F19E86779001E5E74 /* LoginView.m in Sources */,
+				509D5D211A0D889600F0EB61 /* InitialLocationSearch.m in Sources */,
+				509D5D131A0D745800F0EB61 /* NSDate+CupertinoYankee.m in Sources */,
 				50A3DE3219E88C14001E5E74 /* TabBarViewController.m in Sources */,
 				50A3DBF119E3151F001E5E74 /* LocationSearching.m in Sources */,
-				50248C6319BBA8A200329910 /* DraggableView.m in Sources */,
 				505AEA3B19E2218B00C8D602 /* AttendEvent.m in Sources */,
+				509D5D111A0D745800F0EB61 /* DraggableView.m in Sources */,
+				509D5D1A1A0D7A5A00F0EB61 /* PageContentViewController.m in Sources */,
 				500910E119C75EB2006542CA /* EventTVC.m in Sources */,
-				501A948719FC82A200999C2A /* NSDate+CupertinoYankee.m in Sources */,
+				509D5D141A0D745800F0EB61 /* OverlayView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

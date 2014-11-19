@@ -50,7 +50,7 @@ NSMutableArray *indexpaths;
 
 -(void)viewWillAppear:(BOOL)animated {
 
-    [self.tableView reloadData];
+    //[self.tableView reloadData];
 
     PFUser *user = [PFUser currentUser];
     
@@ -61,8 +61,10 @@ NSMutableArray *indexpaths;
     [eventQuery whereKey:@"Date" greaterThan:[NSDate date]];
     [eventQuery orderByAscending:@"Date"];
     
-    eventsArray = [[NSArray alloc]init];
-    eventsArray = [eventQuery findObjects];
+    //eventsArray = [[NSArray alloc]init];
+    //eventsArray = [eventQuery findObjects];
+    
+    [eventQuery findObjectsInBackgroundWithBlock:^(NSArray *eventsArray, NSError *error) {
     
     count = eventsArray.count;
     
@@ -134,7 +136,10 @@ NSMutableArray *indexpaths;
         [rowCountArray addObject:[NSNumber numberWithInt:rowForSectionCount]];
         rowForSectionCount = 0;
     }
-
+        
+        
+        [self.tableView reloadData];
+    }];
 }
 
 #pragma mark - Table view data source
@@ -167,6 +172,20 @@ NSMutableArray *indexpaths;
 // %%%%%% Runs through this code every time I scroll in "Attend" Table for some reason %%%%%%%%%%%
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     AttendTableCell *cell = [tableView dequeueReusableCellWithIdentifier:@"event" forIndexPath:indexPath];
+    
+    PFUser *user = [PFUser currentUser];
+    
+    PFQuery *eventQuery = [PFQuery queryWithClassName:@"Event"];
+    [eventQuery whereKey:@"CreatedBy" equalTo:user.username];
+    
+    // Works for now, but doesn't allow for events to be shown from the past
+    [eventQuery whereKey:@"Date" greaterThan:[NSDate date]];
+    [eventQuery orderByAscending:@"Date"];
+    
+    //eventsArray = [[NSArray alloc]init];
+    //eventsArray = [eventQuery findObjects];
+    
+    [eventQuery findObjectsInBackgroundWithBlock:^(NSArray *eventsArray, NSError *error) {
     
     for (int i = 0; i < eventsArray.count; i++) {
         
@@ -211,20 +230,13 @@ NSMutableArray *indexpaths;
                 }];
                 
                 // Location formatting
-                if(self.locManager==nil){
-                    locManager = [[CLLocationManager alloc] init];
-                    locManager.delegate=self;
-                    [locManager requestAlwaysAuthorization];
-                    locManager.desiredAccuracy=kCLLocationAccuracyBest;
-                    locManager.distanceFilter=50;
-                    
-                }
-                
-                // Might want to delete this-- If I do, if someone decides to turn location services off, they will continue to get a message every time they launch the app...
-                if([CLLocationManager locationServicesEnabled]){
+                if(locManager && [CLLocationManager locationServicesEnabled]){
                     [self.locManager startUpdatingLocation];
                     CLLocation *currentLocation = locManager.location;
-                    //NSLog(@"Current Location is: %@", currentLocation);
+                    PFUser *user = [PFUser currentUser];
+                    user[@"userLoc"] = [PFGeoPoint geoPointWithLocation:currentLocation];
+                    NSLog(@"Current Location is: %@", currentLocation);
+                    [user saveInBackground];
                 }
                 
                 PFGeoPoint *loc = Event[@"GeoLoc"];
@@ -232,7 +244,8 @@ NSMutableArray *indexpaths;
                 if (loc.latitude == 0) {
                     cell.distance.text = @"";
                 } else {
-                    PFGeoPoint *userLoc = [PFGeoPoint geoPointWithLocation:(locManager.location)];
+                    PFUser *user = [PFUser currentUser];
+                    PFGeoPoint *userLoc = user[@"userLoc"];
                     NSNumber *meters = [NSNumber numberWithDouble:([loc distanceInMilesTo:userLoc])];
                     NSString *distance = [NSString stringWithFormat:(@"%.2f mi"), meters.floatValue];
                     cell.distance.text = distance;
@@ -248,6 +261,7 @@ NSMutableArray *indexpaths;
             }
         }
     }
+    }];
     
     return cell;
 }
