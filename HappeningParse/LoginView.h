@@ -12,8 +12,14 @@
 #import <FacebookSDK/FacebookSDK.h>
 #import "AppDelegate.h"
 
-@interface LoginView : UIViewController <FBLoginViewDelegate>
+@interface LoginView : UIViewController <FBLoginViewDelegate, UIPickerViewDelegate, UIPickerViewDataSource, UINavigationControllerDelegate>
 
 @property (strong,nonatomic) UIActivityIndicatorView *activityView;
+
+@property (strong, nonatomic) IBOutlet UIPickerView *cityPicker;
+
+@property (strong, nonatomic) IBOutlet UILabel *inLabel;
+
+@property (strong, nonatomic) IBOutlet UIButton *xButton;
 
 @end

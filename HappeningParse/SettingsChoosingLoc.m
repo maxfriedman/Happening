@@ -67,22 +67,6 @@
     [localSearch startWithCompletionHandler:^(MKLocalSearchResponse *response, NSError *error){
         
         [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
-        /*
-         if (error != nil) {
-         [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Map Error",nil)
-         message:[error localizedDescription]
-         delegate:nil
-         cancelButtonTitle:NSLocalizedString(@"OK",nil) otherButtonTitles:nil] show];
-         return;
-         }
-         
-         if ([response.mapItems count] == 0) {
-         [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"No Results",nil)
-         message:nil
-         delegate:nil
-         cancelButtonTitle:NSLocalizedString(@"OK",nil) otherButtonTitles:nil] show];
-         return;
-         } */
         
         results = response;
         
@@ -97,7 +81,7 @@
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    
+        
     static NSString *IDENTIFIER = @"SearchResultsCell";
     
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:IDENTIFIER];
@@ -106,7 +90,6 @@
     }
     
     MKMapItem *item = results.mapItems[indexPath.row];
-    user[@"userLocTitle"] = item.name;
     cell.textLabel.text = item.name;
     
     NSString *cityName = item.placemark.addressDictionary[@"City"];
@@ -116,36 +99,48 @@
     
     if (zipCode) {
         cell.detailTextLabel.text = [NSString stringWithFormat:@"%@, %@ %@, %@", cityName, stateName, zipCode, country];
-        user[@"userLocSubtitle"] = cell.detailTextLabel.text;
     } else {
         cell.detailTextLabel.text = [NSString stringWithFormat:@"%@, %@, %@", cityName, stateName, country];
-        user[@"userLocSubtitle"] = cell.detailTextLabel.text;
-        
     }
+    
     return cell;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    
     [self.searchDisplayController setActive:NO animated:YES];
     
     NSLog(@"Location was selected");
     
-    AppDelegate *appDelegate=(AppDelegate *)[UIApplication sharedApplication].delegate;
-    appDelegate.userLocation = results.mapItems[indexPath.row];
-    PFGeoPoint *loc = [PFGeoPoint geoPointWithLocation:appDelegate.userLocation.placemark.location];
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    MKMapItem *item = results.mapItems[indexPath.row];
+    user[@"userLocTitle"] = item.name;
+    [defaults setObject:item.name forKey:@"userLocTitle"];
+    
+    NSString *cityName = item.placemark.addressDictionary[@"City"];
+    NSString *stateName = item.placemark.addressDictionary[@"State"];
+    NSString *zipCode = item.placemark.addressDictionary[@"ZIP"];
+    NSString *country = item.placemark.addressDictionary[@"Country"];
+    
+    NSString *subtitle;
+    if (zipCode) {
+        subtitle = [NSString stringWithFormat:@"%@, %@ %@, %@", cityName, stateName, zipCode, country];
+    } else {
+        subtitle= [NSString stringWithFormat:@"%@, %@, %@", cityName, stateName, country];
+    }
+
+    user[@"userLocSubtitle"] = subtitle;
+    [defaults setObject:subtitle forKey:@"userLocSubtitle"];
+    
+    MKMapItem *userLocation = results.mapItems[indexPath.row];
+    PFGeoPoint *loc = [PFGeoPoint geoPointWithLocation:userLocation.placemark.location];
     user[@"userLoc"] = loc;
+    
     [user saveInBackground];
+    [defaults synchronize];
     
     [self dismissViewControllerAnimated:YES completion:nil];
-    /*
-     MKMapItem *item = results.mapItems[indexPath.row];
-     [self.ibMapView addAnnotation:item.placemark];
-     [self.ibMapView selectAnnotation:item.placemark animated:YES];
-     
-     [self.ibMapView setCenterCoordinate:item.placemark.location.coordinate animated:YES];
-     
-     [self.ibMapView setUserTrackingMode:MKUserTrackingModeNone];
-     */
+
 }
 
 - (IBAction)didClick:(UIBarButtonItem *)sender {

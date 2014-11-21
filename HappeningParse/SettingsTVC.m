@@ -17,6 +17,7 @@
     AppDelegate *appDelegate;
     PFUser *user;
     NSInteger sliderVal;
+    NSString *userLocationTitle;
 }
 
 @synthesize locTitle, locSubtitle;
@@ -26,46 +27,36 @@
     
     NSLog(@"------- Settings Opened -------");
     
+    user = [PFUser currentUser];
     [self.delegate didPreferencesChange];
     
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     sliderVal = [defaults integerForKey:@"sliderValue"];
+    userLocationTitle = [defaults objectForKey:@"userLocTitle"];
     
     //appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
     NSString *distanceString = [NSString stringWithFormat:@"%ld mi.", (long)sliderVal];
     self.distanceLabel.text = distanceString;
     self.distanceSlider.value = (float)sliderVal / 5;
-    
-    user = [PFUser currentUser];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
     
     //if ([appDelegate.userLocation.name isEqualToString:@"Unknown Location"] || [appDelegate.userLocation.name isEqualToString:@""]) {
     
-        locTitle.text = user[@"userLocTitle"];
-        locSubtitle.text = user[@"userLocSubtitle"];
-    /*}
-        else {
-        
-            locTitle.text = appDelegate.userLocation.name;
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     
-            NSString *cityName = appDelegate.userLocation.placemark.addressDictionary[@"City"];
-            NSString *stateName = appDelegate.userLocation.placemark.addressDictionary[@"State"];
-            NSString *zipCode = appDelegate.userLocation.placemark.addressDictionary[@"ZIP"];
-            NSString *country = appDelegate.userLocation.placemark.addressDictionary[@"Country"];
-            if (zipCode) {
-                locSubtitle.font = [locSubtitle.font fontWithSize:11.0];
-                locSubtitle.alpha = 1.0;
-                locSubtitle.text = [NSString stringWithFormat:@"%@, %@ %@, %@", cityName, stateName, zipCode, country];
-            }
-            else if (cityName) {
-                locSubtitle.font = [locSubtitle.font fontWithSize:11.0];
-                locSubtitle.alpha = 1.0;
-                locSubtitle.text = [NSString stringWithFormat:@"%@, %@, %@", cityName, stateName, country];
-            }
-
-    } */
+    if ([[defaults objectForKey:@"userLocSubtitle"] isEqualToString:@""]) {
+     
+        locSubtitle.text = nil;
+        locTitle.text = [defaults objectForKey:@"userLocTitle"];
+        
+    } else {
+        
+        locTitle.text = [defaults objectForKey:@"userLocTitle"];
+        locSubtitle.text = [defaults objectForKey:@"userLocSubtitle"];
+        
+    }
 }
 
 - (IBAction)doneButtonPressed:(id)sender {
@@ -131,7 +122,7 @@
     
     // Save user preferences if values were changed
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    if ([defaults integerForKey:@"sliderValue"] != sliderVal) {
+    if ([defaults integerForKey:@"sliderValue"] != sliderVal || ![[defaults objectForKey:@"userLocTitle"] isEqualToString:userLocationTitle] ) {
         return YES;
     } else {
         NSLog(@"No preferences were changed.");

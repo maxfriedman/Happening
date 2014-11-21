@@ -60,9 +60,9 @@
 		<string>armv7</string>
 	</array>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Happening uses your location to tell you about exciting events happening around you! We promise to protect your privacy and battery life at all times.</string>
+	<string>We use your location to tell you how far away you are from an event.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Happening uses your location to tell you about exciting events happening around you! We promise to protect your privacy and battery life at all times.</string>
+	<string>We use your location to tell you how far away you are from an event.</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

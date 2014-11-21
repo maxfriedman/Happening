@@ -11,15 +11,13 @@
 #import <Parse/Parse.h>
 #import "AppDelegate.h"
 
-@interface ChoosingLocation : UIViewController <CLLocationManagerDelegate>
+@interface ChoosingLocation : UIViewController <CLLocationManagerDelegate, UIAlertViewDelegate>
 
 @property (strong, nonatomic) IBOutlet UIButton *currentLocButton;
 @property (strong, nonatomic) IBOutlet UIButton *choosingLocButton;
 
-@property (retain,nonatomic)CLLocationManager* locManager;
+@property (strong, nonatomic)CLLocationManager* locManager;
 
 @property (strong, nonatomic) IBOutlet UIButton *continueButton;
-
-@property (strong, nonatomic) IBOutlet UIImageView *checkButton;
 
 @end

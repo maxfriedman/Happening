@@ -10,44 +10,69 @@
 
 #import "TabBarViewController.h"
 
-@interface LoginView () <UINavigationControllerDelegate>
+@interface LoginView ()
 
 @property (strong, nonatomic) IBOutlet FBLoginView *fbLoginView;
 @property (strong, nonatomic) NSString *objectID;
 @property (strong, nonatomic) IBOutlet UILabel *labelOne;
-@property (strong, nonatomic) IBOutlet UILabel *labelTwo;
+//@property (strong, nonatomic) IBOutlet UILabel *labelTwo;
 @property (strong, nonatomic) IBOutlet UIButton *whyFB;
-
 
 @end
 
 @implementation LoginView {
     
     AppDelegate *appDelegate;
+    NSArray *cityData;
+    PFUser *parseUser;
 }
 
-@synthesize activityView;
+@synthesize activityView, cityPicker;
 
 -(void)viewDidLoad {
     
     [super viewDidLoad];
+    parseUser = [PFUser user];
+    // default city and location
+    parseUser[@"city"] = @"Washington, DC";
+    PFGeoPoint *geoPoint = [PFGeoPoint geoPointWithLatitude:38.907192 longitude:-77.036871];
+    parseUser[@"userLoc"] = geoPoint;
+    
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    [defaults setObject:@"Washington, DC" forKey:@"userLocTitle"];
+    [defaults setObject:@"" forKey:@"userLocSubtitle"];
+    [defaults synchronize];
     
     activityView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-    activityView.center = CGPointMake(self.view.frame.size.width / 2, (self.view.frame.size.height / 2) - 100);
+    activityView.center = CGPointMake(self.view.frame.size.width / 2, (self.view.frame.size.height / 2));
     [activityView startAnimating];
     [self.view addSubview:activityView];
     
     appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
-    
-    
+
 }
 
 - (void)viewWillAppear:(BOOL)animated {
     
+    // Loads the city names on the picker and sets
+    cityData = [[NSArray alloc]initWithObjects:@"Boston, MA", @"Washington, DC", @"My city isn't listed :(", nil];
+    [cityPicker selectRow:1 inComponent:0 animated:NO];
+    [[cityPicker.subviews objectAtIndex:1] setBackgroundColor:[UIColor whiteColor]];
+    [[cityPicker.subviews objectAtIndex:2] setBackgroundColor:[UIColor whiteColor]];
+    
+    //UIImage *image = [UIImage imageNamed:@"noButton"];
+    //image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    
+    //self.xButton.imageView.tintColor = [UIColor colorWithRed:0.7f green:0.0f blue:0.0f alpha:1];
+    //self.xButton.imageView.image = image;
+        
     _fbLoginView.alpha = 0;
     _labelOne.alpha = 0;
-    _labelTwo.alpha = 0;
+    //_labelTwo.alpha = 0;
     _whyFB.alpha = 0;
+    cityPicker.alpha = 0;
+    self.inLabel.alpha = 0;
+    self.xButton.alpha = 0;
     
 }
 
@@ -59,53 +84,21 @@
     _objectID = nil;
     
     NSLog(@"1");
-    double delayInSeconds = 1.0;
+    double delayInSeconds = 0.5;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
     dispatch_after(popTime, dispatch_get_main_queue(), ^{
         NSLog(@"Delaying a second...");
         _fbLoginView.alpha = 1;
         _labelOne.alpha = 1;
-        _labelTwo.alpha = 1;
+        //_labelTwo.alpha = 1;
         _whyFB.alpha = 1;
+        cityPicker.alpha = 1;
+        self.inLabel.alpha = 1;
+        self.xButton.alpha = 1;
         [activityView stopAnimating];
         
     });
     NSLog(@"2");
-
-    /*
-    PFUser *currentUser = [PFUser currentUser];
-    
-    PFQuery *query = [PFUser query];
-    
-    if (currentUser) {
-        NSLog(@"CURRENT User exists. LEGGO");
-        [self performSegueWithIdentifier:@"toMain" sender:self];
-
-    }
-    
-    
-    NSArray *users = [[NSArray alloc]init];
-    users = [query findObjects];
-    for (int i = 0; i < users.count; i++) {
-        PFObject *userPF = users[i];
-        //NSLog(@"1:%@ 2:%@",userPF[@"username"], currentUser.username);
-        
-        if ([userPF[@"username"] isEqualToString:currentUser.username]) {
-            NSLog(@"User exists. LEGGO");
-            
-            // Reload user preferences from previous session
-            int sliderVal = [userPF[@"radius"] intValue];
-            NSLog(@"Loading preferences... slider value = %d", sliderVal);
-            appDelegate.sliderValue = sliderVal;
-            
-            [self performSegueWithIdentifier:@"toMain" sender:self];
-        }
-    }
-
-     */
-    
-    
-
     
 }
 
@@ -128,7 +121,6 @@
             // Success! Include your code to handle the results here
 
             //_nameLabel.text = [NSString stringWithFormat:@"Hey, %@!",[result objectForKey:@"first_name"]];
-            PFUser *parseUser = [PFUser user];
             
             parseUser.username = [result objectForKey:@"email"];
             parseUser.password = [result objectForKey:@"link"];
@@ -165,7 +157,7 @@
                     if (parseUser) {
                         NSLog(@"CU3: %@", parseUser.username);
 
-                        [self performSegueWithIdentifier:@"toChooseLoc" sender:self];
+                        [self performSegueWithIdentifier:@"toMain" sender:self];
                     }
                 } else {
                     NSLog(@"User exists.");
@@ -179,7 +171,7 @@
                                                         block:^(PFUser *user, NSError *error) {
                                                             if (user) {
                                                                 // Do stuff after successful login.
-                                                                [self performSegueWithIdentifier:@"toChooseLoc" sender:self];
+                                                                [self performSegueWithIdentifier:@"toMain" sender:self];
                                                             } else {
                                                                 // The login failed. Check error to see why.
                                                                 NSLog(@"%@", error);
@@ -248,6 +240,63 @@
     }
 }
 
+- (NSInteger)numberOfComponentsInPickerView:(UIPickerView *)pickerView {
+    
+    return 1;
+}
+
+
+- (NSInteger)pickerView:(UIPickerView *)pickerView numberOfRowsInComponent: (NSInteger)component {
+    
+    return cityData.count;
+}
+
+-(NSString *)pickerView:(UIPickerView *)pickerView titleForRow:(NSInteger)row forComponent:(NSInteger)component {
+    
+    return [cityData objectAtIndex:row];
+}
+
+- (void)pickerView:(UIPickerView *)pickerView didSelectRow:(NSInteger)row inComponent:(NSInteger)component {
+    
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    NSLog(@"Selected Row %ld: %@", (long)row, [cityData objectAtIndex:row]);
+    if (row == 0) {
+        
+        parseUser[@"city"] = [cityData objectAtIndex:row];
+        PFGeoPoint *geoPoint = [PFGeoPoint geoPointWithLatitude:42.358431 longitude:-71.059773];
+        parseUser[@"userLoc"] = geoPoint;
+        [defaults setObject:@"Boston, MA" forKey:@"userLocTitle"];
+        [defaults setObject:@"" forKey:@"userLocSubtitle"];
+        [defaults synchronize];
+        
+    } else if (row == 1) {
+        
+        parseUser[@"city"] = [cityData objectAtIndex:row];
+        PFGeoPoint *geoPoint = [PFGeoPoint geoPointWithLatitude:38.907192 longitude:-77.036871];
+        parseUser[@"userLoc"] = geoPoint;
+        [defaults setObject:@"Washington, DC" forKey:@"userLocTitle"];
+        [defaults setObject:@"" forKey:@"userLocSubtitle"];
+        [defaults synchronize];
+        
+    } else {
+        
+        UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@":(" message:@"Happening is working hard to bring you events from all over the world, but for now we're only featuring two cities. To continue, please choose one!" delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+        [cityPicker selectRow:1 inComponent:0 animated:NO];
+        [alert show];
+        
+    }
+    //Event[@"Hashtag"] = [self.cityData objectAtIndex:row];
+    
+}
+
+- (NSAttributedString *)pickerView:(UIPickerView *)pickerView attributedTitleForRow:(NSInteger)row forComponent:(NSInteger)component
+{
+    NSString *title = [cityData objectAtIndex:row];
+    NSAttributedString *attString = [[NSAttributedString alloc] initWithString:title attributes:@{NSForegroundColorAttributeName:[UIColor whiteColor]}];
+    
+    return attString;
+    
+}
 
 /*
 - (BOOL)application:(UIApplication *)application

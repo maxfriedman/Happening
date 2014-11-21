@@ -80,6 +80,18 @@
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     [defaults setBool:YES forKey:@"refreshData"];
     
+    
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"hasLaunched"])
+    {
+        // app already launched
+    }
+    else
+    {
+        [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"hasLaunched"];
+        [[NSUserDefaults standardUserDefaults] synchronize];
+        // This is the first launch ever
+    }
+    
     if (currentUser) {
         PFQuery *query = [PFUser query];
         [query whereKey:@"username" equalTo:currentUser.username];

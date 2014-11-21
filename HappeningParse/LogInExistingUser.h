@@ -10,10 +10,16 @@
 #import <FacebookSDK/FacebookSDK.h>
 #import "AppDelegate.h"
 
-@interface LogInExistingUser : UIViewController <UINavigationControllerDelegate, FBLoginViewDelegate>
+@interface LogInExistingUser : UIViewController <UINavigationControllerDelegate, FBLoginViewDelegate, UIPickerViewDelegate, UIPickerViewDataSource>
 
 @property (strong, nonatomic) IBOutlet FBLoginView *fbLoginView;
 
 @property (strong,nonatomic) UIActivityIndicatorView *activityView;
+
+@property (strong, nonatomic) IBOutlet UIPickerView *cityPicker;
+
+@property (strong, nonatomic) IBOutlet UILabel *inLabel;
+
+@property (strong, nonatomic) IBOutlet UIButton *xButton;
 
 @end

@@ -21,7 +21,12 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-
+    
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    BOOL hasLaunched = [defaults boolForKey:@"hasLaunched"];
+    if (!hasLaunched) {
+        [self performSegueWithIdentifier:@"toChooseLoc" sender:self];
+    }
 }
 
 -(void)viewWillAppear:(BOOL)animated {
@@ -29,7 +34,12 @@
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     // Refresh only if there was a change in preferences or the app has loaded for the first time.
     if ([defaults boolForKey:@"refreshData"]) {
-
+        
+        // Removes the previous content!!!!!!
+        for (id viewToRemove in [self.view subviews]){
+            [viewToRemove removeFromSuperview];
+        }
+        
         UIActivityIndicatorView *activityView=[[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
         activityView.center=self.view.center;
         [activityView startAnimating];
@@ -38,7 +48,7 @@
         DraggableViewBackground *draggableBackground = [[DraggableViewBackground alloc]initWithFrame:self.view.frame];
         
         [self.view addSubview:draggableBackground];
-    
+        
         [activityView stopAnimating];
         
         [defaults setBool:NO forKey:@"refreshData"];
