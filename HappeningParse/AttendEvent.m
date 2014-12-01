@@ -19,15 +19,15 @@
     NSUInteger count;
     NSMutableArray *sectionDates;
     NSMutableArray *rowDates;
-    NSArray *eventsArray;
     NSInteger index;
     NSInteger sectionIndex;
     
     NSMutableArray *rowCountArray;
     NSMutableArray *cells;
     NSMutableArray *indexpaths;
+    NSMutableArray *eventIds;
     
-    
+    NSMutableDictionary *eventDict;
     
 }
 @synthesize locManager;
@@ -42,7 +42,6 @@
 -(void)viewWillAppear:(BOOL)animated {
     
     //[self.tableView reloadData];
-    
     PFQuery *swipesQuery = [PFQuery queryWithClassName:@"Swipes"];
     // Query only for current user's events
     PFUser *user = [PFUser currentUser];
@@ -58,75 +57,83 @@
     //eventsArray = [[NSArray alloc]init];
     //eventsArray = [eventQuery findObjects];
     
+    eventDict = [[NSMutableDictionary alloc]init];
+    
     [eventQuery findObjectsInBackgroundWithBlock:^(NSArray *eventsArray, NSError *error) {
     
-    count = [eventQuery countObjects];
-    int sectionCount = 0;
-    sectionDates = [[NSMutableArray alloc]init];
+        count = eventsArray.count;
+        int sectionCount = 0;
+        sectionDates = [[NSMutableArray alloc]init];
     
     
-    for (int j=0; j<80; j++) {
+        for (int j=0; j<80; j++) {
         
-        //Account for today's date %%%%%
-        NSDate *date = [NSDate dateWithTimeIntervalSinceNow:(86400 * j)];
-        
-        for (int i=0; i<count; i++) {
-            PFObject *eventObject = eventsArray[i];
-            NSDate *someDate = eventObject[@"Date"];
-            if ([date beginningOfDay] == [someDate beginningOfDay]) {
-                
-                sectionCount++;
-                [sectionDates addObject:someDate];
-                break;
-            }
+            //Account for today's date %%%%%
+            NSDate *date = [NSDate dateWithTimeIntervalSinceNow:(86400 * j)];
             
-        }
-        
-    }
-    
-    int rowCount = 0;
-    rowDates = [[NSMutableArray alloc]init];
-    
-    for (int j=0; j<80; j++) {
-        
-        //Account for today's date %%%%%
-        NSDate *date = [NSDate dateWithTimeIntervalSinceNow:(86400 * j)];
-        
-        for (int i=0; i<count; i++) {
-            PFObject *eventObject = eventsArray[i];
-            NSDate *someDate = eventObject[@"Date"];
-            if ([date beginningOfDay] == [someDate beginningOfDay]) {
+            for (int i=0; i<count; i++) {
+                PFObject *eventObject = eventsArray[i];
+                NSDate *someDate = eventObject[@"Date"];
                 
-                rowCount++;
+                if ([date beginningOfDay] == [someDate beginningOfDay]) {
                 
-                [rowDates addObject:someDate];
-                
+                    sectionCount++;
+                    [sectionDates addObject:someDate];
+                    /*
+                    if ([eventDict objectForKeyedSubscript:date] != nil) {
+                        NSMutableArray *array = [eventDict objectForKey:date];
+                        [array addObject:someDate];
+                        [eventDict setObject:array forKey:date];
+                    } else {
+                        NSMutableArray *array = [[NSMutableArray alloc]initWithObjects:someDate, nil];
+                        [eventDict setObject:array forKey:date];
+                    } */
+                    break;
+                }
             }
-            
         }
+    
+        int rowCount = 0;
+        rowDates = [[NSMutableArray alloc]init];
         
-    }
+        for (int j=0; j<80; j++) {
+        
+            //Account for today's date %%%%%
+            NSDate *date = [NSDate dateWithTimeIntervalSinceNow:(86400 * j)];
+            
+            for (int i=0; i<count; i++) {
+                PFObject *eventObject = eventsArray[i];
+                NSDate *someDate = eventObject[@"Date"];
+                if ([date beginningOfDay] == [someDate beginningOfDay]) {
+                
+                    rowCount++;
+                    [rowDates addObject:someDate];
+                    [eventIds addObject:eventObject[@"eventID"]];
+                    
+                }
+            }
+        }
     
-    rowCountArray = [[NSMutableArray alloc]init];
-    int rowForSectionCount = 0;
+        rowCountArray = [[NSMutableArray alloc]init];
+        int rowForSectionCount = 0;
     
-    for (int i = 0; i < sectionCount; i++) {
+        for (int i = 0; i < sectionCount; i++) {
 
-        for (int j = 0; j < rowCount; j++) {
+            for (int j = 0; j < rowCount; j++) {
             
-            NSDate *rowDate = rowDates[j];
-            NSDate *sectionDate = sectionDates[i];
+                NSDate *rowDate = rowDates[j];
+                NSDate *sectionDate = sectionDates[i];
             
-            if ([rowDate beginningOfDay] == [sectionDate beginningOfDay]) {
+                if ([rowDate beginningOfDay] == [sectionDate beginningOfDay]) {
                 
-                rowForSectionCount++;
+                    rowForSectionCount++;
+                }
             }
+            [rowCountArray addObject:[NSNumber numberWithInt:rowForSectionCount]];
+            rowForSectionCount = 0;
         }
-        [rowCountArray addObject:[NSNumber numberWithInt:rowForSectionCount]];
-        rowForSectionCount = 0;
-    }
 
-        
+        // delete this????
         [self.tableView reloadData];
     }];
     
@@ -147,17 +154,26 @@
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     
+    //[eventDict count];
     return [sectionDates count];
 }
 
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
     
-
-    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-    [formatter setDateFormat:@"EEEE, MMMM d"];
     NSDate *eventDate = [[NSDate alloc]init];
     eventDate = sectionDates[section];
+    
+    if (section == 0 && ([eventDate beginningOfDay] == [[NSDate date] beginningOfDay])) {
+        return @"Today";
+    }
+    
+    if (section == 1 && ([eventDate beginningOfDay] == [[NSDate dateWithTimeIntervalSinceNow:86400] beginningOfDay])) {
+        return @"Tomorrow";
+    }
+    
+    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+    [formatter setDateFormat:@"EEEE, MMMM d"];
     NSString *dateString = [formatter stringFromDate:eventDate];
     
     return dateString;
@@ -278,6 +294,18 @@
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
     if (editingStyle == UITableViewCellEditingStyleDelete) {
         // Delete the row from the data source
+        int newCount = [rowCountArray[indexPath.section]intValue] - 1;
+        rowCountArray[indexPath.section] = [NSNumber numberWithInt: newCount];
+        PFQuery *swipesQuery = [PFQuery queryWithClassName:@"Swipes"];
+        //[swipesQuery whereKey:@"EventID" equalTo:eventIds[]];
+        
+        
+        NSMutableDictionary *eventDict = [[NSMutableDictionary alloc]init];
+        [eventDict setObject:@"" forKey:@""];
+        NSString *blah = [eventDict objectForKey:@""];
+        // Make a dictionary with with the eventID (objectID), row number, section number, and total number in the order
+        // Use this to find the correct event, use the eventID to query swipes, and switch swiped right and swiped left
+        
         [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
     } else if (editingStyle == UITableViewCellEditingStyleInsert) {
         // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view

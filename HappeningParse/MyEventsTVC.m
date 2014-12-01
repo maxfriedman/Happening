@@ -152,11 +152,19 @@ NSMutableArray *indexpaths;
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
     
+    NSDate *eventDate = [[NSDate alloc]init];
+    eventDate = sectionDates[section];
+    
+    if (section == 0 && ([eventDate beginningOfDay] == [[NSDate date] beginningOfDay])) {
+        return @"Today";
+    }
+    
+    if (section == 1 && ([eventDate beginningOfDay] == [[NSDate dateWithTimeIntervalSinceNow:86400] beginningOfDay])) {
+        return @"Tomorrow";
+    }
     
     NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
     [formatter setDateFormat:@"EEEE, MMMM d"];
-    NSDate *eventDate = [[NSDate alloc]init];
-    eventDate = sectionDates[section];
     NSString *dateString = [formatter stringFromDate:eventDate];
     
     return dateString;
