@@ -16,4 +16,7 @@
 @property (strong, nonatomic) IBOutlet UIImageView *image;
 @property (strong, nonatomic) IBOutlet UILabel *distance;
 
+@property (strong, nonatomic) NSString *eventID;
+
+
 @end

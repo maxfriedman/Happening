@@ -17,7 +17,6 @@
 NSUInteger count;
 NSMutableArray *sectionDates;
 NSMutableArray *rowDates;
-NSArray *eventsArray;
 NSInteger index;
 NSInteger sectionIndex;
 

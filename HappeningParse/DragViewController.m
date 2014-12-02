@@ -6,18 +6,21 @@
 //  Copyright (c) 2014 Happening. All rights reserved.
 //
 
-#import "ViewController.h"
+#import "DragViewController.h"
 #import "DraggableViewBackground.h"
-#import <Parse/Parse.h>
+#import "FlippedDVB.h"
 
+@interface DragViewController ()
 
-@interface ViewController ()
+@property (assign) BOOL frontViewIsVisible;
+@property (strong, nonatomic) DraggableViewBackground *draggableBackground;
+@property (strong, nonatomic) FlippedDVB *flippedDVB;
 
 @end
 
-@implementation ViewController
+@implementation DragViewController
 
-@synthesize shareButton;
+@synthesize shareButton, draggableBackground, flippedDVB;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -35,7 +38,7 @@
     // Refresh only if there was a change in preferences or the app has loaded for the first time.
     if ([defaults boolForKey:@"refreshData"]) {
         
-        // Removes the previous content!!!!!!
+        // Removes the previous content!!!!!! (when view was burned in behind the cards)
         for (id viewToRemove in [self.view subviews]){
             [viewToRemove removeFromSuperview];
         }
@@ -44,10 +47,18 @@
         activityView.center=self.view.center;
         [activityView startAnimating];
         [self.view addSubview:activityView];
-    
-        DraggableViewBackground *draggableBackground = [[DraggableViewBackground alloc]initWithFrame:self.view.frame];
         
+        draggableBackground = [[DraggableViewBackground alloc]initWithFrame:self.view.frame];
+        draggableBackground.myViewController = self;
         [self.view addSubview:draggableBackground];
+        
+        //UITapGestureRecognizer *singleFingerTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(cardWasTapped)];
+        //[draggableBackground addGestureRecognizer:singleFingerTap];
+        
+        flippedDVB = [[FlippedDVB alloc]initWithFrame:self.view.frame];
+        flippedDVB.viewController = self;
+        
+        //[self.view addSubview:flippedDVB];
         
         [activityView stopAnimating];
         
@@ -56,10 +67,47 @@
     }
 }
 
+- (void)flipCurrentView {
+    
+    NSLog(@"VC CODE");
+    // disable user interaction during the flip animation
+    self.view.userInteractionEnabled = NO;
+    
+    // setup the animation group
+    [UIView beginAnimations:nil context:nil];
+    [UIView setAnimationDuration:0.75];
+    [UIView setAnimationDelegate:self];
+    [UIView setAnimationDidStopSelector:@selector(myTransitionDidStop:finished:context:)];
+    
+    // swap the views and transition
+    if (self.frontViewIsVisible == YES) {
+        [UIView setAnimationTransition:UIViewAnimationTransitionFlipFromRight forView:self.view cache:YES];
+        [self.draggableBackground removeFromSuperview];
+        [self.view addSubview:self.flippedDVB];
+        
+    } else {
+        [UIView setAnimationTransition:UIViewAnimationTransitionFlipFromLeft forView:self.view cache:YES];
+        [self.flippedDVB removeFromSuperview];
+        [self.view addSubview:self.draggableBackground];
+    }
+    [UIView commitAnimations];
+    
+    // swap the nav bar button views
+    [UIView beginAnimations:nil context:nil];
+    [UIView setAnimationDuration:0.75];
+    [UIView setAnimationDelegate:self];
+    [UIView setAnimationDidStopSelector:@selector(myTransitionDidStop:finished:context:)];
+    
+    [UIView commitAnimations];
+    
+    // invert the front view state
+    self.frontViewIsVisible =! self.frontViewIsVisible;
+}
 
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+- (void)myTransitionDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context {
+    
+    // re-enable user interaction when the flip animation is completed
+    self.view.userInteractionEnabled = YES;
 }
 
 - (IBAction)shareAction:(id)sender {
@@ -100,6 +148,12 @@
      }];
     
 }
+
+-(void)cardWasTapped {
+    
+    //[self performSegueWithIdentifier:@"moreDetail" sender:self];
+}
+
 
 @end
 

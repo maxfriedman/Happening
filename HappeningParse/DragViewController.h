@@ -7,11 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "SettingsTVC.h"
+#import <Parse/Parse.h>
 
-@interface ViewController : UIViewController <SettingsTVCDelegate>
+@interface DragViewController : UIViewController 
 
--(BOOL)didPreferencesChange;
+- (void)flipCurrentView;
 
 @property (strong, nonatomic) IBOutlet UIBarButtonItem *shareButton;
 

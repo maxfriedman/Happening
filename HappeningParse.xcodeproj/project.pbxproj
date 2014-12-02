@@ -22,7 +22,7 @@
 		501A94901A015BD200999C2A /* SettingsTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 501A948F1A015BD200999C2A /* SettingsTVC.m */; };
 		50248C3C19BBA4C300329910 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 50248C3B19BBA4C300329910 /* main.m */; };
 		50248C3F19BBA4C300329910 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 50248C3E19BBA4C300329910 /* AppDelegate.m */; };
-		50248C4219BBA4C300329910 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50248C4119BBA4C300329910 /* ViewController.m */; };
+		50248C4219BBA4C300329910 /* DragViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50248C4119BBA4C300329910 /* DragViewController.m */; };
 		50248C4719BBA4C300329910 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 50248C4619BBA4C300329910 /* Images.xcassets */; };
 		50248C5319BBA4C300329910 /* HappeningParseTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 50248C5219BBA4C300329910 /* HappeningParseTests.m */; };
 		50248C7219BBAAA500329910 /* Bolts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50248C6F19BBAAA500329910 /* Bolts.framework */; };
@@ -37,9 +37,12 @@
 		50248C8519BBAB2F00329910 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50248C8419BBAB2F00329910 /* Security.framework */; };
 		50248C8719BBAB3500329910 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50248C8619BBAB3500329910 /* StoreKit.framework */; };
 		50248C8919BBAB3D00329910 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50248C8819BBAB3D00329910 /* SystemConfiguration.framework */; };
+		504687C21A2D2E090001E234 /* FlippedDVB.m in Sources */ = {isa = PBXBuildFile; fileRef = 504687C11A2D2E090001E234 /* FlippedDVB.m */; };
+		504687C51A2D71640001E234 /* DraggableViewBackground.m in Sources */ = {isa = PBXBuildFile; fileRef = 504687C41A2D71640001E234 /* DraggableViewBackground.m */; };
+		504687C81A2D748B0001E234 /* DraggableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 504687C71A2D748B0001E234 /* DraggableView.m */; };
 		505AEA3B19E2218B00C8D602 /* AttendEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = 505AEA3A19E2218B00C8D602 /* AttendEvent.m */; };
-		509D5D111A0D745800F0EB61 /* DraggableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 509D5D0A1A0D745800F0EB61 /* DraggableView.m */; };
-		509D5D121A0D745800F0EB61 /* DraggableViewBackground.m in Sources */ = {isa = PBXBuildFile; fileRef = 509D5D0C1A0D745800F0EB61 /* DraggableViewBackground.m */; };
+		5074A1071A2CFF9A00ECE6A9 /* LeftToRightSegue.m in Sources */ = {isa = PBXBuildFile; fileRef = 5074A1061A2CFF9A00ECE6A9 /* LeftToRightSegue.m */; };
+		5074A10B1A2D0B8700ECE6A9 /* RightToLeftSegue.m in Sources */ = {isa = PBXBuildFile; fileRef = 5074A10A1A2D0B8700ECE6A9 /* RightToLeftSegue.m */; };
 		509D5D131A0D745800F0EB61 /* NSDate+CupertinoYankee.m in Sources */ = {isa = PBXBuildFile; fileRef = 509D5D0E1A0D745800F0EB61 /* NSDate+CupertinoYankee.m */; };
 		509D5D141A0D745800F0EB61 /* OverlayView.m in Sources */ = {isa = PBXBuildFile; fileRef = 509D5D101A0D745800F0EB61 /* OverlayView.m */; };
 		509D5D191A0D7A5A00F0EB61 /* FirstTimeScreen.m in Sources */ = {isa = PBXBuildFile; fileRef = 509D5D161A0D7A5A00F0EB61 /* FirstTimeScreen.m */; };
@@ -56,6 +59,8 @@
 		50A3DD6619E86314001E5E74 /* README.txt in Resources */ = {isa = PBXBuildFile; fileRef = 50A3DC3D19E86313001E5E74 /* README.txt */; };
 		50A3DE2F19E86779001E5E74 /* LoginView.m in Sources */ = {isa = PBXBuildFile; fileRef = 50A3DE2E19E86779001E5E74 /* LoginView.m */; };
 		50A3DE3219E88C14001E5E74 /* TabBarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50A3DE3119E88C14001E5E74 /* TabBarViewController.m */; };
+		50D76D4F1A2CE00900FC076F /* moreDetailFromCard.m in Sources */ = {isa = PBXBuildFile; fileRef = 50D76D4E1A2CE00900FC076F /* moreDetailFromCard.m */; };
+		50D76D521A2CE68700FC076F /* moreDetailFromTable.m in Sources */ = {isa = PBXBuildFile; fileRef = 50D76D511A2CE68700FC076F /* moreDetailFromTable.m */; };
 		50E0AB071A06B8AB001D6FD6 /* AttendTableCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50E0AB061A06B8AB001D6FD6 /* AttendTableCell.m */; };
 		50E0AB0A1A06B8E4001D6FD6 /* MyEventsTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 50E0AB091A06B8E4001D6FD6 /* MyEventsTVC.m */; };
 		50E0AB0B1A06D297001D6FD6 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 50248C4319BBA4C300329910 /* Main.storyboard */; };
@@ -94,8 +99,8 @@
 		50248C3B19BBA4C300329910 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		50248C3D19BBA4C300329910 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		50248C3E19BBA4C300329910 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; tabWidth = 3; };
-		50248C4019BBA4C300329910 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
-		50248C4119BBA4C300329910 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
+		50248C4019BBA4C300329910 /* DragViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DragViewController.h; sourceTree = "<group>"; };
+		50248C4119BBA4C300329910 /* DragViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DragViewController.m; sourceTree = "<group>"; };
 		50248C4419BBA4C300329910 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		50248C4619BBA4C300329910 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		50248C4C19BBA4C300329910 /* HappeningParseTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HappeningParseTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -113,12 +118,18 @@
 		50248C8419BBAB2F00329910 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		50248C8619BBAB3500329910 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		50248C8819BBAB3D00329910 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		504687C01A2D2E090001E234 /* FlippedDVB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlippedDVB.h; sourceTree = "<group>"; };
+		504687C11A2D2E090001E234 /* FlippedDVB.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlippedDVB.m; sourceTree = "<group>"; };
+		504687C31A2D71640001E234 /* DraggableViewBackground.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DraggableViewBackground.h; sourceTree = "<group>"; };
+		504687C41A2D71640001E234 /* DraggableViewBackground.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DraggableViewBackground.m; sourceTree = "<group>"; };
+		504687C61A2D748B0001E234 /* DraggableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DraggableView.h; sourceTree = "<group>"; };
+		504687C71A2D748B0001E234 /* DraggableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DraggableView.m; sourceTree = "<group>"; };
 		505AEA3919E2218B00C8D602 /* AttendEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AttendEvent.h; sourceTree = "<group>"; };
 		505AEA3A19E2218B00C8D602 /* AttendEvent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AttendEvent.m; sourceTree = "<group>"; };
-		509D5D091A0D745800F0EB61 /* DraggableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DraggableView.h; path = ../../files/DraggableView.h; sourceTree = "<group>"; };
-		509D5D0A1A0D745800F0EB61 /* DraggableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DraggableView.m; path = ../../files/DraggableView.m; sourceTree = "<group>"; };
-		509D5D0B1A0D745800F0EB61 /* DraggableViewBackground.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DraggableViewBackground.h; path = ../../files/DraggableViewBackground.h; sourceTree = "<group>"; };
-		509D5D0C1A0D745800F0EB61 /* DraggableViewBackground.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DraggableViewBackground.m; path = ../../files/DraggableViewBackground.m; sourceTree = "<group>"; };
+		5074A1051A2CFF9A00ECE6A9 /* LeftToRightSegue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LeftToRightSegue.h; sourceTree = "<group>"; };
+		5074A1061A2CFF9A00ECE6A9 /* LeftToRightSegue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LeftToRightSegue.m; sourceTree = "<group>"; };
+		5074A1091A2D0B8700ECE6A9 /* RightToLeftSegue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RightToLeftSegue.h; sourceTree = "<group>"; };
+		5074A10A1A2D0B8700ECE6A9 /* RightToLeftSegue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RightToLeftSegue.m; sourceTree = "<group>"; };
 		509D5D0D1A0D745800F0EB61 /* NSDate+CupertinoYankee.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSDate+CupertinoYankee.h"; path = "../../files/NSDate+CupertinoYankee.h"; sourceTree = "<group>"; };
 		509D5D0E1A0D745800F0EB61 /* NSDate+CupertinoYankee.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSDate+CupertinoYankee.m"; path = "../../files/NSDate+CupertinoYankee.m"; sourceTree = "<group>"; };
 		509D5D0F1A0D745800F0EB61 /* OverlayView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OverlayView.h; path = ../../files/OverlayView.h; sourceTree = "<group>"; };
@@ -147,6 +158,10 @@
 		50A3DE2E19E86779001E5E74 /* LoginView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LoginView.m; sourceTree = "<group>"; };
 		50A3DE3019E88C14001E5E74 /* TabBarViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TabBarViewController.h; sourceTree = "<group>"; };
 		50A3DE3119E88C14001E5E74 /* TabBarViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TabBarViewController.m; sourceTree = "<group>"; };
+		50D76D4D1A2CE00900FC076F /* moreDetailFromCard.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moreDetailFromCard.h; sourceTree = "<group>"; };
+		50D76D4E1A2CE00900FC076F /* moreDetailFromCard.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = moreDetailFromCard.m; sourceTree = "<group>"; };
+		50D76D501A2CE68700FC076F /* moreDetailFromTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moreDetailFromTable.h; sourceTree = "<group>"; };
+		50D76D511A2CE68700FC076F /* moreDetailFromTable.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = moreDetailFromTable.m; sourceTree = "<group>"; };
 		50E0AB051A06B8AB001D6FD6 /* AttendTableCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AttendTableCell.h; sourceTree = "<group>"; };
 		50E0AB061A06B8AB001D6FD6 /* AttendTableCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AttendTableCell.m; sourceTree = "<group>"; };
 		50E0AB081A06B8E4001D6FD6 /* MyEventsTVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MyEventsTVC.h; sourceTree = "<group>"; };
@@ -222,6 +237,11 @@
 				50A3DE3019E88C14001E5E74 /* TabBarViewController.h */,
 				50A3DE3119E88C14001E5E74 /* TabBarViewController.m */,
 				50248C4319BBA4C300329910 /* Main.storyboard */,
+				5074A1081A2D04C000ECE6A9 /* Custom Segues */,
+				50D76D4D1A2CE00900FC076F /* moreDetailFromCard.h */,
+				50D76D4E1A2CE00900FC076F /* moreDetailFromCard.m */,
+				50D76D501A2CE68700FC076F /* moreDetailFromTable.h */,
+				50D76D511A2CE68700FC076F /* moreDetailFromTable.m */,
 				509D5D251A11390600F0EB61 /* SettingsChoosingLoc.h */,
 				509D5D261A11390600F0EB61 /* SettingsChoosingLoc.m */,
 				501A948E1A015BD200999C2A /* SettingsTVC.h */,
@@ -232,12 +252,14 @@
 				50E0AB061A06B8AB001D6FD6 /* AttendTableCell.m */,
 				505AEA3919E2218B00C8D602 /* AttendEvent.h */,
 				505AEA3A19E2218B00C8D602 /* AttendEvent.m */,
-				50248C4019BBA4C300329910 /* ViewController.h */,
-				50248C4119BBA4C300329910 /* ViewController.m */,
-				509D5D091A0D745800F0EB61 /* DraggableView.h */,
-				509D5D0A1A0D745800F0EB61 /* DraggableView.m */,
-				509D5D0B1A0D745800F0EB61 /* DraggableViewBackground.h */,
-				509D5D0C1A0D745800F0EB61 /* DraggableViewBackground.m */,
+				50248C4019BBA4C300329910 /* DragViewController.h */,
+				50248C4119BBA4C300329910 /* DragViewController.m */,
+				504687C61A2D748B0001E234 /* DraggableView.h */,
+				504687C71A2D748B0001E234 /* DraggableView.m */,
+				504687C31A2D71640001E234 /* DraggableViewBackground.h */,
+				504687C41A2D71640001E234 /* DraggableViewBackground.m */,
+				504687C01A2D2E090001E234 /* FlippedDVB.h */,
+				504687C11A2D2E090001E234 /* FlippedDVB.m */,
 				509D5D0F1A0D745800F0EB61 /* OverlayView.h */,
 				509D5D101A0D745800F0EB61 /* OverlayView.m */,
 				50248C4619BBA4C300329910 /* Images.xcassets */,
@@ -310,6 +332,17 @@
 				50248C6F19BBAAA500329910 /* Bolts.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		5074A1081A2D04C000ECE6A9 /* Custom Segues */ = {
+			isa = PBXGroup;
+			children = (
+				5074A1051A2CFF9A00ECE6A9 /* LeftToRightSegue.h */,
+				5074A1061A2CFF9A00ECE6A9 /* LeftToRightSegue.m */,
+				5074A1091A2D0B8700ECE6A9 /* RightToLeftSegue.h */,
+				5074A10A1A2D0B8700ECE6A9 /* RightToLeftSegue.m */,
+			);
+			name = "Custom Segues";
 			sourceTree = "<group>";
 		};
 		509D5D1B1A0D7FF100F0EB61 /* Login */ = {
@@ -460,17 +493,20 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5074A1071A2CFF9A00ECE6A9 /* LeftToRightSegue.m in Sources */,
 				509D5D1E1A0D801400F0EB61 /* ChoosingLocation.m in Sources */,
+				50D76D4F1A2CE00900FC076F /* moreDetailFromCard.m in Sources */,
 				509D5D271A11390600F0EB61 /* SettingsChoosingLoc.m in Sources */,
 				501A94901A015BD200999C2A /* SettingsTVC.m in Sources */,
 				509D5D241A111BE900F0EB61 /* LogInExistingUser.m in Sources */,
 				500910FD19C9FE5B006542CA /* MapViewController.m in Sources */,
-				509D5D121A0D745800F0EB61 /* DraggableViewBackground.m in Sources */,
-				50248C4219BBA4C300329910 /* ViewController.m in Sources */,
+				50248C4219BBA4C300329910 /* DragViewController.m in Sources */,
 				50E0AB071A06B8AB001D6FD6 /* AttendTableCell.m in Sources */,
+				5074A10B1A2D0B8700ECE6A9 /* RightToLeftSegue.m in Sources */,
 				50A3DBF419E336D9001E5E74 /* SearchBar.m in Sources */,
 				50E0AB0A1A06B8E4001D6FD6 /* MyEventsTVC.m in Sources */,
 				50248C3F19BBA4C300329910 /* AppDelegate.m in Sources */,
+				504687C21A2D2E090001E234 /* FlippedDVB.m in Sources */,
 				509D5D191A0D7A5A00F0EB61 /* FirstTimeScreen.m in Sources */,
 				5005A39419F4CC9C00BDDFD4 /* SplashScreens.m in Sources */,
 				50248C3C19BBA4C300329910 /* main.m in Sources */,
@@ -480,9 +516,11 @@
 				50A3DE3219E88C14001E5E74 /* TabBarViewController.m in Sources */,
 				50A3DBF119E3151F001E5E74 /* LocationSearching.m in Sources */,
 				505AEA3B19E2218B00C8D602 /* AttendEvent.m in Sources */,
-				509D5D111A0D745800F0EB61 /* DraggableView.m in Sources */,
+				504687C51A2D71640001E234 /* DraggableViewBackground.m in Sources */,
+				504687C81A2D748B0001E234 /* DraggableView.m in Sources */,
 				509D5D1A1A0D7A5A00F0EB61 /* PageContentViewController.m in Sources */,
 				500910E119C75EB2006542CA /* EventTVC.m in Sources */,
+				50D76D521A2CE68700FC076F /* moreDetailFromTable.m in Sources */,
 				509D5D141A0D745800F0EB61 /* OverlayView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

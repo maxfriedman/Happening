@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Happening. All rights reserved.
 //
 
-#import "ViewController.h"
+#import "DragViewController.h"
 #import <Parse/Parse.h>
 #import <ParseFacebookUtils/PFFacebookUtils.h>
 #import <FacebookSDK/FacebookSDK.h>

@@ -11,7 +11,7 @@
         <!--Happening-->
         <scene sceneID="ufC-wZ-h7g">
             <objects>
-                <viewController id="vXZ-lx-hvc" customClass="ViewController" sceneMemberID="viewController">
+                <viewController id="vXZ-lx-hvc" customClass="DragViewController" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="jyV-Pf-zRb"/>
                         <viewControllerLayoutGuide type="bottom" id="2fi-mo-0CV"/>
@@ -38,8 +38,9 @@
                     <simulatedOrientationMetrics key="simulatedOrientationMetrics"/>
                     <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina4"/>
                     <connections>
-                        <outlet property="shareButton" destination="o4x-Bp-NlU" id="7LO-5Z-bZl"/>
+                        <outlet property="shareButton" destination="o4x-Bp-NlU" id="91h-gV-r0I"/>
                         <segue destination="fUa-dc-zVe" kind="presentation" identifier="toChooseLoc" id="KWO-Yq-LoK"/>
+                        <segue destination="6Bp-6E-sdu" kind="show" identifier="moreDetail" id="lGA-fV-iTx"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="x5A-6p-PRh" sceneMemberID="firstResponder"/>
@@ -276,6 +277,7 @@
                                     <outlet property="locLabel" destination="KK2-Zl-RcJ" id="1dS-1v-22b"/>
                                     <outlet property="timeLabel" destination="Pxg-nF-kYI" id="2MX-OI-fFe"/>
                                     <outlet property="titleLabel" destination="jgB-ZJ-XaG" id="lOj-Tz-Eah"/>
+                                    <segue destination="p2E-Rg-2Ih" kind="show" id="7x7-ag-WG9"/>
                                 </connections>
                             </tableViewCell>
                         </prototypes>
@@ -1054,6 +1056,7 @@
                     <navigationBar key="navigationBar" contentMode="scaleToFill" barStyle="black" translucent="NO" id="o7Z-00-2n0">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
+                        <color key="tintColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <color key="barTintColor" red="0.1592183948" green="0.71120836850000002" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                     </navigationBar>
                     <nil name="viewControllers"/>
@@ -1183,8 +1186,7 @@
                     <navigationBar key="navigationBar" contentMode="scaleToFill" barStyle="black" translucent="NO" id="o1p-5s-g9y">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <color key="backgroundColor" red="0.1592183948" green="0.71120836850000002" blue="1" alpha="1" colorSpace="calibratedRGB"/>
-                        <color key="tintColor" red="0.1592183948" green="0.71120836850000002" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                        <color key="tintColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <color key="barTintColor" red="0.1592183948" green="0.71120836850000002" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                     </navigationBar>
                     <nil name="viewControllers"/>
@@ -1201,12 +1203,12 @@
             <objects>
                 <tableViewController id="MlX-HT-wJn" customClass="AttendEvent" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" sectionIndexMinimumDisplayRowCount="100" rowHeight="115" sectionHeaderHeight="22" sectionFooterHeight="22" id="zhf-Ws-Jai">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="455"/>
+                        <rect key="frame" x="0.0" y="64" width="320" height="455"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" red="0.1592183948" green="0.71120836850000002" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                         <color key="separatorColor" red="0.1592183948" green="0.71120836850000002" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                         <prototypes>
-                            <tableViewCell tag="1" contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" reuseIdentifier="tag" rowHeight="115" id="cWR-Nz-Zqs" customClass="AttendTableCell">
+                            <tableViewCell tag="1" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="tag" rowHeight="115" id="cWR-Nz-Zqs" customClass="AttendTableCell">
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="cWR-Nz-Zqs" id="OzW-vy-8ik">
                                     <autoresizingMask key="autoresizingMask"/>
@@ -1252,6 +1254,7 @@
                                     <outlet property="locLabel" destination="UXp-dR-crX" id="BaL-OE-wbM"/>
                                     <outlet property="timeLabel" destination="ShD-wb-AT6" id="gwh-cq-C5n"/>
                                     <outlet property="titleLabel" destination="AvG-0V-yYv" id="B2s-h3-gE9"/>
+                                    <segue destination="k6u-Sb-2Pc" kind="show" id="YNH-ig-s17"/>
                                 </connections>
                             </tableViewCell>
                         </prototypes>
@@ -1267,6 +1270,66 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="DwG-F9-RnO" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="1138" y="814"/>
+        </scene>
+        <!--More Detail From Table-->
+        <scene sceneID="wrl-lh-sel">
+            <objects>
+                <viewController hidesBottomBarWhenPushed="YES" id="k6u-Sb-2Pc" customClass="moreDetailFromTable" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="eqi-VG-vM6"/>
+                        <viewControllerLayoutGuide type="bottom" id="iK3-hu-7o5"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="DOc-tf-I0z">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="455"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    </view>
+                    <simulatedOrientationMetrics key="simulatedOrientationMetrics"/>
+                    <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina4"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="erd-bO-Qjd" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1508" y="814"/>
+        </scene>
+        <!--More Detail From Card-->
+        <scene sceneID="RiX-uS-TpO">
+            <objects>
+                <viewController storyboardIdentifier="moreDetail" id="6Bp-6E-sdu" customClass="moreDetailFromCard" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="okf-0E-GDb"/>
+                        <viewControllerLayoutGuide type="bottom" id="jZo-hh-Cqk"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="r8Z-SQ-5q7">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="519"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    </view>
+                    <simulatedOrientationMetrics key="simulatedOrientationMetrics"/>
+                    <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina4"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="1NO-jn-LzZ" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1915" y="814"/>
+        </scene>
+        <!--View Controller-->
+        <scene sceneID="baa-jl-Va2">
+            <objects>
+                <viewController hidesBottomBarWhenPushed="YES" id="p2E-Rg-2Ih" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="bni-f3-T14"/>
+                        <viewControllerLayoutGuide type="bottom" id="Wdb-pe-Dyb"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="2us-5R-EEf">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="455"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    </view>
+                    <simulatedOrientationMetrics key="simulatedOrientationMetrics"/>
+                    <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina4"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="wRH-ko-KxJ" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1508" y="-1143"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="MzO-MW-uqj">

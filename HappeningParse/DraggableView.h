@@ -58,4 +58,6 @@
 -(void)leftClickAction;
 -(void)rightClickAction;
 
+-(void)tapAction;
+
 @end

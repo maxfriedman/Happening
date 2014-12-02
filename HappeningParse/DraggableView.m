@@ -56,13 +56,13 @@
     if (self) {
         [self setupView];
         /*
-        UIActivityIndicatorView *activityView=[[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-        activityView.center = self.center;
-        [activityView startAnimating];
-        [self addSubview:activityView];
-        */
+         UIActivityIndicatorView *activityView=[[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+         activityView.center = self.center;
+         [activityView startAnimating];
+         [self addSubview:activityView];
+         */
         self.backgroundColor = [UIColor whiteColor];
-    
+        
         eventImage = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, 290, 163)];
         eventImage.alpha = 0.7;
         
@@ -72,7 +72,7 @@
         
         [self addGestureRecognizer:panGestureRecognizer];
         [self addSubview:eventImage];
-
+        
         NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
         [formatter setDateFormat:@"yyyy"];
         eventDate = [[NSDate alloc]init];
@@ -87,7 +87,7 @@
         geoLoc = [[UILabel alloc]initWithFrame:CGRectMake(30, 120, self.frame.size.width, 135)];
         swipesRight = [[UILabel alloc]initWithFrame:CGRectMake(-38, 120, self.frame.size.width, 135)];
         createdBy = [[UILabel alloc]initWithFrame:CGRectMake(0, 380, self.frame.size.width, 100)];
-
+        
         
         transpBackground = [[UILabel alloc]initWithFrame:CGRectMake(0, 93, self.frame.size.width, 70)];
         
@@ -176,13 +176,13 @@
 }
 
 /*
-// Only override drawRect: if you perform custom drawing.
-// An empty implementation adversely affects performance during animation.
-- (void)drawRect:(CGRect)rect
-{
-    // Drawing code
-}
-*/
+ // Only override drawRect: if you perform custom drawing.
+ // An empty implementation adversely affects performance during animation.
+ - (void)drawRect:(CGRect)rect
+ {
+ // Drawing code
+ }
+ */
 
 //%%% called when you move your finger across the screen.
 // called many times a second
@@ -327,6 +327,12 @@
     [delegate cardSwipedLeft:self];
     
     NSLog(@"NO");
+}
+
+-(void)tapAction
+{
+    //NSLog(@"Card tapped");
+    
 }
 
 

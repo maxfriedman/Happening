@@ -9,6 +9,7 @@
 #import "AttendEvent.h"
 #import "AttendTableCell.h"
 #import "AppDelegate.h"
+#import "moreDetailFromTable.h"
 
 @interface AttendEvent ()
 
@@ -36,6 +37,9 @@
 - (void)viewDidLoad {
     
     [super viewDidLoad];
+    UIBarButtonItem *temporaryBarButtonItem = [[UIBarButtonItem alloc] init];
+    temporaryBarButtonItem.title = @"Back";
+    self.navigationItem.backBarButtonItem = temporaryBarButtonItem;
     
 }
 
@@ -227,6 +231,8 @@
                 [cell.titleLabel setText:[NSString stringWithFormat:@"%@",Event[@"Title"]]];
                 
                 [cell.locLabel setText:[NSString stringWithFormat:@"%@",Event[@"Location"]]];
+                
+                cell.eventID = Event.objectId;
 
                 // Time formatting
                 NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
@@ -280,6 +286,14 @@
     return cell;
 }
 
+/*
+-(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    AttendTableCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+    NSLog(@"Row selected -- %@", cell.eventID);
+    //self.hidesBottomBarWhenPushed = YES;
+    //[self performSegueWithIdentifier:@"toMoreDetail" sender:self];
+                                            
+}
 
 /*
 // Override to support conditional editing of the table view.
@@ -289,16 +303,23 @@
 }
 */
 
-/*
+
 // Override to support editing the table view.
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
+    AttendTableCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+    
     if (editingStyle == UITableViewCellEditingStyleDelete) {
         // Delete the row from the data source
         int newCount = [rowCountArray[indexPath.section]intValue] - 1;
         rowCountArray[indexPath.section] = [NSNumber numberWithInt: newCount];
         PFQuery *swipesQuery = [PFQuery queryWithClassName:@"Swipes"];
-        //[swipesQuery whereKey:@"EventID" equalTo:eventIds[]];
-        
+        [swipesQuery whereKey:@"EventID" equalTo:cell.eventID];
+        PFUser *user = [PFUser currentUser];
+        [swipesQuery whereKey:@"UserID" equalTo:user.username];
+        PFObject *swipesObject = [swipesQuery getFirstObject];
+        [swipesObject setValue:@NO forKey:@"swipedRight"];
+        [swipesObject setValue:@YES forKey:@"swipedLeft"];
+        [swipesObject saveInBackground];
         
         NSMutableDictionary *eventDict = [[NSMutableDictionary alloc]init];
         [eventDict setObject:@"" forKey:@""];
@@ -311,7 +332,7 @@
         // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
     }   
 }
-*/
+
 
 /*
 // Override to support rearranging the table view.
@@ -327,14 +348,29 @@
 }
 */
 
-/*
+
 #pragma mark - Navigation
 
 // In a storyboard-based application, you will often want to do a little preparation before navigation
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     // Get the new view controller using [segue destinationViewController].
     // Pass the selected object to the new view controller.
+    if ([segue.identifier isEqualToString:@"toMoreDetail"]) {
+        NSIndexPath *selectedIndexPath = [self.tableView indexPathForSelectedRow];
+        
+        // find the right view controller
+        //AtomicElement *element = [self.dataSource atomicElementForIndexPath:selectedIndexPath];
+        //AtomicElementViewController *viewController =
+        //(AtomicElementViewController *)segue.destinationViewController;
+        
+        // hide the bottom tabbar when we push this view controller
+        moreDetailFromTable *vc = (moreDetailFromTable *)segue.destinationViewController;
+        vc.hidesBottomBarWhenPushed = YES;
+        
+        // pass the element to this detail view controller
+        //viewController.element = element;
+    }
+
 }
-*/
 
 @end

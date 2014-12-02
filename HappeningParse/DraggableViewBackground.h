@@ -9,10 +9,13 @@
 #import <UIKit/UIKit.h>
 #import <MapKit/MapKit.h>
 #import "DraggableView.h"
-
-#import "SettingsTVC.h"
+#import "DragViewController.h"
 
 @interface DraggableViewBackground : UIView <DraggableViewDelegate, CLLocationManagerDelegate>
+
+@property (retain, nonatomic) DraggableView *dragView;
+
+@property (nonatomic, weak) DragViewController *myViewController;
 
 //methods called in DraggableView
 -(void)cardSwipedLeft:(UIView *)card;
@@ -35,9 +38,6 @@
 @property (retain,nonatomic)NSMutableArray* swipes;
 @property (retain,nonatomic)NSMutableArray* imageArray;
 @property (retain,nonatomic)NSMutableArray* createdByArray;
-
-
 @property NSInteger storedIndex;
-
 
 @end
