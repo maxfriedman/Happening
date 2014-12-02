@@ -41,11 +41,8 @@
     if ([defaults boolForKey:@"refreshData"]) {
         
         // Removes the previous content!!!!!! (when view was burned in behind the cards)
-        //for (id viewToRemove in [self.view subviews]){
-          //  [viewToRemove removeFromSuperview];
-        //}
-        for (int i=1; i<self.view.subviews.count; i++) {
-            UIView *viewToRemove = self.view.subviews[i];
+        UIView *someView = self.view.subviews[0];
+        for (id viewToRemove in [someView subviews]){
             [viewToRemove removeFromSuperview];
         }
         
@@ -53,13 +50,6 @@
         activityView.center=self.view.center;
         [activityView startAnimating];
         [self.view addSubview:activityView];
-        
-        CGSize rectSize = CGSizeMake(290, 440);
-        
-        CGRect viewRect = CGRectMake((CGRectGetWidth(self.view.bounds) - rectSize.width)/2,
-                                     (CGRectGetHeight(self.view.bounds) - rectSize.height)/2 - 40,
-                                     rectSize.width,
-                                     rectSize.height);
         
         draggableBackground = [[DraggableViewBackground alloc]initWithFrame:self.view.frame];
         draggableBackground.myViewController = self;
@@ -96,8 +86,9 @@
     if (self.frontViewIsVisible == YES) {
         [UIView setAnimationTransition:UIViewAnimationTransitionFlipFromRight forView:self.view.subviews[0] cache:YES];
         [self.draggableBackground removeFromSuperview];
+        flippedDVB.eventID = self.eventID; //THIS IS WRONG
+        NSLog(@"%@",self.eventID);
         [self.view.subviews[0] addSubview:self.flippedDVB];
-        
     } else {
         [UIView setAnimationTransition:UIViewAnimationTransitionFlipFromLeft forView:self.view.subviews[0] cache:YES];
         [self.flippedDVB removeFromSuperview];

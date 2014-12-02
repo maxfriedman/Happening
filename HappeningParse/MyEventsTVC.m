@@ -57,7 +57,7 @@ NSMutableArray *indexpaths;
     [eventQuery whereKey:@"CreatedBy" equalTo:user.username];
     
     // Works for now, but doesn't allow for events to be shown from the past
-    [eventQuery whereKey:@"Date" greaterThan:[NSDate date]];
+    [eventQuery whereKey:@"Date" greaterThan:[NSDate dateWithTimeIntervalSinceNow:-2592000]]; //30 days
     [eventQuery orderByAscending:@"Date"];
     
     //eventsArray = [[NSArray alloc]init];
@@ -72,7 +72,7 @@ NSMutableArray *indexpaths;
     int sectionCount = 0;
     sectionDates = [[NSMutableArray alloc]init];
     
-    for (int j=0; j<80; j++) {
+    for (int j= -30; j<80; j++) {
         
         //Account for today's date %%%%%
         NSDate *date = [NSDate dateWithTimeIntervalSinceNow:(86400 * j)];
@@ -94,7 +94,7 @@ NSMutableArray *indexpaths;
     int rowCount = 0;
     rowDates = [[NSMutableArray alloc]init];
     
-    for (int j=0; j<80; j++) {
+    for (int j=-30; j<80; j++) {
         
         //Account for today's date %%%%%
         NSDate *date = [NSDate dateWithTimeIntervalSinceNow:(86400 * j)];
@@ -186,7 +186,7 @@ NSMutableArray *indexpaths;
     [eventQuery whereKey:@"CreatedBy" equalTo:user.username];
     
     // Works for now, but doesn't allow for events to be shown from the past
-    [eventQuery whereKey:@"Date" greaterThan:[NSDate date]];
+    [eventQuery whereKey:@"Date" greaterThan:[NSDate dateWithTimeIntervalSinceNow:-2592000]]; //shows events up to 30 days before today
     [eventQuery orderByAscending:@"Date"];
     
     //eventsArray = [[NSArray alloc]init];
@@ -214,6 +214,8 @@ NSMutableArray *indexpaths;
                 [cell.titleLabel setText:[NSString stringWithFormat:@"%@",Event[@"Title"]]];
                 
                 [cell.locLabel setText:[NSString stringWithFormat:@"%@",Event[@"Location"]]];
+                
+                cell.eventID = Event.objectId;
                 
                 // Time formatting
                 NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
@@ -317,14 +319,24 @@ NSMutableArray *indexpaths;
  }
  */
 
-/*
+
  #pragma mark - Navigation
  
  // In a storyboard-based application, you will often want to do a little preparation before navigation
  - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
  // Get the new view controller using [segue destinationViewController].
  // Pass the selected object to the new view controller.
+     
+     if ([segue.identifier isEqualToString:@"showMyEvent"]) {
+         NSIndexPath *selectedIndexPath = [self.tableView indexPathForSelectedRow];
+         AttendTableCell *cell = [self.tableView cellForRowAtIndexPath:selectedIndexPath];
+         showMyEventVC *vc = (showMyEventVC *)segue.destinationViewController;
+         vc.eventID = cell.eventID;
+         //vc.eventIDLabel.text = cell.eventID;
+         vc.hidesBottomBarWhenPushed = YES;
+     
+     }
  }
- */
+
 
 @end

@@ -18,6 +18,23 @@
 
 @implementation FlippedDVB
 
+-(void)didMoveToSuperview {
+    
+    for (id viewToRemove in [self subviews]){
+        [viewToRemove removeFromSuperview];
+    }
+    
+    NSLog(@"Event ID: %@", self.eventID);
+    self.eventIDLabel = [[UILabel alloc]initWithFrame:CGRectMake(30, 185, 200, 50)];
+    self.eventIDLabel.text = [NSString stringWithFormat:@"%@", self.eventID];
+    
+    [self.eventIDLabel setTextAlignment:NSTextAlignmentCenter];
+    self.eventIDLabel.textColor = [UIColor blackColor];
+    self.eventIDLabel.font = [UIFont boldSystemFontOfSize:22];
+    
+    [self addSubview:self.eventIDLabel];
+}
+
 - (void)setupUserInterface {
     
     self.viewController = nil;
@@ -28,7 +45,7 @@
     self.wikipediaButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
     self.wikipediaButton.frame=buttonFrame;
     
-    [self.wikipediaButton setTitle:@"View at Wikipedia" forState:UIControlStateNormal];
+    [self.wikipediaButton setTitle:@"Tickets on Eventbrite" forState:UIControlStateNormal];
     
     // Center the text on the button, considering the button's shadow
     self.wikipediaButton.contentHorizontalAlignment = UIControlContentHorizontalAlignmentCenter;
@@ -46,7 +63,7 @@
         [self setupUserInterface];
         
         // set the background color of the view to clearn
-        self.backgroundColor=[UIColor clearColor];
+        self.backgroundColor=[UIColor whiteColor];
         
         // attach a tap gesture recognizer to this view so it can flip
         UITapGestureRecognizer *tapGestureRecognizer =
@@ -63,9 +80,9 @@
 
 - (void)drawRect:(CGRect)rect {
     
-    UIImage *backgroundImage = [UIImage imageNamed:@"Nightlife"];
-    CGRect elementSymbolRectangle = CGRectMake(100, 200, [backgroundImage size].width, [backgroundImage size].height);
-    [backgroundImage drawInRect:elementSymbolRectangle];
+    //UIImage *backgroundImage = [UIImage imageNamed:@"Nightlife"];
+    //CGRect elementSymbolRectangle = CGRectMake(50, 100, [backgroundImage size].width, [backgroundImage size].height);
+    //[backgroundImage drawInRect:elementSymbolRectangle];
 
     
 }
@@ -74,7 +91,6 @@
     
     // when a tap gesture occurs tell the view controller to flip this view to the
     // back and show the AtomicElementFlippedView instead
-    //
     [self.viewController flipCurrentView];
 }
 

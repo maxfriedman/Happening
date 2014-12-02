@@ -283,7 +283,7 @@
                                     <outlet property="locLabel" destination="KK2-Zl-RcJ" id="1dS-1v-22b"/>
                                     <outlet property="timeLabel" destination="Pxg-nF-kYI" id="2MX-OI-fFe"/>
                                     <outlet property="titleLabel" destination="jgB-ZJ-XaG" id="lOj-Tz-Eah"/>
-                                    <segue destination="p2E-Rg-2Ih" kind="show" id="7x7-ag-WG9"/>
+                                    <segue destination="p2E-Rg-2Ih" kind="show" identifier="showMyEvent" id="7x7-ag-WG9"/>
                                 </connections>
                             </tableViewCell>
                         </prototypes>
@@ -1260,7 +1260,7 @@
                                     <outlet property="locLabel" destination="UXp-dR-crX" id="BaL-OE-wbM"/>
                                     <outlet property="timeLabel" destination="ShD-wb-AT6" id="gwh-cq-C5n"/>
                                     <outlet property="titleLabel" destination="AvG-0V-yYv" id="B2s-h3-gE9"/>
-                                    <segue destination="k6u-Sb-2Pc" kind="show" id="YNH-ig-s17"/>
+                                    <segue destination="k6u-Sb-2Pc" kind="show" identifier="toMoreDetail" id="YNH-ig-s17"/>
                                 </connections>
                             </tableViewCell>
                         </prototypes>
@@ -1288,10 +1288,25 @@
                     <view key="view" contentMode="scaleToFill" id="DOc-tf-I0z">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="455"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ym4-9c-Mdd">
+                                <rect key="frame" x="139" y="217" width="42" height="21"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstItem="ym4-9c-Mdd" firstAttribute="centerY" secondItem="DOc-tf-I0z" secondAttribute="centerY" id="8tK-oU-Zza"/>
+                            <constraint firstItem="ym4-9c-Mdd" firstAttribute="centerX" secondItem="DOc-tf-I0z" secondAttribute="centerX" id="F6O-0u-tvx"/>
+                        </constraints>
                     </view>
                     <simulatedOrientationMetrics key="simulatedOrientationMetrics"/>
                     <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina4"/>
+                    <connections>
+                        <outlet property="eventIDLabel" destination="ym4-9c-Mdd" id="ac7-JV-MFd"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="erd-bO-Qjd" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
@@ -1317,10 +1332,10 @@
             </objects>
             <point key="canvasLocation" x="1915" y="814"/>
         </scene>
-        <!--View Controller-->
+        <!--Title-->
         <scene sceneID="baa-jl-Va2">
             <objects>
-                <viewController hidesBottomBarWhenPushed="YES" id="p2E-Rg-2Ih" sceneMemberID="viewController">
+                <viewController hidesBottomBarWhenPushed="YES" id="p2E-Rg-2Ih" customClass="showMyEventVC" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="bni-f3-T14"/>
                         <viewControllerLayoutGuide type="bottom" id="Wdb-pe-Dyb"/>
@@ -1328,10 +1343,28 @@
                     <view key="view" contentMode="scaleToFill" id="2us-5R-EEf">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="455"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="19T-AK-vVQ">
+                                <rect key="frame" x="139" y="217" width="42" height="21"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstItem="19T-AK-vVQ" firstAttribute="centerX" secondItem="2us-5R-EEf" secondAttribute="centerX" id="Cji-cq-Jux"/>
+                            <constraint firstItem="19T-AK-vVQ" firstAttribute="centerY" secondItem="2us-5R-EEf" secondAttribute="centerY" id="nGK-J3-c6T"/>
+                        </constraints>
                     </view>
+                    <navigationItem key="navigationItem" title="Title" id="MTq-dV-nTu">
+                        <barButtonItem key="rightBarButtonItem" systemItem="edit" id="zGD-y8-h74"/>
+                    </navigationItem>
                     <simulatedOrientationMetrics key="simulatedOrientationMetrics"/>
                     <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina4"/>
+                    <connections>
+                        <outlet property="eventIDLabel" destination="19T-AK-vVQ" id="CbR-eR-CpF"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="wRH-ko-KxJ" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>

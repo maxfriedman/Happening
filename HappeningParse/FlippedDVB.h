@@ -13,4 +13,8 @@
 
 @property (nonatomic, weak) DragViewController *viewController;
 
+@property NSString *eventID;
+
+@property (nonatomic, strong) UILabel *eventIDLabel;
+
 @end

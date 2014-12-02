@@ -465,6 +465,7 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
     self.dragView = [loadedCards firstObject];
     [self.dragView tapAction];
     NSLog(@"Card tapped");
+    self.myViewController.eventID = self.dragView.objectID;
     [self.myViewController flipCurrentView];
     
 }

@@ -15,6 +15,8 @@
 
 @property (strong, nonatomic) IBOutlet UIBarButtonItem *shareButton;
 
+@property NSString *eventID;
+
 @end
 
 @interface APActivityProvider : UIActivityItemProvider <UIActivityItemSource>

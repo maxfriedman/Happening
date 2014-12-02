@@ -19,6 +19,8 @@
     // Do any additional setup after loading the view.
     //self.navigationItem.leftBarButtonItem = self.navigationItem.backBarButtonItem;
     //[self.navigationItem setHidesBackButton:NO];
+    self.eventIDLabel.text = self.eventID;
+    NSLog(@"%@", self.eventID);
 }
 
 - (void)didReceiveMemoryWarning {

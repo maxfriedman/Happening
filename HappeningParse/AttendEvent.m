@@ -309,9 +309,16 @@
     AttendTableCell *cell = [tableView cellForRowAtIndexPath:indexPath];
     
     if (editingStyle == UITableViewCellEditingStyleDelete) {
-        // Delete the row from the data source
+        
+        // Delete the row/section from the data source
         int newCount = [rowCountArray[indexPath.section]intValue] - 1;
-        rowCountArray[indexPath.section] = [NSNumber numberWithInt: newCount];
+        
+        //if (newCount == 0) {
+          //  [rowCountArray removeObjectAtIndex:indexPath.section];
+          //  [sectionDates removeObjectAtIndex:indexPath.section];
+        //} else
+        rowCountArray[indexPath.section] = [NSNumber numberWithInt:newCount];
+        
         PFQuery *swipesQuery = [PFQuery queryWithClassName:@"Swipes"];
         [swipesQuery whereKey:@"EventID" equalTo:cell.eventID];
         PFUser *user = [PFUser currentUser];
@@ -321,13 +328,11 @@
         [swipesObject setValue:@YES forKey:@"swipedLeft"];
         [swipesObject saveInBackground];
         
-        NSMutableDictionary *eventDict = [[NSMutableDictionary alloc]init];
-        [eventDict setObject:@"" forKey:@""];
-        NSString *blah = [eventDict objectForKey:@""];
         // Make a dictionary with with the eventID (objectID), row number, section number, and total number in the order
         // Use this to find the correct event, use the eventID to query swipes, and switch swiped right and swiped left
         
         [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
+        
     } else if (editingStyle == UITableViewCellEditingStyleInsert) {
         // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
     }   
@@ -357,14 +362,10 @@
     // Pass the selected object to the new view controller.
     if ([segue.identifier isEqualToString:@"toMoreDetail"]) {
         NSIndexPath *selectedIndexPath = [self.tableView indexPathForSelectedRow];
-        
-        // find the right view controller
-        //AtomicElement *element = [self.dataSource atomicElementForIndexPath:selectedIndexPath];
-        //AtomicElementViewController *viewController =
-        //(AtomicElementViewController *)segue.destinationViewController;
-        
-        // hide the bottom tabbar when we push this view controller
+        AttendTableCell *cell = [self.tableView cellForRowAtIndexPath:selectedIndexPath];
         moreDetailFromTable *vc = (moreDetailFromTable *)segue.destinationViewController;
+        vc.eventID = cell.eventID;
+        vc.eventIDLabel.text = cell.eventID;
         vc.hidesBottomBarWhenPushed = YES;
         
         // pass the element to this detail view controller

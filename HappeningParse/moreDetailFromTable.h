@@ -12,4 +12,8 @@
 
 @property (strong, nonatomic) IBOutlet UIBarButtonItem *backButton;
 
+@property (strong, nonatomic) IBOutlet UILabel *eventIDLabel;
+
+@property NSString *eventID;
+
 @end

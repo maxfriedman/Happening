@@ -61,6 +61,7 @@
 		50A3DE3219E88C14001E5E74 /* TabBarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50A3DE3119E88C14001E5E74 /* TabBarViewController.m */; };
 		50D76D4F1A2CE00900FC076F /* moreDetailFromCard.m in Sources */ = {isa = PBXBuildFile; fileRef = 50D76D4E1A2CE00900FC076F /* moreDetailFromCard.m */; };
 		50D76D521A2CE68700FC076F /* moreDetailFromTable.m in Sources */ = {isa = PBXBuildFile; fileRef = 50D76D511A2CE68700FC076F /* moreDetailFromTable.m */; };
+		50D943991A2DA7710003CD20 /* showMyEventVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 50D943981A2DA7710003CD20 /* showMyEventVC.m */; };
 		50E0AB071A06B8AB001D6FD6 /* AttendTableCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50E0AB061A06B8AB001D6FD6 /* AttendTableCell.m */; };
 		50E0AB0A1A06B8E4001D6FD6 /* MyEventsTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 50E0AB091A06B8E4001D6FD6 /* MyEventsTVC.m */; };
 		50E0AB0B1A06D297001D6FD6 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 50248C4319BBA4C300329910 /* Main.storyboard */; };
@@ -162,6 +163,8 @@
 		50D76D4E1A2CE00900FC076F /* moreDetailFromCard.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = moreDetailFromCard.m; sourceTree = "<group>"; };
 		50D76D501A2CE68700FC076F /* moreDetailFromTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moreDetailFromTable.h; sourceTree = "<group>"; };
 		50D76D511A2CE68700FC076F /* moreDetailFromTable.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = moreDetailFromTable.m; sourceTree = "<group>"; };
+		50D943971A2DA7710003CD20 /* showMyEventVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = showMyEventVC.h; path = ../showMyEventVC.h; sourceTree = "<group>"; };
+		50D943981A2DA7710003CD20 /* showMyEventVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = showMyEventVC.m; path = ../showMyEventVC.m; sourceTree = "<group>"; };
 		50E0AB051A06B8AB001D6FD6 /* AttendTableCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AttendTableCell.h; sourceTree = "<group>"; };
 		50E0AB061A06B8AB001D6FD6 /* AttendTableCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AttendTableCell.m; sourceTree = "<group>"; };
 		50E0AB081A06B8E4001D6FD6 /* MyEventsTVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MyEventsTVC.h; sourceTree = "<group>"; };
@@ -242,6 +245,8 @@
 				50D76D4E1A2CE00900FC076F /* moreDetailFromCard.m */,
 				50D76D501A2CE68700FC076F /* moreDetailFromTable.h */,
 				50D76D511A2CE68700FC076F /* moreDetailFromTable.m */,
+				50D943971A2DA7710003CD20 /* showMyEventVC.h */,
+				50D943981A2DA7710003CD20 /* showMyEventVC.m */,
 				509D5D251A11390600F0EB61 /* SettingsChoosingLoc.h */,
 				509D5D261A11390600F0EB61 /* SettingsChoosingLoc.m */,
 				501A948E1A015BD200999C2A /* SettingsTVC.h */,
@@ -521,6 +526,7 @@
 				509D5D1A1A0D7A5A00F0EB61 /* PageContentViewController.m in Sources */,
 				500910E119C75EB2006542CA /* EventTVC.m in Sources */,
 				50D76D521A2CE68700FC076F /* moreDetailFromTable.m in Sources */,
+				50D943991A2DA7710003CD20 /* showMyEventVC.m in Sources */,
 				509D5D141A0D745800F0EB61 /* OverlayView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
