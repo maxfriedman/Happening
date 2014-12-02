@@ -41,6 +41,7 @@
 		504687C51A2D71640001E234 /* DraggableViewBackground.m in Sources */ = {isa = PBXBuildFile; fileRef = 504687C41A2D71640001E234 /* DraggableViewBackground.m */; };
 		504687C81A2D748B0001E234 /* DraggableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 504687C71A2D748B0001E234 /* DraggableView.m */; };
 		505AEA3B19E2218B00C8D602 /* AttendEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = 505AEA3A19E2218B00C8D602 /* AttendEvent.m */; };
+		506A58AF1A2DB8E400807856 /* showMyEventVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 506A58AE1A2DB8E400807856 /* showMyEventVC.m */; };
 		5074A1071A2CFF9A00ECE6A9 /* LeftToRightSegue.m in Sources */ = {isa = PBXBuildFile; fileRef = 5074A1061A2CFF9A00ECE6A9 /* LeftToRightSegue.m */; };
 		5074A10B1A2D0B8700ECE6A9 /* RightToLeftSegue.m in Sources */ = {isa = PBXBuildFile; fileRef = 5074A10A1A2D0B8700ECE6A9 /* RightToLeftSegue.m */; };
 		509D5D131A0D745800F0EB61 /* NSDate+CupertinoYankee.m in Sources */ = {isa = PBXBuildFile; fileRef = 509D5D0E1A0D745800F0EB61 /* NSDate+CupertinoYankee.m */; };
@@ -61,7 +62,6 @@
 		50A3DE3219E88C14001E5E74 /* TabBarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50A3DE3119E88C14001E5E74 /* TabBarViewController.m */; };
 		50D76D4F1A2CE00900FC076F /* moreDetailFromCard.m in Sources */ = {isa = PBXBuildFile; fileRef = 50D76D4E1A2CE00900FC076F /* moreDetailFromCard.m */; };
 		50D76D521A2CE68700FC076F /* moreDetailFromTable.m in Sources */ = {isa = PBXBuildFile; fileRef = 50D76D511A2CE68700FC076F /* moreDetailFromTable.m */; };
-		50D943991A2DA7710003CD20 /* showMyEventVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 50D943981A2DA7710003CD20 /* showMyEventVC.m */; };
 		50E0AB071A06B8AB001D6FD6 /* AttendTableCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50E0AB061A06B8AB001D6FD6 /* AttendTableCell.m */; };
 		50E0AB0A1A06B8E4001D6FD6 /* MyEventsTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 50E0AB091A06B8E4001D6FD6 /* MyEventsTVC.m */; };
 		50E0AB0B1A06D297001D6FD6 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 50248C4319BBA4C300329910 /* Main.storyboard */; };
@@ -127,6 +127,8 @@
 		504687C71A2D748B0001E234 /* DraggableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DraggableView.m; sourceTree = "<group>"; };
 		505AEA3919E2218B00C8D602 /* AttendEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AttendEvent.h; sourceTree = "<group>"; };
 		505AEA3A19E2218B00C8D602 /* AttendEvent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AttendEvent.m; sourceTree = "<group>"; };
+		506A58AD1A2DB8E400807856 /* showMyEventVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = showMyEventVC.h; sourceTree = "<group>"; };
+		506A58AE1A2DB8E400807856 /* showMyEventVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = showMyEventVC.m; sourceTree = "<group>"; };
 		5074A1051A2CFF9A00ECE6A9 /* LeftToRightSegue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LeftToRightSegue.h; sourceTree = "<group>"; };
 		5074A1061A2CFF9A00ECE6A9 /* LeftToRightSegue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LeftToRightSegue.m; sourceTree = "<group>"; };
 		5074A1091A2D0B8700ECE6A9 /* RightToLeftSegue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RightToLeftSegue.h; sourceTree = "<group>"; };
@@ -163,8 +165,6 @@
 		50D76D4E1A2CE00900FC076F /* moreDetailFromCard.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = moreDetailFromCard.m; sourceTree = "<group>"; };
 		50D76D501A2CE68700FC076F /* moreDetailFromTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moreDetailFromTable.h; sourceTree = "<group>"; };
 		50D76D511A2CE68700FC076F /* moreDetailFromTable.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = moreDetailFromTable.m; sourceTree = "<group>"; };
-		50D943971A2DA7710003CD20 /* showMyEventVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = showMyEventVC.h; path = ../showMyEventVC.h; sourceTree = "<group>"; };
-		50D943981A2DA7710003CD20 /* showMyEventVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = showMyEventVC.m; path = ../showMyEventVC.m; sourceTree = "<group>"; };
 		50E0AB051A06B8AB001D6FD6 /* AttendTableCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AttendTableCell.h; sourceTree = "<group>"; };
 		50E0AB061A06B8AB001D6FD6 /* AttendTableCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AttendTableCell.m; sourceTree = "<group>"; };
 		50E0AB081A06B8E4001D6FD6 /* MyEventsTVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MyEventsTVC.h; sourceTree = "<group>"; };
@@ -245,8 +245,8 @@
 				50D76D4E1A2CE00900FC076F /* moreDetailFromCard.m */,
 				50D76D501A2CE68700FC076F /* moreDetailFromTable.h */,
 				50D76D511A2CE68700FC076F /* moreDetailFromTable.m */,
-				50D943971A2DA7710003CD20 /* showMyEventVC.h */,
-				50D943981A2DA7710003CD20 /* showMyEventVC.m */,
+				506A58AD1A2DB8E400807856 /* showMyEventVC.h */,
+				506A58AE1A2DB8E400807856 /* showMyEventVC.m */,
 				509D5D251A11390600F0EB61 /* SettingsChoosingLoc.h */,
 				509D5D261A11390600F0EB61 /* SettingsChoosingLoc.m */,
 				501A948E1A015BD200999C2A /* SettingsTVC.h */,
@@ -524,9 +524,9 @@
 				504687C51A2D71640001E234 /* DraggableViewBackground.m in Sources */,
 				504687C81A2D748B0001E234 /* DraggableView.m in Sources */,
 				509D5D1A1A0D7A5A00F0EB61 /* PageContentViewController.m in Sources */,
+				506A58AF1A2DB8E400807856 /* showMyEventVC.m in Sources */,
 				500910E119C75EB2006542CA /* EventTVC.m in Sources */,
 				50D76D521A2CE68700FC076F /* moreDetailFromTable.m in Sources */,
-				50D943991A2DA7710003CD20 /* showMyEventVC.m in Sources */,
 				509D5D141A0D745800F0EB61 /* OverlayView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
