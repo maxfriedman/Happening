@@ -30,6 +30,8 @@
     if (!hasLaunched) {
         [self performSegueWithIdentifier:@"toChooseLoc" sender:self];
     }
+    
+    self.frontViewIsVisible = YES;
 }
 
 -(void)viewWillAppear:(BOOL)animated {
@@ -39,7 +41,11 @@
     if ([defaults boolForKey:@"refreshData"]) {
         
         // Removes the previous content!!!!!! (when view was burned in behind the cards)
-        for (id viewToRemove in [self.view subviews]){
+        //for (id viewToRemove in [self.view subviews]){
+          //  [viewToRemove removeFromSuperview];
+        //}
+        for (int i=1; i<self.view.subviews.count; i++) {
+            UIView *viewToRemove = self.view.subviews[i];
             [viewToRemove removeFromSuperview];
         }
         
@@ -48,9 +54,16 @@
         [activityView startAnimating];
         [self.view addSubview:activityView];
         
+        CGSize rectSize = CGSizeMake(290, 440);
+        
+        CGRect viewRect = CGRectMake((CGRectGetWidth(self.view.bounds) - rectSize.width)/2,
+                                     (CGRectGetHeight(self.view.bounds) - rectSize.height)/2 - 40,
+                                     rectSize.width,
+                                     rectSize.height);
+        
         draggableBackground = [[DraggableViewBackground alloc]initWithFrame:self.view.frame];
         draggableBackground.myViewController = self;
-        [self.view addSubview:draggableBackground];
+        [self.view.subviews[0] addSubview:draggableBackground];
         
         //UITapGestureRecognizer *singleFingerTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(cardWasTapped)];
         //[draggableBackground addGestureRecognizer:singleFingerTap];
@@ -81,18 +94,17 @@
     
     // swap the views and transition
     if (self.frontViewIsVisible == YES) {
-        [UIView setAnimationTransition:UIViewAnimationTransitionFlipFromRight forView:self.view cache:YES];
+        [UIView setAnimationTransition:UIViewAnimationTransitionFlipFromRight forView:self.view.subviews[0] cache:YES];
         [self.draggableBackground removeFromSuperview];
-        [self.view addSubview:self.flippedDVB];
+        [self.view.subviews[0] addSubview:self.flippedDVB];
         
     } else {
-        [UIView setAnimationTransition:UIViewAnimationTransitionFlipFromLeft forView:self.view cache:YES];
+        [UIView setAnimationTransition:UIViewAnimationTransitionFlipFromLeft forView:self.view.subviews[0] cache:YES];
         [self.flippedDVB removeFromSuperview];
-        [self.view addSubview:self.draggableBackground];
+        [self.view.subviews[0] addSubview:self.draggableBackground];
     }
     [UIView commitAnimations];
     
-    // swap the nav bar button views
     [UIView beginAnimations:nil context:nil];
     [UIView setAnimationDuration:0.75];
     [UIView setAnimationDelegate:self];
