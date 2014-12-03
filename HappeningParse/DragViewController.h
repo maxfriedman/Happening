@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import <Parse/Parse.h>
+#import <MapKit/MapKit.h>
 
 @interface DragViewController : UIViewController 
 
@@ -16,6 +17,9 @@
 @property (strong, nonatomic) IBOutlet UIBarButtonItem *shareButton;
 
 @property NSString *eventID;
+@property (nonatomic, strong) CLLocation *mapLocation;
+@property NSString *eventTitle;
+@property NSString *locationTitle;
 
 @end
 

@@ -40,6 +40,8 @@
 		504687C21A2D2E090001E234 /* FlippedDVB.m in Sources */ = {isa = PBXBuildFile; fileRef = 504687C11A2D2E090001E234 /* FlippedDVB.m */; };
 		504687C51A2D71640001E234 /* DraggableViewBackground.m in Sources */ = {isa = PBXBuildFile; fileRef = 504687C41A2D71640001E234 /* DraggableViewBackground.m */; };
 		504687C81A2D748B0001E234 /* DraggableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 504687C71A2D748B0001E234 /* DraggableView.m */; };
+		50594CD01A2FAD1B00749B49 /* AddressBook.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50594CCF1A2FAD1B00749B49 /* AddressBook.framework */; };
+		50594CD31A2FB87100749B49 /* EditEventTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 50594CD21A2FB87100749B49 /* EditEventTVC.m */; };
 		505AEA3B19E2218B00C8D602 /* AttendEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = 505AEA3A19E2218B00C8D602 /* AttendEvent.m */; };
 		506A58AF1A2DB8E400807856 /* showMyEventVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 506A58AE1A2DB8E400807856 /* showMyEventVC.m */; };
 		5074A1071A2CFF9A00ECE6A9 /* LeftToRightSegue.m in Sources */ = {isa = PBXBuildFile; fileRef = 5074A1061A2CFF9A00ECE6A9 /* LeftToRightSegue.m */; };
@@ -125,6 +127,9 @@
 		504687C41A2D71640001E234 /* DraggableViewBackground.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DraggableViewBackground.m; sourceTree = "<group>"; };
 		504687C61A2D748B0001E234 /* DraggableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DraggableView.h; sourceTree = "<group>"; };
 		504687C71A2D748B0001E234 /* DraggableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DraggableView.m; sourceTree = "<group>"; };
+		50594CCF1A2FAD1B00749B49 /* AddressBook.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AddressBook.framework; path = System/Library/Frameworks/AddressBook.framework; sourceTree = SDKROOT; };
+		50594CD11A2FB87100749B49 /* EditEventTVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EditEventTVC.h; sourceTree = "<group>"; };
+		50594CD21A2FB87100749B49 /* EditEventTVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EditEventTVC.m; sourceTree = "<group>"; };
 		505AEA3919E2218B00C8D602 /* AttendEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AttendEvent.h; sourceTree = "<group>"; };
 		505AEA3A19E2218B00C8D602 /* AttendEvent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AttendEvent.m; sourceTree = "<group>"; };
 		506A58AD1A2DB8E400807856 /* showMyEventVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = showMyEventVC.h; sourceTree = "<group>"; };
@@ -176,6 +181,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				50594CD01A2FAD1B00749B49 /* AddressBook.framework in Frameworks */,
 				501A28B819DB24E600ACC2B4 /* MapKit.framework in Frameworks */,
 				50248C8319BBAB2800329910 /* QuartzCore.framework in Frameworks */,
 				500910FA19C9FCCD006542CA /* OpenGLES.framework in Frameworks */,
@@ -253,6 +259,8 @@
 				501A948F1A015BD200999C2A /* SettingsTVC.m */,
 				50E0AB081A06B8E4001D6FD6 /* MyEventsTVC.h */,
 				50E0AB091A06B8E4001D6FD6 /* MyEventsTVC.m */,
+				50594CD11A2FB87100749B49 /* EditEventTVC.h */,
+				50594CD21A2FB87100749B49 /* EditEventTVC.m */,
 				50E0AB051A06B8AB001D6FD6 /* AttendTableCell.h */,
 				50E0AB061A06B8AB001D6FD6 /* AttendTableCell.m */,
 				505AEA3919E2218B00C8D602 /* AttendEvent.h */,
@@ -313,6 +321,7 @@
 		50248C7519BBAAB500329910 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				50594CCF1A2FAD1B00749B49 /* AddressBook.framework */,
 				50A3DC0219E86313001E5E74 /* FacebookSDK */,
 				501A28B719DB24E600ACC2B4 /* MapKit.framework */,
 				500910F919C9FCCD006542CA /* OpenGLES.framework */,
@@ -520,6 +529,7 @@
 				509D5D131A0D745800F0EB61 /* NSDate+CupertinoYankee.m in Sources */,
 				50A3DE3219E88C14001E5E74 /* TabBarViewController.m in Sources */,
 				50A3DBF119E3151F001E5E74 /* LocationSearching.m in Sources */,
+				50594CD31A2FB87100749B49 /* EditEventTVC.m in Sources */,
 				505AEA3B19E2218B00C8D602 /* AttendEvent.m in Sources */,
 				504687C51A2D71640001E234 /* DraggableViewBackground.m in Sources */,
 				504687C81A2D748B0001E234 /* DraggableView.m in Sources */,

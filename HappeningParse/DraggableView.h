@@ -35,9 +35,7 @@
 @property (nonatomic,strong)NSString* objectID;
 @property (nonatomic,strong)UILabel* createdBy;
 
-
 @property (nonatomic,strong)UILabel* transpBackground;
-
 
 @property (nonatomic, strong)UIImage* cardPics;
 
@@ -46,6 +44,7 @@
 @property (nonatomic,strong)NSDate* eventDate;
 
 @property (nonatomic,strong)UILabel* geoLoc;
+@property (nonatomic, strong)PFGeoPoint *geoPoint;
 
 @property (nonatomic,strong)UILabel* swipesRight;
 

@@ -58,7 +58,7 @@
         //UITapGestureRecognizer *singleFingerTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(cardWasTapped)];
         //[draggableBackground addGestureRecognizer:singleFingerTap];
         
-        flippedDVB = [[FlippedDVB alloc]initWithFrame:self.view.frame];
+        flippedDVB = [[FlippedDVB alloc]initWithFrame:CGRectMake(-1, -1, 291, 441)];
         flippedDVB.viewController = self;
         
         //[self.view addSubview:flippedDVB];
@@ -86,8 +86,15 @@
     if (self.frontViewIsVisible == YES) {
         [UIView setAnimationTransition:UIViewAnimationTransitionFlipFromRight forView:self.view.subviews[0] cache:YES];
         [self.draggableBackground removeFromSuperview];
-        flippedDVB.eventID = self.eventID; //THIS IS WRONG
-        NSLog(@"%@",self.eventID);
+        
+        // %%%%% Pass variables to flipped card
+        NSLog(@"Tapped Event: %@",self.title);
+        flippedDVB.eventID = self.eventID;
+        flippedDVB.mapLocation = self.mapLocation;
+        flippedDVB.eventTitle = self.eventTitle;
+        flippedDVB.eventLocationTitle = self.locationTitle;
+        // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        
         [self.view.subviews[0] addSubview:self.flippedDVB];
     } else {
         [UIView setAnimationTransition:UIViewAnimationTransitionFlipFromLeft forView:self.view.subviews[0] cache:YES];

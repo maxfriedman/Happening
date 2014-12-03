@@ -216,6 +216,7 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
         draggableView.createdBy.text = createdByArray[index];
         
         PFGeoPoint *loc = geoLocArray[index];
+        draggableView.geoPoint = loc;
         if (loc.latitude == 0) {
             draggableView.geoLoc.text = @"";
             draggableView.locImage.image = nil;
@@ -381,7 +382,7 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
         [object saveInBackground];
         
         NSString *tag = [NSString stringWithFormat:@"%@", object[@"Hashtag"]];
-        NSNumber *tagNum= object[tag];
+        NSNumber *tagNum= user[tag];
         NSInteger tagPlusOne = ([tagNum integerValue] + 1);
         tagNum = [NSNumber numberWithInteger:tagPlusOne];
         
@@ -462,12 +463,20 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
 
 -(void)cardTap
 {
-    self.dragView = [loadedCards firstObject];
-    [self.dragView tapAction];
     NSLog(@"Card tapped");
-    self.myViewController.eventID = self.dragView.objectID;
-    [self.myViewController flipCurrentView];
+
+    self.dragView = [loadedCards firstObject];
+    //[self.dragView tapAction];
     
+    PFGeoPoint *loc = self.dragView.geoPoint;
+    self.mapLocation = [[CLLocation alloc]initWithLatitude:loc.latitude longitude:loc.longitude];
+    
+    self.myViewController.mapLocation = self.mapLocation;
+    self.myViewController.eventID = self.dragView.objectID;
+    self.myViewController.eventTitle = self.dragView.title.text;
+    self.myViewController.locationTitle = self.dragView.location.text;
+    
+    [self.myViewController flipCurrentView];
 }
 
 /*

@@ -45,6 +45,7 @@
 @synthesize eventDate;
 
 @synthesize geoLoc;
+@synthesize geoPoint;
 @synthesize swipesRight;
 
 @synthesize locImage, userImage;
@@ -92,6 +93,7 @@
         transpBackground = [[UILabel alloc]initWithFrame:CGRectMake(0, 93, self.frame.size.width, 70)];
         
         objectID = [[NSString alloc]init];
+        geoPoint = [[PFGeoPoint alloc]init];
         
         locImage = [[UIImageView alloc]initWithFrame:CGRectMake(0, 170, 32, 32)];
         userImage = [[UIImageView alloc]initWithFrame:CGRectMake(255, 170, 32, 32)];

@@ -7,14 +7,17 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <MapKit/MapKit.h>
 #import "DragViewController.h"
 
-@interface FlippedDVB : UIView
+@interface FlippedDVB : UIView <MKMapViewDelegate, MKAnnotation>
 
 @property (nonatomic, weak) DragViewController *viewController;
 
 @property NSString *eventID;
-
-@property (nonatomic, strong) UILabel *eventIDLabel;
+@property NSString *eventTitle;
+@property NSString *eventLocationTitle;
+@property (nonatomic, strong) CLLocation *mapLocation;
+@property (nonatomic, strong) UILabel *titleLabel;
 
 @end

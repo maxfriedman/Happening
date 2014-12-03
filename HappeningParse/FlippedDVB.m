@@ -7,8 +7,7 @@
 //
 
 #import "FlippedDVB.h"
-
-
+#import <AddressBook/AddressBook.h>
 
 @interface FlippedDVB ()
 
@@ -24,20 +23,130 @@
         [viewToRemove removeFromSuperview];
     }
     
+    UILabel *transpBackground = [[UILabel alloc]initWithFrame:CGRectMake(0, 0, self.frame.size.width, 50)];
+    transpBackground.backgroundColor = [UIColor blackColor];
+    transpBackground.backgroundColor = [UIColor colorWithHue:1.0 saturation:0.0 brightness:0 alpha:0.5];
+    [self addSubview:transpBackground];
+    
     NSLog(@"Event ID: %@", self.eventID);
-    self.eventIDLabel = [[UILabel alloc]initWithFrame:CGRectMake(30, 185, 200, 50)];
-    self.eventIDLabel.text = [NSString stringWithFormat:@"%@", self.eventID];
+    self.titleLabel = [[UILabel alloc]initWithFrame:CGRectMake(0, 0, 290, 50)];
+    self.titleLabel.text = [NSString stringWithFormat:@"%@", self.eventTitle];
     
-    [self.eventIDLabel setTextAlignment:NSTextAlignmentCenter];
-    self.eventIDLabel.textColor = [UIColor blackColor];
-    self.eventIDLabel.font = [UIFont boldSystemFontOfSize:22];
+    [self.titleLabel setTextAlignment:NSTextAlignmentCenter];
+    self.titleLabel.textColor = [UIColor whiteColor];
+    self.titleLabel.font = [UIFont boldSystemFontOfSize:22];
     
-    [self addSubview:self.eventIDLabel];
+    [self addSubview:self.titleLabel];
+
+    NSArray *array = [[NSArray alloc]initWithObjects:@"Details", @"Map View", @"Tickets", nil];
+    UISegmentedControl *segcontrol = [[UISegmentedControl alloc]initWithItems:array];
+    segcontrol.frame = CGRectMake(0, 55, 290, 40);
+    segcontrol.selectedSegmentIndex = 0;
+    
+    [segcontrol addTarget:self action:@selector(segAction:) forControlEvents: UIControlEventValueChanged];
+    [self performSelector:@selector(segAction:) withObject:segcontrol];
+    segcontrol.alpha = 0;
+    [self addSubview:segcontrol];
+    segcontrol.alpha = 1;
+
+}
+
+- (void)segAction:(UISegmentedControl *)segment {
+    
+    NSLog(@"Swithced to segment %ld", (long)segment.selectedSegmentIndex);
+    
+    if (segment.selectedSegmentIndex == 0)
+    {
+        //self.titleLabel.text = @"One";
+        
+        UIScrollView *scrollView = [[UIScrollView alloc]initWithFrame:CGRectMake(0, 100, 290, 340)];
+        scrollView.contentSize = CGSizeMake(290, 700);
+        scrollView.showsVerticalScrollIndicator = YES;
+        scrollView.backgroundColor = [UIColor whiteColor];
+        [self addSubview:scrollView];
+        
+    } else if (segment.selectedSegmentIndex == 1)
+    {
+        //self.titleLabel.text = @"Two";
+        
+        MKMapView *mapView = [[MKMapView alloc] initWithFrame:CGRectMake(0, 100, 290, 340)];
+        mapView.delegate = self;
+        
+        MKPointAnnotation *annotation = [[MKPointAnnotation alloc]init];
+        [annotation setCoordinate:self.mapLocation.coordinate];
+        [annotation setTitle:self.eventLocationTitle];
+        
+        [[[CLGeocoder alloc]init] reverseGeocodeLocation:self.mapLocation completionHandler:^(NSArray *placemarks, NSError *error) {
+            CLPlacemark *placemark = placemarks[0];
+            
+            NSArray *lines = placemark.addressDictionary[ @"FormattedAddressLines"];
+            NSString *addressString = [lines componentsJoinedByString:@" "];
+            NSLog(@"Address: %@", addressString);
+            
+            NSString *streetName = placemark.addressDictionary[@"Street"];
+            NSString *cityName = placemark.addressDictionary[@"City"];
+            NSString *stateName = placemark.addressDictionary[@"State"];
+            NSString *zipCode = placemark.addressDictionary[@"ZIP"];
+            if (zipCode)
+                annotation.subtitle = [NSString stringWithFormat:@"%@, %@ %@, %@", streetName, cityName, stateName, zipCode];
+            else annotation.subtitle = [NSString stringWithFormat:@"%@, %@, %@", streetName, cityName, stateName];
+
+        }];
+        
+        [mapView addAnnotation:annotation];
+        [mapView viewForAnnotation:annotation];
+        [mapView selectAnnotation:annotation animated:YES];
+        
+        MKCoordinateRegion region = MKCoordinateRegionMakeWithDistance(self.mapLocation.coordinate, 750, 750);
+        [mapView setRegion:region animated:NO];
+        [mapView setUserTrackingMode:MKUserTrackingModeNone];
+        [mapView regionThatFits:region];
+        
+        [self addSubview:mapView];
+        
+    } else if (segment.selectedSegmentIndex == 2)
+    {
+        //self.titleLabel.text = @"Three";
+        
+        UIScrollView *scrollView = [[UIScrollView alloc]initWithFrame:CGRectMake(0, 100, 290, 340)];
+        scrollView.contentSize = CGSizeMake(290, 700);
+        scrollView.showsVerticalScrollIndicator = YES;
+        scrollView.backgroundColor = [UIColor whiteColor];
+        [self addSubview:scrollView];
+    }
+    
+}
+
+- (MKAnnotationView *)mapView:(MKMapView *)mapView viewForAnnotation:(id <MKAnnotation>)annotation
+{
+    NSLog(@"Made it 1");
+    if ([annotation isKindOfClass:[MKUserLocation class]])
+    {
+        return nil;
+    }
+    else  // use whatever annotation class you used when creating the annotation
+    {
+        NSLog(@"Made it 2");
+        
+        MKAnnotationView *annotationView = [[MKAnnotationView alloc]initWithAnnotation:annotation reuseIdentifier:@"tag"];
+        annotationView.enabled = YES;
+        annotationView.canShowCallout = YES;
+        annotationView.image = [UIImage imageNamed:@"Annotation"];
+        annotationView.centerOffset = CGPointMake(0, -18);
+        annotationView.rightCalloutAccessoryView = [UIButton buttonWithType:UIButtonTypeDetailDisclosure];
+        
+        return annotationView;
+    }
 }
 
 - (void)setupUserInterface {
     
     self.viewController = nil;
+    
+    self.layer.cornerRadius = 4;
+    self.layer.shadowRadius = 3;
+    self.layer.shadowOpacity = 0.2;
+    self.layer.shadowOffset = CGSizeMake(1, 1);
     
     CGRect buttonFrame = CGRectMake(10.0, 209.0, 234.0, 37.0);
     
