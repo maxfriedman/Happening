@@ -11,7 +11,7 @@
 #import "DraggableView.h"
 #import "DragViewController.h"
 
-@interface DraggableViewBackground : UIView <DraggableViewDelegate, CLLocationManagerDelegate>
+@interface DraggableViewBackground : UIView <DraggableViewDelegate, CLLocationManagerDelegate, DragViewControllerDelegate>
 
 @property (retain, nonatomic) DraggableView *dragView;
 
@@ -20,6 +20,9 @@
 //methods called in DraggableView
 -(void)cardSwipedLeft:(UIView *)card;
 -(void)cardSwipedRight:(UIView *)card;
+
+-(void)swipeLeft;
+-(void)swipeRight;
 
 @property (retain,nonatomic)NSMutableArray* exampleCardLabels; //%%% the labels the cards
 @property (retain,nonatomic)NSMutableArray* allCards; //%%% the labels the cards

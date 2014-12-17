@@ -20,7 +20,7 @@
 
 @implementation DragViewController
 
-@synthesize shareButton, draggableBackground, flippedDVB;
+@synthesize shareButton, draggableBackground, flippedDVB, xButton, checkButton, delegate;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -52,13 +52,25 @@
         [self.view addSubview:activityView];
         
         draggableBackground = [[DraggableViewBackground alloc]initWithFrame:self.view.frame];
+        
+        xButton = [[UIButton alloc]initWithFrame:CGRectMake(60, 440, 59, 59)];
+        [xButton setImage:[UIImage imageNamed:@"xButton"] forState:UIControlStateNormal];
+        [xButton addTarget:self action:@selector(swipeLeftDVC) forControlEvents:UIControlEventTouchUpInside];
+        
+        checkButton = [[UIButton alloc]initWithFrame:CGRectMake(200, 440, 59, 59)];
+        [checkButton setImage:[UIImage imageNamed:@"checkButton"] forState:UIControlStateNormal];
+        [checkButton addTarget:self action:@selector(swipeRightDVC) forControlEvents:UIControlEventTouchUpInside];
+
+        
         draggableBackground.myViewController = self;
         [self.view.subviews[0] addSubview:draggableBackground];
+        [self.view addSubview:checkButton];
+        [self.view addSubview:xButton];
         
         //UITapGestureRecognizer *singleFingerTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(cardWasTapped)];
         //[draggableBackground addGestureRecognizer:singleFingerTap];
         
-        flippedDVB = [[FlippedDVB alloc]initWithFrame:CGRectMake(-1, -1, 291, 441)];
+        flippedDVB = [[FlippedDVB alloc]initWithFrame:CGRectMake(-1, -1, 291, 321)];
         flippedDVB.viewController = self;
         
         //[self.view addSubview:flippedDVB];
@@ -67,8 +79,28 @@
         
         [defaults setBool:NO forKey:@"refreshData"];
         [defaults synchronize];
+        
+        
+        delegate = draggableBackground;
+
     }
 }
+
+
+-(void)swipeLeftDVC
+{
+    NSLog(@"Left click");
+    [delegate swipeLeft];
+    //[draggableBackground cardSwipedLeft:draggableBackground.dragView];
+}
+
+-(void)swipeRightDVC
+{
+    NSLog(@"Right click");
+    [delegate swipeRight];
+    //[draggableBackground cardSwipedLeft:draggableBackground.dragView];
+}
+
 
 - (void)flipCurrentView {
     

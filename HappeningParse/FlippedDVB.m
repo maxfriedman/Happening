@@ -59,7 +59,7 @@
     {
         //self.titleLabel.text = @"One";
         
-        UIScrollView *scrollView = [[UIScrollView alloc]initWithFrame:CGRectMake(0, 100, 290, 340)];
+        UIScrollView *scrollView = [[UIScrollView alloc]initWithFrame:CGRectMake(0, 100, 290, 220)];
         scrollView.contentSize = CGSizeMake(290, 700);
         scrollView.showsVerticalScrollIndicator = YES;
         scrollView.backgroundColor = [UIColor whiteColor];
@@ -69,7 +69,7 @@
     {
         //self.titleLabel.text = @"Two";
         
-        MKMapView *mapView = [[MKMapView alloc] initWithFrame:CGRectMake(0, 100, 290, 340)];
+        MKMapView *mapView = [[MKMapView alloc] initWithFrame:CGRectMake(0, 100, 290, 220)];
         mapView.delegate = self;
         
         MKPointAnnotation *annotation = [[MKPointAnnotation alloc]init];
@@ -108,7 +108,7 @@
     {
         //self.titleLabel.text = @"Three";
         
-        UIScrollView *scrollView = [[UIScrollView alloc]initWithFrame:CGRectMake(0, 100, 290, 340)];
+        UIScrollView *scrollView = [[UIScrollView alloc]initWithFrame:CGRectMake(0, 100, 290, 220)];
         scrollView.contentSize = CGSizeMake(290, 700);
         scrollView.showsVerticalScrollIndicator = YES;
         scrollView.backgroundColor = [UIColor whiteColor];

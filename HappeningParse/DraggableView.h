@@ -10,6 +10,7 @@
 #import <UIKit/UIKit.h>
 #import "OverlayView.h"
 #import <Parse/Parse.h>
+#import <QuartzCore/QuartzCore.h>
 
 @protocol DraggableViewDelegate <NSObject>
 
@@ -52,6 +53,9 @@
 @property (nonatomic,strong)UIImageView* userImage;
 
 @property (nonatomic,strong)UIActivityIndicatorView *activityView;
+
+@property (nonatomic, strong)UIButton* checkButton;
+@property (nonatomic, strong)UIButton* xButton;
 
 
 -(void)leftClickAction;

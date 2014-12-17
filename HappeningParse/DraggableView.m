@@ -21,6 +21,9 @@
 @implementation DraggableView {
     CGFloat xFromCenter;
     CGFloat yFromCenter;
+    
+    UIView *cardView;
+    UIImageView *cardBackground;
 }
 
 //delegate is instance of ViewController
@@ -51,20 +54,31 @@
 @synthesize locImage, userImage;
 @synthesize activityView;
 
+@synthesize xButton, checkButton;
+
 - (id)initWithFrame:(CGRect)frame {
     
     self = [super initWithFrame:frame];
     if (self) {
-        [self setupView];
+        
+        cardBackground = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"cardBackground"]];
+        cardBackground.frame = CGRectMake(10, 320, 270, cardBackground.image.size.height);
+        [self addSubview:cardBackground];
+        
+        [self setupView:frame];
         /*
          UIActivityIndicatorView *activityView=[[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
          activityView.center = self.center;
          [activityView startAnimating];
          [self addSubview:activityView];
          */
-        self.backgroundColor = [UIColor whiteColor];
+        cardView.backgroundColor = [UIColor whiteColor];
         
         eventImage = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, 290, 190)];
+        //eventImage.layer.cornerRadius = 10.0;
+        eventImage.layer.masksToBounds = YES;
+        eventImage.layer.borderColor = [UIColor lightGrayColor].CGColor;
+        eventImage.layer.borderWidth = 1.0;
         //eventImage.alpha = 0.7;
         
         //[self.Xinformation setContentMode:UIViewContentModeScaleAspectFit];
@@ -89,19 +103,19 @@
         [[blurEffectView contentView] addSubview:vibrancyEffectView];
         */
         
-        title = [[UILabel alloc]initWithFrame:CGRectMake(5, 95, self.frame.size.width, 100)];
+        title = [[UILabel alloc]initWithFrame:CGRectMake(10, 95, self.frame.size.width, 100)];
         
-        subtitle = [[UILabel alloc]initWithFrame:CGRectMake(5, 185, self.frame.size.width, 100)];
-        location = [[UILabel alloc]initWithFrame:CGRectMake(5, 160, self.frame.size.width, 100)];
+        subtitle = [[UILabel alloc]initWithFrame:CGRectMake(10, 185, self.frame.size.width, 100)];
+        location = [[UILabel alloc]initWithFrame:CGRectMake(10, 160, self.frame.size.width, 100)];
         
-        date = [[UILabel alloc]initWithFrame:CGRectMake(5, 120, self.frame.size.width, 100)];
+        date = [[UILabel alloc]initWithFrame:CGRectMake(10, 120, self.frame.size.width, 100)];
         time = [[UILabel alloc]initWithFrame:CGRectMake(0, 315, self.frame.size.width, 100)];
         
         //date = [[UILabel alloc]initWithFrame:CGRectMake(0, 285, self.frame.size.width, 100)];
         //time = [[UILabel alloc]initWithFrame:CGRectMake(0, 315, self.frame.size.width, 100)];
 
-        hashtag = [[UILabel alloc]initWithFrame:CGRectMake(5, 255, self.frame.size.width, 100)];
-        geoLoc = [[UILabel alloc]initWithFrame:CGRectMake(0, 120, self.frame.size.width - 5, 100)];
+        hashtag = [[UILabel alloc]initWithFrame:CGRectMake(10, 255, self.frame.size.width, 100)];
+        geoLoc = [[UILabel alloc]initWithFrame:CGRectMake(0, 120, self.frame.size.width - 10, 100)];
         swipesRight = [[UILabel alloc]initWithFrame:CGRectMake(-10, 255, self.frame.size.width, 100)];
         //createdBy = [[UILabel alloc]initWithFrame:CGRectMake(0, 380, self.frame.size.width, 100)];
         
@@ -131,14 +145,14 @@
         
         //[eventImage addSubview:blurEffectView];
         
-        [self addSubview:eventImage];
+        [cardView addSubview:eventImage];
         
         //transpBackground = [[UILabel alloc]initWithFrame:CGRectMake(0, 93, self.frame.size.width, 70)];
         
         objectID = [[NSString alloc]init];
         geoPoint = [[PFGeoPoint alloc]init];
         
-        locImage = [[UIImageView alloc]initWithFrame:CGRectMake(216, 160, 15, 20)];
+        locImage = [[UIImageView alloc]initWithFrame:CGRectMake(211, 160, 15, 20)];
         userImage = [[UIImageView alloc]initWithFrame:CGRectMake(185, 293, 25, 25)];
         
         /*
@@ -188,28 +202,29 @@
         createdBy.font = [UIFont fontWithName:@"OpenSans-Light" size:12.0];
         
         //locImage.image = [UIImage imageNamed:@"locImage"];
-        [self addSubview:locImage];
+        [cardView addSubview:locImage];
         //userImage.image = [UIImage imageNamed:@"userImage"];
-        [self addSubview:userImage];
+        [cardView addSubview:userImage];
         
         activityView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
         activityView.center = CGPointMake(self.frame.size.width / 2, (self.frame.size.height / 2) - 30);
-        [self addSubview:activityView];
+        [cardView addSubview:activityView];
         
         //[self addSubview:transpBackground];
-        [self addSubview:title];
-        [self addSubview:subtitle];
-        [self addSubview:location];
-        [self addSubview:date];
-        [self addSubview:time];
-        [self addSubview:hashtag];
-        [self addSubview:geoLoc];
-        [self addSubview:swipesRight];
-        [self addSubview:createdBy];
+        [cardView addSubview:title];
+        [cardView addSubview:subtitle];
+        [cardView addSubview:location];
+        [cardView addSubview:date];
+        //[cardView addSubview:time];
+        [cardView addSubview:hashtag];
+        [cardView addSubview:geoLoc];
+        [cardView addSubview:swipesRight];
+        //[cardView addSubview:createdBy];
         
         overlayView = [[OverlayView alloc]initWithFrame:CGRectMake(self.frame.size.width/2-100, 0, 100, 100)];
         overlayView.alpha = 0;
-        [self addSubview:overlayView];
+        [cardView addSubview:overlayView];
+        
         
         //[activityView stopAnimating];
     }
@@ -217,12 +232,29 @@
     return self;
 }
 
--(void)setupView
+-(void)swipeLeft {
+    NSLog(@"Made it");
+}
+
+-(void)setupView:(CGRect)frame
 {
-    self.layer.cornerRadius = 6;
+    cardView = [[UIView alloc]initWithFrame:frame];
+    [self addSubview:cardView];
+    cardView.layer.masksToBounds = YES;
+    
+    [cardView.layer setCornerRadius:10.0];
+    [cardView.layer setShadowOpacity:0.1];
+    [cardView.layer setShadowOffset:CGSizeMake(0, 5)];
+    [cardView.layer setBorderColor:[UIColor lightGrayColor].CGColor];
+    [cardView.layer setBorderWidth:2.0];
+    
+    /*
     self.layer.shadowRadius = 5;
-    self.layer.shadowOpacity = 0.2;
-    self.layer.shadowOffset = CGSizeMake(3, 3);
+    self.layer.shadowOpacity = 0.1;
+    self.layer.shadowOffset = CGSizeMake(0, 5);
+    self.layer.borderColor = [UIColor lightGrayColor].CGColor;
+    self.layer.borderWidth = 2.0;
+     */
 }
 
 /*
@@ -239,14 +271,14 @@
 -(void)beingDragged:(UIPanGestureRecognizer *)gestureRecognizer
 {
     //%%% this extracts the coordinate data from your swipe movement. (i.e. How much did you move?)
-    xFromCenter = [gestureRecognizer translationInView:self].x; //%%% positive for right swipe, negative for left
-    yFromCenter = [gestureRecognizer translationInView:self].y; //%%% positive for up, negative for down
+    xFromCenter = [gestureRecognizer translationInView:cardView].x; //%%% positive for right swipe, negative for left
+    yFromCenter = [gestureRecognizer translationInView:cardView].y; //%%% positive for up, negative for down
     
     //%%% checks what state the gesture is in. (are you just starting, letting go, or in the middle of a swipe?)
     switch (gestureRecognizer.state) {
             //%%% just started swiping
         case UIGestureRecognizerStateBegan:{
-            self.originalPoint = self.center;
+            self.originalPoint = cardView.center;
             break;
         };
             //%%% in the middle of a swipe
@@ -261,7 +293,7 @@
             CGFloat scale = MAX(1 - fabsf(rotationStrength) / SCALE_STRENGTH, SCALE_MAX);
             
             //%%% move the object's center by center + gesture coordinate
-            self.center = CGPointMake(self.originalPoint.x + xFromCenter, self.originalPoint.y + yFromCenter);
+            cardView.center = CGPointMake(self.originalPoint.x + xFromCenter, self.originalPoint.y + yFromCenter);
             
             //%%% rotate by certain amount
             CGAffineTransform transform = CGAffineTransformMakeRotation(rotationAngel);
@@ -270,7 +302,7 @@
             CGAffineTransform scaleTransform = CGAffineTransformScale(transform, scale, scale);
             
             //%%% apply transformations
-            self.transform = scaleTransform;
+            cardView.transform = scaleTransform;
             [self updateOverlay:xFromCenter];
             
             break;
@@ -308,8 +340,8 @@
     } else { //%%% resets the card
         [UIView animateWithDuration:0.3
                          animations:^{
-                             self.center = self.originalPoint;
-                             self.transform = CGAffineTransformMakeRotation(0);
+                             cardView.center = self.originalPoint;
+                             cardView.transform = CGAffineTransformMakeRotation(0);
                              overlayView.alpha = 0;
                          }];
     }
@@ -321,11 +353,12 @@
     CGPoint finishPoint = CGPointMake(500, 2*yFromCenter +self.originalPoint.y);
     [UIView animateWithDuration:0.3
                      animations:^{
-                         self.center = finishPoint;
+                         cardView.center = finishPoint;
                      }completion:^(BOOL complete){
                          [self removeFromSuperview];
                      }];
     
+    [cardBackground removeFromSuperview];
     [delegate cardSwipedRight:self];
     
     NSLog(@"YES");
@@ -337,7 +370,7 @@
     CGPoint finishPoint = CGPointMake(-500, 2*yFromCenter +self.originalPoint.y);
     [UIView animateWithDuration:0.3
                      animations:^{
-                         self.center = finishPoint;
+                         cardView.center = finishPoint;
                      }completion:^(BOOL complete){
                          [self removeFromSuperview];
                      }];
@@ -352,8 +385,8 @@
     CGPoint finishPoint = CGPointMake(600, self.center.y);
     [UIView animateWithDuration:0.3
                      animations:^{
-                         self.center = finishPoint;
-                         self.transform = CGAffineTransformMakeRotation(1);
+                         cardView.center = finishPoint;
+                         cardView.transform = CGAffineTransformMakeRotation(1);
                      }completion:^(BOOL complete){
                          [self removeFromSuperview];
                      }];
@@ -368,8 +401,8 @@
     CGPoint finishPoint = CGPointMake(-600, self.center.y);
     [UIView animateWithDuration:0.3
                      animations:^{
-                         self.center = finishPoint;
-                         self.transform = CGAffineTransformMakeRotation(-1);
+                         cardView.center = finishPoint;
+                         cardView.transform = CGAffineTransformMakeRotation(-1);
                      }completion:^(BOOL complete){
                          [self removeFromSuperview];
                      }];

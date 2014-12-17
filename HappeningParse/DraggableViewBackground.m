@@ -56,6 +56,7 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
     
     if (self) {
         [super layoutSubviews];
+        [self setupView];
         
         self.myViewController = nil;
         
@@ -197,7 +198,7 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
 -(void)setupView
 {
 #warning customize all of this.  These are just place holders to make it look pretty
-    self.backgroundColor = [UIColor colorWithRed:.92 green:.93 blue:.95 alpha:1]; //the gray background colors
+    //self.backgroundColor = [UIColor colorWithRed:.92 green:.93 blue:.95 alpha:1]; //the gray background colors
     
     /*
      menuButton = [[UIButton alloc]initWithFrame:CGRectMake(17, 15, 45, 45)];
@@ -210,21 +211,38 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
      happening.textColor = [UIColor blackColor];
      happening.text = @"Happening";
      
+     */
      
-     
-     xButton = [[UIButton alloc]initWithFrame:CGRectMake(60, 485, 59, 59)];
+     xButton = [[UIButton alloc]initWithFrame:CGRectMake(60, 360, 59, 59)];
      [xButton setImage:[UIImage imageNamed:@"xButton"] forState:UIControlStateNormal];
-     [xButton addTarget:self action:@selector(cardTap) forControlEvents:UIControlEventTouchUpInside];
-     checkButton = [[UIButton alloc]initWithFrame:CGRectMake(200, 485, 59, 59)];
+     [xButton addTarget:self action:@selector(swipeLeft) forControlEvents:UIControlEventTouchUpInside];
+     checkButton = [[UIButton alloc]initWithFrame:CGRectMake(200, 360, 59, 59)];
      [checkButton setImage:[UIImage imageNamed:@"checkButton"] forState:UIControlStateNormal];
      [checkButton addTarget:self action:@selector(swipeRight) forControlEvents:UIControlEventTouchUpInside];
-     
+    
+    DragViewController *vc = [self viewController];
+    //[vc.xButton addTarget:self action:@selector(swipeLeft) forControlEvents:UIControlEventTouchUpInside];
+    //[vc.checkButton addTarget:self action:@selector(swipeRight) forControlEvents:UIControlEventTouchUpInside];
+    
+    xButton.userInteractionEnabled = YES;
+    
+    //[self addSubview:xButton];
+    [self bringSubviewToFront:xButton];
+    //[self addSubview:checkButton];
+    [self bringSubviewToFront:checkButton];
+
+    
      //[self addSubview:menuButton];
      //[self addSubview:messageButton];
      //[self addSubview:xButton];
      //[self addSubview:checkButton];
-     */
     
+    
+}
+
+- (DragViewController *)viewController {
+        return (DragViewController *)self.nextResponder;
+
 }
 
 #warning include own card customization here!
@@ -484,6 +502,7 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
 //%%% when you hit the right button, this is called and substitutes the swipe
 -(void)swipeRight
 {
+    NSLog(@"Made it");
     DraggableView *dragView = [loadedCards firstObject];
     dragView.overlayView.mode = GGOverlayViewModeRight;
     [UIView animateWithDuration:0.2 animations:^{
@@ -495,6 +514,7 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
 //%%% when you hit the left button, this is called and substitutes the swipe
 -(void)swipeLeft
 {
+    NSLog(@"Made it");
     DraggableView *dragView = [loadedCards firstObject];
     dragView.overlayView.mode = GGOverlayViewModeLeft;
     [UIView animateWithDuration:0.2 animations:^{
