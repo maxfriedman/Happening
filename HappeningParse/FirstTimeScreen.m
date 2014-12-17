@@ -56,7 +56,7 @@
     // Do any additional setup after loading the view.
 
     // Create the data model
-    _pageTitles = @[@"Over 200 Tips and Tricks", @"Discover Hidden Features", @"Bookmark Favorite Tip", @"Free Regular Update"];
+    _pageTitles = @[@"Have Fun", @"Save Money", @"Spend more time with friends", @":)"];
     _pageImages = @[@"page1.png", @"page2.png", @"page3.png", @"page4.png"];
     
     // Create page view controller

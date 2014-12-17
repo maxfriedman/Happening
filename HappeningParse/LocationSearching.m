@@ -126,19 +126,19 @@
     
     AppDelegate *appDelegate=(AppDelegate *)[UIApplication sharedApplication].delegate;
     appDelegate.item = results.mapItems[indexPath.row];
+    NSString *cityName = appDelegate.item.placemark.addressDictionary[@"City"];
+    NSString *stateName = appDelegate.item.placemark.addressDictionary[@"State"];
+    NSString *zipCode = appDelegate.item.placemark.addressDictionary[@"ZIP"];
+    NSString *country = appDelegate.item.placemark.addressDictionary[@"Country"];
+    if (zipCode)
+        appDelegate.locSubtitle = [NSString stringWithFormat:@"%@, %@ %@, %@", cityName, stateName, zipCode, country];
+    else appDelegate.locSubtitle = [NSString stringWithFormat:@"%@, %@, %@", cityName, stateName, country];
+    
     PFGeoPoint *loc = [PFGeoPoint geoPointWithLocation:appDelegate.item.placemark.location];
     Event[@"GeoLoc"] = loc;
     
     [self dismissViewControllerAnimated:YES completion:nil];
-    /*
-    MKMapItem *item = results.mapItems[indexPath.row];
-    [self.ibMapView addAnnotation:item.placemark];
-    [self.ibMapView selectAnnotation:item.placemark animated:YES];
-    
-    [self.ibMapView setCenterCoordinate:item.placemark.location.coordinate animated:YES];
-    
-    [self.ibMapView setUserTrackingMode:MKUserTrackingModeNone];
-    */
+
 }
 
 - (IBAction)didClick:(UIBarButtonItem *)sender {

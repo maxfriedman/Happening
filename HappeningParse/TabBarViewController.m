@@ -18,8 +18,89 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-    //UIColor *alphaBlack = [UIColor colorWithWhite:1.0 alpha:0.7];
-    //[[UITabBar appearance] setSelectedImageTintColor:alphaBlack];
+    UIColor *normalColor = [UIColor lightTextColor];
+    UIColor *selectedColor = [UIColor whiteColor];
+    
+    [self.tabBar setTintColor:selectedColor];
+    
+    // repeat for every tab, but increment the index each time
+    UITabBarItem *firstTab = [self.tabBar.items objectAtIndex:0];
+    
+    UIImage *addImage = [UIImage imageNamed:@"addTab"];
+    addImage = [TabBarViewController filledImageFrom:addImage withColor:normalColor];
+    
+    // also repeat for every tab
+    firstTab.image = [addImage imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+    //firstTab.selectedImage = [[UIImage imageNamed:@"add"]imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+    
+    UITabBarItem *secondTab = [self.tabBar.items objectAtIndex:1];
+    UIImage *binocularsImage = [UIImage imageNamed:@"binoculars"];
+    binocularsImage = [TabBarViewController filledImageFrom:binocularsImage withColor:normalColor];
+
+    secondTab.image = [binocularsImage imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+    //secondTab.selectedImage = [[UIImage imageNamed:@"addTab"]imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+    
+    UITabBarItem *thirdTab = [self.tabBar.items objectAtIndex:2];
+    
+    NSDate *date = [NSDate date];
+    NSDateFormatter *formatter = [[NSDateFormatter alloc]init];
+    [formatter setDateFormat:@"d"];
+    NSString *dateString = [formatter stringFromDate:date];
+    
+    UIImage *calImage = [UIImage imageNamed:@"BlankCalTab"];
+    UIImage *cal = [TabBarViewController filledImageFrom:calImage withColor:normalColor];
+    UIImage *calWithText;
+    
+    if (dateString.length == 1) {
+        calWithText = [TabBarViewController drawText:dateString inImage:cal atPoint:CGPointMake(8, 7) withColor:normalColor];        calImage = [TabBarViewController drawText:dateString inImage:calImage atPoint:CGPointMake(8, 7) withColor:selectedColor];
+    } else {
+        calWithText = [TabBarViewController drawText:dateString inImage:cal atPoint:CGPointMake(5, 7) withColor:normalColor];
+        calImage = [TabBarViewController drawText:dateString inImage:calImage atPoint:CGPointMake(5, 7) withColor:selectedColor];
+    }
+    thirdTab.image = [calWithText imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+    thirdTab.selectedImage = [calImage imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+
+    [[UITabBarItem appearance] setTitleTextAttributes:@{NSFontAttributeName : [UIFont fontWithName:@"HelveticaNeue-Bold" size:10.0f],
+                                                        NSForegroundColorAttributeName : selectedColor
+                                                        } forState:UIControlStateSelected];
+ 
+    
+    // doing this results in an easier to read unselected state then the default iOS 7 one
+    [[UITabBarItem appearance] setTitleTextAttributes:@{NSFontAttributeName : [UIFont fontWithName:@"HelveticaNeue" size:10.0f],
+                                                        NSForegroundColorAttributeName : normalColor
+                                                        } forState:UIControlStateNormal];
+    
+}
+
++ (UIImage *)filledImageFrom:(UIImage *)source withColor:(UIColor *)color{
+    
+    // begin a new image context, to draw our colored image onto with the right scale
+    UIGraphicsBeginImageContextWithOptions(source.size, NO, [UIScreen mainScreen].scale);
+    
+    // get a reference to that context we created
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    
+    // set the fill color
+    [color setFill];
+    
+    // translate/flip the graphics context (for transforming from CG* coords to UI* coords
+    CGContextTranslateCTM(context, 0, source.size.height);
+    CGContextScaleCTM(context, 1.0, -1.0);
+    
+    CGContextSetBlendMode(context, kCGBlendModeColorBurn);
+    CGRect rect = CGRectMake(0, 0, source.size.width, source.size.height);
+    CGContextDrawImage(context, rect, source.CGImage);
+    
+    CGContextSetBlendMode(context, kCGBlendModeSourceIn);
+    CGContextAddRect(context, rect);
+    CGContextDrawPath(context,kCGPathFill);
+    
+    // generate a new UIImage from the graphics context we drew onto
+    UIImage *coloredImg = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    //return the color-burned image
+    return coloredImg;
 }
 
 - (void)didReceiveMemoryWarning {
@@ -27,14 +108,22 @@
     // Dispose of any resources that can be recreated.
 }
 
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
++(UIImage*) drawText:(NSString*) text
+             inImage:(UIImage*)  image
+             atPoint:(CGPoint)   point
+           withColor:(UIColor*)  color
+{
+    
+    UIFont *font = [UIFont fontWithName:@"LetterGothicStd" size:12.0]; // fixed-width font
+    UIGraphicsBeginImageContext(image.size);
+    [image drawInRect:CGRectMake(0,0,image.size.width,image.size.height)];
+    CGRect rect = CGRectMake(point.x, point.y, image.size.width, image.size.height);
+    [color set];
+    [text drawInRect:CGRectIntegral(rect) withFont:font];
+    UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    return newImage;
 }
-*/
 
 @end

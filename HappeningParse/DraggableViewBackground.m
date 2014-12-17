@@ -6,6 +6,7 @@
 //
 
 #import "DraggableViewBackground.h"
+#import "NSDate+CupertinoYankee.h"
 
 @interface DraggableViewBackground()
 
@@ -24,7 +25,7 @@
 //this makes it so only two cards are loaded at a time to
 //avoid performance and memory costs
 static const int MAX_BUFFER_SIZE = 2; //%%% max number of cards loaded at any given time, must be greater than 1
-static const float CARD_HEIGHT = 440; //%%% height of the draggable card
+static const float CARD_HEIGHT = 320; //%%% height of the draggable card
 static const float CARD_WIDTH = 290; //%%% width of the draggable card
 
 @synthesize exampleCardLabels; //%%% all the labels I'm using as example data at the moment
@@ -75,7 +76,7 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
         subtitleArray = [[NSMutableArray alloc]init];
         locationArray = [[NSMutableArray alloc]init];
         dateArray = [[NSMutableArray alloc]init];
-        timeArray = [[NSMutableArray alloc]init];
+        //timeArray = [[NSMutableArray alloc]init];
         hashtagArray = [[NSMutableArray alloc]init];
         geoLocArray = [[NSMutableArray alloc]init];
         objectIDs = [[NSMutableArray alloc]init];
@@ -113,14 +114,48 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
                 [locationArray addObject:eventObject[@"Location"]];
                 
                 NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-                [formatter setDateFormat:@"EEEE, MMMM d"];
+                [formatter setDateFormat:@"EEE, MMM d"];
                 NSDate *eventDate = [[NSDate alloc]init];
                 eventDate = eventObject[@"Date"];
-                NSString *dateString = [formatter stringFromDate:eventDate];
-                [dateArray addObject:dateString];
                 
+                if ([eventDate beginningOfDay] == [[NSDate date]beginningOfDay]) {  // TODAY
+                    
+                    [formatter setDateFormat:@"h:mma"];
+                    NSString *timeString = [formatter stringFromDate:eventDate];
+                    NSString *finalString = [NSString stringWithFormat:@"Today at %@", timeString];
+                    [dateArray addObject:finalString];
+                    
+                } else if ([eventDate beginningOfDay] == [[NSDate dateWithTimeIntervalSinceNow:86400] beginningOfDay]) { // TOMORROW
+                    
+                    [formatter setDateFormat:@"h:mma"];
+                    NSString *timeString = [formatter stringFromDate:eventDate];
+                    NSString *finalString = [NSString stringWithFormat:@"Tomorrow at %@", timeString];
+                    [dateArray addObject:finalString];
+                    
+                } else if ([eventDate endOfWeek] == [[NSDate date]endOfWeek]) { // SAME WEEK
+                    
+                    [formatter setDateFormat:@"EEEE"];
+                    NSString *dayOfWeekString = [formatter stringFromDate:eventDate];
+                    [formatter setDateFormat:@"h:mma"];
+                    NSString *timeString = [formatter stringFromDate:eventDate];
+                    NSString *finalString = [NSString stringWithFormat:@"%@ at %@", dayOfWeekString, timeString];
+                    [dateArray addObject:finalString];
+                    
+                } else {
+                
+                NSString *dateString = [formatter stringFromDate:eventDate];
+                [formatter setDateFormat:@"h:mma"];
+                NSString *timeString = [formatter stringFromDate:eventDate];
+                NSString *finalString = [NSString stringWithFormat:@"%@ at %@", dateString, timeString];
+
+                [dateArray addObject:finalString];
+                    
+                }
+                
+                /*
                 [formatter setDateFormat:@"h:mm a"];
                 NSString *startTimeString = [formatter stringFromDate:eventObject[@"Date"]];
+                
                 NSString *endTimeString = [formatter stringFromDate:eventObject[@"EndTime"]];
                 NSString *eventTimeString = [[NSString alloc]init];
                 if (endTimeString) {
@@ -128,14 +163,15 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
                 } else {
                     eventTimeString = [NSString stringWithFormat:@"%@", startTimeString];
                 }
+                 */
                 //NSLog(@"%@ to %@", startTimeString, endTimeString);
-                [timeArray addObject:eventTimeString];
-                
-                [hashtagArray addObject:eventObject[@"Hashtag"]];
+                //[timeArray addObject:@"Delete this"];
+                NSString *tagString = [NSString stringWithFormat:@"tags: %@", eventObject[@"Hashtag"]];
+                [hashtagArray addObject:tagString];
                 [geoLocArray addObject:eventObject[@"GeoLoc"]];
                 
                 NSNumber *swipe = eventObject[@"swipesRight"];
-                NSString *swipeString = [swipe stringValue];
+                NSString *swipeString = [NSString stringWithFormat:@"%@ interested", [swipe stringValue]];
                 
                 [swipesRightArray addObject:swipeString];
                 
@@ -210,10 +246,10 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
         draggableView.subtitle.text = subtitleArray[index];
         draggableView.location.text = locationArray[index];
         draggableView.date.text = dateArray[index];
-        draggableView.time.text = timeArray[index];
+        //draggableView.time.text = timeArray[index];
         draggableView.hashtag.text = hashtagArray[index];
         draggableView.swipesRight.text = swipesRightArray[index];
-        draggableView.createdBy.text = createdByArray[index];
+        //draggableView.createdBy.text = createdByArray[index];
         
         PFGeoPoint *loc = geoLocArray[index];
         draggableView.geoPoint = loc;
@@ -223,10 +259,16 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
         } else {
             PFUser *user = [PFUser currentUser];
             PFGeoPoint *userLoc = user[@"userLoc"];
-            NSNumber *meters = [NSNumber numberWithDouble:([loc distanceInMilesTo:userLoc])];
-            NSString *distance = [NSString stringWithFormat:(@"%.2f mi"), meters.floatValue];
+            NSNumber *miles = [NSNumber numberWithDouble:([loc distanceInMilesTo:userLoc])];
+            if (miles > [NSNumber numberWithInt:10]) {
+                NSString *distance = [NSString stringWithFormat:(@"%.1f mi"), miles.floatValue];
+                draggableView.geoLoc.text = distance;
+            } else {
+            NSString *distance = [NSString stringWithFormat:(@"%.2f mi"), miles.floatValue];
             draggableView.geoLoc.text = distance;
-            draggableView.locImage.image = [UIImage imageNamed:@"locImage"];
+            }
+            
+            draggableView.locImage.image = [UIImage imageNamed:@"locationPinThickOutline"];
         }
         
         /*
@@ -246,8 +288,8 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
         
         draggableView.userImage.image = [UIImage imageNamed:@"userImage"];
         
-        draggableView.transpBackground.backgroundColor = [UIColor blackColor];
-        draggableView.transpBackground.backgroundColor = [UIColor colorWithHue:1.0 saturation:0.0 brightness:0 alpha:0.5];
+        //draggableView.transpBackground.backgroundColor = [UIColor blackColor];
+        //draggableView.transpBackground.backgroundColor = [UIColor colorWithHue:1.0 saturation:0.0 brightness:0 alpha:0.5];
         
         // Only allow interaction once all data is loaded
         draggableView.userInteractionEnabled = YES;

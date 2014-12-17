@@ -18,7 +18,7 @@
 
 @implementation AppDelegate
 
-@synthesize locationManager = _locationManager, item, userLocation;
+@synthesize locationManager = _locationManager, item, userLocation, locSubtitle;
 
 -(void)locationManager:(CLLocationManager *)manager didUpdateToLocation:(CLLocation *)newLocation fromLocation:(CLLocation *)oldLocation{
     NSDate* eventDate = newLocation.timestamp;

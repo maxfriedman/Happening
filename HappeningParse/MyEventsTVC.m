@@ -194,6 +194,8 @@ NSMutableArray *indexpaths;
     
     [eventQuery findObjectsInBackgroundWithBlock:^(NSArray *eventsArray, NSError *error) {
     
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        
     for (int i = 0; i < eventsArray.count; i++) {
         
         PFObject *Event = eventsArray[i];
@@ -270,6 +272,8 @@ NSMutableArray *indexpaths;
             }
         }
     }
+        
+        cell.selectionStyle = UITableViewCellSelectionStyleDefault;
     }];
     
     return cell;

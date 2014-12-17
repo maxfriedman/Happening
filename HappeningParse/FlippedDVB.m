@@ -34,7 +34,7 @@
     
     [self.titleLabel setTextAlignment:NSTextAlignmentCenter];
     self.titleLabel.textColor = [UIColor whiteColor];
-    self.titleLabel.font = [UIFont boldSystemFontOfSize:22];
+    self.titleLabel.font = [UIFont fontWithName:@"OpenSans-Semibold" size:22];
     
     [self addSubview:self.titleLabel];
 
@@ -172,7 +172,7 @@
         [self setupUserInterface];
         
         // set the background color of the view to clearn
-        self.backgroundColor=[UIColor whiteColor];
+        self.backgroundColor=[UIColor groupTableViewBackgroundColor];
         
         // attach a tap gesture recognizer to this view so it can flip
         UITapGestureRecognizer *tapGestureRecognizer =

@@ -64,80 +64,128 @@
          */
         self.backgroundColor = [UIColor whiteColor];
         
-        eventImage = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, 290, 163)];
-        eventImage.alpha = 0.7;
+        eventImage = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, 290, 190)];
+        //eventImage.alpha = 0.7;
         
         //[self.Xinformation setContentMode:UIViewContentModeScaleAspectFit];
         
         panGestureRecognizer = [[UIPanGestureRecognizer alloc]initWithTarget:self action:@selector(beingDragged:)];
         
         [self addGestureRecognizer:panGestureRecognizer];
+        
+        
+        /*
+        // Label for vibrant text
+        UILabel *vibrantLabel = [[UILabel alloc] init];
+        [vibrantLabel setText:@"Vibrant"];
+        [vibrantLabel setFont:[UIFont systemFontOfSize:72.0f]];
+        [vibrantLabel sizeToFit];
+        [vibrantLabel setCenter: self.view.center];
+        
+        // Add label to the vibrancy view
+        [[vibrancyEffectView contentView] addSubview:vibrantLabel];
+        
+        // Add the vibrancy view to the blur view
+        [[blurEffectView contentView] addSubview:vibrancyEffectView];
+        */
+        
+        title = [[UILabel alloc]initWithFrame:CGRectMake(5, 95, self.frame.size.width, 100)];
+        
+        subtitle = [[UILabel alloc]initWithFrame:CGRectMake(5, 185, self.frame.size.width, 100)];
+        location = [[UILabel alloc]initWithFrame:CGRectMake(5, 160, self.frame.size.width, 100)];
+        
+        date = [[UILabel alloc]initWithFrame:CGRectMake(5, 120, self.frame.size.width, 100)];
+        time = [[UILabel alloc]initWithFrame:CGRectMake(0, 315, self.frame.size.width, 100)];
+        
+        //date = [[UILabel alloc]initWithFrame:CGRectMake(0, 285, self.frame.size.width, 100)];
+        //time = [[UILabel alloc]initWithFrame:CGRectMake(0, 315, self.frame.size.width, 100)];
+
+        hashtag = [[UILabel alloc]initWithFrame:CGRectMake(5, 255, self.frame.size.width, 100)];
+        geoLoc = [[UILabel alloc]initWithFrame:CGRectMake(0, 120, self.frame.size.width - 5, 100)];
+        swipesRight = [[UILabel alloc]initWithFrame:CGRectMake(-10, 255, self.frame.size.width, 100)];
+        //createdBy = [[UILabel alloc]initWithFrame:CGRectMake(0, 380, self.frame.size.width, 100)];
+        
+        UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleLight];
+        UIVisualEffectView *blurEffectView = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
+        blurEffectView.frame = CGRectMake(0, 120, eventImage.frame.size.width, 70);
+        [eventImage addSubview:blurEffectView];
+
+        UIVibrancyEffect *vibrancyEffect = [UIVibrancyEffect effectForBlurEffect:blurEffect];
+        UIVisualEffectView *vibrancyEffectView = [[UIVisualEffectView alloc] initWithEffect:vibrancyEffect];
+        vibrancyEffectView.frame = blurEffectView.bounds;
+        
+        [title setTextAlignment:NSTextAlignmentLeft];
+        title.textColor = [UIColor whiteColor];
+        title.font = [UIFont fontWithName:@"OpenSans-ExtraBold" size:21];
+        
+        [date setTextAlignment:NSTextAlignmentLeft];
+        date.textColor = [UIColor darkTextColor];
+        date.font = [UIFont fontWithName:@"OpenSans-Semibold" size:14.0];
+        //[vibrancyEffectView.contentView addSubview:date];
+        
+        //[time setTextAlignment:NSTextAlignmentCenter];
+        //time.textColor = [UIColor blackColor];
+        //time.font = [UIFont fontWithName:@"OpenSans-Italic" size:17.0];
+        
+        [blurEffectView.contentView addSubview:vibrancyEffectView];
+        
+        //[eventImage addSubview:blurEffectView];
+        
         [self addSubview:eventImage];
         
-        NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-        [formatter setDateFormat:@"yyyy"];
-        eventDate = [[NSDate alloc]init];
-        NSString *dateString = [formatter stringFromDate:eventDate];
-        
-        title = [[UILabel alloc]initWithFrame:CGRectMake(0, 185, self.frame.size.width, 100)];
-        subtitle = [[UILabel alloc]initWithFrame:CGRectMake(0, 220, self.frame.size.width, 100)];
-        location = [[UILabel alloc]initWithFrame:CGRectMake(5, 65, self.frame.size.width, 100)];
-        date = [[UILabel alloc]initWithFrame:CGRectMake(0, 285, self.frame.size.width, 100)];
-        time = [[UILabel alloc]initWithFrame:CGRectMake(0, 315, self.frame.size.width, 100)];
-        hashtag = [[UILabel alloc]initWithFrame:CGRectMake(5, 90, self.frame.size.width, 100)];
-        geoLoc = [[UILabel alloc]initWithFrame:CGRectMake(30, 120, self.frame.size.width, 135)];
-        swipesRight = [[UILabel alloc]initWithFrame:CGRectMake(-38, 120, self.frame.size.width, 135)];
-        createdBy = [[UILabel alloc]initWithFrame:CGRectMake(0, 380, self.frame.size.width, 100)];
-        
-        
-        transpBackground = [[UILabel alloc]initWithFrame:CGRectMake(0, 93, self.frame.size.width, 70)];
+        //transpBackground = [[UILabel alloc]initWithFrame:CGRectMake(0, 93, self.frame.size.width, 70)];
         
         objectID = [[NSString alloc]init];
         geoPoint = [[PFGeoPoint alloc]init];
         
-        locImage = [[UIImageView alloc]initWithFrame:CGRectMake(0, 170, 32, 32)];
-        userImage = [[UIImageView alloc]initWithFrame:CGRectMake(255, 170, 32, 32)];
+        locImage = [[UIImageView alloc]initWithFrame:CGRectMake(216, 160, 15, 20)];
+        userImage = [[UIImageView alloc]initWithFrame:CGRectMake(185, 293, 25, 25)];
         
+        /*
         [title setTextAlignment:NSTextAlignmentCenter];
         title.textColor = [UIColor blackColor];
-        title.font = [UIFont boldSystemFontOfSize:22];
-        
-        [subtitle setTextAlignment:NSTextAlignmentCenter];
-        subtitle.textColor = [UIColor blackColor];
+        title.font = [UIFont fontWithName:@"OpenSans-Semibold" size:22];
+        */
+         
+        [subtitle setTextAlignment:NSTextAlignmentLeft];
+        subtitle.textColor = [UIColor darkGrayColor];
+        subtitle.font = [UIFont fontWithName:@"OpenSans-Light" size:17];
         
         [location setTextAlignment:NSTextAlignmentLeft];
-        location.textColor = [UIColor whiteColor];
-        location.font = [UIFont boldSystemFontOfSize:21];
-        location.shadowColor = [UIColor blackColor];
+        location.textColor = [UIColor darkTextColor];
+        location.font = [UIFont fontWithName:@"OpenSans" size:22];
+        //location.shadowColor = [UIColor blackColor];
         
         //transpBackground.backgroundColor = [UIColor blackColor];
         //transpBackground.backgroundColor = [UIColor colorWithHue:1.0 saturation:0.0 brightness:0 alpha:0.5];
         
+        /*
         [date setTextAlignment:NSTextAlignmentCenter];
         date.textColor = [UIColor blackColor];
-        date.font = [UIFont italicSystemFontOfSize:17];
+        date.font = [UIFont fontWithName:@"OpenSans-Italic" size:17.0];
         
         [time setTextAlignment:NSTextAlignmentCenter];
         time.textColor = [UIColor blackColor];
-        time.font = [UIFont italicSystemFontOfSize:17];
-        
+        time.font = [UIFont fontWithName:@"OpenSans-Italic" size:17.0];
+        */
+         
         [hashtag setTextAlignment:NSTextAlignmentLeft];
-        hashtag.textColor = [UIColor whiteColor];
-        hashtag.font = [UIFont italicSystemFontOfSize:17];
+        hashtag.textColor = [UIColor grayColor];
+        hashtag.font = [UIFont fontWithName:@"OpenSans-Light" size:11.0];
         //hashtag.font = [UIFont boldSystemFontOfSize:15];
-        hashtag.shadowColor = [UIColor blackColor];
+        //hashtag.shadowColor = [UIColor blackColor];
         
-        [geoLoc setTextAlignment:NSTextAlignmentLeft];
-        geoLoc.textColor = [UIColor blackColor];
-        geoLoc.font = [UIFont systemFontOfSize:15.0];
+        [geoLoc setTextAlignment:NSTextAlignmentRight];
+        geoLoc.textColor = [UIColor whiteColor];
+        geoLoc.font = [UIFont fontWithName:@"OpenSans-Semibold" size:14.0];
         
         [swipesRight setTextAlignment:NSTextAlignmentRight];
-        swipesRight.textColor = [UIColor blackColor];
-        swipesRight.font = [UIFont systemFontOfSize:15.0];
+        swipesRight.textColor = [UIColor grayColor];
+        swipesRight.font = [UIFont fontWithName:@"OpenSans-Light" size:11.0];
         
         [createdBy setTextAlignment:NSTextAlignmentLeft];
         createdBy.textColor = [UIColor blackColor];
-        createdBy.font = [UIFont systemFontOfSize:12.0];
+        createdBy.font = [UIFont fontWithName:@"OpenSans-Light" size:12.0];
         
         //locImage.image = [UIImage imageNamed:@"locImage"];
         [self addSubview:locImage];
@@ -148,7 +196,7 @@
         activityView.center = CGPointMake(self.frame.size.width / 2, (self.frame.size.height / 2) - 30);
         [self addSubview:activityView];
         
-        [self addSubview:transpBackground];
+        //[self addSubview:transpBackground];
         [self addSubview:title];
         [self addSubview:subtitle];
         [self addSubview:location];
@@ -171,10 +219,10 @@
 
 -(void)setupView
 {
-    self.layer.cornerRadius = 4;
-    self.layer.shadowRadius = 3;
+    self.layer.cornerRadius = 6;
+    self.layer.shadowRadius = 5;
     self.layer.shadowOpacity = 0.2;
-    self.layer.shadowOffset = CGSizeMake(1, 1);
+    self.layer.shadowOffset = CGSizeMake(3, 3);
 }
 
 /*
@@ -283,7 +331,7 @@
     NSLog(@"YES");
 }
 
-//%%% called when a swip exceeds the ACTION_MARGIN to the left
+//%%% called when a swipe exceeds the ACTION_MARGIN to the left
 -(void)leftAction
 {
     CGPoint finishPoint = CGPointMake(-500, 2*yFromCenter +self.originalPoint.y);

@@ -1,5 +1,5 @@
 //
-//  TableViewController.m
+//  EventTVC.m
 //  HappeningParse
 //
 //  Created by Max on 9/15/14.
@@ -8,13 +8,29 @@
 
 #import "EventTVC.h"
 
+@interface EventTVC ()
 
+@property (assign) NSInteger datePickerHeight;
+@property (assign) NSInteger endTimePickerHeight;
+@property (assign) NSInteger hashtagPickerHeight;
+
+@property (assign) BOOL isDatePickerShown;
+@property (assign) BOOL isEndTimePickerShown;
+@property (assign) BOOL isHashtagPickerShown;
+
+@property (strong, nonatomic) IBOutlet UIButton *dateButton;
+@property (strong, nonatomic) IBOutlet UIButton *endTimeButton;
+@property (strong, nonatomic) IBOutlet UIButton *hashtagButton;
+
+@property (strong, nonatomic) IBOutlet UILabel *dateDetailLabel;
+@property (strong, nonatomic) IBOutlet UILabel *endTimeDetailLabel;
+@property (strong, nonatomic) IBOutlet UILabel *hashtagDetailLabel;
+
+@end
 
 @implementation EventTVC {
-
-    MKLocalSearch *localSearch;
-    MKLocalSearchResponse *results;
-
+    NSDateFormatter *dateFormatter;
+    int intervalInSeconds;
 }
 
 @synthesize imageView, button;
@@ -34,27 +50,161 @@
 
 @synthesize imageButton;
 
+@synthesize dateButton, endTimeButton, hashtagButton;
+
+@synthesize dateDetailLabel, endTimeDetailLabel, hashtagDetailLabel;
+
+@synthesize urlField, descriptionField, descriptionTextView;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    intervalInSeconds = 3600;
+    
+    locTitle.text = @"";
+    locSubtitle.font = [locSubtitle.font fontWithSize:17.0];
+    locSubtitle.alpha = 0.2;
+    
+    datePicker.alpha = 0;
+    endTimePicker.alpha = 0;
+    hashtagPicker.alpha = 0;
+    
+    self.datePickerHeight = 0;
+    self.endTimePickerHeight = 0;
+    self.hashtagPickerHeight = 0;
+    
+    self.isDatePickerShown = NO;
+    self.isEndTimePickerShown = NO;
+    self.isHashtagPickerShown = NO;
+    
+    dateButton.tintColor = [UIColor whiteColor];
+    endTimeButton.tintColor = [UIColor whiteColor];
+    hashtagButton.tintColor = [UIColor whiteColor];
+    
+    dateFormatter = [[NSDateFormatter alloc]init];
+    [dateFormatter setDateFormat:@"EEE, MMM d    h:mm a"];
+    
     NSLog(@"Event being created...");
     
-    // Uncomment the following line to preserve selection between presentations.
-    // self.clearsSelectionOnViewWillAppear = NO;
+    Event = [PFObject objectWithClassName:@"Event"];
+    Event[@"Repeats"] = @"Never";
     
-    // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-    // self.navigationItem.rightBarButtonItem = self.editButtonItem;
 }
 
-// I want this to only run once.......
--(void)viewWillAppear:(BOOL)animated {
+- (IBAction)dateButtonAction:(id)sender {
+    
+    if (!self.isDatePickerShown) { // Picker hidden, let's show it!
+        self.datePickerHeight = 162;
+        datePicker.alpha = 1;
+        self.endTimePickerHeight = 0;
+        endTimePicker.alpha = 0;
+        self.hashtagPickerHeight = 0;
+        hashtagPicker.alpha = 0;
+        [self.tableView reloadData];
+        
+        self.isDatePickerShown = YES;
+        self.isEndTimePickerShown = NO;
+        self.isHashtagPickerShown = NO;
+        
+        dateDetailLabel.textColor = [UIColor redColor];
+        endTimeDetailLabel.textColor = [UIColor blackColor];
+        if (![hashtagDetailLabel.text isEqualToString:@"Nightlife"])
+            hashtagDetailLabel.textColor = [UIColor blackColor];
+
+    } else { // Picker shown, let's hide it
+        self.datePickerHeight = 0;
+        datePicker.alpha = 0;
+        [self.tableView reloadData];
+        self.isDatePickerShown = NO;
+        dateDetailLabel.textColor = [UIColor blackColor];
+    }
+    
+}
+
+- (IBAction)endTimeButtonAction:(id)sender {
+    
+    if (!self.isEndTimePickerShown) { // Picker hidden, let's show it!
+        
+        self.endTimePickerHeight = 162;
+        endTimePicker.alpha = 1;
+        self.datePickerHeight = 0;
+        datePicker.alpha = 0;
+        self.hashtagPickerHeight = 0;
+        hashtagPicker.alpha = 0;
+        [self.tableView reloadData];
+        
+        self.isEndTimePickerShown = YES;
+        self.isDatePickerShown = NO;
+        self.isHashtagPickerShown = NO;
+        
+        endTimeDetailLabel.textColor = [UIColor redColor];
+        dateDetailLabel.textColor = [UIColor blackColor];
+        if (![hashtagDetailLabel.text isEqualToString:@"Nightlife"])
+            hashtagDetailLabel.textColor = [UIColor blackColor];
+
+    } else { // Picker shown, let's hide it
+        self.endTimePickerHeight = 0;
+        endTimePicker.alpha = 0;
+        [self.tableView reloadData];
+        self.isEndTimePickerShown = NO;
+        endTimeDetailLabel.textColor = [UIColor blackColor];
+    }
+    
+}
+
+- (IBAction)hashtagButtonAction:(id)sender {
     
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        self.tabBarController.selectedIndex = 1;
+        hashtagDetailLabel.text = @"Nightlife";
     });
     
+    if (!self.isHashtagPickerShown) { // Picker hidden, let's show it!
+        
+        self.hashtagPickerHeight = 162;
+        hashtagPicker.alpha = 1;
+        self.endTimePickerHeight = 0;
+        endTimePicker.alpha = 0;
+        self.datePickerHeight = 0;
+        datePicker.alpha = 0;
+        [self.tableView reloadData];
+        
+        self.isHashtagPickerShown = YES;
+        self.isEndTimePickerShown = NO;
+        self.isDatePickerShown = NO;
+        
+        hashtagDetailLabel.textColor = [UIColor redColor];
+        endTimeDetailLabel.textColor = [UIColor blackColor];
+        dateDetailLabel.textColor = [UIColor blackColor];
+        
+    } else { // Picker shown, let's hide it
+        self.hashtagPickerHeight = 0;
+        hashtagPicker.alpha = 0;
+        [self.tableView reloadData];
+        self.isHashtagPickerShown = NO;
+        hashtagDetailLabel.textColor = [UIColor blackColor];
+    }
+    
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    if (indexPath.section == 2 && indexPath.row == 1)
+        return self.datePickerHeight;
+    else if (indexPath.section == 2 && indexPath.row == 3)
+        return self.endTimePickerHeight;
+    else if (indexPath.section == 3 && indexPath.row == 1)
+        return self.hashtagPickerHeight;
+    else if (indexPath.section == 4)
+        return 202;
+    
+    return 44;
+    
+}
+
+-(void)viewWillAppear:(BOOL)animated {
+    
+    [self.tableView deselectRowAtIndexPath:[self.tableView indexPathForSelectedRow] animated:YES];
     
     datePicker.minimumDate = [[NSDate alloc]initWithTimeIntervalSinceNow:-86400]; //24 hours ago
     datePicker.maximumDate = [[NSDate alloc]initWithTimeIntervalSinceNow:17280000]; //200 days
@@ -62,31 +212,18 @@
     
     self.hashtagData  = [[NSArray alloc]initWithObjects:@"Nightlife",@"Sports",@"Music", @"Shopping", @"Freebies", @"Happy Hour", @"Dining", @"Entertainment", @"Fundraiser", @"Meetup", @"Other", nil];
     
-    Event = [PFObject objectWithClassName:@"Event"];
-    //Default, in case picker is not changed:
-    Event[@"Hashtag"] = @"Nightlife";
-    
-    
     AppDelegate *appDelegate=(AppDelegate *)[UIApplication sharedApplication].delegate;
     //NSLog(@"%@", appDelegate.item);
     
-    locTitle.text = appDelegate.item.name;
-    locSubtitle.font = [locSubtitle.font fontWithSize:17.0];
-    locSubtitle.alpha = 0.2;
-    
-    NSString *cityName = appDelegate.item.placemark.addressDictionary[@"City"];
-    NSString *stateName = appDelegate.item.placemark.addressDictionary[@"State"];
-    NSString *zipCode = appDelegate.item.placemark.addressDictionary[@"ZIP"];
-    NSString *country = appDelegate.item.placemark.addressDictionary[@"Country"];
-    if (zipCode) {
+    if (appDelegate.item != nil) {
         locSubtitle.font = [locSubtitle.font fontWithSize:11.0];
-        locSubtitle.alpha = 1.0;
-        locSubtitle.text = [NSString stringWithFormat:@"%@, %@ %@, %@", cityName, stateName, zipCode, country];
-    }
-    else if (cityName) {
-        locSubtitle.font = [locSubtitle.font fontWithSize:11.0];
-        locSubtitle.alpha = 1.0;
-        locSubtitle.text = [NSString stringWithFormat:@"%@, %@, %@", cityName, stateName, country];
+        locSubtitle.alpha = 1;
+        locTitle.text = appDelegate.item.name;
+        locSubtitle.text = appDelegate.locSubtitle;
+        NSIndexPath *path = [[NSIndexPath alloc]init];
+        path = [NSIndexPath indexPathForRow:1 inSection:1];
+        UITableViewCell *locCell = [self.tableView cellForRowAtIndexPath:path];
+        locCell.accessoryType = UITableViewCellAccessoryCheckmark;
     }
     
     
@@ -106,18 +243,32 @@
     
 }
 
-- (IBAction)eventTextInput:(UITextField *)sender {
-    
+- (IBAction)titleTextInput:(UITextField *)sender {
     
     Event[@"Title"] = self.titleField.text;
-    Event[@"Subtitle"] = self.subtitleField.text;
-    //Event[@"Location"] = self.locationField.text;
-    Event[@"Date"] = self.datePicker.date;
-    //Event[@"EndTime"] = self.endTimePicker.date;
     Event[@"CreatedByName"] = @"";
+    NSIndexPath *path = [[NSIndexPath alloc]init];
+    path = [NSIndexPath indexPathForRow:0 inSection:0];
+    UITableViewCell *locCell = [self.tableView cellForRowAtIndexPath:path];
+    locCell.accessoryType = UITableViewCellAccessoryCheckmark;
+}
 
+- (IBAction)subtitleTextInput:(UITextField *)sender {
     
+    Event[@"Subtitle"] = self.subtitleField.text;
+    NSIndexPath *path = [[NSIndexPath alloc]init];
+    path = [NSIndexPath indexPathForRow:1 inSection:0];
+    UITableViewCell *locCell = [self.tableView cellForRowAtIndexPath:path];
+    locCell.accessoryType = UITableViewCellAccessoryCheckmark;
+}
+
+- (IBAction)locationTextInput:(UITextField *)sender {
     
+    Event[@"Location"] = self.locationField.text;
+    NSIndexPath *path = [[NSIndexPath alloc]init];
+    path = [NSIndexPath indexPathForRow:0 inSection:1];
+    UITableViewCell *locCell = [self.tableView cellForRowAtIndexPath:path];
+    locCell.accessoryType = UITableViewCellAccessoryCheckmark;
 }
 
 - (IBAction)doneButton:(UIBarButtonItem *)sender {
@@ -224,6 +375,7 @@
         Event[@"swipesRight"] = one;
         
         Event[@"Date"] = self.datePicker.date;
+        Event[@"Hashtag"] = self.hashtagDetailLabel.text;
         
         PFUser *user = [PFUser currentUser];
         Event[@"CreatedBy"] = user.username;
@@ -273,6 +425,7 @@ clickedButtonAtIndex:(NSInteger)buttonIndex{
         Event[@"swipesRight"] = one;
         
         Event[@"Date"] = self.datePicker.date;
+        Event[@"Hashtag"] = self.hashtagDetailLabel.text;
         
         PFUser *user = [PFUser currentUser];
         Event[@"CreatedBy"] = user.username;
@@ -293,32 +446,18 @@ clickedButtonAtIndex:(NSInteger)buttonIndex{
     }
 }
 
-
-/*
- -(void)imageWasAdded:(EventTVC *)image {
- 
- EventTVC *eventImage = (EventTVC *)image;
- //if (eventImage.imageView.image != nil) {
- NSData *imageData = UIImagePNGRepresentation(eventImage.imageView.image);
- PFFile *imageFile = [PFFile fileWithName:@"image.png" data:imageData];
- Event[@"Image"] = imageFile;
- //}
- 
- }
- */
 - (IBAction)dateChanged:(UIDatePicker *)sender {
-    
-    // I don't think this code actually does anything. EndTime gets set no matter what
     
     Event[@"Date"] = self.datePicker.date;
     
-    //sets end time picker to one hour later than start time
-    //self.endTimePicker.date = [[NSDate alloc]initWithTimeInterval:3600 sinceDate:self.datePicker.date];
+    //NSDate *endDate = [NSDate dateWithTimeInterval:1800 sinceDate:self.datePicker.date];
+    //endTimePicker.minimumDate = endDate;
+    endTimePicker.date = [NSDate dateWithTimeInterval:intervalInSeconds sinceDate:datePicker.date];
     
-    //static dispatch_once_t onceToken;
-    //dispatch_once(&onceToken, ^{
-    self.endTimePicker.date = self.datePicker.date;
-    //});
+    dateDetailLabel.text = [dateFormatter stringFromDate:datePicker.date];
+        
+    [self performSelector:@selector(didEndTimeChange:) withObject:endTimePicker];
+    
     NSLog(@"Date changed");
     
 }
@@ -327,6 +466,34 @@ clickedButtonAtIndex:(NSInteger)buttonIndex{
     
     Event[@"EndTime"] = self.endTimePicker.date;
     
+    NSDictionary* attributes = @{
+                                 NSStrikethroughStyleAttributeName: [NSNumber numberWithInt:NSUnderlineStyleSingle]
+                                 };
+    
+    // IF LESS THAN TODAY MAKE STRIKETHROUGH
+    if ([endTimePicker.date timeIntervalSinceDate:datePicker.date] < 0) {
+        if ([endTimePicker.date beginningOfDay] == [datePicker.date beginningOfDay]) {
+            NSDateFormatter *sameDayFormatter = [[NSDateFormatter alloc]init];
+            [sameDayFormatter setDateFormat:@"h:mm a"];
+            NSAttributedString* attrText = [[NSAttributedString alloc] initWithString:[sameDayFormatter stringFromDate:endTimePicker.date] attributes:attributes];
+            endTimeDetailLabel.attributedText = attrText;
+        } else {
+            NSAttributedString* attrText = [[NSAttributedString alloc] initWithString:[dateFormatter stringFromDate:endTimePicker.date] attributes:attributes];
+            endTimeDetailLabel.text = [dateFormatter stringFromDate:endTimePicker.date];
+            endTimeDetailLabel.attributedText = attrText;
+        }
+    } else {
+        
+        if ([endTimePicker.date beginningOfDay] == [datePicker.date beginningOfDay]) {
+            NSDateFormatter *sameDayFormatter = [[NSDateFormatter alloc]init];
+            [sameDayFormatter setDateFormat:@"h:mm a"];
+            endTimeDetailLabel.text = [sameDayFormatter stringFromDate:endTimePicker.date];
+        } else {
+            endTimeDetailLabel.text = [dateFormatter stringFromDate:endTimePicker.date];
+        }
+    }
+    
+    intervalInSeconds = [endTimePicker.date timeIntervalSinceDate:datePicker.date];
     NSLog(@"End Time changed + saved");
     
 }
@@ -356,6 +523,7 @@ clickedButtonAtIndex:(NSInteger)buttonIndex{
     UIImage *image = [UIImage imageNamed:[self.hashtagData objectAtIndex:row]];
     imageView.image = image;
     
+    hashtagDetailLabel.text = [self.hashtagData objectAtIndex:row];
 }
 
 - (IBAction)imageButtonPressed:(id)sender {
@@ -393,61 +561,31 @@ clickedButtonAtIndex:(NSInteger)buttonIndex{
     }
 }
 
-
-#pragma mark - Table view data source
-
-/*
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:<#@"reuseIdentifier"#> forIndexPath:indexPath];
+-(void)textViewDidBeginEditing:(UITextView *)textView {
     
-    // Configure the cell...
+    if ([descriptionTextView.text isEqualToString:@"Description (optional)"]) {
+    descriptionTextView.text = @"";
+    } else {
+        descriptionTextView.textColor = [UIColor blackColor];
+        [descriptionTextView.font fontWithSize:14.0];
+    }
     
-    return cell;
 }
-*/
 
-/*
-// Override to support conditional editing of the table view.
-- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the specified item to be editable.
-    return YES;
+- (void)textViewDidEndEditing:(UITextView *)textView {
+    
+    if ([descriptionTextView.text isEqualToString:@""]) {
+        descriptionTextView.text = [NSString stringWithFormat:@"Description (optional)"];
+    }
 }
-*/
 
-/*
-// Override to support editing the table view.
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (editingStyle == UITableViewCellEditingStyleDelete) {
-        // Delete the row from the data source
-        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    } else if (editingStyle == UITableViewCellEditingStyleInsert) {
-        // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-    }   
+-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    
+    if ([segue.identifier isEqualToString:@"toMoreInfo"]) {
+        // Pass along variables
+        ExtraInfoTVC *vc = (ExtraInfoTVC *)[segue destinationViewController];
+        [vc setPassedEvent:Event];
+    }
 }
-*/
-
-/*
-// Override to support rearranging the table view.
-- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath {
-}
-*/
-
-/*
-// Override to support conditional rearranging of the table view.
-- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the item to be re-orderable.
-    return YES;
-}
-*/
-
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
 
 @end

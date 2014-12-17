@@ -42,6 +42,19 @@
 		504687C81A2D748B0001E234 /* DraggableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 504687C71A2D748B0001E234 /* DraggableView.m */; };
 		50594CD01A2FAD1B00749B49 /* AddressBook.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50594CCF1A2FAD1B00749B49 /* AddressBook.framework */; };
 		50594CD31A2FB87100749B49 /* EditEventTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 50594CD21A2FB87100749B49 /* EditEventTVC.m */; };
+		50594CD61A3254B500749B49 /* buttonOverride.m in Sources */ = {isa = PBXBuildFile; fileRef = 50594CD51A3254B500749B49 /* buttonOverride.m */; };
+		50594CD91A362B2800749B49 /* ExtraInfoTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 50594CD81A362B2800749B49 /* ExtraInfoTVC.m */; };
+		50594CE41A36A53A00749B49 /* OpenSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50594CDA1A36A53A00749B49 /* OpenSans-Bold.ttf */; };
+		50594CE51A36A53A00749B49 /* OpenSans-BoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50594CDB1A36A53A00749B49 /* OpenSans-BoldItalic.ttf */; };
+		50594CE61A36A53A00749B49 /* OpenSans-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50594CDC1A36A53A00749B49 /* OpenSans-ExtraBold.ttf */; };
+		50594CE71A36A53A00749B49 /* OpenSans-ExtraBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50594CDD1A36A53A00749B49 /* OpenSans-ExtraBoldItalic.ttf */; };
+		50594CE81A36A53A00749B49 /* OpenSans-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50594CDE1A36A53A00749B49 /* OpenSans-Italic.ttf */; };
+		50594CE91A36A53A00749B49 /* OpenSans-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50594CDF1A36A53A00749B49 /* OpenSans-Light.ttf */; };
+		50594CEA1A36A53A00749B49 /* OpenSans-LightItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50594CE01A36A53A00749B49 /* OpenSans-LightItalic.ttf */; };
+		50594CEB1A36A53A00749B49 /* OpenSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50594CE11A36A53A00749B49 /* OpenSans-Regular.ttf */; };
+		50594CEC1A36A53A00749B49 /* OpenSans-Semibold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50594CE21A36A53A00749B49 /* OpenSans-Semibold.ttf */; };
+		50594CED1A36A53A00749B49 /* OpenSans-SemiboldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50594CE31A36A53A00749B49 /* OpenSans-SemiboldItalic.ttf */; };
+		50594CF01A36C48700749B49 /* jumping28-2.png in Resources */ = {isa = PBXBuildFile; fileRef = 50594CEF1A36C48700749B49 /* jumping28-2.png */; };
 		505AEA3B19E2218B00C8D602 /* AttendEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = 505AEA3A19E2218B00C8D602 /* AttendEvent.m */; };
 		506A58AF1A2DB8E400807856 /* showMyEventVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 506A58AE1A2DB8E400807856 /* showMyEventVC.m */; };
 		5074A1071A2CFF9A00ECE6A9 /* LeftToRightSegue.m in Sources */ = {isa = PBXBuildFile; fileRef = 5074A1061A2CFF9A00ECE6A9 /* LeftToRightSegue.m */; };
@@ -130,6 +143,21 @@
 		50594CCF1A2FAD1B00749B49 /* AddressBook.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AddressBook.framework; path = System/Library/Frameworks/AddressBook.framework; sourceTree = SDKROOT; };
 		50594CD11A2FB87100749B49 /* EditEventTVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EditEventTVC.h; sourceTree = "<group>"; };
 		50594CD21A2FB87100749B49 /* EditEventTVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EditEventTVC.m; sourceTree = "<group>"; };
+		50594CD41A3254B500749B49 /* buttonOverride.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = buttonOverride.h; sourceTree = "<group>"; };
+		50594CD51A3254B500749B49 /* buttonOverride.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = buttonOverride.m; sourceTree = "<group>"; };
+		50594CD71A362B2800749B49 /* ExtraInfoTVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ExtraInfoTVC.h; sourceTree = "<group>"; };
+		50594CD81A362B2800749B49 /* ExtraInfoTVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ExtraInfoTVC.m; sourceTree = "<group>"; };
+		50594CDA1A36A53A00749B49 /* OpenSans-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "OpenSans-Bold.ttf"; path = "../../Downloads/Open_Sans/OpenSans-Bold.ttf"; sourceTree = "<group>"; };
+		50594CDB1A36A53A00749B49 /* OpenSans-BoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "OpenSans-BoldItalic.ttf"; path = "../../Downloads/Open_Sans/OpenSans-BoldItalic.ttf"; sourceTree = "<group>"; };
+		50594CDC1A36A53A00749B49 /* OpenSans-ExtraBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "OpenSans-ExtraBold.ttf"; path = "../../Downloads/Open_Sans/OpenSans-ExtraBold.ttf"; sourceTree = "<group>"; };
+		50594CDD1A36A53A00749B49 /* OpenSans-ExtraBoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "OpenSans-ExtraBoldItalic.ttf"; path = "../../Downloads/Open_Sans/OpenSans-ExtraBoldItalic.ttf"; sourceTree = "<group>"; };
+		50594CDE1A36A53A00749B49 /* OpenSans-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "OpenSans-Italic.ttf"; path = "../../Downloads/Open_Sans/OpenSans-Italic.ttf"; sourceTree = "<group>"; };
+		50594CDF1A36A53A00749B49 /* OpenSans-Light.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "OpenSans-Light.ttf"; path = "../../Downloads/Open_Sans/OpenSans-Light.ttf"; sourceTree = "<group>"; };
+		50594CE01A36A53A00749B49 /* OpenSans-LightItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "OpenSans-LightItalic.ttf"; path = "../../Downloads/Open_Sans/OpenSans-LightItalic.ttf"; sourceTree = "<group>"; };
+		50594CE11A36A53A00749B49 /* OpenSans-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "OpenSans-Regular.ttf"; path = "../../Downloads/Open_Sans/OpenSans-Regular.ttf"; sourceTree = "<group>"; };
+		50594CE21A36A53A00749B49 /* OpenSans-Semibold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "OpenSans-Semibold.ttf"; path = "../../Downloads/Open_Sans/OpenSans-Semibold.ttf"; sourceTree = "<group>"; };
+		50594CE31A36A53A00749B49 /* OpenSans-SemiboldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "OpenSans-SemiboldItalic.ttf"; path = "../../Downloads/Open_Sans/OpenSans-SemiboldItalic.ttf"; sourceTree = "<group>"; };
+		50594CEF1A36C48700749B49 /* jumping28-2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "jumping28-2.png"; path = "../../../Downloads/jumping28-2.png"; sourceTree = "<group>"; };
 		505AEA3919E2218B00C8D602 /* AttendEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AttendEvent.h; sourceTree = "<group>"; };
 		505AEA3A19E2218B00C8D602 /* AttendEvent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AttendEvent.m; sourceTree = "<group>"; };
 		506A58AD1A2DB8E400807856 /* showMyEventVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = showMyEventVC.h; sourceTree = "<group>"; };
@@ -221,6 +249,7 @@
 		50248C2D19BBA4C300329910 = {
 			isa = PBXGroup;
 			children = (
+				50594CEE1A36A54500749B49 /* Custom Fonts */,
 				50248C3819BBA4C300329910 /* HappeningParse */,
 				50248C4F19BBA4C300329910 /* HappeningParseTests */,
 				50248C3719BBA4C300329910 /* Products */,
@@ -246,15 +275,17 @@
 				50A3DE3019E88C14001E5E74 /* TabBarViewController.h */,
 				50A3DE3119E88C14001E5E74 /* TabBarViewController.m */,
 				50248C4319BBA4C300329910 /* Main.storyboard */,
+				50594CD41A3254B500749B49 /* buttonOverride.h */,
+				50594CD51A3254B500749B49 /* buttonOverride.m */,
 				5074A1081A2D04C000ECE6A9 /* Custom Segues */,
 				50D76D4D1A2CE00900FC076F /* moreDetailFromCard.h */,
 				50D76D4E1A2CE00900FC076F /* moreDetailFromCard.m */,
 				50D76D501A2CE68700FC076F /* moreDetailFromTable.h */,
 				50D76D511A2CE68700FC076F /* moreDetailFromTable.m */,
-				506A58AD1A2DB8E400807856 /* showMyEventVC.h */,
-				506A58AE1A2DB8E400807856 /* showMyEventVC.m */,
 				509D5D251A11390600F0EB61 /* SettingsChoosingLoc.h */,
 				509D5D261A11390600F0EB61 /* SettingsChoosingLoc.m */,
+				506A58AD1A2DB8E400807856 /* showMyEventVC.h */,
+				506A58AE1A2DB8E400807856 /* showMyEventVC.m */,
 				501A948E1A015BD200999C2A /* SettingsTVC.h */,
 				501A948F1A015BD200999C2A /* SettingsTVC.m */,
 				50E0AB081A06B8E4001D6FD6 /* MyEventsTVC.h */,
@@ -276,10 +307,13 @@
 				509D5D0F1A0D745800F0EB61 /* OverlayView.h */,
 				509D5D101A0D745800F0EB61 /* OverlayView.m */,
 				50248C4619BBA4C300329910 /* Images.xcassets */,
+				50594CEF1A36C48700749B49 /* jumping28-2.png */,
 				50A3DBEF19E3151E001E5E74 /* LocationSearching.h */,
 				50A3DBF019E3151F001E5E74 /* LocationSearching.m */,
 				50A3DBF219E336D9001E5E74 /* SearchBar.h */,
 				50A3DBF319E336D9001E5E74 /* SearchBar.m */,
+				50594CD71A362B2800749B49 /* ExtraInfoTVC.h */,
+				50594CD81A362B2800749B49 /* ExtraInfoTVC.m */,
 				500910DF19C75EB2006542CA /* EventTVC.h */,
 				500910E019C75EB2006542CA /* EventTVC.m */,
 				50248C3919BBA4C300329910 /* Supporting Files */,
@@ -346,6 +380,23 @@
 				50248C6F19BBAAA500329910 /* Bolts.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		50594CEE1A36A54500749B49 /* Custom Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				50594CDA1A36A53A00749B49 /* OpenSans-Bold.ttf */,
+				50594CDB1A36A53A00749B49 /* OpenSans-BoldItalic.ttf */,
+				50594CDC1A36A53A00749B49 /* OpenSans-ExtraBold.ttf */,
+				50594CDD1A36A53A00749B49 /* OpenSans-ExtraBoldItalic.ttf */,
+				50594CDE1A36A53A00749B49 /* OpenSans-Italic.ttf */,
+				50594CDF1A36A53A00749B49 /* OpenSans-Light.ttf */,
+				50594CE01A36A53A00749B49 /* OpenSans-LightItalic.ttf */,
+				50594CE11A36A53A00749B49 /* OpenSans-Regular.ttf */,
+				50594CE21A36A53A00749B49 /* OpenSans-Semibold.ttf */,
+				50594CE31A36A53A00749B49 /* OpenSans-SemiboldItalic.ttf */,
+			);
+			name = "Custom Fonts";
 			sourceTree = "<group>";
 		};
 		5074A1081A2D04C000ECE6A9 /* Custom Segues */ = {
@@ -486,10 +537,21 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				50594CE81A36A53A00749B49 /* OpenSans-Italic.ttf in Resources */,
+				50594CE51A36A53A00749B49 /* OpenSans-BoldItalic.ttf in Resources */,
+				50594CF01A36C48700749B49 /* jumping28-2.png in Resources */,
 				50E0AB0B1A06D297001D6FD6 /* Main.storyboard in Resources */,
+				50594CEC1A36A53A00749B49 /* OpenSans-Semibold.ttf in Resources */,
+				50594CE61A36A53A00749B49 /* OpenSans-ExtraBold.ttf in Resources */,
 				50A3DD6619E86314001E5E74 /* README.txt in Resources */,
+				50594CEA1A36A53A00749B49 /* OpenSans-LightItalic.ttf in Resources */,
 				50A3DD6519E86314001E5E74 /* LICENSE in Resources */,
+				50594CE41A36A53A00749B49 /* OpenSans-Bold.ttf in Resources */,
 				50248C4719BBA4C300329910 /* Images.xcassets in Resources */,
+				50594CED1A36A53A00749B49 /* OpenSans-SemiboldItalic.ttf in Resources */,
+				50594CE91A36A53A00749B49 /* OpenSans-Light.ttf in Resources */,
+				50594CEB1A36A53A00749B49 /* OpenSans-Regular.ttf in Resources */,
+				50594CE71A36A53A00749B49 /* OpenSans-ExtraBoldItalic.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -514,6 +576,7 @@
 				501A94901A015BD200999C2A /* SettingsTVC.m in Sources */,
 				509D5D241A111BE900F0EB61 /* LogInExistingUser.m in Sources */,
 				500910FD19C9FE5B006542CA /* MapViewController.m in Sources */,
+				50594CD61A3254B500749B49 /* buttonOverride.m in Sources */,
 				50248C4219BBA4C300329910 /* DragViewController.m in Sources */,
 				50E0AB071A06B8AB001D6FD6 /* AttendTableCell.m in Sources */,
 				5074A10B1A2D0B8700ECE6A9 /* RightToLeftSegue.m in Sources */,
@@ -526,6 +589,7 @@
 				50248C3C19BBA4C300329910 /* main.m in Sources */,
 				50A3DE2F19E86779001E5E74 /* LoginView.m in Sources */,
 				509D5D211A0D889600F0EB61 /* InitialLocationSearch.m in Sources */,
+				50594CD91A362B2800749B49 /* ExtraInfoTVC.m in Sources */,
 				509D5D131A0D745800F0EB61 /* NSDate+CupertinoYankee.m in Sources */,
 				50A3DE3219E88C14001E5E74 /* TabBarViewController.m in Sources */,
 				50A3DBF119E3151F001E5E74 /* LocationSearching.m in Sources */,

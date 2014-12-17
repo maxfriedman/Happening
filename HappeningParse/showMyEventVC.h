@@ -7,10 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "EditEventTVC.h"
 
 @interface showMyEventVC : UIViewController
 
-@property NSString *eventID;
+@property (assign) NSString *eventID;
 
 @property (strong, nonatomic) IBOutlet UILabel *eventIDLabel;
 

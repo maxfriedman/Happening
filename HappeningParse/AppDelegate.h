@@ -24,6 +24,8 @@
 
 @property (strong, nonatomic) MKMapItem *userLocation;
 
+@property (strong, nonatomic) NSString *locSubtitle;
+
 @property int sliderValue;
 
 @end

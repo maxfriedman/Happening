@@ -1,5 +1,5 @@
 //
-//  TableViewController.h
+//  EventTVC.h
 //  HappeningParse
 //
 //  Created by Max on 9/15/14.
@@ -11,15 +11,16 @@
 #import <Parse/Parse.h>
 #import <MapKit/MapKit.h>
 #import "AppDelegate.h"
+#import "NSDate+CupertinoYankee.h"
+#import "ExtraInfoTVC.h"
 
-@interface EventTVC: UITableViewController <UINavigationControllerDelegate, UIImagePickerControllerDelegate, UIPickerViewDataSource, UIPickerViewDelegate, UIAlertViewDelegate>
+@interface EventTVC: UITableViewController <UINavigationControllerDelegate, UIImagePickerControllerDelegate, UIPickerViewDataSource, UIPickerViewDelegate, UIAlertViewDelegate, UITextViewDelegate>
 
 @property (strong, nonatomic) IBOutlet UIButton *button;
 
 @property (strong, nonatomic) IBOutlet UIImageView *imageView;
+
 @property (strong, nonatomic) IBOutlet UIBarButtonItem *cancelButton;
-
-
 
 @property (strong, nonatomic) IBOutlet UITextField *titleField;
 
@@ -46,5 +47,10 @@
 //@property (strong, nonatomic) IBOutlet UIImageView *imageView;
 @property (strong, nonatomic) IBOutlet UIButton *imageButton;
 
+@property (strong, nonatomic) IBOutlet UITextField *urlField;
+
+@property (strong, nonatomic) IBOutlet UITextField *descriptionField;
+
+@property (strong, nonatomic) IBOutlet UITextView *descriptionTextView;
 
 @end
