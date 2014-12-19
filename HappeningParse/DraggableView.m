@@ -1,10 +1,10 @@
 //
 //  DraggableView.m
-//  testing swiping
+//  Happening
 //
 //
 //  Created by Max Friedman.
-//  Copyright (c) 2014 Happening, LLC. All rights reserved.
+//  Copyright (c) 2014 Happening LLC. All rights reserved.
 //
 
 #define ACTION_MARGIN 60 //%%% distance from center where the action applies. Higher = swipe further in order for the action to be called

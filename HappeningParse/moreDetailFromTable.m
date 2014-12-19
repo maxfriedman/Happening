@@ -1,9 +1,9 @@
 //
 //  moreDetailFromTable.m
-//  HappeningParse
+//  Happening
 //
 //  Created by Max on 12/1/14.
-//  Copyright (c) 2014 Happening. All rights reserved.
+//  Copyright (c) 2014 Happening LLC. All rights reserved.
 //
 
 #import "moreDetailFromTable.h"

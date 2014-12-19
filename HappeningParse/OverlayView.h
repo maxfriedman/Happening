@@ -1,5 +1,7 @@
 //
 //  OverlayView.h
+//  Happening
+//
 //
 //  Created by Max Friedman.
 //  Copyright (c) 2014 Happening, LLC. All rights reserved.

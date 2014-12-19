@@ -24,7 +24,7 @@
 		50248C3F19BBA4C300329910 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 50248C3E19BBA4C300329910 /* AppDelegate.m */; };
 		50248C4219BBA4C300329910 /* DragViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50248C4119BBA4C300329910 /* DragViewController.m */; };
 		50248C4719BBA4C300329910 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 50248C4619BBA4C300329910 /* Images.xcassets */; };
-		50248C5319BBA4C300329910 /* HappeningParseTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 50248C5219BBA4C300329910 /* HappeningParseTests.m */; };
+		50248C5319BBA4C300329910 /* HappeningTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 50248C5219BBA4C300329910 /* HappeningTests.m */; };
 		50248C7219BBAAA500329910 /* Bolts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50248C6F19BBAAA500329910 /* Bolts.framework */; };
 		50248C7319BBAAA500329910 /* Parse.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50248C7019BBAAA500329910 /* Parse.framework */; };
 		50248C7719BBAAE000329910 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50248C7619BBAAE000329910 /* AudioToolbox.framework */; };
@@ -54,7 +54,6 @@
 		50594CEB1A36A53A00749B49 /* OpenSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50594CE11A36A53A00749B49 /* OpenSans-Regular.ttf */; };
 		50594CEC1A36A53A00749B49 /* OpenSans-Semibold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50594CE21A36A53A00749B49 /* OpenSans-Semibold.ttf */; };
 		50594CED1A36A53A00749B49 /* OpenSans-SemiboldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50594CE31A36A53A00749B49 /* OpenSans-SemiboldItalic.ttf */; };
-		50594CF01A36C48700749B49 /* jumping28-2.png in Resources */ = {isa = PBXBuildFile; fileRef = 50594CEF1A36C48700749B49 /* jumping28-2.png */; };
 		505AEA3B19E2218B00C8D602 /* AttendEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = 505AEA3A19E2218B00C8D602 /* AttendEvent.m */; };
 		506A58AF1A2DB8E400807856 /* showMyEventVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 506A58AE1A2DB8E400807856 /* showMyEventVC.m */; };
 		5074A1071A2CFF9A00ECE6A9 /* LeftToRightSegue.m in Sources */ = {isa = PBXBuildFile; fileRef = 5074A1061A2CFF9A00ECE6A9 /* LeftToRightSegue.m */; };
@@ -111,7 +110,7 @@
 		501A28B719DB24E600ACC2B4 /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
 		501A948E1A015BD200999C2A /* SettingsTVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SettingsTVC.h; sourceTree = "<group>"; };
 		501A948F1A015BD200999C2A /* SettingsTVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SettingsTVC.m; sourceTree = "<group>"; };
-		50248C3619BBA4C300329910 /* HappeningParse.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HappeningParse.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		50248C3619BBA4C300329910 /* HappeningParse.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = HappeningParse.app; path = Happening.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		50248C3A19BBA4C300329910 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		50248C3B19BBA4C300329910 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		50248C3D19BBA4C300329910 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -120,9 +119,9 @@
 		50248C4119BBA4C300329910 /* DragViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DragViewController.m; sourceTree = "<group>"; };
 		50248C4419BBA4C300329910 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		50248C4619BBA4C300329910 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
-		50248C4C19BBA4C300329910 /* HappeningParseTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HappeningParseTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		50248C4C19BBA4C300329910 /* HappeningParseTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = HappeningParseTests.xctest; path = HappeningTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		50248C5119BBA4C300329910 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		50248C5219BBA4C300329910 /* HappeningParseTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HappeningParseTests.m; sourceTree = "<group>"; };
+		50248C5219BBA4C300329910 /* HappeningTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HappeningTests.m; sourceTree = "<group>"; };
 		50248C6F19BBAAA500329910 /* Bolts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Bolts.framework; path = "../../Downloads/parse-library-1/Bolts.framework"; sourceTree = "<group>"; };
 		50248C7019BBAAA500329910 /* Parse.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Parse.framework; path = "../../Downloads/parse-library-1/Parse.framework"; sourceTree = "<group>"; };
 		50248C7619BBAAE000329910 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
@@ -158,7 +157,6 @@
 		50594CE11A36A53A00749B49 /* OpenSans-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "OpenSans-Regular.ttf"; path = "../../Downloads/Open_Sans/OpenSans-Regular.ttf"; sourceTree = "<group>"; };
 		50594CE21A36A53A00749B49 /* OpenSans-Semibold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "OpenSans-Semibold.ttf"; path = "../../Downloads/Open_Sans/OpenSans-Semibold.ttf"; sourceTree = "<group>"; };
 		50594CE31A36A53A00749B49 /* OpenSans-SemiboldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "OpenSans-SemiboldItalic.ttf"; path = "../../Downloads/Open_Sans/OpenSans-SemiboldItalic.ttf"; sourceTree = "<group>"; };
-		50594CEF1A36C48700749B49 /* jumping28-2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "jumping28-2.png"; path = "../../../Downloads/jumping28-2.png"; sourceTree = "<group>"; };
 		505AEA3919E2218B00C8D602 /* AttendEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AttendEvent.h; sourceTree = "<group>"; };
 		505AEA3A19E2218B00C8D602 /* AttendEvent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AttendEvent.m; sourceTree = "<group>"; };
 		506A58AD1A2DB8E400807856 /* showMyEventVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = showMyEventVC.h; sourceTree = "<group>"; };
@@ -253,8 +251,8 @@
 			isa = PBXGroup;
 			children = (
 				50594CEE1A36A54500749B49 /* Custom Fonts */,
-				50248C3819BBA4C300329910 /* HappeningParse */,
-				50248C4F19BBA4C300329910 /* HappeningParseTests */,
+				50248C3819BBA4C300329910 /* Happening */,
+				50248C4F19BBA4C300329910 /* HappeningTests */,
 				50248C3719BBA4C300329910 /* Products */,
 				50248C7519BBAAB500329910 /* Frameworks */,
 			);
@@ -269,7 +267,7 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		50248C3819BBA4C300329910 /* HappeningParse */ = {
+		50248C3819BBA4C300329910 /* Happening */ = {
 			isa = PBXGroup;
 			children = (
 				509D5D1B1A0D7FF100F0EB61 /* Login */,
@@ -312,7 +310,6 @@
 				50F851B71A43A11700D3BA82 /* OverlayView.h */,
 				50F851B81A43A11700D3BA82 /* OverlayView.m */,
 				50248C4619BBA4C300329910 /* Images.xcassets */,
-				50594CEF1A36C48700749B49 /* jumping28-2.png */,
 				50A3DBEF19E3151E001E5E74 /* LocationSearching.h */,
 				50A3DBF019E3151F001E5E74 /* LocationSearching.m */,
 				50A3DBF219E336D9001E5E74 /* SearchBar.h */,
@@ -325,6 +322,7 @@
 				500910FB19C9FE5B006542CA /* MapViewController.h */,
 				500910FC19C9FE5B006542CA /* MapViewController.m */,
 			);
+			name = Happening;
 			path = HappeningParse;
 			sourceTree = "<group>";
 		};
@@ -340,12 +338,13 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
-		50248C4F19BBA4C300329910 /* HappeningParseTests */ = {
+		50248C4F19BBA4C300329910 /* HappeningTests */ = {
 			isa = PBXGroup;
 			children = (
-				50248C5219BBA4C300329910 /* HappeningParseTests.m */,
+				50248C5219BBA4C300329910 /* HappeningTests.m */,
 				50248C5019BBA4C300329910 /* Supporting Files */,
 			);
+			name = HappeningTests;
 			path = HappeningParseTests;
 			sourceTree = "<group>";
 		};
@@ -458,9 +457,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		50248C3519BBA4C300329910 /* HappeningParse */ = {
+		50248C3519BBA4C300329910 /* Happening */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 50248C5619BBA4C300329910 /* Build configuration list for PBXNativeTarget "HappeningParse" */;
+			buildConfigurationList = 50248C5619BBA4C300329910 /* Build configuration list for PBXNativeTarget "Happening" */;
 			buildPhases = (
 				50248C3219BBA4C300329910 /* Sources */,
 				50248C3319BBA4C300329910 /* Frameworks */,
@@ -470,14 +469,14 @@
 			);
 			dependencies = (
 			);
-			name = HappeningParse;
+			name = Happening;
 			productName = HappeningParse;
 			productReference = 50248C3619BBA4C300329910 /* HappeningParse.app */;
 			productType = "com.apple.product-type.application";
 		};
-		50248C4B19BBA4C300329910 /* HappeningParseTests */ = {
+		50248C4B19BBA4C300329910 /* HappeningTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 50248C5919BBA4C300329910 /* Build configuration list for PBXNativeTarget "HappeningParseTests" */;
+			buildConfigurationList = 50248C5919BBA4C300329910 /* Build configuration list for PBXNativeTarget "HappeningTests" */;
 			buildPhases = (
 				50248C4819BBA4C300329910 /* Sources */,
 				50248C4919BBA4C300329910 /* Frameworks */,
@@ -488,7 +487,7 @@
 			dependencies = (
 				50248C4E19BBA4C300329910 /* PBXTargetDependency */,
 			);
-			name = HappeningParseTests;
+			name = HappeningTests;
 			productName = HappeningParseTests;
 			productReference = 50248C4C19BBA4C300329910 /* HappeningParseTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -517,7 +516,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 50248C3119BBA4C300329910 /* Build configuration list for PBXProject "HappeningParse" */;
+			buildConfigurationList = 50248C3119BBA4C300329910 /* Build configuration list for PBXProject "Happening" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -531,8 +530,8 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				50248C3519BBA4C300329910 /* HappeningParse */,
-				50248C4B19BBA4C300329910 /* HappeningParseTests */,
+				50248C3519BBA4C300329910 /* Happening */,
+				50248C4B19BBA4C300329910 /* HappeningTests */,
 			);
 		};
 /* End PBXProject section */
@@ -544,7 +543,6 @@
 			files = (
 				50594CE81A36A53A00749B49 /* OpenSans-Italic.ttf in Resources */,
 				50594CE51A36A53A00749B49 /* OpenSans-BoldItalic.ttf in Resources */,
-				50594CF01A36C48700749B49 /* jumping28-2.png in Resources */,
 				50E0AB0B1A06D297001D6FD6 /* Main.storyboard in Resources */,
 				50594CEC1A36A53A00749B49 /* OpenSans-Semibold.ttf in Resources */,
 				50594CE61A36A53A00749B49 /* OpenSans-ExtraBold.ttf in Resources */,
@@ -615,7 +613,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				50248C5319BBA4C300329910 /* HappeningParseTests.m in Sources */,
+				50248C5319BBA4C300329910 /* HappeningTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -624,7 +622,7 @@
 /* Begin PBXTargetDependency section */
 		50248C4E19BBA4C300329910 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 50248C3519BBA4C300329910 /* HappeningParse */;
+			target = 50248C3519BBA4C300329910 /* Happening */;
 			targetProxy = 50248C4D19BBA4C300329910 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -742,7 +740,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = "";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = Happening;
 				PROVISIONING_PROFILE = "";
 			};
 			name = Debug;
@@ -767,7 +765,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = "";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = Happening;
 				PROVISIONING_PROFILE = "";
 			};
 			name = Release;
@@ -786,7 +784,7 @@
 				);
 				INFOPLIST_FILE = HappeningParseTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = HappeningTests;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HappeningParse.app/HappeningParse";
 			};
 			name = Debug;
@@ -801,7 +799,7 @@
 				);
 				INFOPLIST_FILE = HappeningParseTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = HappeningTests;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HappeningParse.app/HappeningParse";
 			};
 			name = Release;
@@ -809,7 +807,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		50248C3119BBA4C300329910 /* Build configuration list for PBXProject "HappeningParse" */ = {
+		50248C3119BBA4C300329910 /* Build configuration list for PBXProject "Happening" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				50248C5419BBA4C300329910 /* Debug */,
@@ -818,7 +816,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		50248C5619BBA4C300329910 /* Build configuration list for PBXNativeTarget "HappeningParse" */ = {
+		50248C5619BBA4C300329910 /* Build configuration list for PBXNativeTarget "Happening" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				50248C5719BBA4C300329910 /* Debug */,
@@ -827,7 +825,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		50248C5919BBA4C300329910 /* Build configuration list for PBXNativeTarget "HappeningParseTests" */ = {
+		50248C5919BBA4C300329910 /* Build configuration list for PBXNativeTarget "HappeningTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				50248C5A19BBA4C300329910 /* Debug */,

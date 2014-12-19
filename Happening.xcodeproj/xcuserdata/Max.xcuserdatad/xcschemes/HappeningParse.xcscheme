@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "50248C3519BBA4C300329910"
-               BuildableName = "HappeningParse.app"
-               BlueprintName = "HappeningParse"
-               ReferencedContainer = "container:HappeningParse.xcodeproj">
+               BuildableName = "Happening.app"
+               BlueprintName = "Happening"
+               ReferencedContainer = "container:Happening.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
          <BuildActionEntry
@@ -29,9 +29,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "50248C4B19BBA4C300329910"
-               BuildableName = "HappeningParseTests.xctest"
-               BlueprintName = "HappeningParseTests"
-               ReferencedContainer = "container:HappeningParse.xcodeproj">
+               BuildableName = "HappeningTests.xctest"
+               BlueprintName = "HappeningTests"
+               ReferencedContainer = "container:Happening.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -47,9 +47,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "50248C4B19BBA4C300329910"
-               BuildableName = "HappeningParseTests.xctest"
-               BlueprintName = "HappeningParseTests"
-               ReferencedContainer = "container:HappeningParse.xcodeproj">
+               BuildableName = "HappeningTests.xctest"
+               BlueprintName = "HappeningTests"
+               ReferencedContainer = "container:Happening.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -57,9 +57,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "50248C3519BBA4C300329910"
-            BuildableName = "HappeningParse.app"
-            BlueprintName = "HappeningParse"
-            ReferencedContainer = "container:HappeningParse.xcodeproj">
+            BuildableName = "Happening.app"
+            BlueprintName = "Happening"
+            ReferencedContainer = "container:Happening.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </TestAction>
@@ -76,9 +76,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "50248C3519BBA4C300329910"
-            BuildableName = "HappeningParse.app"
-            BlueprintName = "HappeningParse"
-            ReferencedContainer = "container:HappeningParse.xcodeproj">
+            BuildableName = "Happening.app"
+            BlueprintName = "Happening"
+            ReferencedContainer = "container:Happening.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <AdditionalOptions>
@@ -94,9 +94,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "50248C3519BBA4C300329910"
-            BuildableName = "HappeningParse.app"
-            BlueprintName = "HappeningParse"
-            ReferencedContainer = "container:HappeningParse.xcodeproj">
+            BuildableName = "Happening.app"
+            BlueprintName = "Happening"
+            ReferencedContainer = "container:Happening.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
