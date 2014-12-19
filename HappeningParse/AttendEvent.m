@@ -194,6 +194,8 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     AttendTableCell *cell = [tableView dequeueReusableCellWithIdentifier:@"tag" forIndexPath:indexPath];
 
+    [cell setupCell];
+    
     PFQuery *swipesQuery = [PFQuery queryWithClassName:@"Swipes"];
     // Query only for current user's events
     PFUser *user = [PFUser currentUser];

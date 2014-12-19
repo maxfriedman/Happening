@@ -105,7 +105,7 @@
    </AnalyzeAction>
    <ArchiveAction
       buildConfiguration = "Release"
-      customArchiveName = "Happening Beta 2.02"
+      customArchiveName = "Happening Beta 3.0"
       revealArchiveInOrganizer = "YES">
    </ArchiveAction>
 </Scheme>

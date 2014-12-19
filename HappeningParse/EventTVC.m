@@ -363,6 +363,8 @@
         Event[@"Subtitle"] = self.subtitleField.text;
         Event[@"Location"] = self.locationField.text;
         
+        Event[@"URL"] = @"http://www.gethappeningapp.com";
+        
         //Save Image
         NSData *imageData = UIImagePNGRepresentation(imageView.image);
         PFFile *imageFile = [PFFile fileWithName:@"image.png" data:imageData];
@@ -391,6 +393,9 @@
         
         NSLog(@"Event created!");
 
+        UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Event created!" message:@"Please wait a few seconds for your event to be uploaded" delegate:self cancelButtonTitle:@"Edit" otherButtonTitles:@"Continue", nil];
+        [alert show];
+        
         // Peace out!
         [self dismissViewControllerAnimated:YES completion:nil];
     }

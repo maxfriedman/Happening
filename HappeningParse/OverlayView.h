@@ -9,12 +9,14 @@
 
 typedef NS_ENUM(NSUInteger , GGOverlayViewMode) {
     GGOverlayViewModeLeft,
-    GGOverlayViewModeRight
+    GGOverlayViewModeRight,
+    GGOverlayViewModeDown
 };
 
 @interface OverlayView : UIView
 
 @property (nonatomic) GGOverlayViewMode mode;
 @property (nonatomic, strong) UIImageView *imageView;
+@property (nonatomic, strong) UILabel *label;
 
 @end

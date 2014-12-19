@@ -59,8 +59,6 @@
 		506A58AF1A2DB8E400807856 /* showMyEventVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 506A58AE1A2DB8E400807856 /* showMyEventVC.m */; };
 		5074A1071A2CFF9A00ECE6A9 /* LeftToRightSegue.m in Sources */ = {isa = PBXBuildFile; fileRef = 5074A1061A2CFF9A00ECE6A9 /* LeftToRightSegue.m */; };
 		5074A10B1A2D0B8700ECE6A9 /* RightToLeftSegue.m in Sources */ = {isa = PBXBuildFile; fileRef = 5074A10A1A2D0B8700ECE6A9 /* RightToLeftSegue.m */; };
-		509D5D131A0D745800F0EB61 /* NSDate+CupertinoYankee.m in Sources */ = {isa = PBXBuildFile; fileRef = 509D5D0E1A0D745800F0EB61 /* NSDate+CupertinoYankee.m */; };
-		509D5D141A0D745800F0EB61 /* OverlayView.m in Sources */ = {isa = PBXBuildFile; fileRef = 509D5D101A0D745800F0EB61 /* OverlayView.m */; };
 		509D5D191A0D7A5A00F0EB61 /* FirstTimeScreen.m in Sources */ = {isa = PBXBuildFile; fileRef = 509D5D161A0D7A5A00F0EB61 /* FirstTimeScreen.m */; };
 		509D5D1A1A0D7A5A00F0EB61 /* PageContentViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 509D5D181A0D7A5A00F0EB61 /* PageContentViewController.m */; };
 		509D5D1E1A0D801400F0EB61 /* ChoosingLocation.m in Sources */ = {isa = PBXBuildFile; fileRef = 509D5D1D1A0D801400F0EB61 /* ChoosingLocation.m */; };
@@ -80,6 +78,9 @@
 		50E0AB071A06B8AB001D6FD6 /* AttendTableCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50E0AB061A06B8AB001D6FD6 /* AttendTableCell.m */; };
 		50E0AB0A1A06B8E4001D6FD6 /* MyEventsTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 50E0AB091A06B8E4001D6FD6 /* MyEventsTVC.m */; };
 		50E0AB0B1A06D297001D6FD6 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 50248C4319BBA4C300329910 /* Main.storyboard */; };
+		50F851B91A43A11700D3BA82 /* OverlayView.m in Sources */ = {isa = PBXBuildFile; fileRef = 50F851B81A43A11700D3BA82 /* OverlayView.m */; };
+		50F851BC1A43A25900D3BA82 /* NSDate+CupertinoYankee.m in Sources */ = {isa = PBXBuildFile; fileRef = 50F851BB1A43A25900D3BA82 /* NSDate+CupertinoYankee.m */; };
+		50F851BF1A43E03C00D3BA82 /* CustomCalendarActivity.m in Sources */ = {isa = PBXBuildFile; fileRef = 50F851BE1A43E03C00D3BA82 /* CustomCalendarActivity.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -166,10 +167,6 @@
 		5074A1061A2CFF9A00ECE6A9 /* LeftToRightSegue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LeftToRightSegue.m; sourceTree = "<group>"; };
 		5074A1091A2D0B8700ECE6A9 /* RightToLeftSegue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RightToLeftSegue.h; sourceTree = "<group>"; };
 		5074A10A1A2D0B8700ECE6A9 /* RightToLeftSegue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RightToLeftSegue.m; sourceTree = "<group>"; };
-		509D5D0D1A0D745800F0EB61 /* NSDate+CupertinoYankee.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSDate+CupertinoYankee.h"; path = "../../files/NSDate+CupertinoYankee.h"; sourceTree = "<group>"; };
-		509D5D0E1A0D745800F0EB61 /* NSDate+CupertinoYankee.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSDate+CupertinoYankee.m"; path = "../../files/NSDate+CupertinoYankee.m"; sourceTree = "<group>"; };
-		509D5D0F1A0D745800F0EB61 /* OverlayView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OverlayView.h; path = ../../files/OverlayView.h; sourceTree = "<group>"; };
-		509D5D101A0D745800F0EB61 /* OverlayView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OverlayView.m; path = ../../files/OverlayView.m; sourceTree = "<group>"; };
 		509D5D151A0D7A5A00F0EB61 /* FirstTimeScreen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FirstTimeScreen.h; sourceTree = "<group>"; };
 		509D5D161A0D7A5A00F0EB61 /* FirstTimeScreen.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FirstTimeScreen.m; sourceTree = "<group>"; };
 		509D5D171A0D7A5A00F0EB61 /* PageContentViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PageContentViewController.h; sourceTree = "<group>"; };
@@ -202,6 +199,12 @@
 		50E0AB061A06B8AB001D6FD6 /* AttendTableCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AttendTableCell.m; sourceTree = "<group>"; };
 		50E0AB081A06B8E4001D6FD6 /* MyEventsTVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MyEventsTVC.h; sourceTree = "<group>"; };
 		50E0AB091A06B8E4001D6FD6 /* MyEventsTVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MyEventsTVC.m; sourceTree = "<group>"; };
+		50F851B71A43A11700D3BA82 /* OverlayView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OverlayView.h; sourceTree = "<group>"; };
+		50F851B81A43A11700D3BA82 /* OverlayView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OverlayView.m; sourceTree = "<group>"; };
+		50F851BA1A43A25900D3BA82 /* NSDate+CupertinoYankee.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSDate+CupertinoYankee.h"; sourceTree = "<group>"; };
+		50F851BB1A43A25900D3BA82 /* NSDate+CupertinoYankee.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSDate+CupertinoYankee.m"; sourceTree = "<group>"; };
+		50F851BD1A43E03C00D3BA82 /* CustomCalendarActivity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CustomCalendarActivity.h; sourceTree = "<group>"; };
+		50F851BE1A43E03C00D3BA82 /* CustomCalendarActivity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CustomCalendarActivity.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -298,14 +301,16 @@
 				505AEA3A19E2218B00C8D602 /* AttendEvent.m */,
 				50248C4019BBA4C300329910 /* DragViewController.h */,
 				50248C4119BBA4C300329910 /* DragViewController.m */,
+				50F851BD1A43E03C00D3BA82 /* CustomCalendarActivity.h */,
+				50F851BE1A43E03C00D3BA82 /* CustomCalendarActivity.m */,
 				504687C61A2D748B0001E234 /* DraggableView.h */,
 				504687C71A2D748B0001E234 /* DraggableView.m */,
 				504687C31A2D71640001E234 /* DraggableViewBackground.h */,
 				504687C41A2D71640001E234 /* DraggableViewBackground.m */,
 				504687C01A2D2E090001E234 /* FlippedDVB.h */,
 				504687C11A2D2E090001E234 /* FlippedDVB.m */,
-				509D5D0F1A0D745800F0EB61 /* OverlayView.h */,
-				509D5D101A0D745800F0EB61 /* OverlayView.m */,
+				50F851B71A43A11700D3BA82 /* OverlayView.h */,
+				50F851B81A43A11700D3BA82 /* OverlayView.m */,
 				50248C4619BBA4C300329910 /* Images.xcassets */,
 				50594CEF1A36C48700749B49 /* jumping28-2.png */,
 				50A3DBEF19E3151E001E5E74 /* LocationSearching.h */,
@@ -326,8 +331,8 @@
 		50248C3919BBA4C300329910 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				509D5D0D1A0D745800F0EB61 /* NSDate+CupertinoYankee.h */,
-				509D5D0E1A0D745800F0EB61 /* NSDate+CupertinoYankee.m */,
+				50F851BA1A43A25900D3BA82 /* NSDate+CupertinoYankee.h */,
+				50F851BB1A43A25900D3BA82 /* NSDate+CupertinoYankee.m */,
 				50A3DE2C19E863A9001E5E74 /* Images */,
 				50248C3A19BBA4C300329910 /* Info.plist */,
 				50248C3B19BBA4C300329910 /* main.m */,
@@ -590,10 +595,10 @@
 				50A3DE2F19E86779001E5E74 /* LoginView.m in Sources */,
 				509D5D211A0D889600F0EB61 /* InitialLocationSearch.m in Sources */,
 				50594CD91A362B2800749B49 /* ExtraInfoTVC.m in Sources */,
-				509D5D131A0D745800F0EB61 /* NSDate+CupertinoYankee.m in Sources */,
 				50A3DE3219E88C14001E5E74 /* TabBarViewController.m in Sources */,
 				50A3DBF119E3151F001E5E74 /* LocationSearching.m in Sources */,
 				50594CD31A2FB87100749B49 /* EditEventTVC.m in Sources */,
+				50F851BC1A43A25900D3BA82 /* NSDate+CupertinoYankee.m in Sources */,
 				505AEA3B19E2218B00C8D602 /* AttendEvent.m in Sources */,
 				504687C51A2D71640001E234 /* DraggableViewBackground.m in Sources */,
 				504687C81A2D748B0001E234 /* DraggableView.m in Sources */,
@@ -601,7 +606,8 @@
 				506A58AF1A2DB8E400807856 /* showMyEventVC.m in Sources */,
 				500910E119C75EB2006542CA /* EventTVC.m in Sources */,
 				50D76D521A2CE68700FC076F /* moreDetailFromTable.m in Sources */,
-				509D5D141A0D745800F0EB61 /* OverlayView.m in Sources */,
+				50F851B91A43A11700D3BA82 /* OverlayView.m in Sources */,
+				50F851BF1A43E03C00D3BA82 /* CustomCalendarActivity.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -669,7 +675,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "";
@@ -706,7 +712,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "";

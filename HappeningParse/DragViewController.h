@@ -34,7 +34,9 @@
 
 @end
 
+#import "DraggableView.h"
 @interface APActivityProvider : UIActivityItemProvider <UIActivityItemSource>
+@property (nonatomic, strong)DraggableView *APdragView;
 @end
 
 @interface APActivityIcon : UIActivity

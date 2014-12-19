@@ -18,5 +18,7 @@
 
 @property (strong, nonatomic) NSString *eventID;
 
+- (void)setupCell;
+
 
 @end

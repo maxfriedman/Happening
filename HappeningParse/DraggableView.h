@@ -11,11 +11,13 @@
 #import "OverlayView.h"
 #import <Parse/Parse.h>
 #import <QuartzCore/QuartzCore.h>
+#import <EventKit/EventKit.h>
 
 @protocol DraggableViewDelegate <NSObject>
 
 -(void)cardSwipedLeft:(UIView *)card;
 -(void)cardSwipedRight:(UIView *)card;
+-(void)checkEventStoreAccessForCalendar;
 
 @end
 
@@ -57,6 +59,7 @@
 @property (nonatomic, strong)UIButton* checkButton;
 @property (nonatomic, strong)UIButton* xButton;
 
+@property (nonatomic, strong) EKEventStore *eventStore;
 
 -(void)leftClickAction;
 -(void)rightClickAction;

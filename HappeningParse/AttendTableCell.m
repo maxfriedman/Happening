@@ -11,7 +11,24 @@
 @implementation AttendTableCell
 
 - (void)awakeFromNib {
-    // Initialization code
+    
+    NSLog(@"Made it");
+    
+    UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleLight];
+    UIVisualEffectView *blurEffectView = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
+    blurEffectView.frame = CGRectMake(self.image.frame.origin.x, self.image.frame.origin.x, self.image.frame.size.width, self.image.frame.size.height);
+    blurEffectView.alpha = 0.95;
+    [self.image addSubview:blurEffectView];
+    
+    UIVibrancyEffect *vibrancyEffect = [UIVibrancyEffect effectForBlurEffect:blurEffect];
+    UIVisualEffectView *vibrancyEffectView = [[UIVisualEffectView alloc] initWithEffect:vibrancyEffect];
+    vibrancyEffectView.frame = blurEffectView.bounds;
+}
+
+- (void)setupCell {
+    
+    
+    
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {

@@ -10,6 +10,8 @@
 #import <MapKit/MapKit.h>
 #import "DraggableView.h"
 #import "DragViewController.h"
+#import <EventKit/EventKit.h>
+
 
 @interface DraggableViewBackground : UIView <DraggableViewDelegate, CLLocationManagerDelegate, DragViewControllerDelegate>
 
@@ -23,6 +25,7 @@
 
 -(void)swipeLeft;
 -(void)swipeRight;
+-(void)swipeDown;
 
 @property (retain,nonatomic)NSMutableArray* exampleCardLabels; //%%% the labels the cards
 @property (retain,nonatomic)NSMutableArray* allCards; //%%% the labels the cards

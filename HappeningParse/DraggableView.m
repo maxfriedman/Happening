@@ -14,6 +14,10 @@
 #define ROTATION_STRENGTH 320 //%%% strength of rotation. Higher = weaker rotation
 #define ROTATION_ANGLE M_PI/8 //%%% Higher = stronger rotation angle
 
+#define SWIPE_DOWN_MARGIN 100 //%%% distance from center where the action applies. Higher = swipe further in order for the action to be called
+
+
+
 
 #import "DraggableView.h"
 #import "AppDelegate.h"
@@ -54,12 +58,14 @@
 @synthesize locImage, userImage;
 @synthesize activityView;
 
-@synthesize xButton, checkButton;
+@synthesize xButton, checkButton, eventStore;
 
 - (id)initWithFrame:(CGRect)frame {
     
     self = [super initWithFrame:frame];
     if (self) {
+        
+        eventStore = [[EKEventStore alloc] init];
         
         cardBackground = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"cardBackground"]];
         cardBackground.frame = CGRectMake(10, 320, 270, cardBackground.image.size.height);
@@ -210,7 +216,7 @@
         activityView.center = CGPointMake(self.frame.size.width / 2, (self.frame.size.height / 2) - 30);
         [cardView addSubview:activityView];
         
-        //[self addSubview:transpBackground];
+        //[cardView addSubview:transpBackground];
         [cardView addSubview:title];
         [cardView addSubview:subtitle];
         [cardView addSubview:location];
@@ -221,7 +227,8 @@
         [cardView addSubview:swipesRight];
         //[cardView addSubview:createdBy];
         
-        overlayView = [[OverlayView alloc]initWithFrame:CGRectMake(self.frame.size.width/2-100, 0, 100, 100)];
+        //overlayView = [[OverlayView alloc]initWithFrame:CGRectMake(self.frame.size.width/2-100, 0, 100, 100)];
+        overlayView = [[OverlayView alloc]initWithFrame:CGRectMake(0, 0, 100, 100)];
         overlayView.alpha = 0;
         [cardView addSubview:overlayView];
         
@@ -272,7 +279,7 @@
 {
     //%%% this extracts the coordinate data from your swipe movement. (i.e. How much did you move?)
     xFromCenter = [gestureRecognizer translationInView:cardView].x; //%%% positive for right swipe, negative for left
-    yFromCenter = [gestureRecognizer translationInView:cardView].y; //%%% positive for up, negative for down
+    yFromCenter = [gestureRecognizer translationInView:cardView].y; //%%% positive for down, negative for up
     
     //%%% checks what state the gesture is in. (are you just starting, letting go, or in the middle of a swipe?)
     switch (gestureRecognizer.state) {
@@ -303,7 +310,7 @@
             
             //%%% apply transformations
             cardView.transform = scaleTransform;
-            [self updateOverlay:xFromCenter];
+            [self updateOverlay:xFromCenter :yFromCenter];
             
             break;
         };
@@ -319,24 +326,33 @@
 }
 
 //%%% checks to see if you are moving right or left and applies the correct overlay image
--(void)updateOverlay:(CGFloat)distance
+-(void)updateOverlay:(CGFloat)xDistance :(CGFloat)yDistance
 {
-    if (distance > 0) {
-        overlayView.mode = GGOverlayViewModeRight;
-    } else {
-        overlayView.mode = GGOverlayViewModeLeft;
-    }
     
-    overlayView.alpha = MIN(fabsf(distance)/100, 0.4);
+    if (xDistance > 10 && yFromCenter < SWIPE_DOWN_MARGIN) {
+        overlayView.mode = GGOverlayViewModeRight;
+        overlayView.alpha = MIN(fabsf(xDistance)/100, 1.0); //based on x coordinate
+
+    } else if (xDistance < -10 && yFromCenter < SWIPE_DOWN_MARGIN) {
+        overlayView.mode = GGOverlayViewModeLeft;
+        overlayView.alpha = MIN(fabsf(xDistance)/100, 1.0); //based on x
+
+    } else if (yDistance > 0 ){
+        overlayView.mode = GGOverlayViewModeDown;
+        overlayView.alpha = MIN(fabsf(yDistance)/100, 1.0); //based on y
+
+    }
 }
 
 //%%% called when the card is let go
 - (void)afterSwipeAction
 {
-    if (xFromCenter > ACTION_MARGIN) {
+    if (xFromCenter > ACTION_MARGIN && yFromCenter < SWIPE_DOWN_MARGIN) {
         [self rightAction];
-    } else if (xFromCenter < -ACTION_MARGIN) {
+    } else if (xFromCenter < -ACTION_MARGIN && yFromCenter < SWIPE_DOWN_MARGIN) {
         [self leftAction];
+    } else if (yFromCenter > SWIPE_DOWN_MARGIN) { //add to cal
+        [self downAction];
     } else { //%%% resets the card
         [UIView animateWithDuration:0.3
                          animations:^{
@@ -350,11 +366,13 @@
 //%%% called when a swipe exceeds the ACTION_MARGIN to the right
 -(void)rightAction
 {
+    self.superview.superview.superview.userInteractionEnabled = NO; // BE CAREFUL... disables UI during button click
     CGPoint finishPoint = CGPointMake(500, 2*yFromCenter +self.originalPoint.y);
     [UIView animateWithDuration:0.3
                      animations:^{
                          cardView.center = finishPoint;
                      }completion:^(BOOL complete){
+                         self.superview.superview.superview.userInteractionEnabled = YES;
                          [self removeFromSuperview];
                      }];
     
@@ -367,11 +385,13 @@
 //%%% called when a swipe exceeds the ACTION_MARGIN to the left
 -(void)leftAction
 {
+    self.superview.superview.superview.userInteractionEnabled = NO; // BE CAREFUL... disables UI during button click
     CGPoint finishPoint = CGPointMake(-500, 2*yFromCenter +self.originalPoint.y);
     [UIView animateWithDuration:0.3
                      animations:^{
                          cardView.center = finishPoint;
                      }completion:^(BOOL complete){
+                         self.superview.superview.superview.userInteractionEnabled = YES;
                          [self removeFromSuperview];
                      }];
     
@@ -380,16 +400,38 @@
     NSLog(@"NO");
 }
 
--(void)rightClickAction
+-(void)downAction
 {
-    CGPoint finishPoint = CGPointMake(600, self.center.y);
+    self.superview.superview.superview.userInteractionEnabled = NO; // BE CAREFUL... disables UI during button click
+    CGPoint finishPoint = CGPointMake(cardView.frame.size.width / 2, 1000);
     [UIView animateWithDuration:0.3
                      animations:^{
                          cardView.center = finishPoint;
-                         cardView.transform = CGAffineTransformMakeRotation(1);
                      }completion:^(BOOL complete){
+                         self.superview.superview.superview.userInteractionEnabled = YES;
                          [self removeFromSuperview];
                      }];
+    
+    [delegate checkEventStoreAccessForCalendar];
+    [delegate cardSwipedRight:self];
+    
+    
+    NSLog(@"DOWN");
+}
+
+-(void)rightClickAction
+{
+
+    self.superview.superview.superview.userInteractionEnabled = NO; // BE CAREFUL... disables UI during button click
+    CGPoint finishPoint = CGPointMake(900, self.center.y);
+    [UIView animateWithDuration:0.5 delay:0.3 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+        cardView.center = finishPoint;
+        cardView.transform = CGAffineTransformMakeRotation(1);
+    }completion:^(BOOL complete){
+        self.superview.superview.superview.userInteractionEnabled = YES;
+        [self removeFromSuperview];
+    }];
+
     
     [delegate cardSwipedRight:self];
     
@@ -398,14 +440,16 @@
 
 -(void)leftClickAction
 {
+    
+    self.superview.superview.superview.userInteractionEnabled = NO; // BE CAREFUL... disables UI during button click
     CGPoint finishPoint = CGPointMake(-600, self.center.y);
-    [UIView animateWithDuration:0.3
-                     animations:^{
-                         cardView.center = finishPoint;
-                         cardView.transform = CGAffineTransformMakeRotation(-1);
-                     }completion:^(BOOL complete){
-                         [self removeFromSuperview];
-                     }];
+    [UIView animateWithDuration:0.5 delay:0.3 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+        cardView.center = finishPoint;
+        cardView.transform = CGAffineTransformMakeRotation(-1);
+    }completion:^(BOOL complete){
+        self.superview.superview.superview.userInteractionEnabled = YES;
+        [self removeFromSuperview];
+    }];
     
     [delegate cardSwipedLeft:self];
     
@@ -418,6 +462,56 @@
     
 }
 
+// Check the authorization status of our application for Calendar
+-(void)checkEventStoreAccessForCalendar
+{
+    EKAuthorizationStatus status = [EKEventStore authorizationStatusForEntityType:EKEntityTypeEvent];
+    
+    switch (status)
+    {
+            // Update our UI if the user has granted access to their Calendar
+        case EKAuthorizationStatusAuthorized: [self accessGrantedForCalendar];
+            break;
+            // Prompt the user for access to Calendar if there is no definitive answer
+        case EKAuthorizationStatusNotDetermined: [self requestCalendarAccess];
+            break;
+            // Display a message if the user has denied or restricted access to Calendar
+        case EKAuthorizationStatusDenied:
+        case EKAuthorizationStatusRestricted:
+        {
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Privacy Warning" message:@"Permission was not granted for Calendar"
+                                                           delegate:nil
+                                                  cancelButtonTitle:@"OK"
+                                                  otherButtonTitles:nil];
+            [alert show];
+        }
+            break;
+        default:
+            break;
+    }
+}
+
+
+// Prompt the user for access to their Calendar
+-(void)requestCalendarAccess
+{
+    
+    [eventStore requestAccessToEntityType:EKEntityTypeEvent completion:^(BOOL granted, NSError *error)
+     {
+         if (granted)
+         {
+             
+         }
+     }];
+}
+
+
+// This method is called when the user has granted permission to Calendar
+-(void)accessGrantedForCalendar
+{
+    // Let's get the default calendar associated with our event store
+    
+}
 
 
 @end

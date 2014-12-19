@@ -10,6 +10,8 @@
 
 @interface DraggableViewBackground()
 
+@property (nonatomic, strong) EKEventStore *eventStore;
+
 @end
 
 @implementation DraggableViewBackground{
@@ -47,6 +49,9 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
 @synthesize createdByArray;
 @synthesize storedIndex;
 
+@synthesize dragView; //CURRENT CARD!
+@synthesize eventStore;
+
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -57,6 +62,8 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
     if (self) {
         [super layoutSubviews];
         [self setupView];
+        
+        eventStore = [[EKEventStore alloc] init];
         
         self.myViewController = nil;
         
@@ -211,7 +218,6 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
      happening.textColor = [UIColor blackColor];
      happening.text = @"Happening";
      
-     */
      
      xButton = [[UIButton alloc]initWithFrame:CGRectMake(60, 360, 59, 59)];
      [xButton setImage:[UIImage imageNamed:@"xButton"] forState:UIControlStateNormal];
@@ -220,30 +226,21 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
      [checkButton setImage:[UIImage imageNamed:@"checkButton"] forState:UIControlStateNormal];
      [checkButton addTarget:self action:@selector(swipeRight) forControlEvents:UIControlEventTouchUpInside];
     
-    DragViewController *vc = [self viewController];
-    //[vc.xButton addTarget:self action:@selector(swipeLeft) forControlEvents:UIControlEventTouchUpInside];
-    //[vc.checkButton addTarget:self action:@selector(swipeRight) forControlEvents:UIControlEventTouchUpInside];
-    
     xButton.userInteractionEnabled = YES;
     
-    //[self addSubview:xButton];
+    [self addSubview:xButton];
     [self bringSubviewToFront:xButton];
-    //[self addSubview:checkButton];
+    [self addSubview:checkButton];
     [self bringSubviewToFront:checkButton];
-
     
      //[self addSubview:menuButton];
      //[self addSubview:messageButton];
      //[self addSubview:xButton];
      //[self addSubview:checkButton];
-    
+    */
     
 }
 
-- (DragViewController *)viewController {
-        return (DragViewController *)self.nextResponder;
-
-}
 
 #warning include own card customization here!
 //%%% creates a card and returns it.  This should be customized to fit your needs.
@@ -345,7 +342,6 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
         
         NSInteger eventCount = [eventObjects count];
         
-        
         NSLog(@"%lu cards loaded",(unsigned long)eventCount);
         
         
@@ -379,8 +375,11 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
             }
         }
         
+        if (loadedCards.count > 0)
+            dragView = [loadedCards objectAtIndex:0]; // Make dragView the current card
         
     }];//end of PFQuery
+    
     
 }
 
@@ -419,6 +418,9 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
         cardsLoadedIndex++;//%%% loaded a card, so have to increment count
         [self insertSubview:[loadedCards objectAtIndex:(MAX_BUFFER_SIZE-1)] belowSubview:[loadedCards objectAtIndex:(MAX_BUFFER_SIZE-2)]];
     }
+ 
+    dragView = [loadedCards firstObject]; // Make dragView the current card
+
 }
 
 #warning include own action here!
@@ -464,30 +466,7 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
     swipesObject[@"swipedRight"] = @YES;
     swipesObject[@"swipedLeft"] = @NO;
     [swipesObject saveInBackground];
-    
-    
-    //[eventTitles addObject:c.title];
-    //[eventLocs addObject:c.location];
-    
-    /* Unnecessary to query because we can query later with object IDs!!!!
-     
-     PFQuery *query = [PFQuery queryWithClassName:@"Event"];
-     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-     
-     for (int i=0; i<objects.count; i++) {
-     PFObject *someObject = objects[i];
-     if (c.objectID == someObject.objectId) {
-     [eventTitles addObject:c.objectID];
-     }
-     
-     }
-     [eventDates addObject:c.date];
-     
-     }];
-     */
-    
-    
-    
+
     
     [loadedCards removeObjectAtIndex:0]; //%%% card was swiped, so it's no longer a "loaded card"
     
@@ -497,13 +476,16 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
         [self insertSubview:[loadedCards objectAtIndex:(MAX_BUFFER_SIZE-1)] belowSubview:[loadedCards objectAtIndex:(MAX_BUFFER_SIZE-2)]];
     }
     
+    //[self checkEventStoreAccessForCalendar];
+    
+    dragView = [loadedCards firstObject]; // Make dragView the current card
+
+    
 }
 
 //%%% when you hit the right button, this is called and substitutes the swipe
 -(void)swipeRight
 {
-    NSLog(@"Made it");
-    DraggableView *dragView = [loadedCards firstObject];
     dragView.overlayView.mode = GGOverlayViewModeRight;
     [UIView animateWithDuration:0.2 animations:^{
         dragView.overlayView.alpha = 1;
@@ -514,8 +496,6 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
 //%%% when you hit the left button, this is called and substitutes the swipe
 -(void)swipeLeft
 {
-    NSLog(@"Made it");
-    DraggableView *dragView = [loadedCards firstObject];
     dragView.overlayView.mode = GGOverlayViewModeLeft;
     [UIView animateWithDuration:0.2 animations:^{
         dragView.overlayView.alpha = 1;
@@ -523,12 +503,19 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
     [dragView leftClickAction];
 }
 
+// Use this method if I ever add a down button!!
+-(void)swipeDown
+{
+    dragView.overlayView.mode = GGOverlayViewModeDown;
+    [UIView animateWithDuration:0.2 animations:^{
+        dragView.overlayView.alpha = 1;
+    }];
+    
+}
+
 -(void)cardTap
 {
     NSLog(@"Card tapped");
-
-    self.dragView = [loadedCards firstObject];
-    //[self.dragView tapAction];
     
     PFGeoPoint *loc = self.dragView.geoPoint;
     self.mapLocation = [[CLLocation alloc]initWithLatitude:loc.latitude longitude:loc.longitude];
@@ -541,13 +528,125 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
     [self.myViewController flipCurrentView];
 }
 
-/*
- // Only override drawRect: if you perform custom drawing.
- // An empty implementation adversely affects performance during animation.
- - (void)drawRect:(CGRect)rect
- {
- // Drawing code
- }
- */
+// Check the authorization status of our application for Calendar
+-(void)checkEventStoreAccessForCalendar
+{
+    EKAuthorizationStatus status = [EKEventStore authorizationStatusForEntityType:EKEntityTypeEvent];
+    
+    switch (status)
+    {
+            // Update our UI if the user has granted access to their Calendar
+        case EKAuthorizationStatusAuthorized: [self accessGrantedForCalendar];
+            break;
+            // Prompt the user for access to Calendar if there is no definitive answer
+        case EKAuthorizationStatusNotDetermined: [self requestCalendarAccess];
+            break;
+            // Display a message if the user has denied or restricted access to Calendar
+        case EKAuthorizationStatusDenied:
+        case EKAuthorizationStatusRestricted:
+        {
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Privacy Warning" message:@"Permission was not granted for Calendar"
+                                                           delegate:nil
+                                                  cancelButtonTitle:@"OK"
+                                                  otherButtonTitles:nil];
+            [alert show];
+        }
+            break;
+        default:
+            break;
+    }
+}
+
+
+// Prompt the user for access to their Calendar
+-(void)requestCalendarAccess
+{
+    
+    [eventStore requestAccessToEntityType:EKEntityTypeEvent completion:^(BOOL granted, NSError *error)
+     {
+         if (granted)
+         {
+             [self accessGrantedForCalendar];
+         }
+     }];
+}
+
+
+// This method is called when the user has granted permission to Calendar
+-(void)accessGrantedForCalendar
+{
+    
+    PFQuery *query = [PFQuery queryWithClassName:@"Event"];
+    PFObject *object = [query getObjectWithId:dragView.objectID];
+    
+    EKEvent *event = [EKEvent eventWithEventStore:eventStore];
+    
+    event.title = dragView.title.text;
+
+    event.startDate = object[@"Date"];
+    event.endDate = object[@"EndTime"];
+
+    //get address REMINDER 76597869876
+    PFGeoPoint *geoPoint = object[@"GeoLoc"];
+    CLLocation *eventLocation = [[CLLocation alloc]initWithLatitude:geoPoint.latitude longitude:geoPoint.longitude];
+    
+    
+    NSString *subtitle = dragView.subtitle.text;
+    NSString *description = object[@"Description"];
+    
+    if (description == nil)
+        event.notes = [NSString stringWithFormat:@"%@ // %@", dragView.location.text, subtitle];
+    else
+        event.notes = [NSString stringWithFormat:@"%@ // %@ // %@", dragView.location.text, subtitle, description];
+    
+    
+    NSString *url = object[@"URL"];
+    NSURL *urlFromString = [NSURL URLWithString:url];
+
+    if (urlFromString != nil)
+        event.URL = urlFromString;
+    else
+        event.URL = [NSURL URLWithString:@"http://www.gethappeningapp.com"];
+    
+    
+    //[event addAlarm:[EKAlarm alarmWithRelativeOffset:60.0f * -60.0f * 24]];
+    //[event addAlarm:[EKAlarm alarmWithRelativeOffset:60.0f * -15.0f]];
+    
+    
+    [[[CLGeocoder alloc]init] reverseGeocodeLocation:eventLocation completionHandler:^(NSArray *placemarks, NSError *error) {
+        CLPlacemark *placemark = placemarks[0];
+        
+        NSArray *lines = placemark.addressDictionary[ @"FormattedAddressLines"];
+        NSString *addressString = [lines componentsJoinedByString:@" "];
+        NSLog(@"Address: %@", addressString);
+        
+        //NSString *name = placemark.addressDictionary[@"Name"];
+        NSString *streetName = placemark.addressDictionary[@"Street"];
+        NSString *cityName = placemark.addressDictionary[@"City"];
+        NSString *stateName = placemark.addressDictionary[@"State"];
+        NSString *zipCode = placemark.addressDictionary[@"ZIP"];
+        //NSString *country = placemark.addressDictionary[@"Country"];
+        
+        if (zipCode) {
+            event.location = [NSString stringWithFormat:@"%@, %@ %@, %@", streetName, cityName, stateName, zipCode];
+        }
+        else if (cityName) {
+            event.location = [NSString stringWithFormat:@"%@, %@, %@", streetName, cityName, stateName];
+        } else
+            event.location = dragView.location.text;
+        
+        
+        UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Event added to your main calendar!" message:@"" delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+        
+        [alert show];
+        
+        [event setCalendar:[eventStore defaultCalendarForNewEvents]];
+        NSError *err;
+        [eventStore saveEvent:event span:EKSpanThisEvent error:&err];
+        NSLog(@"Added %@ to calendar. Object ID: %@", dragView.title.text, dragView.objectID);
+        
+    }];
+
+}
 
 @end

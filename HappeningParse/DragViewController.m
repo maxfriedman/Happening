@@ -9,6 +9,7 @@
 #import "DragViewController.h"
 #import "DraggableViewBackground.h"
 #import "FlippedDVB.h"
+#import "CustomCalendarActivity.h"
 
 @interface DragViewController ()
 
@@ -18,7 +19,10 @@
 
 @end
 
-@implementation DragViewController
+@implementation DragViewController {
+    
+    UIView *cardView;
+}
 
 @synthesize shareButton, draggableBackground, flippedDVB, xButton, checkButton, delegate;
 
@@ -31,6 +35,20 @@
         [self performSegueWithIdentifier:@"toChooseLoc" sender:self];
     }
     
+    
+    xButton = [[UIButton alloc]initWithFrame:CGRectMake(60, 440, 59, 59)];
+    [xButton setImage:[UIImage imageNamed:@"xButton"] forState:UIControlStateNormal];
+    [xButton addTarget:self action:@selector(swipeLeftDVC) forControlEvents:UIControlEventTouchUpInside];
+    
+    checkButton = [[UIButton alloc]initWithFrame:CGRectMake(200, 440, 59, 59)];
+    [checkButton setImage:[UIImage imageNamed:@"checkButton"] forState:UIControlStateNormal];
+    [checkButton addTarget:self action:@selector(swipeRightDVC) forControlEvents:UIControlEventTouchUpInside];
+    
+    [self.view addSubview:checkButton];
+    [self.view addSubview:xButton];
+    [self.view sendSubviewToBack:checkButton]; //So that card is above buttons
+    [self.view sendSubviewToBack:xButton];
+    
     self.frontViewIsVisible = YES;
 }
 
@@ -41,8 +59,11 @@
     if ([defaults boolForKey:@"refreshData"]) {
         
         // Removes the previous content!!!!!! (when view was burned in behind the cards)
-        UIView *someView = self.view.subviews[0];
-        for (id viewToRemove in [someView subviews]){
+        NSLog(@"%lu", (unsigned long)[self.view.subviews count] );
+        NSLog(@"%@", self.view.subviews );
+
+        cardView = self.view.subviews[2]; //Card view is 3rd in hierarchy after sending button views to the back
+        for (id viewToRemove in [cardView subviews]){
             [viewToRemove removeFromSuperview];
         }
         
@@ -53,19 +74,8 @@
         
         draggableBackground = [[DraggableViewBackground alloc]initWithFrame:self.view.frame];
         
-        xButton = [[UIButton alloc]initWithFrame:CGRectMake(60, 440, 59, 59)];
-        [xButton setImage:[UIImage imageNamed:@"xButton"] forState:UIControlStateNormal];
-        [xButton addTarget:self action:@selector(swipeLeftDVC) forControlEvents:UIControlEventTouchUpInside];
-        
-        checkButton = [[UIButton alloc]initWithFrame:CGRectMake(200, 440, 59, 59)];
-        [checkButton setImage:[UIImage imageNamed:@"checkButton"] forState:UIControlStateNormal];
-        [checkButton addTarget:self action:@selector(swipeRightDVC) forControlEvents:UIControlEventTouchUpInside];
-
-        
         draggableBackground.myViewController = self;
-        [self.view.subviews[0] addSubview:draggableBackground];
-        [self.view addSubview:checkButton];
-        [self.view addSubview:xButton];
+        [cardView addSubview:draggableBackground];
         
         //UITapGestureRecognizer *singleFingerTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(cardWasTapped)];
         //[draggableBackground addGestureRecognizer:singleFingerTap];
@@ -76,13 +86,13 @@
         //[self.view addSubview:flippedDVB];
         
         [activityView stopAnimating];
+        [activityView removeFromSuperview];
         
         [defaults setBool:NO forKey:@"refreshData"];
         [defaults synchronize];
         
-        
         delegate = draggableBackground;
-
+        
     }
 }
 
@@ -116,7 +126,7 @@
     
     // swap the views and transition
     if (self.frontViewIsVisible == YES) {
-        [UIView setAnimationTransition:UIViewAnimationTransitionFlipFromRight forView:self.view.subviews[0] cache:YES];
+        [UIView setAnimationTransition:UIViewAnimationTransitionFlipFromRight forView:cardView cache:YES];
         [self.draggableBackground removeFromSuperview];
         
         // %%%%% Pass variables to flipped card
@@ -127,11 +137,11 @@
         flippedDVB.eventLocationTitle = self.locationTitle;
         // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
-        [self.view.subviews[0] addSubview:self.flippedDVB];
+        [cardView addSubview:self.flippedDVB];
     } else {
-        [UIView setAnimationTransition:UIViewAnimationTransitionFlipFromLeft forView:self.view.subviews[0] cache:YES];
+        [UIView setAnimationTransition:UIViewAnimationTransitionFlipFromLeft forView:cardView cache:YES];
         [self.flippedDVB removeFromSuperview];
-        [self.view.subviews[0] addSubview:self.draggableBackground];
+        [cardView addSubview:self.draggableBackground];
     }
     [UIView commitAnimations];
     
@@ -155,12 +165,17 @@
 - (IBAction)shareAction:(id)sender {
     
     APActivityProvider *ActivityProvider = [[APActivityProvider alloc] init];
+    ActivityProvider.APdragView = draggableBackground.dragView;
     
-    NSURL *myWebsite = [NSURL URLWithString:@"http://www.gethappeningapp.com/"];
+    NSURL *myWebsite = [NSURL URLWithString:@"http://www.gethappeningapp.com/"]; //Make this custom when Liran makes unique pages
+    
+    CustomCalendarActivity *addToCalendar = [[CustomCalendarActivity alloc]init];
+    addToCalendar.draggableView = draggableBackground.dragView;
+    
     NSArray *itemsToShare = @[ActivityProvider, myWebsite];
-        
-    UIActivityViewController *activityVC = [[UIActivityViewController alloc]initWithActivityItems:itemsToShare applicationActivities:nil];
     
+    UIActivityViewController *activityVC = [[UIActivityViewController alloc]initWithActivityItems:itemsToShare applicationActivities:[NSArray arrayWithObject:addToCalendar]];
+
     activityVC.excludedActivityTypes = @[UIActivityTypeAirDrop,
                                          UIActivityTypePrint,
                                          UIActivityTypeAssignToContact,
@@ -171,7 +186,8 @@
                                          UIActivityTypePostToWeibo,
                                          UIActivityTypeCopyToPasteboard,
                                          ];
-        
+    
+    
     [self presentViewController:activityVC animated:YES completion:nil];
   
     [activityVC setCompletionHandler:^(NSString *act, BOOL done)
@@ -184,8 +200,8 @@
          if ( done )
          {
              
-             UIAlertView *Alert = [[UIAlertView alloc] initWithTitle:ServiceMsg message:@"" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-             [Alert show];
+             // Custom action for other activity types...
+             
          }
      }];
     
@@ -201,30 +217,20 @@
 
 @implementation APActivityProvider
 
+@synthesize APdragView;
+
 - (id) activityViewController:(UIActivityViewController *)activityViewController
           itemForActivityType:(NSString *)activityType
 {
-    DraggableViewBackground *draggableView = [[DraggableViewBackground alloc]init];
     
     PFUser *user = [PFUser currentUser];
     
     PFQuery *eventQuery = [PFQuery queryWithClassName:@"Event"];
-    // Sorts the query by most recent event and only shows those after today's date
-    [eventQuery orderByAscending:@"Date"];
-    [eventQuery whereKey:@"Date" greaterThan:[NSDate date]];
-    
-    PFQuery *didUserSwipe = [PFQuery queryWithClassName:@"Swipes"];
-    [didUserSwipe whereKey:@"UserID" containsString:user.username];
-    
-    [eventQuery whereKey:@"objectId" doesNotMatchKey:@"EventID" inQuery:didUserSwipe];
-    
-    NSArray *eventArray = [[NSArray alloc]init];
-    eventArray = [eventQuery findObjects];
-    PFObject *eventObject = eventArray[draggableView.storedIndex];
-    
-    NSString *title = eventObject[@"Title"];
-    NSString *subtitle = eventObject[@"Subtitle"];
-    NSString* loc = eventObject[@"Location"];
+    PFObject *eventObject = [eventQuery getObjectWithId:APdragView.objectID];
+
+    NSString *title = APdragView.title.text;
+    NSString *subtitle = APdragView.subtitle.text;
+    NSString* loc = APdragView.location.text;
     
     NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
     [formatter setDateFormat:@"EEEE, MMMM d"];
@@ -240,7 +246,6 @@
         eventTimeString = [NSString stringWithFormat:@"from %@ to %@",startTimeString, endTimeString];
     } else {
         eventTimeString = [NSString stringWithFormat:@"at %@", startTimeString];
-        
     }
     
     NSString *shareText = [[NSString alloc]init];
@@ -273,7 +278,7 @@
         //return @"OpenMyapp custom text";
     return nil;
 }
-- (id) activityViewControllerPlaceholderItem:(UIActivityViewController *)activityViewController { return @""; }
+- (id) activityViewControllerPlaceholderItem:(UIActivityViewController *)activityViewController { return @"Testing"; }
 @end
 
 
