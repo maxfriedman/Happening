@@ -5,13 +5,13 @@
 	<key>FacebookDisplayName</key>
 	<string>HappeningParse</string>
 	<key>FacebookAppID</key>
-	<string>704532246298544</string>
+	<string>670930332992069</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>fb704532246298544</string>
+				<string>fb670930332992069</string>
 			</array>
 		</dict>
 	</array>
@@ -71,7 +71,7 @@
 	<array>
 		<string>OpenSans-Bold.ttf</string>
 		<string>OpenSans-BoldItalic.ttf</string>
-		<string>OpenSans-ExtraBold.ttf</string>
+		<string>OpenSans-Extrabold.ttf</string>
 		<string>OpenSans-ExtraBoldItalic.ttf</string>
 		<string>OpenSans-Italic.ttf</string>
 		<string>OpenSans-Light.ttf</string>

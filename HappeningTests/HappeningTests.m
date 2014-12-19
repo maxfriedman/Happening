@@ -9,11 +9,11 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
-@interface HappeningParseTests : XCTestCase
+@interface HappeningTests : XCTestCase
 
 @end
 
-@implementation HappeningParseTests
+@implementation HappeningTests
 
 - (void)setUp {
     [super setUp];

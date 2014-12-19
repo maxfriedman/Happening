@@ -136,7 +136,7 @@
         
         [title setTextAlignment:NSTextAlignmentLeft];
         title.textColor = [UIColor whiteColor];
-        title.font = [UIFont fontWithName:@"OpenSans-ExtraBold" size:21];
+        title.font = [UIFont fontWithName:@"OpenSans-Extrabold" size:21];
         
         [date setTextAlignment:NSTextAlignmentLeft];
         date.textColor = [UIColor darkTextColor];
