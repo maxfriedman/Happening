@@ -30,6 +30,7 @@
         </mutableArray>
         <mutableArray key="OpenSans-Semibold.ttf">
             <string>OpenSans-Semibold</string>
+            <string>OpenSans-Semibold</string>
         </mutableArray>
     </customFonts>
     <scenes>
@@ -262,7 +263,7 @@
                         <color key="backgroundColor" red="0.1592183948" green="0.71120836850000002" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                         <color key="separatorColor" red="0.1592183948" green="0.71120836850000002" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                         <prototypes>
-                            <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="event" rowHeight="115" id="itq-Ba-CEU" customClass="AttendTableCell">
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="event" rowHeight="115" id="itq-Ba-CEU" customClass="MyEventTableCell">
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="itq-Ba-CEU" id="tnZ-U5-I9w">
                                     <autoresizingMask key="autoresizingMask"/>
@@ -303,11 +304,11 @@
                                     </subviews>
                                 </tableViewCellContentView>
                                 <connections>
-                                    <outlet property="distance" destination="Ze9-fD-a1E" id="Adb-J6-KIr"/>
-                                    <outlet property="image" destination="93n-lM-PBh" id="Srh-wj-NYy"/>
-                                    <outlet property="locLabel" destination="KK2-Zl-RcJ" id="1dS-1v-22b"/>
-                                    <outlet property="timeLabel" destination="Pxg-nF-kYI" id="2MX-OI-fFe"/>
-                                    <outlet property="titleLabel" destination="jgB-ZJ-XaG" id="lOj-Tz-Eah"/>
+                                    <outlet property="distance" destination="Ze9-fD-a1E" id="yuC-uQ-FBa"/>
+                                    <outlet property="image" destination="93n-lM-PBh" id="BpI-PR-qsX"/>
+                                    <outlet property="locLabel" destination="KK2-Zl-RcJ" id="NwL-LS-SLs"/>
+                                    <outlet property="timeLabel" destination="Pxg-nF-kYI" id="RG7-K9-aJV"/>
+                                    <outlet property="titleLabel" destination="jgB-ZJ-XaG" id="AxS-3R-doG"/>
                                     <segue destination="p2E-Rg-2Ih" kind="show" identifier="showMyEvent" id="7x7-ag-WG9"/>
                                 </connections>
                             </tableViewCell>
@@ -1378,12 +1379,10 @@
                     <nil key="simulatedBottomBarMetrics"/>
                     <simulatedOrientationMetrics key="simulatedOrientationMetrics"/>
                     <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina4"/>
-                    <tabBar key="tabBar" contentMode="scaleToFill" translucent="NO" id="4fQ-OR-bey">
+                    <tabBar key="tabBar" contentMode="scaleToFill" translucent="NO" backgroundImage="TabBarBackground" id="4fQ-OR-bey">
                         <autoresizingMask key="autoresizingMask"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                         <color key="tintColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
-                        <color key="barTintColor" red="0.1592183948" green="0.71120836850000002" blue="1" alpha="1" colorSpace="calibratedRGB"/>
-                        <color key="selectedImageTintColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </tabBar>
                     <connections>
                         <segue destination="CLh-rg-FK1" kind="relationship" relationship="viewControllers" id="Ml3-IC-STU"/>
@@ -1399,7 +1398,7 @@
         <scene sceneID="FK9-bc-dlL">
             <objects>
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="CLh-rg-FK1" sceneMemberID="viewController">
-                    <tabBarItem key="tabBarItem" title="Create" image="addTab" id="Xr1-Ub-dr2"/>
+                    <tabBarItem key="tabBarItem" title="Create" image="create" id="Xr1-Ub-dr2"/>
                     <toolbarItems/>
                     <simulatedOrientationMetrics key="simulatedOrientationMetrics"/>
                     <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina4"/>
@@ -1422,7 +1421,7 @@
         <scene sceneID="aOj-Tm-qie">
             <objects>
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="OKe-QB-I1e" sceneMemberID="viewController">
-                    <tabBarItem key="tabBarItem" title="Discover" image="binoculars" id="BqZ-IQ-Vnu">
+                    <tabBarItem key="tabBarItem" title="Discover" image="discover" id="BqZ-IQ-Vnu">
                         <offsetWrapper key="titlePositionAdjustment" horizontal="1" vertical="0.0"/>
                     </tabBarItem>
                     <toolbarItems/>
@@ -1531,7 +1530,9 @@
         <scene sceneID="sDZ-SN-mnh">
             <objects>
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="1JT-tp-Ngy" sceneMemberID="viewController">
-                    <tabBarItem key="tabBarItem" title="Attend" image="BlankCalTab" id="GPi-Kl-Sjv"/>
+                    <tabBarItem key="tabBarItem" title="Attend" image="attend" id="GPi-Kl-Sjv">
+                        <offsetWrapper key="titlePositionAdjustment" horizontal="0.0" vertical="0.0"/>
+                    </tabBarItem>
                     <toolbarItems/>
                     <simulatedOrientationMetrics key="simulatedOrientationMetrics"/>
                     <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina4"/>
@@ -1554,56 +1555,61 @@
         <scene sceneID="z32-sb-sEx">
             <objects>
                 <tableViewController id="MlX-HT-wJn" customClass="AttendEvent" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" sectionIndexMinimumDisplayRowCount="100" rowHeight="126" sectionHeaderHeight="22" sectionFooterHeight="22" id="zhf-Ws-Jai">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="grouped" separatorStyle="default" sectionIndexMinimumDisplayRowCount="100" rowHeight="127" sectionHeaderHeight="10" sectionFooterHeight="10" id="zhf-Ws-Jai">
                         <rect key="frame" x="0.0" y="64" width="320" height="455"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <color key="backgroundColor" red="0.1592183948" green="0.71120836850000002" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                        <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                         <color key="separatorColor" red="0.1592183948" green="0.71120836850000002" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                         <prototypes>
-                            <tableViewCell tag="1" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="tag" rowHeight="126" id="cWR-Nz-Zqs" customClass="AttendTableCell">
+                            <tableViewCell tag="1" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="tag" rowHeight="127" id="cWR-Nz-Zqs" customClass="AttendTableCell">
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="cWR-Nz-Zqs" id="OzW-vy-8ik">
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <button opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="MD6-zo-mO5">
-                                            <rect key="frame" x="286" y="79" width="41" height="32"/>
-                                            <state key="normal" image="arrow">
-                                                <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
-                                            </state>
-                                        </button>
                                         <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="R84-u9-V9D">
-                                            <rect key="frame" x="0.0" y="1" width="320" height="64"/>
+                                            <rect key="frame" x="0.0" y="1" width="320" height="58"/>
                                         </imageView>
                                         <label opaque="NO" userInteractionEnabled="NO" tag="2" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Location" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UXp-dR-crX">
-                                            <rect key="frame" x="8" y="64" width="174" height="21"/>
-                                            <fontDescription key="fontDescription" name="OpenSans-Light" family="Open Sans" pointSize="15"/>
+                                            <rect key="frame" x="13" y="61" width="174" height="21"/>
+                                            <fontDescription key="fontDescription" name="OpenSans-Semibold" family="Open Sans" pointSize="15"/>
                                             <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" tag="3" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Time" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ShD-wb-AT6">
-                                            <rect key="frame" x="13" y="35" width="174" height="21"/>
+                                            <rect key="frame" x="13" y="32" width="174" height="21"/>
                                             <fontDescription key="fontDescription" name="OpenSans" family="Open Sans" pointSize="13"/>
                                             <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Distance" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3uj-I7-zI4">
-                                            <rect key="frame" x="246" y="35" width="74" height="21"/>
+                                            <rect key="frame" x="266" y="31" width="54" height="21"/>
                                             <fontDescription key="fontDescription" name="OpenSans-Light" family="Open Sans" pointSize="13"/>
                                             <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Title" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AvG-0V-yYv">
-                                            <rect key="frame" x="13" y="8" width="202" height="24"/>
+                                            <rect key="frame" x="13" y="9" width="299" height="24"/>
                                             <fontDescription key="fontDescription" name="OpenSans-Bold" family="Open Sans" pointSize="20"/>
                                             <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                             <nil key="highlightedColor"/>
                                         </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Subtitle" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Uee-XV-Zto">
+                                            <rect key="frame" x="13" y="81" width="299" height="38"/>
+                                            <fontDescription key="fontDescription" name="OpenSans-Light" family="Open Sans" pointSize="12"/>
+                                            <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="locationPinThickOutline" translatesAutoresizingMaskIntoConstraints="NO" id="41G-nX-eMF">
+                                            <rect key="frame" x="249" y="34" width="12" height="16"/>
+                                        </imageView>
                                     </subviews>
                                 </tableViewCellContentView>
+                                <inset key="separatorInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                 <connections>
                                     <outlet property="distance" destination="3uj-I7-zI4" id="OhY-AD-FOW"/>
                                     <outlet property="image" destination="R84-u9-V9D" id="aJM-QC-neO"/>
                                     <outlet property="locLabel" destination="UXp-dR-crX" id="BaL-OE-wbM"/>
+                                    <outlet property="subtitle" destination="Uee-XV-Zto" id="nvO-rL-JHY"/>
                                     <outlet property="timeLabel" destination="ShD-wb-AT6" id="gwh-cq-C5n"/>
                                     <outlet property="titleLabel" destination="AvG-0V-yYv" id="B2s-h3-gE9"/>
                                     <segue destination="k6u-Sb-2Pc" kind="show" identifier="toMoreDetail" id="YNH-ig-s17"/>
@@ -1621,7 +1627,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="DwG-F9-RnO" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1138" y="811"/>
+            <point key="canvasLocation" x="1138" y="803"/>
         </scene>
         <!--More Detail From Table-->
         <scene sceneID="wrl-lh-sel">
@@ -2169,14 +2175,16 @@
         </scene>
     </scenes>
     <resources>
-        <image name="BlankCalTab" width="24" height="24"/>
         <image name="HappeningBlue" width="640" height="1136"/>
         <image name="HappeningLogin" width="640" height="1136"/>
         <image name="Nightlife" width="500" height="334"/>
         <image name="Settings" width="64" height="64"/>
-        <image name="addTab" width="24" height="24"/>
+        <image name="TabBarBackground" width="320" height="49"/>
         <image name="arrow" width="32" height="32"/>
-        <image name="binoculars" width="24" height="24"/>
+        <image name="attend" width="32" height="32"/>
+        <image name="create" width="32" height="32"/>
+        <image name="discover" width="32" height="32"/>
+        <image name="locationPinThickOutline" width="75" height="100"/>
         <image name="xButton" width="120" height="120"/>
     </resources>
     <inferredMetricsTieBreakers>

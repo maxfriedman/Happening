@@ -43,7 +43,7 @@
 	<key>FacebookAppID</key>
 	<string>670930332992069</string>
 	<key>FacebookDisplayName</key>
-	<string>HappeningParse</string>
+	<string>Happening</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>MKDirectionsApplicationSupportedModes</key>
@@ -57,16 +57,16 @@
 	<string>We use your location to tell you how far away you are from an event.</string>
 	<key>UIAppFonts</key>
 	<array>
-		<string>OpenSans-Bold.ttf</string>
-		<string>OpenSans-BoldItalic.ttf</string>
-		<string>OpenSans-Extrabold.ttf</string>
-		<string>OpenSans-ExtraBoldItalic.ttf</string>
-		<string>OpenSans-Italic.ttf</string>
-		<string>OpenSans-Light.ttf</string>
-		<string>OpenSans-LightItalic.ttf</string>
-		<string>OpenSans-Regular.ttf</string>
-		<string>OpenSans-Semibold.ttf</string>
-		<string>OpenSans-SemiboldItalic.ttf</string>
+		<string>/Happening/Extras/Open Sans/OpenSans-Bold.ttf</string>
+		<string>/Happening/Extras/Open Sans/OpenSans-BoldItalic.ttf</string>
+		<string>/Happening/Extras/Open Sans/OpenSans-Extrabold.ttf</string>
+		<string>/Happening/Extras/Open Sans/OpenSans-ExtraBoldItalic.ttf</string>
+		<string>/Happening/Extras/Open Sans/OpenSans-Italic.ttf</string>
+		<string>/Happening/Extras/Open Sans/OpenSans-Light.ttf</string>
+		<string>/Happening/Extras/Open Sans/OpenSans-LightItalic.ttf</string>
+		<string>/Happening/Extras/Open Sans/OpenSans-Regular.ttf</string>
+		<string>/Happening/Extras/Open Sans/OpenSans-Semibold.ttf</string>
+		<string>/Happening/Extras/Open Sans/OpenSans-SemiboldItalic.ttf</string>
 	</array>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>

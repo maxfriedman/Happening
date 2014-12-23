@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import <MapKit/MapKit.h>
-#import "NSDate+CupertinoYankee.h"
+#import "CupertinoYankee.h"
 
 
 @interface AttendEvent : UITableViewController <CLLocationManagerDelegate>

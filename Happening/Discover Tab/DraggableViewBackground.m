@@ -8,7 +8,7 @@
 //
 
 #import "DraggableViewBackground.h"
-#import "NSDate+CupertinoYankee.h"
+#import "CupertinoYankee.h"
 
 @interface DraggableViewBackground()
 
@@ -277,11 +277,11 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
             PFUser *user = [PFUser currentUser];
             PFGeoPoint *userLoc = user[@"userLoc"];
             NSNumber *miles = [NSNumber numberWithDouble:([loc distanceInMilesTo:userLoc])];
-            if (miles > [NSNumber numberWithInt:10]) {
-                NSString *distance = [NSString stringWithFormat:(@"%.1f mi"), miles.floatValue];
+            if ([miles integerValue] > 10) {
+                NSString *distance = [NSString stringWithFormat:(@"%ld mi"), (long)miles.integerValue];
                 draggableView.geoLoc.text = distance;
             } else {
-            NSString *distance = [NSString stringWithFormat:(@"%.2f mi"), miles.floatValue];
+            NSString *distance = [NSString stringWithFormat:(@"%.1f mi"), miles.floatValue];
             draggableView.geoLoc.text = distance;
             }
             
@@ -303,7 +303,7 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
             storedIndex = index;
         }];
         
-        draggableView.userImage.image = [UIImage imageNamed:@"userImage"];
+        draggableView.userImage.image = [UIImage imageNamed:@"interested_face"];
         
         //draggableView.transpBackground.backgroundColor = [UIColor blackColor];
         //draggableView.transpBackground.backgroundColor = [UIColor colorWithHue:1.0 saturation:0.0 brightness:0 alpha:0.5];
@@ -489,9 +489,9 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
 -(void)swipeRight
 {
     dragView.overlayView.mode = GGOverlayViewModeRight;
-    [UIView animateWithDuration:0.2 animations:^{
+    //[UIView animateWithDuration:0.2 animations:^{
         dragView.overlayView.alpha = 1;
-    }];
+    //}];
     [dragView rightClickAction];
 }
 
@@ -499,9 +499,9 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
 -(void)swipeLeft
 {
     dragView.overlayView.mode = GGOverlayViewModeLeft;
-    [UIView animateWithDuration:0.2 animations:^{
+    //[UIView animateWithDuration:0.2 animations:^{
         dragView.overlayView.alpha = 1;
-    }];
+    //}];
     [dragView leftClickAction];
 }
 

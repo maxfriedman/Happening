@@ -11,7 +11,7 @@
 #import <Parse/Parse.h>
 #import <MapKit/MapKit.h>
 #import "AppDelegate.h"
-#import "NSDate+CupertinoYankee.h"
+#import "CupertinoYankee.h"
 #import "ExtraInfoTVC.h"
 
 @interface EventTVC: UITableViewController <UINavigationControllerDelegate, UIImagePickerControllerDelegate, UIPickerViewDataSource, UIPickerViewDelegate, UIAlertViewDelegate, UITextViewDelegate>

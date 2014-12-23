@@ -18,30 +18,37 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-    UIColor *normalColor = [UIColor lightTextColor];
-    UIColor *selectedColor = [UIColor whiteColor];
     
-    [self.tabBar setTintColor:selectedColor];
+    //UIColor *normalColor = [UIColor lightTextColor];
+    //UIColor *selectedColor = [UIColor whiteColor];
+    
+    //[self.tabBar setTintColor:selectedColor];
     
     // repeat for every tab, but increment the index each time
     UITabBarItem *firstTab = [self.tabBar.items objectAtIndex:0];
     
-    UIImage *addImage = [UIImage imageNamed:@"addTab"];
-    addImage = [TabBarViewController filledImageFrom:addImage withColor:normalColor];
+    UIImage *createImage = [UIImage imageNamed:@"create"];
+    //addImage = [TabBarViewController filledImageFrom:addImage withColor:normalColor];
     
     // also repeat for every tab
-    firstTab.image = [addImage imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+    firstTab.selectedImage = [createImage imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
     //firstTab.selectedImage = [[UIImage imageNamed:@"add"]imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
     
     UITabBarItem *secondTab = [self.tabBar.items objectAtIndex:1];
-    UIImage *binocularsImage = [UIImage imageNamed:@"binoculars"];
-    binocularsImage = [TabBarViewController filledImageFrom:binocularsImage withColor:normalColor];
+    UIImage *discoverImage = [UIImage imageNamed:@"discover"];
+    //binocularsImage = [TabBarViewController filledImageFrom:binocularsImage withColor:normalColor];
 
-    secondTab.image = [binocularsImage imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+    secondTab.selectedImage = [discoverImage imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
     //secondTab.selectedImage = [[UIImage imageNamed:@"addTab"]imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
     
+   
     UITabBarItem *thirdTab = [self.tabBar.items objectAtIndex:2];
+    UIImage *attendImage = [UIImage imageNamed:@"attend"];
+    //binocularsImage = [TabBarViewController filledImageFrom:binocularsImage withColor:normalColor];
     
+    thirdTab.selectedImage = [attendImage imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+    
+    /*   This burned a string into a calendar image to show today's date
     NSDate *date = [NSDate date];
     NSDateFormatter *formatter = [[NSDateFormatter alloc]init];
     [formatter setDateFormat:@"d"];
@@ -58,17 +65,21 @@
         calImage = [TabBarViewController drawText:dateString inImage:calImage atPoint:CGPointMake(5, 7) withColor:selectedColor];
     }
     thirdTab.image = [calWithText imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-    thirdTab.selectedImage = [calImage imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-
-    [[UITabBarItem appearance] setTitleTextAttributes:@{NSFontAttributeName : [UIFont fontWithName:@"HelveticaNeue-Bold" size:10.0f],
-                                                        NSForegroundColorAttributeName : selectedColor
+    thirdTab.selectedImage = [calImage imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal]
+    
+    */
+    
+    
+    [[UITabBarItem appearance] setTitleTextAttributes:@{NSFontAttributeName : [UIFont fontWithName:@"OpenSans-Semibold" size:10.0f],
+                                                        NSForegroundColorAttributeName : [UIColor darkTextColor]
                                                         } forState:UIControlStateSelected];
  
     
     // doing this results in an easier to read unselected state then the default iOS 7 one
-    [[UITabBarItem appearance] setTitleTextAttributes:@{NSFontAttributeName : [UIFont fontWithName:@"HelveticaNeue" size:10.0f],
-                                                        NSForegroundColorAttributeName : normalColor
+    [[UITabBarItem appearance] setTitleTextAttributes:@{NSFontAttributeName : [UIFont fontWithName:@"OpenSans-Light" size:10.0f],
+                                                        NSForegroundColorAttributeName : [UIColor grayColor]
                                                         } forState:UIControlStateNormal];
+    //[[UITabBarItem appearance] setTitlePositionAdjustment:UIOffsetMake(40, -15)];
     
 }
 

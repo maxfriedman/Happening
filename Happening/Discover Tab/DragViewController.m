@@ -36,12 +36,12 @@
     }
     
     
-    xButton = [[UIButton alloc]initWithFrame:CGRectMake(60, 440, 59, 59)];
-    [xButton setImage:[UIImage imageNamed:@"xButton"] forState:UIControlStateNormal];
+    xButton = [[UIButton alloc]initWithFrame:CGRectMake(-100.5, 423, 244.5, 79)]; //423
+    [xButton setImage:[UIImage imageNamed:@"NotInterestedButton"] forState:UIControlStateNormal];
     [xButton addTarget:self action:@selector(swipeLeftDVC) forControlEvents:UIControlEventTouchUpInside];
     
-    checkButton = [[UIButton alloc]initWithFrame:CGRectMake(200, 440, 59, 59)];
-    [checkButton setImage:[UIImage imageNamed:@"checkButton"] forState:UIControlStateNormal];
+    checkButton = [[UIButton alloc]initWithFrame:CGRectMake(180, 425, 244.5, 79)];  //425
+    [checkButton setImage:[UIImage imageNamed:@"InterestedButton"] forState:UIControlStateNormal];
     [checkButton addTarget:self action:@selector(swipeRightDVC) forControlEvents:UIControlEventTouchUpInside];
     
     [self.view addSubview:checkButton];

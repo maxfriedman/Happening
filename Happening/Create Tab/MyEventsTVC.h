@@ -8,9 +8,9 @@
 
 #import <UIKit/UIKit.h>
 #import <MapKit/MapKit.h>
-#import "NSDate+CupertinoYankee.h"
+//#import "CupertinoYankee.h"
 #import "showMyEventVC.h"
-#import "AttendTableCell.h"
+#import "MyEventTableCell.h"
 #import "AppDelegate.h"
 
 @interface MyEventsTVC : UITableViewController <CLLocationManagerDelegate>

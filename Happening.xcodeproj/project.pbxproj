@@ -28,7 +28,6 @@
 		50248C8519BBAB2F00329910 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50248C8419BBAB2F00329910 /* Security.framework */; };
 		50248C8719BBAB3500329910 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50248C8619BBAB3500329910 /* StoreKit.framework */; };
 		50248C8919BBAB3D00329910 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50248C8819BBAB3D00329910 /* SystemConfiguration.framework */; };
-		504068431A44B13A00C2CA81 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 504068421A44B13A00C2CA81 /* Info.plist */; };
 		5041A0F71A44AC1000C151B7 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5041A0BE1A44AC1000C151B7 /* Images.xcassets */; };
 		50478EAE1A44DB8D00161D01 /* SplashScreens.m in Sources */ = {isa = PBXBuildFile; fileRef = 50478EAD1A44DB8D00161D01 /* SplashScreens.m */; };
 		50478EBB1A44DBCC00161D01 /* ChoosingLocation.m in Sources */ = {isa = PBXBuildFile; fileRef = 50478EB01A44DBCC00161D01 /* ChoosingLocation.m */; };
@@ -59,14 +58,26 @@
 		50478F011A44DE0500161D01 /* AttendTableCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50478EFD1A44DE0500161D01 /* AttendTableCell.m */; };
 		50478F021A44DE0500161D01 /* moreDetailFromTable.m in Sources */ = {isa = PBXBuildFile; fileRef = 50478EFF1A44DE0500161D01 /* moreDetailFromTable.m */; };
 		50478F091A44DE1F00161D01 /* MapViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50478F041A44DE1F00161D01 /* MapViewController.m */; };
-		50478F0A1A44DE1F00161D01 /* NSDate+CupertinoYankee.m in Sources */ = {isa = PBXBuildFile; fileRef = 50478F061A44DE1F00161D01 /* NSDate+CupertinoYankee.m */; };
+		50478F0A1A44DE1F00161D01 /* CupertinoYankee.m in Sources */ = {isa = PBXBuildFile; fileRef = 50478F061A44DE1F00161D01 /* CupertinoYankee.m */; };
 		50478F0B1A44DE1F00161D01 /* SearchBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 50478F081A44DE1F00161D01 /* SearchBar.m */; };
 		50478F141A44DE6900161D01 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 50478F0E1A44DE6900161D01 /* AppDelegate.m */; };
-		50478F151A44DE6900161D01 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 50478F0F1A44DE6900161D01 /* Info.plist */; };
 		50478F161A44DE6900161D01 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 50478F101A44DE6900161D01 /* main.m */; };
 		50478F171A44DE6900161D01 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 50478F111A44DE6900161D01 /* Main.storyboard */; };
 		50478F181A44DE6900161D01 /* TabBarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50478F131A44DE6900161D01 /* TabBarViewController.m */; };
+		50478F251A45049300161D01 /* MyEventTableCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50478F241A45049300161D01 /* MyEventTableCell.m */; };
 		50594CD01A2FAD1B00749B49 /* AddressBook.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50594CCF1A2FAD1B00749B49 /* AddressBook.framework */; };
+		506DC53E1A46014300DD4591 /* OpenSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50478F191A44DF1500161D01 /* OpenSans-Bold.ttf */; };
+		506DC53F1A46014300DD4591 /* OpenSans-BoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50478F1A1A44DF1500161D01 /* OpenSans-BoldItalic.ttf */; };
+		506DC5401A46014300DD4591 /* OpenSans-Extrabold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50478F1B1A44DF1500161D01 /* OpenSans-Extrabold.ttf */; };
+		506DC5411A46014300DD4591 /* OpenSans-ExtraBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50478F1C1A44DF1500161D01 /* OpenSans-ExtraBoldItalic.ttf */; };
+		506DC5421A46014300DD4591 /* OpenSans-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50478F1D1A44DF1500161D01 /* OpenSans-Italic.ttf */; };
+		506DC5431A46014300DD4591 /* OpenSans-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50478F1E1A44DF1500161D01 /* OpenSans-Light.ttf */; };
+		506DC5441A46014300DD4591 /* OpenSans-LightItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50478F1F1A44DF1500161D01 /* OpenSans-LightItalic.ttf */; };
+		506DC5451A46014300DD4591 /* OpenSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50478F201A44DF1500161D01 /* OpenSans-Regular.ttf */; };
+		506DC5461A46014300DD4591 /* OpenSans-Semibold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50478F211A44DF1500161D01 /* OpenSans-Semibold.ttf */; };
+		506DC5471A46014300DD4591 /* OpenSans-SemiboldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50478F221A44DF1500161D01 /* OpenSans-SemiboldItalic.ttf */; };
+		506DC5481A46017100DD4591 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 50478F0F1A44DE6900161D01 /* Info.plist */; };
+		506DC5491A46017700DD4591 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 504068421A44B13A00C2CA81 /* Info.plist */; };
 		50A3DD4719E86314001E5E74 /* Bolts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50A3DC0319E86313001E5E74 /* Bolts.framework */; };
 		50A3DD4819E86314001E5E74 /* FacebookSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50A3DC0419E86313001E5E74 /* FacebookSDK.framework */; };
 		50A3DD6519E86314001E5E74 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 50A3DC3C19E86313001E5E74 /* LICENSE */; };
@@ -168,8 +179,8 @@
 		50478EFF1A44DE0500161D01 /* moreDetailFromTable.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = moreDetailFromTable.m; path = "Happening/Attend Tab/moreDetailFromTable.m"; sourceTree = SOURCE_ROOT; };
 		50478F031A44DE1F00161D01 /* MapViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MapViewController.h; path = Happening/Extras/MapViewController.h; sourceTree = SOURCE_ROOT; };
 		50478F041A44DE1F00161D01 /* MapViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MapViewController.m; path = Happening/Extras/MapViewController.m; sourceTree = SOURCE_ROOT; };
-		50478F051A44DE1F00161D01 /* NSDate+CupertinoYankee.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSDate+CupertinoYankee.h"; path = "Happening/Extras/NSDate+CupertinoYankee.h"; sourceTree = SOURCE_ROOT; };
-		50478F061A44DE1F00161D01 /* NSDate+CupertinoYankee.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSDate+CupertinoYankee.m"; path = "Happening/Extras/NSDate+CupertinoYankee.m"; sourceTree = SOURCE_ROOT; };
+		50478F051A44DE1F00161D01 /* CupertinoYankee.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CupertinoYankee.h; path = Happening/Extras/CupertinoYankee.h; sourceTree = SOURCE_ROOT; };
+		50478F061A44DE1F00161D01 /* CupertinoYankee.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CupertinoYankee.m; path = Happening/Extras/CupertinoYankee.m; sourceTree = SOURCE_ROOT; };
 		50478F071A44DE1F00161D01 /* SearchBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SearchBar.h; path = Happening/Extras/SearchBar.h; sourceTree = SOURCE_ROOT; };
 		50478F081A44DE1F00161D01 /* SearchBar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SearchBar.m; path = Happening/Extras/SearchBar.m; sourceTree = SOURCE_ROOT; };
 		50478F0D1A44DE6900161D01 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = "Happening/Main Files/AppDelegate.h"; sourceTree = SOURCE_ROOT; };
@@ -189,6 +200,8 @@
 		50478F201A44DF1500161D01 /* OpenSans-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "OpenSans-Regular.ttf"; path = "Happening/Extras/Open Sans/OpenSans-Regular.ttf"; sourceTree = SOURCE_ROOT; };
 		50478F211A44DF1500161D01 /* OpenSans-Semibold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "OpenSans-Semibold.ttf"; path = "Happening/Extras/Open Sans/OpenSans-Semibold.ttf"; sourceTree = SOURCE_ROOT; };
 		50478F221A44DF1500161D01 /* OpenSans-SemiboldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "OpenSans-SemiboldItalic.ttf"; path = "Happening/Extras/Open Sans/OpenSans-SemiboldItalic.ttf"; sourceTree = SOURCE_ROOT; };
+		50478F231A45049300161D01 /* MyEventTableCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MyEventTableCell.h; path = "Happening/Create Tab/MyEventTableCell.h"; sourceTree = SOURCE_ROOT; };
+		50478F241A45049300161D01 /* MyEventTableCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MyEventTableCell.m; path = "Happening/Create Tab/MyEventTableCell.m"; sourceTree = SOURCE_ROOT; };
 		50594CCF1A2FAD1B00749B49 /* AddressBook.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AddressBook.framework; path = System/Library/Frameworks/AddressBook.framework; sourceTree = SDKROOT; };
 		50A3DC0319E86313001E5E74 /* Bolts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Bolts.framework; sourceTree = "<group>"; };
 		50A3DC0419E86313001E5E74 /* FacebookSDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = FacebookSDK.framework; sourceTree = "<group>"; };
@@ -410,6 +423,8 @@
 				50478ECF1A44DD2400161D01 /* MyEventsTVC.m */,
 				50478ED01A44DD2400161D01 /* showMyEventVC.h */,
 				50478ED11A44DD2400161D01 /* showMyEventVC.m */,
+				50478F231A45049300161D01 /* MyEventTableCell.h */,
+				50478F241A45049300161D01 /* MyEventTableCell.m */,
 			);
 			name = "Create Tab";
 			sourceTree = "<group>";
@@ -444,8 +459,8 @@
 				504068791A44BB1E00C2CA81 /* Open Sans */,
 				50478F031A44DE1F00161D01 /* MapViewController.h */,
 				50478F041A44DE1F00161D01 /* MapViewController.m */,
-				50478F051A44DE1F00161D01 /* NSDate+CupertinoYankee.h */,
-				50478F061A44DE1F00161D01 /* NSDate+CupertinoYankee.m */,
+				50478F051A44DE1F00161D01 /* CupertinoYankee.h */,
+				50478F061A44DE1F00161D01 /* CupertinoYankee.m */,
 				50478F071A44DE1F00161D01 /* SearchBar.h */,
 				50478F081A44DE1F00161D01 /* SearchBar.m */,
 			);
@@ -565,10 +580,20 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				504068431A44B13A00C2CA81 /* Info.plist in Resources */,
+				506DC5491A46017700DD4591 /* Info.plist in Resources */,
+				506DC5481A46017100DD4591 /* Info.plist in Resources */,
+				506DC53E1A46014300DD4591 /* OpenSans-Bold.ttf in Resources */,
+				506DC53F1A46014300DD4591 /* OpenSans-BoldItalic.ttf in Resources */,
+				506DC5401A46014300DD4591 /* OpenSans-Extrabold.ttf in Resources */,
+				506DC5411A46014300DD4591 /* OpenSans-ExtraBoldItalic.ttf in Resources */,
+				506DC5421A46014300DD4591 /* OpenSans-Italic.ttf in Resources */,
+				506DC5431A46014300DD4591 /* OpenSans-Light.ttf in Resources */,
+				506DC5441A46014300DD4591 /* OpenSans-LightItalic.ttf in Resources */,
+				506DC5451A46014300DD4591 /* OpenSans-Regular.ttf in Resources */,
+				506DC5461A46014300DD4591 /* OpenSans-Semibold.ttf in Resources */,
+				506DC5471A46014300DD4591 /* OpenSans-SemiboldItalic.ttf in Resources */,
 				50A3DD6619E86314001E5E74 /* README.txt in Resources */,
 				5041A0F71A44AC1000C151B7 /* Images.xcassets in Resources */,
-				50478F151A44DE6900161D01 /* Info.plist in Resources */,
 				50478F171A44DE6900161D01 /* Main.storyboard in Resources */,
 				50A3DD6519E86314001E5E74 /* LICENSE in Resources */,
 			);
@@ -595,7 +620,7 @@
 				50478EBD1A44DBCC00161D01 /* InitialLocationSearch.m in Sources */,
 				50478EBE1A44DBCC00161D01 /* LogInExistingUser.m in Sources */,
 				50478ED31A44DD2400161D01 /* EditEventTVC.m in Sources */,
-				50478F0A1A44DE1F00161D01 /* NSDate+CupertinoYankee.m in Sources */,
+				50478F0A1A44DE1F00161D01 /* CupertinoYankee.m in Sources */,
 				50478ED61A44DD2400161D01 /* LocationSearching.m in Sources */,
 				50478EF21A44DD9800161D01 /* SettingsChoosingLoc.m in Sources */,
 				50478EEA1A44DD6C00161D01 /* DragViewController.m in Sources */,
@@ -609,6 +634,7 @@
 				50478EAE1A44DB8D00161D01 /* SplashScreens.m in Sources */,
 				50478ED21A44DD2400161D01 /* buttonOverride.m in Sources */,
 				50478EBF1A44DBCC00161D01 /* LoginView.m in Sources */,
+				50478F251A45049300161D01 /* MyEventTableCell.m in Sources */,
 				50478EF91A44DDE300161D01 /* RightToLeftSegue.m in Sources */,
 				50478EE91A44DD6C00161D01 /* DraggableViewBackground.m in Sources */,
 				50478F091A44DE1F00161D01 /* MapViewController.m in Sources */,

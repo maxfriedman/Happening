@@ -85,4 +85,8 @@
  */
 - (NSDate *)endOfYear;
 
+
+//@property (retain, nonatomic) NSCalendar *calendar;
+//@property (retain, nonatomic) NSDateComponents *components;
+
 @end

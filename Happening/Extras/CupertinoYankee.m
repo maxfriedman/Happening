@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#import "NSDate+CupertinoYankee.h"
+#import "CupertinoYankee.h"
 
 @implementation NSDate (CupertinoYankee)
 

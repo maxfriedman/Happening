@@ -109,9 +109,9 @@
         [[blurEffectView contentView] addSubview:vibrancyEffectView];
         */
         
-        title = [[UILabel alloc]initWithFrame:CGRectMake(10, 95, self.frame.size.width, 100)];
+        title = [[UILabel alloc]initWithFrame:CGRectMake(10, 110, eventImage.frame.size.width, 70)];
         
-        subtitle = [[UILabel alloc]initWithFrame:CGRectMake(10, 185, self.frame.size.width, 100)];
+        subtitle = [[UILabel alloc]initWithFrame:CGRectMake(10, 195, self.frame.size.width, 100)];
         location = [[UILabel alloc]initWithFrame:CGRectMake(10, 160, self.frame.size.width, 100)];
         
         date = [[UILabel alloc]initWithFrame:CGRectMake(10, 120, self.frame.size.width, 100)];
@@ -136,7 +136,7 @@
         
         [title setTextAlignment:NSTextAlignmentLeft];
         title.textColor = [UIColor whiteColor];
-        title.font = [UIFont fontWithName:@"OpenSans-Extrabold" size:21];
+        title.font = [UIFont fontWithName:@"OpenSans-Bold" size:21];
         
         [date setTextAlignment:NSTextAlignmentLeft];
         date.textColor = [UIColor darkTextColor];
@@ -158,8 +158,8 @@
         objectID = [[NSString alloc]init];
         geoPoint = [[PFGeoPoint alloc]init];
         
-        locImage = [[UIImageView alloc]initWithFrame:CGRectMake(211, 160, 15, 20)];
-        userImage = [[UIImageView alloc]initWithFrame:CGRectMake(185, 293, 25, 25)];
+        locImage = [[UIImageView alloc]initWithFrame:CGRectMake(220, 160, 15, 20)];
+        userImage = [[UIImageView alloc]initWithFrame:CGRectMake(193, 297, 18, 18)];
         
         /*
         [title setTextAlignment:NSTextAlignmentCenter];
@@ -170,6 +170,8 @@
         [subtitle setTextAlignment:NSTextAlignmentLeft];
         subtitle.textColor = [UIColor darkGrayColor];
         subtitle.font = [UIFont fontWithName:@"OpenSans-Light" size:17];
+        subtitle.numberOfLines = 0;
+        [subtitle setLineBreakMode:NSLineBreakByWordWrapping];
         
         [location setTextAlignment:NSTextAlignmentLeft];
         location.textColor = [UIColor darkTextColor];
@@ -228,7 +230,7 @@
         //[cardView addSubview:createdBy];
         
         //overlayView = [[OverlayView alloc]initWithFrame:CGRectMake(self.frame.size.width/2-100, 0, 100, 100)];
-        overlayView = [[OverlayView alloc]initWithFrame:CGRectMake(0, 0, 100, 100)];
+        overlayView = [[OverlayView alloc]initWithFrame:CGRectMake(0, 0, eventImage.frame.size.width, 70)];
         overlayView.alpha = 0;
         [cardView addSubview:overlayView];
         
