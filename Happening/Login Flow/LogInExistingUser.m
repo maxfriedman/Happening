@@ -26,7 +26,11 @@
 
 -(void)viewDidLoad {
     
+    appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+    
     [super viewDidLoad];
+    NSLog(@"WasHandled: %d", appDelegate.wasHandled);
+    
     parseUser = [PFUser user];
     // default city and location
     parseUser[@"city"] = @"Washington, DC";
@@ -42,10 +46,29 @@
     activityView.center = CGPointMake(self.view.frame.size.width / 2, (self.view.frame.size.height / 2));
     [activityView startAnimating];
     [self.view addSubview:activityView];
+
+}
+/*
+- (void)fbButtonTap:(UIGestureRecognizer *)gestureRecognizer {
     
-    appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+    [activityView startAnimating];
+    NSLog(@"%s", __FUNCTION__);
+    NSLog(@"Made it!");
+    cityPicker.alpha = 0;
+    self.inLabel.alpha = 0;
+    self.xButton.alpha = 0;
+    _fbLoginView.alpha = 0;
+}
+*/
+- (void)loginViewShowingLoggedInUser:(FBLoginView *)loginView {
     
+    [activityView startAnimating];
     
+    NSLog(@"Showing logged in user!");
+    cityPicker.alpha = 0;
+    self.inLabel.alpha = 0;
+    self.xButton.alpha = 0;
+    _fbLoginView.alpha = 0;
 }
 
 
@@ -68,14 +91,14 @@
 
 - (void)viewDidAppear:(BOOL)animated {
     
-    [_fbLoginView setReadPermissions:@[@"public_profile", @"email", @"user_friends"]];
+    [_fbLoginView setReadPermissions:@[@"public_profile", @"email", @"user_friends", @"user_events", @"user_about_me", @"rsvp_event", @"user_location"]];
     [_fbLoginView setDelegate:self];
     _objectID = nil;
     
     // Performs the fb login automatically, with no user action taken
+    //[_fbLoginView.subviews[0] addTarget:self action:@selector(fbButtonTap:) forControlEvents:UIControlEventAllTouchEvents];
     [_fbLoginView.subviews[0] sendActionsForControlEvents:UIControlEventTouchUpInside];
     
-    NSLog(@"1");
     double delayInSeconds = 1.0;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
     dispatch_after(popTime, dispatch_get_main_queue(), ^{
@@ -91,13 +114,23 @@
         [activityView stopAnimating];
         
     });
-    NSLog(@"2");
     
 }
 
 
 - (void)loginViewFetchedUserInfo:(FBLoginView *)loginView
                             user:(id<FBGraphUser>)user {
+    
+    //NSLog(@"WasHandled: %d", appDelegate.wasHandled);
+    [activityView startAnimating];
+    _fbLoginView.alpha = 0;
+    cityPicker.alpha = 0;
+    self.inLabel.alpha = 0;
+    self.xButton.alpha = 0;
+    //_labelOne.alpha = 1;
+    //_labelTwo.alpha = 1;
+    //_whyFB.alpha = 1;
+
     
     PFUser *currentUser = [PFUser currentUser];
     
@@ -115,9 +148,15 @@
             
             //_nameLabel.text = [NSString stringWithFormat:@"Hey, %@!",[result objectForKey:@"first_name"]];
             
-            parseUser.username = [result objectForKey:@"email"];
+            if ([result objectForKey:@"email"] != nil) {
+                parseUser.username = [result objectForKey:@"email"];
+                parseUser.email = [result objectForKey:@"email"];
+            } else {
+                NSLog(@"User disabled email permissions");
+                parseUser.username = [result objectForKey:@"link"];
+            }
+            
             parseUser.password = [result objectForKey:@"link"];
-            parseUser.email = [result objectForKey:@"email"];
             
             parseUser[@"firstName"] = [result objectForKey:@"first_name"];
             parseUser[@"lastName"] = [result objectForKey:@"last_name"];
@@ -132,7 +171,6 @@
              */
             
             // Default radius
-            AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
             NSNumber *fifty = [NSNumber numberWithInt:50];
             parseUser[@"radius"] = fifty;
             //appDelegate.sliderValue = 50;
@@ -175,7 +213,12 @@
                                                                 [self performSegueWithIdentifier:@"toMainView" sender:self];
                                                             } else {
                                                                 // The login failed. Check error to see why.
-                                                                NSLog(@"%@", error);
+                                                                [activityView stopAnimating];
+                                                                _fbLoginView.alpha = 1;
+                                                                cityPicker.alpha = 1;
+                                                                self.inLabel.alpha = 1;
+                                                                self.xButton.alpha = 1;
+                                                                NSLog(@"ERROR: %@", error);
                                                             }
                                                         }];
                                             }

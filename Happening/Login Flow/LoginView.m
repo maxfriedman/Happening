@@ -22,9 +22,9 @@
 
 @implementation LoginView {
     
-    AppDelegate *appDelegate;
     NSArray *cityData;
     PFUser *parseUser;
+    BOOL animationFinished;
 }
 
 @synthesize activityView, cityPicker;
@@ -32,6 +32,8 @@
 -(void)viewDidLoad {
     
     [super viewDidLoad];
+    animationFinished = YES;
+    
     parseUser = [PFUser user];
     // default city and location
     parseUser[@"city"] = @"Washington, DC";
@@ -45,10 +47,9 @@
     
     activityView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
     activityView.center = CGPointMake(self.view.frame.size.width / 2, (self.view.frame.size.height / 2));
-    [activityView startAnimating];
     [self.view addSubview:activityView];
     
-    appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+    //self.xButton.imageView.image = [LoginView filledImageFrom:self.xButton.imageView.image withColor:[UIColor whiteColor]];
 
 }
 
@@ -65,25 +66,17 @@
     
     //self.xButton.imageView.tintColor = [UIColor colorWithRed:0.7f green:0.0f blue:0.0f alpha:1];
     //self.xButton.imageView.image = image;
-        
-    _fbLoginView.alpha = 0;
-    _labelOne.alpha = 0;
-    //_labelTwo.alpha = 0;
-    _whyFB.alpha = 0;
-    cityPicker.alpha = 0;
-    self.inLabel.alpha = 0;
-    self.xButton.alpha = 0;
     
 }
 
 
 - (void)viewDidAppear:(BOOL)animated {
     
-    [_fbLoginView setReadPermissions:@[@"public_profile", @"email", @"user_friends"]];
+    [_fbLoginView setReadPermissions:@[@"public_profile", @"email", @"user_friends", @"user_events", @"user_about_me", @"rsvp_event", @"user_location"]];
     [_fbLoginView setDelegate:self];
     _objectID = nil;
     
-    NSLog(@"1");
+/*
     double delayInSeconds = 0.5;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
     dispatch_after(popTime, dispatch_get_main_queue(), ^{
@@ -98,13 +91,37 @@
         [activityView stopAnimating];
         
     });
-    NSLog(@"2");
+*/
     
+}
+
+- (void)loginViewShowingLoggedInUser:(FBLoginView *)loginView {
+    
+    [activityView startAnimating];
+    
+    NSLog(@"Showing logged in user!");
+    _fbLoginView.alpha = 0;
+    _labelOne.alpha = 0;
+    //_labelTwo.alpha = 0;
+    _whyFB.alpha = 0;
+    cityPicker.alpha = 0;
+    self.inLabel.alpha = 0;
+    self.xButton.alpha = 0;
 }
 
 
 - (void)loginViewFetchedUserInfo:(FBLoginView *)loginView
                             user:(id<FBGraphUser>)user {
+    
+    [activityView startAnimating];
+    
+    _fbLoginView.alpha = 0;
+    _labelOne.alpha = 0;
+    //_labelTwo.alpha = 0;
+    _whyFB.alpha = 0;
+    cityPicker.alpha = 0;
+    self.inLabel.alpha = 0;
+    self.xButton.alpha = 0;
     
     PFUser *currentUser = [PFUser currentUser];
     
@@ -122,9 +139,15 @@
 
             //_nameLabel.text = [NSString stringWithFormat:@"Hey, %@!",[result objectForKey:@"first_name"]];
             
-            parseUser.username = [result objectForKey:@"email"];
+            if ([result objectForKey:@"email"] != nil) {
+                parseUser.username = [result objectForKey:@"email"];
+                parseUser.email = [result objectForKey:@"email"];
+            } else {
+                NSLog(@"User disabled email permissions");
+                parseUser.username = [result objectForKey:@"link"];
+            }
+            
             parseUser.password = [result objectForKey:@"link"];
-            parseUser.email = [result objectForKey:@"email"];
             
             parseUser[@"firstName"] = [result objectForKey:@"first_name"];
             parseUser[@"lastName"] = [result objectForKey:@"last_name"];
@@ -139,7 +162,6 @@
              */
             
             // Default radius
-            AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
             NSNumber *fifty = [NSNumber numberWithInt:50];
             parseUser[@"radius"] = fifty;
             
@@ -175,6 +197,15 @@
                                                             } else {
                                                                 // The login failed. Check error to see why.
                                                                 NSLog(@"%@", error);
+                                                                
+                                                                _fbLoginView.alpha = 1;
+                                                                _labelOne.alpha = 1;
+                                                                //_labelTwo.alpha = 0;
+                                                                _whyFB.alpha = 1;
+                                                                cityPicker.alpha = 1;
+                                                                self.inLabel.alpha = 1;
+                                                                self.xButton.alpha = 1;
+                                                                [activityView stopAnimating];
                                                             }
                                                         }];
 
@@ -296,6 +327,37 @@
     
     return attString;
     
+}
+
++ (UIImage *)filledImageFrom:(UIImage *)source withColor:(UIColor *)color{
+    
+    // begin a new image context, to draw our colored image onto with the right scale
+    UIGraphicsBeginImageContextWithOptions(source.size, NO, [UIScreen mainScreen].scale);
+    
+    // get a reference to that context we created
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    
+    // set the fill color
+    [color setFill];
+    
+    // translate/flip the graphics context (for transforming from CG* coords to UI* coords
+    CGContextTranslateCTM(context, 0, source.size.height);
+    CGContextScaleCTM(context, 1.0, -1.0);
+    
+    CGContextSetBlendMode(context, kCGBlendModeColorBurn);
+    CGRect rect = CGRectMake(0, 0, source.size.width, source.size.height);
+    CGContextDrawImage(context, rect, source.CGImage);
+    
+    CGContextSetBlendMode(context, kCGBlendModeSourceIn);
+    CGContextAddRect(context, rect);
+    CGContextDrawPath(context,kCGPathFill);
+    
+    // generate a new UIImage from the graphics context we drew onto
+    UIImage *coloredImg = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    //return the color-burned image
+    return coloredImg;
 }
 
 /*

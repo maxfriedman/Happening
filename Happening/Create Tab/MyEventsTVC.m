@@ -255,6 +255,15 @@
     return beginningOfDay;
 }
 
+#warning method doesn't work!!!!! :(
+
+-(void)refreshMyEvents {
+    
+    // DOESN'T WORK --- WHY?
+    
+    NSLog(@"Reload data after event creation---- Doesn't work :(");
+    [self.tableView reloadData];
+}
 
  #pragma mark - Navigation
  
@@ -271,6 +280,12 @@
          //vc.eventIDLabel.text = cell.eventID;
          vc.hidesBottomBarWhenPushed = YES;
      
+     } else if ([segue.identifier isEqualToString:@"createNewEvent"]) {
+                  
+         UINavigationController *navController = [segue destinationViewController];
+         EventTVC *vc = (EventTVC *)([navController topViewController]);
+         vc.delegate = self;
+         
      }
  }
 

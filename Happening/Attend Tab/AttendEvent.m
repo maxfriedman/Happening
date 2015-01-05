@@ -22,7 +22,10 @@
 
 @end
 
-@implementation AttendEvent
+@implementation AttendEvent {
+    NSInteger count;
+    NSArray *eventsArray;
+}
 
 @synthesize locManager, refreshControl;
 @synthesize sections;
@@ -56,9 +59,14 @@
     [eventQuery whereKey:@"Date" greaterThan:[NSDate date]];
     [eventQuery orderByAscending:@"Date"];
     
+    count = 0;
     
-    [eventQuery findObjectsInBackgroundWithBlock:^(NSArray *eventsArray, NSError *error) {
+    eventsArray = [[NSArray alloc]init];
     
+    [eventQuery findObjectsInBackgroundWithBlock:^(NSArray *events, NSError *error) {
+    
+        eventsArray = events;
+        
         for (PFObject *event in eventsArray)
         {
             // Reduce event start date to date components (year, month, day)
@@ -75,6 +83,8 @@
             
             // Add the event to the list for this day
             [eventsOnThisDay addObject:event];
+            
+            count++;
         }
         
         // Create a sorted list of days
@@ -126,7 +136,8 @@
     NSDate *dateRepresentingThisDay = [self.sortedDays objectAtIndex:section];
     NSArray *eventsOnThisDay = [self.sections objectForKey:dateRepresentingThisDay];
     return [eventsOnThisDay count];
-
+    //return 1;
+    
 }
 
 // %%%%%% Runs through this code every time I scroll in "Attend" Table for some reason %%%%%%%%%%%
@@ -319,8 +330,16 @@
         NSIndexPath *selectedIndexPath = [self.tableView indexPathForSelectedRow];
         AttendTableCell *cell = [self.tableView cellForRowAtIndexPath:selectedIndexPath];
         moreDetailFromTable *vc = (moreDetailFromTable *)segue.destinationViewController;
+        
+        // Pass data
         vc.eventID = cell.eventID;
-        vc.eventIDLabel.text = cell.eventID;
+        vc.titleText = cell.titleLabel.text;
+        vc.image = cell.image.image;
+        //vc.timeLabel.text
+        vc.distanceText = cell.distance.text;
+        vc.subtitleText = cell.subtitle.text;
+        vc.locationText = cell.locLabel.text;
+        
         vc.hidesBottomBarWhenPushed = YES;
         
         // pass the element to this detail view controller

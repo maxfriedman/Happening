@@ -12,8 +12,11 @@
 #import <MapKit/MapKit.h>
 #import "AppDelegate.h"
 #import "CupertinoYankee.h"
+#import <MessageUI/MessageUI.h>
+#import "EditExtraInfoTVC.h"
 
-@interface EditEventTVC : UITableViewController <UINavigationControllerDelegate, UIImagePickerControllerDelegate, UIPickerViewDataSource, UIPickerViewDelegate, UIAlertViewDelegate>
+
+@interface EditEventTVC : UITableViewController <UINavigationControllerDelegate, UIImagePickerControllerDelegate, UIPickerViewDataSource, UIPickerViewDelegate, UIAlertViewDelegate, MFMailComposeViewControllerDelegate, EditExtraInfoTVCDelegate>
 
 @property NSString *eventID;
 

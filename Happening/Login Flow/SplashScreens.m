@@ -63,7 +63,6 @@
             */
             
             // Default radius
-            AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
             NSNumber *fifty = [NSNumber numberWithInt:50];
             parseUser[@"radius"] = fifty;
             

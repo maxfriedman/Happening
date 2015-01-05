@@ -10,11 +10,20 @@
 #import <MobileCoreServices/MobileCoreServices.h>
 #import <Parse/Parse.h>
 #import <MapKit/MapKit.h>
+#import <MessageUI/MessageUI.h>
 #import "AppDelegate.h"
 #import "CupertinoYankee.h"
 #import "ExtraInfoTVC.h"
 
-@interface EventTVC: UITableViewController <UINavigationControllerDelegate, UIImagePickerControllerDelegate, UIPickerViewDataSource, UIPickerViewDelegate, UIAlertViewDelegate, UITextViewDelegate>
+@protocol EventTVCDelegate <NSObject>
+
+-(void)refreshMyEvents;
+
+@end
+
+@interface EventTVC: UITableViewController <UINavigationControllerDelegate, UIImagePickerControllerDelegate, UIPickerViewDataSource, UIPickerViewDelegate, UIAlertViewDelegate, UITextViewDelegate, MFMailComposeViewControllerDelegate, ExtraInfoTVCDelegate>
+
+@property (nonatomic, weak) id<EventTVCDelegate> delegate;
 
 @property (strong, nonatomic) IBOutlet UIButton *button;
 
@@ -52,5 +61,7 @@
 @property (strong, nonatomic) IBOutlet UITextField *descriptionField;
 
 @property (strong, nonatomic) IBOutlet UITextView *descriptionTextView;
+
+@property (strong, nonatomic) IBOutlet UIButton *contactUsButton;
 
 @end

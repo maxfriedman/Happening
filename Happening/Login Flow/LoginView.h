@@ -10,7 +10,6 @@
 #import <Parse/Parse.h>
 #import <ParseFacebookUtils/PFFacebookUtils.h>
 #import <FacebookSDK/FacebookSDK.h>
-#import "AppDelegate.h"
 
 @interface LoginView : UIViewController <FBLoginViewDelegate, UIPickerViewDelegate, UIPickerViewDataSource, UINavigationControllerDelegate>
 

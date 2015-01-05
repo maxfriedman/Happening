@@ -9,6 +9,8 @@
 
 
 #import "OverlayView.h"
+#import "FlippedDVB.h"
+#import "DraggableView.h"
 
 @implementation OverlayView {
     
@@ -22,7 +24,9 @@
 {
     self = [super initWithFrame:frame];
     if (self) {
+                
         //self.backgroundColor = [UIColor whiteColor];
+        /*
         imageView = [[UIImageView alloc]init];
         
         UIImage *image = [UIImage imageNamed:@"noButton"];
@@ -30,7 +34,7 @@
         
         imageView.tintColor = [UIColor colorWithRed:0.7f green:0.0f blue:0.0f alpha:0.9];
         imageView.image = image;
-        
+        */
         //[self addSubview:imageView];
         
         yesArray = [[NSArray alloc]initWithObjects:@"Yeah!", @"Totally", @"Let's do it", @"Love this", @"Interested", @"See you there!", @"Yesss", @"Awesome", @"Yup", @"Like", @"Boom shakalaka", @"Leggo", @":)", nil];
@@ -46,8 +50,8 @@
         
         label.backgroundColor = [UIColor redColor];
         
+        //label.alpha = 0;
         [self addSubview:label];
-        
     }
     return self;
 }
@@ -61,19 +65,20 @@
     _mode = mode;
     
     if(mode == GGOverlayViewModeLeft) {
+        /*
         UIImage *image = [UIImage imageNamed:@"noButton"];
         image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
         
         imageView.tintColor = [UIColor colorWithRed:0.7f green:0.0f blue:0.0f alpha:0.9];
         imageView.image = image;
-        
+        */
         NSUInteger randomIndex = arc4random() % [noArray count];
         label.text = noArray[randomIndex];
         
         label.backgroundColor = [UIColor redColor];
         
     } else if (mode == GGOverlayViewModeRight){
-        imageView.image = [UIImage imageNamed:@"yesButton"];
+        //imageView.image = [UIImage imageNamed:@"yesButton"];
         
         NSUInteger randomIndex = arc4random() % [yesArray count];
         label.text = yesArray[randomIndex];
@@ -90,8 +95,13 @@
 -(void)layoutSubviews
 {
     [super layoutSubviews];
-    imageView.frame = CGRectMake(50, 50, 100, 100);
-    label.frame = CGRectMake(0, 120, 290, 70);
+    if (self.forFlippedDVB == YES) {
+        //imageView.frame = CGRectMake(50, 50, 100, 100);
+        label.frame = CGRectMake(0, 120, 290, 50);
+    } else {
+        //imageView.frame = CGRectMake(50, 50, 100, 100);
+        label.frame = CGRectMake(0, 120, 290, 70);
+    }
     
     
 }

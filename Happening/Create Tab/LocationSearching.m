@@ -9,7 +9,7 @@
 #import "LocationSearching.h"
 #import "AppDelegate.h"
 
-@interface LocationSearching () <UISearchDisplayDelegate, UISearchBarDelegate, UISearchResultsUpdating, UISearchControllerDelegate, CLLocationManagerDelegate>
+@interface LocationSearching () <UISearchDisplayDelegate, UISearchBarDelegate, /*UISearchResultsUpdating,*/ UISearchControllerDelegate, CLLocationManagerDelegate>
 
 @end
 
@@ -126,6 +126,7 @@
     
     AppDelegate *appDelegate=(AppDelegate *)[UIApplication sharedApplication].delegate;
     appDelegate.item = results.mapItems[indexPath.row];
+    Event[@"LocTitle"] = appDelegate.item.name;
     NSString *cityName = appDelegate.item.placemark.addressDictionary[@"City"];
     NSString *stateName = appDelegate.item.placemark.addressDictionary[@"State"];
     NSString *zipCode = appDelegate.item.placemark.addressDictionary[@"ZIP"];

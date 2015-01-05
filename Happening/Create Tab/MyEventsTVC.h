@@ -12,8 +12,9 @@
 #import "showMyEventVC.h"
 #import "MyEventTableCell.h"
 #import "AppDelegate.h"
+#import "EventTVC.h"
 
-@interface MyEventsTVC : UITableViewController <CLLocationManagerDelegate>
+@interface MyEventsTVC : UITableViewController <CLLocationManagerDelegate, EventTVCDelegate>
 
 @property CLLocationManager *locManager;
 

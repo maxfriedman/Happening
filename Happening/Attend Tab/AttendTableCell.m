@@ -28,6 +28,7 @@
     gradient.colors = [NSArray arrayWithObjects:(id)[[UIColor clearColor] CGColor], (id)[[UIColor whiteColor] CGColor], nil];
     
     [blurEffectView.layer insertSublayer:gradient atIndex:0];
+    
 }
 
 - (void)setupCell {

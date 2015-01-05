@@ -56,20 +56,13 @@
         self.locationManager=_locationManager;
     }
     
-    // Might want to delete this-- If I do, if someone decides to turn location services off, they will continue to get a message every time they launch the app...
     if([CLLocationManager locationServicesEnabled]){
         [self.locationManager startUpdatingLocation];
     }
     
-    UIPageControl *pageControl = [UIPageControl appearance];
-    pageControl.pageIndicatorTintColor = [UIColor lightGrayColor];
-    pageControl.currentPageIndicatorTintColor = [UIColor blackColor];
-    pageControl.backgroundColor = [UIColor whiteColor];
-    
-    
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
     TabBarViewController *tabBar = [storyboard instantiateViewControllerWithIdentifier:@"TabBar"];
-    ChoosingLocation *choosingLoc = [storyboard instantiateViewControllerWithIdentifier:@"ChoosingLoc"];
+    //ChoosingLocation *choosingLoc = [storyboard instantiateViewControllerWithIdentifier:@"ChoosingLoc"];
     
     PFUser *currentUser = [PFUser currentUser];
     NSLog(@"current user: %@", currentUser);
@@ -85,33 +78,42 @@
     }
     else
     {
+        NSLog(@"First launch ever!");
         [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"hasLaunched"];
+        
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"nightlife"];
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"entertainment"];
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"music"];
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"dining"];
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"happyHour"];
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"sports"];
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"shopping"];
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"fundraiser"];
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"meetup"];
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"freebies"];
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"other"];
+        
         [[NSUserDefaults standardUserDefaults] synchronize];
         // This is the first launch ever
     }
     
-    if (currentUser) {
-        PFQuery *query = [PFUser query];
-        [query whereKey:@"username" equalTo:currentUser.username];
-        PFObject *userPF = [query getFirstObject];
+    if (FBSession.activeSession.state == FBSessionStateCreatedTokenLoaded && currentUser) {
+        NSLog(@"Found a cached session");
+        // If there's one, just open the session silently, without showing the user the login UI
+        [FBSession openActiveSessionWithReadPermissions:@[@"public_profile", @"email", @"user_friends", @"user_events", @"user_about_me", @"rsvp_event", @"user_location"]
+                                           allowLoginUI:NO
+                                      completionHandler:^(FBSession *session, FBSessionState state, NSError *error) {
+                                          // Handler for session state changes
+                                          // This method will be called EACH time the session state changes,
+                                          // also for intermediate states and NOT just when the session open
+                                          [self sessionStateChanged:session state:state error:error];
+                                      }];
+        self.window.rootViewController = tabBar;
         
-        // Ensures that the user has selected a location before loading preferences and going to MAIN
-        if (userPF[@"userLoc"] != nil) {
-            
-            NSLog(@"User exists. LEGGO");
-            
-            // Reload user preferences from previous session
-            NSInteger sliderVal = [defaults integerForKey:@"sliderValue"];
-            [defaults synchronize];
-            NSLog(@"Loading preferences... slider value = %ld", (long)sliderVal);
-
-            self.window.rootViewController = tabBar;
-            
-        } else {
-            // Current user exists but they havent set a location for some reason, so let's
-            // start with having them choose a location.
-            self.window.rootViewController = choosingLoc;
-        }
+        // If there's no cached session, view goes to first screen (splash screens) which is set in storyboard
+    } else {
+        //UIButton *loginButton = [self.customLoginViewController loginButton];
+        //[loginButton setTitle:@"Log in with Facebook" forState:UIControlStateNormal];
     }
     
     return YES;
@@ -123,11 +125,16 @@
          annotation:(id)annotation {
     
     // Call FBAppCall's handleOpenURL:sourceApplication to handle Facebook app responses
-    BOOL wasHandled = [FBAppCall handleOpenURL:url sourceApplication:sourceApplication];
+    self.wasHandled = [FBAppCall handleOpenURL:url sourceApplication:sourceApplication];
     
     // You can add your app-specific url handling code here if needed
-    
-    return wasHandled;
+    /*
+    if (self.wasHandled) {
+        NSLog(@"WasHandled = true!");
+    } else
+        NSLog(@"WasHandled = FALSE");
+    */
+    return self.wasHandled;
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {
@@ -147,6 +154,9 @@
 - (void)applicationDidBecomeActive:(UIApplication *)application {
     // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
     //[FBAppCall handleDidBecomeActiveWithSession:[PFFacebookUtils session]];
+    
+    [FBAppCall handleDidBecomeActive];
+    
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     [defaults setBool:YES forKey:@"refreshData"];
     [defaults synchronize];
@@ -155,5 +165,81 @@
 - (void)applicationWillTerminate:(UIApplication *)application {
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
 }
+
+// This method will handle ALL the session state changes in the app
+- (void)sessionStateChanged:(FBSession *)session state:(FBSessionState) state error:(NSError *)error
+{
+    // If the session was opened successfully
+    if (!error && state == FBSessionStateOpen){
+        NSLog(@"Session opened");
+        // Show the user the logged-in UI
+        //[self userLoggedIn];
+        return;
+    }
+    if (state == FBSessionStateClosed || state == FBSessionStateClosedLoginFailed){
+        // If the session is closed
+        NSLog(@"Session closed");
+        // Show the user the logged-out UI
+        //[self userLoggedOut];
+    }
+    
+    // Handle errors
+    if (error){
+        NSLog(@"Error");
+        NSString *alertText;
+        NSString *alertTitle;
+        // If the error requires people using an app to make an action outside of the app in order to recover
+        if ([FBErrorUtility shouldNotifyUserForError:error] == YES){
+            alertTitle = @"Something went wrong";
+            alertText = [FBErrorUtility userMessageForError:error];
+            [self showMessage:alertText withTitle:alertTitle];
+        } else {
+            
+            // If the user cancelled login, do nothing
+            if ([FBErrorUtility errorCategoryForError:error] == FBErrorCategoryUserCancelled) {
+                NSLog(@"User cancelled login");
+                
+                // Handle session closures that happen outside of the app
+            } else if ([FBErrorUtility errorCategoryForError:error] == FBErrorCategoryAuthenticationReopenSession){
+                alertTitle = @"Session Error";
+                alertText = @"Your current session is no longer valid. Please log in again.";
+                [self showMessage:alertText withTitle:alertTitle];
+                
+                // For simplicity, here we just show a generic message for all other errors
+                // You can learn how to handle other errors using our guide: https://developers.facebook.com/docs/ios/errors
+            } else {
+                //Get more error information from the error
+                NSDictionary *errorInformation = [[[error.userInfo objectForKey:@"com.facebook.sdk:ParsedJSONResponseKey"] objectForKey:@"body"] objectForKey:@"error"];
+                
+                // Show the user an error message
+                alertTitle = @"Something went wrong";
+                alertText = [NSString stringWithFormat:@"Please retry. \n\n If the problem persists contact us and mention this error code: %@", [errorInformation objectForKey:@"message"]];
+                [self showMessage:alertText withTitle:alertTitle];
+            }
+        }
+        // Clear this token
+        [FBSession.activeSession closeAndClearTokenInformation];
+        // Show the user the logged-out UI
+        //[self userLoggedOut];
+    }
+}
+
+- (void)userLoggedIn
+{
+    // Set the button title as "Log out"
+    
+    
+}
+
+// Show an alert message
+- (void)showMessage:(NSString *)text withTitle:(NSString *)title
+{
+    [[[UIAlertView alloc] initWithTitle:title
+                                message:text
+                               delegate:self
+                      cancelButtonTitle:@"OK!s"
+                      otherButtonTitles:nil] show];
+}
+
 
 @end

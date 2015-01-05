@@ -8,7 +8,7 @@
 
 #import "SettingsChoosingLoc.h"
 
-@interface SettingsChoosingLoc () <UISearchDisplayDelegate, UISearchBarDelegate, UISearchResultsUpdating, UISearchControllerDelegate, CLLocationManagerDelegate>
+@interface SettingsChoosingLoc () <UISearchDisplayDelegate, UISearchBarDelegate, /*UISearchResultsUpdating,*/ UISearchControllerDelegate, CLLocationManagerDelegate>
 
 @end
 

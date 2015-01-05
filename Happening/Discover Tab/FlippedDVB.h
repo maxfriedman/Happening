@@ -10,7 +10,21 @@
 #import <MapKit/MapKit.h>
 #import "DragViewController.h"
 
+@protocol FlippedDVBDelegate <NSObject>
+
+-(void)cardSwipedLeft:(UIView *)card fromFlippedView:(BOOL)flippedBool;
+-(void)cardSwipedRight:(UIView *)card fromFlippedView:(BOOL)flippedBool;
+-(void)checkEventStoreAccessForCalendar;
+-(void)addLabels;
+
+@end
+
 @interface FlippedDVB : UIView <MKMapViewDelegate, MKAnnotation>
+
+-(void)addLabels;
+-(void)removeLabels;
+
+@property (weak) id <FlippedDVBDelegate> delegate;
 
 @property (nonatomic, weak) DragViewController *viewController;
 
@@ -19,5 +33,16 @@
 @property NSString *eventLocationTitle;
 @property (nonatomic, strong) CLLocation *mapLocation;
 @property (nonatomic, strong) UILabel *titleLabel;
+
+@property (nonatomic, strong)UIPanGestureRecognizer *panGestureRecognizer;
+@property (nonatomic)CGPoint originalPoint;
+@property (nonatomic,strong)OverlayView* overlayView;
+
+@property (nonatomic, strong)DraggableView *dragView;
+
+@property BOOL userSwipedFromFlippedView;
+
+@property (assign)int actionMargin;
+@property (assign)int swipeDownMargin;
 
 @end

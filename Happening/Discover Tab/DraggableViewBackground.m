@@ -64,6 +64,7 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
     if (self) {
         [super layoutSubviews];
         [self setupView];
+        self.myViewController.frontViewIsVisible = YES; // Cards start off with front view visible
         
         eventStore = [[EKEventStore alloc] init];
         
@@ -78,7 +79,6 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
             NSLog(@"Current Location is: %@", currentLocation);
             [user saveInBackground];
         }
-        
         
         exampleCardLabels = [[NSMutableArray alloc]initWithObjects: nil];
         someArray = [[NSArray alloc]init];
@@ -96,6 +96,12 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
         createdByArray = [[NSMutableArray alloc]init];
         
         PFQuery *eventQuery = [PFQuery queryWithClassName:@"Event"];
+        
+        // Sorts the query by categories chosen in settings... Default = ALL categories (set on first launch)
+        NSArray *categories = [[NSArray alloc]init];
+        categories = [self setCategories]; //set from User Defaults ... Should I just pull from Parse??
+        [eventQuery whereKey:@"Hashtag" containedIn:categories];
+        
         // Sorts the query by most recent event and only shows those after today's date
         [eventQuery orderByAscending:@"Date"];
         [eventQuery whereKey:@"Date" greaterThan:[NSDate date]]; // ADD DATE MINUS 2 HOURS TO SHOW EVENTS
@@ -206,7 +212,6 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
 //%%% sets up the extra buttons on the screen
 -(void)setupView
 {
-#warning customize all of this.  These are just place holders to make it look pretty
     //self.backgroundColor = [UIColor colorWithRed:.92 green:.93 blue:.95 alpha:1]; //the gray background colors
     
     /*
@@ -214,12 +219,6 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
      [menuButton setImage:[UIImage imageNamed:@"Settings"] forState:UIControlStateNormal];
      messageButton = [[UIButton alloc]initWithFrame:CGRectMake(260, 15, 45, 45)];
      [messageButton setImage:[UIImage imageNamed:@"Share"] forState:UIControlStateNormal];
-     
-     happening = [[UILabel alloc]initWithFrame:CGRectMake(100, 100, self.frame.size.width, 100)];
-     [happening setTextAlignment:NSTextAlignmentCenter];
-     happening.textColor = [UIColor blackColor];
-     happening.text = @"Happening";
-     
      
      xButton = [[UIButton alloc]initWithFrame:CGRectMake(60, 360, 59, 59)];
      [xButton setImage:[UIImage imageNamed:@"xButton"] forState:UIControlStateNormal];
@@ -243,8 +242,6 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
     
 }
 
-
-#warning include own card customization here!
 //%%% creates a card and returns it.  This should be customized to fit your needs.
 // use "index" to indicate where the information should be pulled.  If this doesn't apply to you, feel free
 // to get rid of it (eg: if you are building cards from data from the internet)
@@ -385,22 +382,23 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
     
 }
 
-#warning include own action here!
 //%%% action called when the card goes to the left.
 // This should be customized with your own action
--(void)cardSwipedLeft:(UIView *)card;
+-(void)cardSwipedLeft:(UIView *)card fromFlippedView:(BOOL)flippedBool
 {
     //do whatever you want with the card that was swiped
     DraggableView *c = (DraggableView *)card;
     PFQuery *query = [PFQuery queryWithClassName:@"Event"];
     [query getObjectInBackgroundWithId:c.objectID block:^(PFObject *object, NSError *error) {
         
-        NSNumber *swipesNum = object[@"swipesLeft"];
-        NSInteger swipesPlusOne = ([swipesNum integerValue] + 1);
-        swipesNum = [NSNumber numberWithInt:swipesPlusOne];
-        
-        object[@"swipesLeft"] = swipesNum;
+        [object incrementKey:@"swipesLeft"];
         [object saveInBackground];
+        
+        if (!error) {
+            NSLog(@"Swipe saved successfully!");
+        } else {
+            NSLog(@"Parse error: %@", error);
+        }
         
     }];
     
@@ -423,12 +421,17 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
  
     dragView = [loadedCards firstObject]; // Make dragView the current card
 
+    if (flippedBool == YES) {
+        self.myViewController.userSwipedFromFlippedView = YES;
+        [self.myViewController flipCurrentView];
+    } else
+        self.myViewController.userSwipedFromFlippedView = NO;
+    
 }
 
-#warning include own action here!
 //%%% action called when the card goes to the right.
 // This should be customized with your own action
--(void)cardSwipedRight:(UIView *)card
+-(void)cardSwipedRight:(UIView *)card fromFlippedView:(BOOL)flippedBool
 {
     //do whatever you want with the card that was swiped
     DraggableView *c = (DraggableView *)card;
@@ -438,19 +441,12 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
     PFQuery *query = [PFQuery queryWithClassName:@"Event"];
     [query getObjectInBackgroundWithId:c.objectID block:^(PFObject *object, NSError *error) {
         
-        NSNumber *swipesNum = object[@"swipesRight"];
-        NSInteger swipesPlusOne = ([swipesNum integerValue] + 1);
-        swipesNum = [NSNumber numberWithInteger:swipesPlusOne];
-        
-        object[@"swipesRight"] = swipesNum;
+        [object incrementKey:@"swipesRight"];
         [object saveInBackground];
         
         NSString *tag = [NSString stringWithFormat:@"%@", object[@"Hashtag"]];
-        NSNumber *tagNum= user[tag];
-        NSInteger tagPlusOne = ([tagNum integerValue] + 1);
-        tagNum = [NSNumber numberWithInteger:tagPlusOne];
+        [user incrementKey:tag];
         
-        user[tag] = tagNum;
         [user saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
             if (!error) {
                 // The currentUser saved successfully.
@@ -460,6 +456,12 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
                 NSLog(@"Parse error: %@", errorString);
             }
         }];
+        
+        if (!error) {
+            NSLog(@"Swipe saved successfully!");
+        } else {
+            NSLog(@"Parse error: %@", error);
+              }
     }];
     
     PFObject *swipesObject = [PFObject objectWithClassName:@"Swipes"];
@@ -481,7 +483,12 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
     //[self checkEventStoreAccessForCalendar];
     
     dragView = [loadedCards firstObject]; // Make dragView the current card
-
+    
+    if (flippedBool == YES) {
+        self.myViewController.userSwipedFromFlippedView = YES;
+        [self.myViewController flipCurrentView];
+    } else
+        self.myViewController.userSwipedFromFlippedView = NO;
     
 }
 
@@ -649,6 +656,49 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
         
     }];
 
+}
+
+- (NSMutableArray *) setCategories {
+    
+    NSMutableArray *categories = [[NSMutableArray alloc]init];
+    
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"nightlife"]) {
+        [categories addObject:@"Nightlife"];
+    }
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"entertainment"]) {
+        [categories addObject:@"Entertainment"];
+    }
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"music"]) {
+        [categories addObject:@"Music"];
+    }
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"dining"]) {
+        [categories addObject:@"Dining"];
+    }
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"happyHour"]) {
+        [categories addObject:@"Happy Hour"];
+    }
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"sports"]) {
+        [categories addObject:@"Sports"];
+    }
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"shopping"]) {
+        [categories addObject:@"Shopping"];
+    }
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"fundraiser"]) {
+        [categories addObject:@"Fundraiser"];
+    }
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"meetup"]) {
+        [categories addObject:@"Meetup"];
+    }
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"freebies"]) {
+        [categories addObject:@"Freebies"];
+    }
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"other"]) {
+        [categories addObject:@"Other"];
+    }
+    
+    
+    
+    return categories;
 }
 
 @end

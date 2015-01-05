@@ -8,11 +8,22 @@
 
 #import <UIKit/UIKit.h>
 #import "EditEventTVC.h"
+#import "DraggableView.h"
+#import "FlippedDVB.h"
+#import "UICountingLabel.h"
 
 @interface showMyEventVC : UIViewController
 
 @property (assign) NSString *eventID;
 
 @property (strong, nonatomic) IBOutlet UILabel *eventIDLabel;
+
+@property (strong, nonatomic) IBOutlet UISegmentedControl *segControl;
+
+@property (strong, nonatomic) IBOutlet UICountingLabel *notInterestedLabel;
+
+@property (strong, nonatomic) IBOutlet UICountingLabel *interestedLabel;
+
+@property (strong, nonatomic) IBOutlet UIButton *websiteButton;
 
 @end

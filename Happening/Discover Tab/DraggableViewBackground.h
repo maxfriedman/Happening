@@ -12,19 +12,19 @@
 #import <UIKit/UIKit.h>
 #import <MapKit/MapKit.h>
 #import "DraggableView.h"
-#import "DragViewController.h"
 #import <EventKit/EventKit.h>
+#import "FlippedDVB.h" // imports drag view controller
 
 
-@interface DraggableViewBackground : UIView <DraggableViewDelegate, CLLocationManagerDelegate, DragViewControllerDelegate>
+@interface DraggableViewBackground : UIView <DraggableViewDelegate, CLLocationManagerDelegate, DragViewControllerDelegate, FlippedDVBDelegate>
 
 @property (retain, nonatomic) DraggableView *dragView;
 
 @property (nonatomic, weak) DragViewController *myViewController;
 
 //methods called in DraggableView
--(void)cardSwipedLeft:(UIView *)card;
--(void)cardSwipedRight:(UIView *)card;
+-(void)cardSwipedLeft:(UIView *)card fromFlippedView:(BOOL)flippedBool;
+-(void)cardSwipedRight:(UIView *)card fromFlippedView:(BOOL)flippedBool;
 
 -(void)swipeLeft;
 -(void)swipeRight;

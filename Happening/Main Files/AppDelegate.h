@@ -8,11 +8,11 @@
 
 #import <UIKit/UIKit.h>
 #import <CoreLocation/CoreLocation.h>
-#import <Parse/Parse.h>
 #import <MapKit/MapKit.h>
-#import <FacebookSDK/FacebookSDK.h>
-#import <ParseFacebookUtils/PFFacebookUtils.h>
 #import <AddressBook/AddressBook.h>
+#import <Parse/Parse.h>
+#import <FacebookSDK/FacebookSDK.h>
+
 
 @interface AppDelegate : UIResponder <UIApplicationDelegate, CLLocationManagerDelegate>
 
@@ -27,6 +27,8 @@
 @property (strong, nonatomic) NSString *locSubtitle;
 
 @property int sliderValue;
+
+@property BOOL wasHandled;
 
 @end
 

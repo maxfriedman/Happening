@@ -30,8 +30,6 @@
         PFQuery *query = [PFUser query];
         [query whereKey:@"username" equalTo:currentUser.username];
         
-        PFObject *userPF = [query getFirstObject];
-        
         // Reload user preferences from previous session
         //int sliderVal = [userPF[@"radius"] intValue];
         //NSLog(@"Loading preferences... slider value = %d", sliderVal);
@@ -56,8 +54,9 @@
     // Do any additional setup after loading the view.
 
     // Create the data model
-    _pageTitles = @[@"Currently being designed!", @"Have fun, save money", @"Spend more time with friends", @":)"];
-    _pageImages = @[@"page1.png", @"page2.png", @"page3.png", @"page4.png"];
+    //_pageTitles = @[@"Currently being designed!", @"Have fun, save money", @"Spend more time with friends", @":)"];
+    _pageTitles = @[@"", @"", @"", @"", @""];
+    _pageImages = @[@"hapLogo", @"Page1.png", @"Page2.png", @"Page3.png", @"Page4.png"];
     
     // Create page view controller
     self.pageViewController = [self.storyboard instantiateViewControllerWithIdentifier:@"PageViewController"];
@@ -68,11 +67,26 @@
     [self.pageViewController setViewControllers:viewControllers direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
     
     // Change the size of page view controller
-    self.pageViewController.view.frame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height - 30);
+    self.pageViewController.view.frame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height - 50);
     
     [self addChildViewController:_pageViewController];
     [self.view addSubview:_pageViewController.view];
     [self.pageViewController didMoveToParentViewController:self];
+    
+    NSArray *subviews = self.pageViewController.view.subviews;
+    UIPageControl *thisControl = nil;
+    for (int i=0; i<[subviews count]; i++) {
+        if ([[subviews objectAtIndex:i] isKindOfClass:[UIPageControl class]]) {
+            thisControl = (UIPageControl *)[subviews objectAtIndex:i];
+        }
+    }
+    
+    thisControl.userInteractionEnabled = NO;
+    UIPageControl *pageControl = thisControl;
+    pageControl.currentPageIndicatorTintColor = [UIColor whiteColor];
+    pageControl.pageIndicatorTintColor = [UIColor lightTextColor];
+    thisControl.backgroundColor = [UIColor colorWithRed:41.0/255 green:181.0/255 blue:1.0 alpha:1.0]; //happening blue!
+    //self.pageViewController.view.frame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height+40);
 }
 
 - (void)didReceiveMemoryWarning {

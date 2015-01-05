@@ -10,10 +10,10 @@
 #import "DraggableViewBackground.h"
 #import "FlippedDVB.h"
 #import "CustomCalendarActivity.h"
+#import "RKDropdownAlert.h"
 
 @interface DragViewController ()
 
-@property (assign) BOOL frontViewIsVisible;
 @property (strong, nonatomic) DraggableViewBackground *draggableBackground;
 @property (strong, nonatomic) FlippedDVB *flippedDVB;
 
@@ -35,7 +35,6 @@
         [self performSegueWithIdentifier:@"toChooseLoc" sender:self];
     }
     
-    
     xButton = [[UIButton alloc]initWithFrame:CGRectMake(-100.5, 423, 244.5, 79)]; //423
     [xButton setImage:[UIImage imageNamed:@"NotInterestedButton"] forState:UIControlStateNormal];
     [xButton addTarget:self action:@selector(swipeLeftDVC) forControlEvents:UIControlEventTouchUpInside];
@@ -50,6 +49,8 @@
     [self.view sendSubviewToBack:xButton];
     
     self.frontViewIsVisible = YES;
+    self.userSwipedFromFlippedView = NO;
+    
 }
 
 -(void)viewWillAppear:(BOOL)animated {
@@ -58,14 +59,20 @@
     // Refresh only if there was a change in preferences or the app has loaded for the first time.
     if ([defaults boolForKey:@"refreshData"]) {
         
-        // Removes the previous content!!!!!! (when view was burned in behind the cards)
-        NSLog(@"%lu", (unsigned long)[self.view.subviews count] );
-        NSLog(@"%@", self.view.subviews );
-
-        cardView = self.view.subviews[2]; //Card view is 3rd in hierarchy after sending button views to the back
-        for (id viewToRemove in [cardView subviews]){
-            [viewToRemove removeFromSuperview];
+        
+        if (self.frontViewIsVisible == NO) {
+            [self flipCurrentView]; // Makes blur view look weird and messes with seg control when flipping
+        } else {
+            cardView = self.view.subviews[2]; //Card view is 3rd in hierarchy after sending button views to the back
+            for (id viewToRemove in [cardView subviews]){
+                [viewToRemove removeFromSuperview];
+            }
         }
+        self.frontViewIsVisible = YES;
+        self.userSwipedFromFlippedView = NO;
+        
+        // Removes the previous content!!!!!! (when view was burned in behind the cards)
+        //NSLog(@"%lu", (unsigned long)[self.view.subviews count] );
         
         UIActivityIndicatorView *activityView=[[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
         activityView.center=self.view.center;
@@ -80,9 +87,6 @@
         //UITapGestureRecognizer *singleFingerTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(cardWasTapped)];
         //[draggableBackground addGestureRecognizer:singleFingerTap];
         
-        flippedDVB = [[FlippedDVB alloc]initWithFrame:CGRectMake(-1, -1, 291, 321)];
-        flippedDVB.viewController = self;
-        
         //[self.view addSubview:flippedDVB];
         
         [activityView stopAnimating];
@@ -93,6 +97,8 @@
         
         delegate = draggableBackground;
         
+        
+        NSLog(@"Card view subviews: %@", cardView.subviews);
     }
 }
 
@@ -129,18 +135,48 @@
         [UIView setAnimationTransition:UIViewAnimationTransitionFlipFromRight forView:cardView cache:YES];
         [self.draggableBackground removeFromSuperview];
         
+        // Create the flipped view
+        flippedDVB = [[FlippedDVB alloc]initWithFrame:CGRectMake(-1, -1, 291, 321)];
+        flippedDVB.viewController = self;
+        flippedDVB.delegate = draggableBackground; // THE MISSING DELGATE CALL!!
+        
+        //Add tap to return label
+        [flippedDVB addLabels];
+        
         // %%%%% Pass variables to flipped card
         NSLog(@"Tapped Event: %@",self.title);
         flippedDVB.eventID = self.eventID;
         flippedDVB.mapLocation = self.mapLocation;
         flippedDVB.eventTitle = self.eventTitle;
         flippedDVB.eventLocationTitle = self.locationTitle;
+        
+        flippedDVB.dragView = self.draggableBackground.dragView;
         // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        
+        [UIView animateWithDuration:0.75 animations:^{
+            xButton.alpha = 0;
+            checkButton.alpha = 0;
+        }];
         
         [cardView addSubview:self.flippedDVB];
     } else {
-        [UIView setAnimationTransition:UIViewAnimationTransitionFlipFromLeft forView:cardView cache:YES];
-        [self.flippedDVB removeFromSuperview];
+        
+        if (self.userSwipedFromFlippedView == YES) {
+            NSLog(@"User swiped from flipped view!");
+            [UIView setAnimationTransition:UIViewAnimationTransitionCurlDown forView:cardView cache:YES];
+        } else {
+            [UIView setAnimationTransition:UIViewAnimationTransitionFlipFromLeft forView:cardView cache:YES];
+            [self.flippedDVB removeFromSuperview];
+            
+        }
+        
+        [flippedDVB removeLabels];
+        
+        [UIView animateWithDuration:0.75 animations:^{
+            xButton.alpha = 1;
+            checkButton.alpha = 1;
+        }];
+
         [cardView addSubview:self.draggableBackground];
     }
     [UIView commitAnimations];
@@ -160,6 +196,8 @@
     
     // re-enable user interaction when the flip animation is completed
     self.view.userInteractionEnabled = YES;
+    if (flippedDVB.userSwipedFromFlippedView == YES)
+        [flippedDVB removeFromSuperview];
 }
 
 - (IBAction)shareAction:(id)sender {

@@ -11,12 +11,15 @@
 #import <Parse/Parse.h>
 #import <QuartzCore/QuartzCore.h>
 #import <EventKit/EventKit.h>
+#import "MFActivityIndicatorView.h"
 
 @protocol DraggableViewDelegate <NSObject>
 
--(void)cardSwipedLeft:(UIView *)card;
--(void)cardSwipedRight:(UIView *)card;
+-(void)cardSwipedLeft:(UIView *)card fromFlippedView:(BOOL)flippedBool;
+-(void)cardSwipedRight:(UIView *)card fromFlippedView:(BOOL)flippedBool;
 -(void)checkEventStoreAccessForCalendar;
+
+-(void)afterSwipeAction;
 
 @end
 
@@ -53,12 +56,17 @@
 @property (nonatomic,strong)UIImageView* locImage;
 @property (nonatomic,strong)UIImageView* userImage;
 
-@property (nonatomic,strong)UIActivityIndicatorView *activityView;
+@property (nonatomic,strong)MFActivityIndicatorView *activityView;
 
 @property (nonatomic, strong)UIButton* checkButton;
 @property (nonatomic, strong)UIButton* xButton;
 
-@property (nonatomic, strong) EKEventStore *eventStore;
+@property (nonatomic, strong)EKEventStore *eventStore;
+
+@property (nonatomic, strong)UIImageView *cardBackground;
+
+@property (assign)int actionMargin;
+@property (assign)int swipeDownMargin;
 
 -(void)leftClickAction;
 -(void)rightClickAction;

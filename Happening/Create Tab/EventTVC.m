@@ -7,6 +7,7 @@
 //
 
 #import "EventTVC.h"
+#import "RKDropdownAlert.h"
 
 @interface EventTVC ()
 
@@ -31,6 +32,14 @@
 @implementation EventTVC {
     NSDateFormatter *dateFormatter;
     int intervalInSeconds;
+    MKMapItem *item;
+    
+    int repeatsInt;
+    NSString *urlString;
+    NSString *descriptionString;
+    NSString *emailString;
+    NSString *createdByNameString;
+    int frequencyInt;
 }
 
 @synthesize imageView, button;
@@ -54,7 +63,7 @@
 
 @synthesize dateDetailLabel, endTimeDetailLabel, hashtagDetailLabel;
 
-@synthesize urlField, descriptionField, descriptionTextView;
+@synthesize urlField, descriptionField, descriptionTextView, delegate;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -86,9 +95,27 @@
     
     NSLog(@"Event being created...");
     
+    PFUser *user = [PFUser currentUser];
     Event = [PFObject objectWithClassName:@"Event"];
-    Event[@"Repeats"] = @"Never";
     
+    NSString *firstName = user[@"firstName"];
+    NSString *lastName = user[@"lastName"];
+    createdByNameString = [NSString stringWithFormat:@"%@ %@", firstName, lastName];
+    
+    urlString = @"www.gethappeningapp.com";
+    repeatsInt = 0;
+    frequencyInt = 1;
+    descriptionString = @"";
+    
+    if (user.email != nil) {
+        emailString = user.email;
+    } else {
+        emailString = @"";
+    }
+    
+    Event[@"Repeats"] = @"Never";
+    Event[@"CreatedBy"] = user.username;
+    Event[@"CreatedByName"] = createdByNameString;
 }
 
 - (IBAction)dateButtonAction:(id)sender {
@@ -209,16 +236,16 @@
     datePicker.minimumDate = [[NSDate alloc]initWithTimeIntervalSinceNow:-86400]; //24 hours ago
     datePicker.maximumDate = [[NSDate alloc]initWithTimeIntervalSinceNow:17280000]; //200 days
     
-    
     self.hashtagData  = [[NSArray alloc]initWithObjects:@"Nightlife",@"Sports",@"Music", @"Shopping", @"Freebies", @"Happy Hour", @"Dining", @"Entertainment", @"Fundraiser", @"Meetup", @"Other", nil];
     
     AppDelegate *appDelegate=(AppDelegate *)[UIApplication sharedApplication].delegate;
     //NSLog(@"%@", appDelegate.item);
     
     if (appDelegate.item != nil) {
+        item = appDelegate.item;
         locSubtitle.font = [locSubtitle.font fontWithSize:11.0];
         locSubtitle.alpha = 1;
-        locTitle.text = appDelegate.item.name;
+        locTitle.text = item.name;
         locSubtitle.text = appDelegate.locSubtitle;
         NSIndexPath *path = [[NSIndexPath alloc]init];
         path = [NSIndexPath indexPathForRow:1 inSection:1];
@@ -246,11 +273,14 @@
 - (IBAction)titleTextInput:(UITextField *)sender {
     
     Event[@"Title"] = self.titleField.text;
-    Event[@"CreatedByName"] = @"";
     NSIndexPath *path = [[NSIndexPath alloc]init];
     path = [NSIndexPath indexPathForRow:0 inSection:0];
     UITableViewCell *locCell = [self.tableView cellForRowAtIndexPath:path];
-    locCell.accessoryType = UITableViewCellAccessoryCheckmark;
+    
+    if (self.titleField.text.length > 3) {
+        locCell.accessoryType = UITableViewCellAccessoryCheckmark;
+    } else
+        locCell.accessoryType = UITableViewCellAccessoryNone;
 }
 
 - (IBAction)subtitleTextInput:(UITextField *)sender {
@@ -259,7 +289,11 @@
     NSIndexPath *path = [[NSIndexPath alloc]init];
     path = [NSIndexPath indexPathForRow:1 inSection:0];
     UITableViewCell *locCell = [self.tableView cellForRowAtIndexPath:path];
-    locCell.accessoryType = UITableViewCellAccessoryCheckmark;
+    
+    if (self.subtitleField.text.length > 0) {
+        locCell.accessoryType = UITableViewCellAccessoryCheckmark;
+    } else
+        locCell.accessoryType = UITableViewCellAccessoryNone;
 }
 
 - (IBAction)locationTextInput:(UITextField *)sender {
@@ -268,11 +302,15 @@
     NSIndexPath *path = [[NSIndexPath alloc]init];
     path = [NSIndexPath indexPathForRow:0 inSection:1];
     UITableViewCell *locCell = [self.tableView cellForRowAtIndexPath:path];
-    locCell.accessoryType = UITableViewCellAccessoryCheckmark;
+    
+    if (self.locationField.text.length > 3) {
+        locCell.accessoryType = UITableViewCellAccessoryCheckmark;
+    } else
+        locCell.accessoryType = UITableViewCellAccessoryNone;
 }
 
 - (IBAction)doneButton:(UIBarButtonItem *)sender {
-    
+        
     AppDelegate *appDelegate=(AppDelegate *)[UIApplication sharedApplication].delegate;
     
     for (int i=0;i<1;i++)
@@ -302,9 +340,17 @@
         }
         
         // Did user choose a loc?
-        if (!appDelegate.item.placemark.location.coordinate.longitude)
+        if (!item.placemark.location.coordinate.longitude)
         {
             UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Oops!" message:@"Please select a location for this event. If you cannot find or do not know the exact location, just use the city name (i.e. Washington, DC)." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+            [alert show];
+            break;
+        }
+        
+        // Did user choose a tag?
+        if ([hashtagDetailLabel.text isEqualToString:@"Tap to set"])
+        {
+            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Oops!" message:@"Please select a tag for this event." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
             [alert show];
             break;
         }
@@ -345,59 +391,61 @@
             break;
         }
         
-        if (self.subtitleField.text.length > 31)
-        {
-            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Warning" message:@"Since your event's subtitle is greater than 30 characters long, it may be cut off. (i.e. \"Event subti...\")" delegate:self cancelButtonTitle:@"Edit" otherButtonTitles:@"Continue", nil];
-            [alert show];
-            break;
-        }
-        
         if (self.locationField.text.length > 30)
         {
             UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Warning" message:@"Since the name of your event's location is greater than 30 characters long, it may be cut off. (i.e. \"Event locati...\")" delegate:self cancelButtonTitle:@"Edit" otherButtonTitles:@"Continue", nil];
             [alert show];
             break;
         }
-
-        Event[@"Title"] = self.titleField.text;
-        Event[@"Subtitle"] = self.subtitleField.text;
-        Event[@"Location"] = self.locationField.text;
         
-        Event[@"URL"] = @"http://www.gethappeningapp.com";
+        Event[@"Frequency"] = @(frequencyInt);
+        Event[@"URL"] = urlString;
+        Event[@"ContactEmail"] = emailString;
+        Event[@"Description"] = descriptionString;
         
-        //Save Image
-        NSData *imageData = UIImagePNGRepresentation(imageView.image);
-        PFFile *imageFile = [PFFile fileWithName:@"image.png" data:imageData];
-        Event[@"Image"] = imageFile;
-        
-        PFGeoPoint *loc = [PFGeoPoint geoPointWithLocation:appDelegate.item.placemark.location];
+        PFGeoPoint *loc = [PFGeoPoint geoPointWithLocation:item.placemark.location];
         Event[@"GeoLoc"] = loc;
         
         NSNumber *one = [NSNumber numberWithInt:1];
         Event[@"swipesRight"] = one;
+        NSNumber *zero = [NSNumber numberWithInt:0];
+        Event[@"swipesLeft"] = zero;
         
-        Event[@"Date"] = self.datePicker.date;
-        Event[@"Hashtag"] = self.hashtagDetailLabel.text;
-        
-        PFUser *user = [PFUser currentUser];
-        Event[@"CreatedBy"] = user.username;
-        NSString *firstName = user[@"firstName"];
-        NSString *lastName = user[@"lastName"];
-        NSString *name = [NSString stringWithFormat:@"%@ %@", firstName, lastName];
-        Event[@"CreatedByName"] = name;
         
         // If all conditions are met, Event saves in background
         
-        [Event saveInBackground];
+        UIActivityIndicatorView *activityView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+        activityView.center = CGPointMake(self.view.frame.size.width / 2, (self.view.frame.size.height / 2));
+        [activityView startAnimating];
+        [self.view addSubview:activityView];
+        [activityView startAnimating];
+        self.view.userInteractionEnabled = NO;
+        
+        
+        [RKDropdownAlert title:@"Event created!" message:@"Please wait a few seconds for your event \n to be uploaded" backgroundColor:[UIColor colorWithRed:.05 green:.29 blue:.49 alpha:1.0] textColor:[UIColor whiteColor]];
+        
+        [Event saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+            if (succeeded) {
+                NSLog(@"Event Created!");
+                self.view.userInteractionEnabled = YES;
+                
+                if (repeatsInt > 0) {
+                    [self repeatEvent];
+                }
+                [delegate refreshMyEvents];
+                
+                [self dismissViewControllerAnimated:YES completion:nil]; // dismiss when event is saved
+                
+            } else {
+                NSLog(@"ERROR CREATING EVENT: %@", error);
+                
+                [RKDropdownAlert title:@"Something went wrong :(" message:@"Event was not created, please check your internet connection and try again." backgroundColor:[UIColor redColor] textColor:[UIColor whiteColor]];
+                
+                self.view.userInteractionEnabled = YES;
+            }
+        }];
+        
         appDelegate.item = nil;
-        
-        NSLog(@"Event created!");
-
-        UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Event created!" message:@"Please wait a few seconds for your event to be uploaded" delegate:self cancelButtonTitle:@"Edit" otherButtonTitles:@"Continue", nil];
-        [alert show];
-        
-        // Peace out!
-        [self dismissViewControllerAnimated:YES completion:nil];
     }
 }
 
@@ -409,45 +457,60 @@ clickedButtonAtIndex:(NSInteger)buttonIndex{
     
     if (buttonIndex == [alertView cancelButtonIndex]){
         NSLog(@"Alert shown- user clicked Edit/OK");
-
         
     } else {
         NSLog(@"Alert shown- user clicked Continue");
         
-        Event[@"Title"] = self.titleField.text;
-        Event[@"Subtitle"] = self.subtitleField.text;
-        Event[@"Location"] = self.locationField.text;
+        Event[@"Frequency"] = @(frequencyInt);
+        Event[@"URL"] = urlString;
+        Event[@"ContactEmail"] = emailString;
+        Event[@"Description"] = descriptionString;
         
-        //Save Image
-        NSData *imageData = UIImagePNGRepresentation(imageView.image);
-        PFFile *imageFile = [PFFile fileWithName:@"image.png" data:imageData];
-        Event[@"Image"] = imageFile;
-        
-        PFGeoPoint *loc = [PFGeoPoint geoPointWithLocation:appDelegate.item.placemark.location];
+        PFGeoPoint *loc = [PFGeoPoint geoPointWithLocation:item.placemark.location];
         Event[@"GeoLoc"] = loc;
         
         NSNumber *one = [NSNumber numberWithInt:1];
         Event[@"swipesRight"] = one;
-        
-        Event[@"Date"] = self.datePicker.date;
-        Event[@"Hashtag"] = self.hashtagDetailLabel.text;
-        
-        PFUser *user = [PFUser currentUser];
-        Event[@"CreatedBy"] = user.username;
-        NSString *firstName = user[@"firstName"];
-        NSString *lastName = user[@"lastName"];
-        NSString *name = [NSString stringWithFormat:@"%@ %@", firstName, lastName];
-        Event[@"CreatedByName"] = name;
+        NSNumber *zero = [NSNumber numberWithInt:0];
+        Event[@"swipesLeft"] = zero;
         
         // If all conditions are met, Event saves in background
         
-        [Event saveInBackground];
+        /*
+        UIActivityIndicatorView *activityView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+        activityView.center = CGPointMake(self.view.frame.size.width / 2, (self.view.frame.size.height / 2));
+        [activityView startAnimating];
+        [self.view addSubview:activityView];
+        [activityView startAnimating];
+        self.view.userInteractionEnabled = NO;
+        */
+
+        [RKDropdownAlert title:@"Event created!" message:@"Please wait a few seconds for your event \n to be uploaded" backgroundColor:[UIColor colorWithRed:.05 green:.29 blue:.49 alpha:1.0] textColor:[UIColor whiteColor]];
+        
+        [Event saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+            if (succeeded) {
+                NSLog(@"Event created!");
+                self.view.userInteractionEnabled = YES;
+                //[self dismissViewControllerAnimated:YES completion:nil];
+                
+                if (repeatsInt > 0) {
+                    [self repeatEvent];
+                }
+                [delegate refreshMyEvents];
+                
+                [self dismissViewControllerAnimated:YES completion:nil]; // dismiss when event is saved
+
+            } else {
+                NSLog(@"ERROR CREATING EVENT: %@", error);
+                
+                [RKDropdownAlert title:@"Something went wrong :(" message:@"Event was not created, please check your internet connection and try again." backgroundColor:[UIColor redColor] textColor:[UIColor whiteColor]];
+                
+                self.view.userInteractionEnabled = YES;
+            }
+        }];
+        
         appDelegate.item = nil;
         
-        NSLog(@"Event created!");
-        
-        // Peace out!
-        [self dismissViewControllerAnimated:YES completion:nil];
     }
 }
 
@@ -464,6 +527,8 @@ clickedButtonAtIndex:(NSInteger)buttonIndex{
     [self performSelector:@selector(didEndTimeChange:) withObject:endTimePicker];
     
     NSLog(@"Date changed");
+    
+    Event[@"EndTime"] = self.endTimePicker.date;
     
 }
 
@@ -529,6 +594,12 @@ clickedButtonAtIndex:(NSInteger)buttonIndex{
     imageView.image = image;
     
     hashtagDetailLabel.text = [self.hashtagData objectAtIndex:row];
+    
+    //Save Image
+    NSData *imageData = UIImagePNGRepresentation(imageView.image);
+    PFFile *imageFile = [PFFile fileWithName:@"image.png" data:imageData];
+    Event[@"Image"] = imageFile;
+    
 }
 
 - (IBAction)imageButtonPressed:(id)sender {
@@ -562,6 +633,11 @@ clickedButtonAtIndex:(NSInteger)buttonIndex{
         } else {
             
             imageView.image = image;
+            
+            //Save Image
+            NSData *imageData = UIImagePNGRepresentation(image);
+            PFFile *imageFile = [PFFile fileWithName:@"image.png" data:imageData];
+            Event[@"Image"] = imageFile;
         }
     }
 }
@@ -584,11 +660,150 @@ clickedButtonAtIndex:(NSInteger)buttonIndex{
     }
 }
 
+- (void)eventRepeats:(int)repeats url:(NSString *)url description:(NSString *)desc email:(NSString *)email frequency:(int)freq{
+    
+    NSLog(@"Repeats: %d", repeats);
+    NSLog(@"URL: %@", url);
+    NSLog(@"Description: %@", desc);
+    NSLog(@"Email: %@", email);
+    NSLog(@"Frequency: %d", freq);
+    
+    repeatsInt = repeats;
+    urlString = url;
+    descriptionString = desc;
+    emailString = email;
+    frequencyInt = freq;
+    
+    Event[@"Description"] = desc;
+    Event[@"ContactEmail"] = email;
+    Event[@"Frequency"] = @(freq);
+    Event[@"URL"] = urlString;
+    Event[@"ContactEmail"] = urlString;
+    
+    NSIndexPath *path = [[NSIndexPath alloc]init];
+    path = [NSIndexPath indexPathForRow:0 inSection:5];
+    UITableViewCell *locCell = [self.tableView cellForRowAtIndexPath:path];
+    
+    //locCell.detailTextLabel.text = @"Yes";
+    
+}
+
+- (void)repeatEvent {
+    
+    NSLog(@"Repeat event!");
+    
+    for (int i = 1; i < frequencyInt; i ++) {
+    
+        PFObject *repeatEvent = [PFObject objectWithClassName:@"Event"];
+    
+        repeatEvent[@"CreatedBy"] = Event[@"CreatedBy"];
+        repeatEvent[@"CreatedByName"] = Event[@"CreatedByName"];
+        repeatEvent[@"ContactEmail"] = Event[@"ContactEmail"];
+        repeatEvent[@"Description"] = Event[@"Description"];
+        repeatEvent[@"GeoLoc"] = Event[@"GeoLoc"];
+        repeatEvent[@"Hashtag"] = Event[@"Hashtag"];
+        repeatEvent[@"Image"] = Event[@"Image"];
+        repeatEvent[@"Location"] = Event[@"Location"];
+        repeatEvent[@"Repeats"] = Event[@"Repeats"];
+        repeatEvent[@"Subtitle"] = Event[@"Subtitle"];
+        repeatEvent[@"Title"] = Event[@"Title"];
+        repeatEvent[@"URL"] = Event[@"URL"];
+        repeatEvent[@"swipesLeft"] = Event[@"swipesLeft"];
+        repeatEvent[@"swipesRight"] = Event[@"swipesRight"];
+        repeatEvent[@"Frequency"] = Event[@"Frequency"];
+    
+        if (repeatsInt == 1) { // Weekly 604800 seconds
+        
+            NSLog(@"Repeats weekly");
+            repeatEvent[@"Date"] = [self.datePicker.date dateByAddingTimeInterval:  (  i * 604800   ) ];
+            repeatEvent[@"EndTime"] = [self.endTimePicker.date dateByAddingTimeInterval:  (  i * 604800  ) ];
+        
+        } else if (repeatsInt == 2) { // Biweekly 1209600 seconds
+        
+            NSLog(@"Repeats Biweekly");
+            repeatEvent[@"Date"] = [self.datePicker.date dateByAddingTimeInterval: i * 1209600];
+            repeatEvent[@"EndTime"] = [self.endTimePicker.date dateByAddingTimeInterval: i * 1209600];
+        
+        } else { //monthly
+        
+            NSLog(@"Repeats monthly");
+            NSDateComponents *dateComponents = [[NSDateComponents alloc] init];
+            [dateComponents setMonth:i]; // Month set to i
+            NSCalendar *calendar = [NSCalendar currentCalendar];
+            NSDate *startDate = [calendar dateByAddingComponents:dateComponents toDate:datePicker.date options:0];
+            NSDate *endDate = [calendar dateByAddingComponents:dateComponents toDate:endTimePicker.date options:0];
+        
+            repeatEvent[@"Date"] = startDate;
+            repeatEvent[@"EndTime"] = endDate;
+        
+        }
+    
+        [repeatEvent saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+            if (succeeded) {
+                NSLog(@"Repeat event saved!");
+            }
+        }];
+    }
+    
+}
+- (IBAction)contactUsButtonTapped:(id)sender {
+    
+    NSLog(@"Contact Us Tapped");
+    // Email Subject
+    NSString *emailTitle = @"";
+    // Email Content
+    NSString *messageBody = @"How can we help?";
+    // To address
+    NSArray *toRecipents = [NSArray arrayWithObject:@"max@gethappeningapp.com"];
+    
+    MFMailComposeViewController *mc = [[MFMailComposeViewController alloc] init];
+    mc.mailComposeDelegate = self;
+    [mc setSubject:emailTitle];
+    [mc setMessageBody:messageBody isHTML:NO];
+    [mc setToRecipients:toRecipents];
+    
+    // Present mail view controller on screen
+    [self presentViewController:mc animated:YES completion:nil];
+}
+
+- (void) mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError *)error
+{
+    switch (result)
+    {
+        case MFMailComposeResultCancelled:
+            NSLog(@"Mail cancelled");
+            break;
+        case MFMailComposeResultSaved:
+            NSLog(@"Mail saved");
+            break;
+        case MFMailComposeResultSent:
+            NSLog(@"Mail sent");
+            break;
+        case MFMailComposeResultFailed:
+            NSLog(@"Mail sent failure: %@", [error localizedDescription]);
+            break;
+        default:
+            break;
+    }
+    
+    // Close the Mail Interface
+    [self dismissViewControllerAnimated:YES completion:NULL];
+}
+
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     
     if ([segue.identifier isEqualToString:@"toMoreInfo"]) {
         // Pass along variables
         ExtraInfoTVC *vc = (ExtraInfoTVC *)[segue destinationViewController];
+        vc.delegate = self;
+        
+        vc.urlString = urlString;
+        vc.descriptionString = descriptionString;
+        vc.emailString = emailString;
+        vc.createdByNameString = createdByNameString;
+        vc.repeatsInt = repeatsInt;
+        vc.frequency = frequencyInt;
+        
         [vc setPassedEvent:Event];
     }
 }

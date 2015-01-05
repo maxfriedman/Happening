@@ -7,6 +7,8 @@
 //
 
 #import "EditEventTVC.h"
+#import "MFActivityIndicatorView.h"
+#import "RKDropdownAlert.h"
 
 @interface EditEventTVC ()
 
@@ -31,6 +33,11 @@
 @implementation EditEventTVC {
     NSDateFormatter *dateFormatter;
     int intervalInSeconds;
+    MKMapItem *item;
+    
+    NSString *urlString;
+    NSString *descriptionString;
+    NSString *emailString;
 }
 
 @synthesize imageView, button;
@@ -135,6 +142,9 @@
     PFGeoPoint *geoPoint = Event[@"GeoLoc"];
     CLLocation *eventLocation = [[CLLocation alloc]initWithLatitude:geoPoint.latitude longitude:geoPoint.longitude];
     
+    MKPlacemark *placemark = [[MKPlacemark alloc]initWithCoordinate:eventLocation.coordinate addressDictionary:nil];
+    item = [[MKMapItem alloc]initWithPlacemark:placemark];
+    
     [[[CLGeocoder alloc]init] reverseGeocodeLocation:eventLocation completionHandler:^(NSArray *placemarks, NSError *error) {
         CLPlacemark *placemark = placemarks[0];
         
@@ -143,13 +153,17 @@
         NSLog(@"Address: %@", addressString);
         
         NSString *name = placemark.addressDictionary[@"Name"];
-        NSString *streetName = placemark.addressDictionary[@"Street"];
+        //NSString *streetName = placemark.addressDictionary[@"Street"];
         NSString *cityName = placemark.addressDictionary[@"City"];
         NSString *stateName = placemark.addressDictionary[@"State"];
         NSString *zipCode = placemark.addressDictionary[@"ZIP"];
         NSString *country = placemark.addressDictionary[@"Country"];
         
-        locTitle.text = [NSString stringWithFormat:@"%@", name];
+        if (Event[@"LocTitle"] != nil) {
+            locTitle.text = Event[@"LocTitle"];
+        } else {
+            locTitle.text = [NSString stringWithFormat:@"%@", name];
+        }
         
         if (zipCode) {
             locSubtitle.font = [locSubtitle.font fontWithSize:11.0];
@@ -161,6 +175,10 @@
             locSubtitle.alpha = 1.0;
             locSubtitle.text = [NSString stringWithFormat:@"%@, %@, %@", cityName, stateName, country];
         }
+        
+        urlString = Event[@"URL"];
+        descriptionString = Event[@"Description"];
+        emailString = Event[@"ContactEmail"];
         
     }];
     
@@ -275,6 +293,7 @@
 
 -(void)viewWillAppear:(BOOL)animated {
     
+    [self.tableView deselectRowAtIndexPath:[self.tableView indexPathForSelectedRow] animated:YES];
     
     datePicker.minimumDate = [[NSDate alloc]initWithTimeIntervalSinceNow:-86400]; //24 hours ago
     datePicker.maximumDate = [[NSDate alloc]initWithTimeIntervalSinceNow:17280000]; //200 days
@@ -283,7 +302,8 @@
     //NSLog(@"%@", appDelegate.item);
     
     if (appDelegate.item != nil) {
-        locTitle.text = appDelegate.item.name;
+        item = appDelegate.item;
+        locTitle.text = item.name;
         locSubtitle.text = appDelegate.locSubtitle;
     }
     
@@ -349,14 +369,6 @@
             break;
         }
         
-        // Did user choose a loc?
-        if (!appDelegate.item.placemark.location.coordinate.longitude)
-        {
-            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Oops!" message:@"Please select a location for this event. If you cannot find or do not know the exact location, just use the city name (i.e. Washington, DC)." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-            [alert show];
-            break;
-        }
-        
         //%%%%%
         if (self.titleField.text.length > 24 && self.subtitleField.text.length > 31 && self.locationField.text.length > 30)
         {
@@ -393,13 +405,6 @@
             break;
         }
         
-        if (self.subtitleField.text.length > 31)
-        {
-            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Warning" message:@"Since your event's subtitle is greater than 30 characters long, it may be cut off. (i.e. \"Event subti...\")" delegate:self cancelButtonTitle:@"Edit" otherButtonTitles:@"Continue", nil];
-            [alert show];
-            break;
-        }
-        
         if (self.locationField.text.length > 30)
         {
             UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Warning" message:@"Since the name of your event's location is greater than 30 characters long, it may be cut off. (i.e. \"Event locati...\")" delegate:self cancelButtonTitle:@"Edit" otherButtonTitles:@"Continue", nil];
@@ -407,39 +412,34 @@
             break;
         }
         
-        Event[@"Title"] = self.titleField.text;
-        Event[@"Subtitle"] = self.subtitleField.text;
-        Event[@"Location"] = self.locationField.text;
         
-        //Save Image
-        NSData *imageData = UIImagePNGRepresentation(imageView.image);
-        PFFile *imageFile = [PFFile fileWithName:@"image.png" data:imageData];
-        Event[@"Image"] = imageFile;
-        
-        PFGeoPoint *loc = [PFGeoPoint geoPointWithLocation:appDelegate.item.placemark.location];
+        PFGeoPoint *loc = [PFGeoPoint geoPointWithLocation:item.placemark.location];
         Event[@"GeoLoc"] = loc;
         
-        NSNumber *one = [NSNumber numberWithInt:1];
-        Event[@"swipesRight"] = one;
+        MFActivityIndicatorView *activityView = [[MFActivityIndicatorView alloc] init];
+        activityView.center = self.view.center;
+        [activityView startAnimating];
+        [self.view addSubview:activityView];
+        [activityView startAnimating];
+        self.view.userInteractionEnabled = NO;
         
-        Event[@"Date"] = self.datePicker.date;
+        [RKDropdownAlert title:@"Event successfully edited!" message:@"Please wait a few seconds for your event \n to be updated" backgroundColor:[UIColor colorWithRed:.05 green:.29 blue:.49 alpha:1.0] textColor:[UIColor whiteColor]];
+
         
-        PFUser *user = [PFUser currentUser];
-        Event[@"CreatedBy"] = user.username;
-        NSString *firstName = user[@"firstName"];
-        NSString *lastName = user[@"lastName"];
-        NSString *name = [NSString stringWithFormat:@"%@ %@", firstName, lastName];
-        Event[@"CreatedByName"] = name;
+        [Event saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+            if (succeeded) {
+                NSLog(@"Event Edited!");
+                self.view.userInteractionEnabled = YES;
+                
+                [self dismissViewControllerAnimated:YES completion:nil];
+            } else {
+                NSLog(@"ERROR EDITING EVENT: %@", error);
+                [RKDropdownAlert title:@"Something went wrong :(" message:@"Event was not edited, please check your internet connection and try again." backgroundColor:[UIColor redColor] textColor:[UIColor whiteColor]];
+                self.view.userInteractionEnabled = YES;
+            }
+        }];
         
-        // If all conditions are met, Event saves in background
-        
-        [Event saveInBackground];
         appDelegate.item = nil;
-        
-        NSLog(@"Event created!");
-        
-        // Peace out!
-        [self dismissViewControllerAnimated:YES completion:nil];
     }
 }
 
@@ -456,39 +456,33 @@ clickedButtonAtIndex:(NSInteger)buttonIndex{
     } else {
         NSLog(@"Alert shown- user clicked Continue");
         
-        Event[@"Title"] = self.titleField.text;
-        Event[@"Subtitle"] = self.subtitleField.text;
-        Event[@"Location"] = self.locationField.text;
-        
-        //Save Image
-        NSData *imageData = UIImagePNGRepresentation(imageView.image);
-        PFFile *imageFile = [PFFile fileWithName:@"image.png" data:imageData];
-        Event[@"Image"] = imageFile;
-        
-        PFGeoPoint *loc = [PFGeoPoint geoPointWithLocation:appDelegate.item.placemark.location];
+        PFGeoPoint *loc = [PFGeoPoint geoPointWithLocation:item.placemark.location];
         Event[@"GeoLoc"] = loc;
-        
-        NSNumber *one = [NSNumber numberWithInt:1];
-        Event[@"swipesRight"] = one;
-        
-        Event[@"Date"] = self.datePicker.date;
-        
-        PFUser *user = [PFUser currentUser];
-        Event[@"CreatedBy"] = user.username;
-        NSString *firstName = user[@"firstName"];
-        NSString *lastName = user[@"lastName"];
-        NSString *name = [NSString stringWithFormat:@"%@ %@", firstName, lastName];
-        Event[@"CreatedByName"] = name;
         
         // If all conditions are met, Event saves in background
         
-        [Event saveInBackground];
+        MFActivityIndicatorView *activityView = [[MFActivityIndicatorView alloc] initWithFrame:CGRectMake((self.view.frame.size.width / 2) - 25, ((self.view.frame.size.height / 2) - 50), 50, 50)];
+        [activityView startAnimating];
+        [self.view addSubview:activityView];
+        [activityView startAnimating];
+        self.view.userInteractionEnabled = NO;
+        
+        [RKDropdownAlert title:@"Event successfully edited!" message:@"Please wait a few seconds for your event \n to be updated" backgroundColor:[UIColor colorWithRed:.05 green:.29 blue:.49 alpha:1.0] textColor:[UIColor whiteColor]];
+        
+        [Event saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+            if (succeeded) {
+                 NSLog(@"Event Edited!");
+                
+                self.view.userInteractionEnabled = YES;
+                [self dismissViewControllerAnimated:YES completion:nil];
+            } else {
+                NSLog(@"ERROR EDITING EVENT: %@", error);
+                [RKDropdownAlert title:@"Something went wrong :(" message:@"Event was not updated, please check your internet connection and try again." backgroundColor:[UIColor redColor] textColor:[UIColor whiteColor]];
+                self.view.userInteractionEnabled = YES;
+            }
+        }];
         appDelegate.item = nil;
-        
-        NSLog(@"Event created!");
-        
-        // Peace out!
-        [self dismissViewControllerAnimated:YES completion:nil];
+
     }
 }
 
@@ -502,6 +496,8 @@ clickedButtonAtIndex:(NSInteger)buttonIndex{
     dateDetailLabel.text = [dateFormatter stringFromDate:datePicker.date];
 
     [self performSelector:@selector(didEndTimeChange:) withObject:endTimePicker];
+    
+    Event[@"EndTime"] = self.endTimePicker.date;
     
     NSLog(@"Date changed");
     
@@ -572,6 +568,10 @@ clickedButtonAtIndex:(NSInteger)buttonIndex{
     NSLog(@"%@", [UIFont familyNames]);
     hashtagDetailLabel.font = [UIFont fontWithName:@"Open Sans" size:17.0];
     
+    //Save Image since changing category changes image
+    NSData *imageData = UIImagePNGRepresentation(imageView.image);
+    PFFile *imageFile = [PFFile fileWithName:@"image.png" data:imageData];
+    Event[@"Image"] = imageFile;
     
 }
 
@@ -606,62 +606,88 @@ clickedButtonAtIndex:(NSInteger)buttonIndex{
         } else {
             
             imageView.image = image;
+            
+            //Save Image
+            NSData *imageData = UIImagePNGRepresentation(image);
+            PFFile *imageFile = [PFFile fileWithName:@"image.png" data:imageData];
+            Event[@"Image"] = imageFile;
+            
         }
     }
 }
 
-/*
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:<#@"reuseIdentifier"#> forIndexPath:indexPath];
+- (IBAction)contactUsButtonTapped:(id)sender {
     
-    // Configure the cell...
+    NSLog(@"Contact Us Tapped");
+    // Email Subject
+    NSString *emailTitle = @"";
+    // Email Content
+    NSString *messageBody = @"How can we help?";
+    // To address
+    NSArray *toRecipents = [NSArray arrayWithObject:@"max@gethappeningapp.com"];
     
-    return cell;
+    MFMailComposeViewController *mc = [[MFMailComposeViewController alloc] init];
+    mc.mailComposeDelegate = self;
+    [mc setSubject:emailTitle];
+    [mc setMessageBody:messageBody isHTML:NO];
+    [mc setToRecipients:toRecipents];
+    
+    // Present mail view controller on screen
+    [self presentViewController:mc animated:YES completion:nil];
 }
-*/
 
-/*
-// Override to support conditional editing of the table view.
-- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the specified item to be editable.
-    return YES;
+- (void) mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError *)error
+{
+    switch (result)
+    {
+        case MFMailComposeResultCancelled:
+            NSLog(@"Mail cancelled");
+            break;
+        case MFMailComposeResultSaved:
+            NSLog(@"Mail saved");
+            break;
+        case MFMailComposeResultSent:
+            NSLog(@"Mail sent");
+            break;
+        case MFMailComposeResultFailed:
+            NSLog(@"Mail sent failure: %@", [error localizedDescription]);
+            break;
+        default:
+            break;
+    }
+    
+    // Close the Mail Interface
+    [self dismissViewControllerAnimated:YES completion:NULL];
 }
-*/
 
-/*
-// Override to support editing the table view.
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (editingStyle == UITableViewCellEditingStyleDelete) {
-        // Delete the row from the data source
-        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    } else if (editingStyle == UITableViewCellEditingStyleInsert) {
-        // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-    }   
+-(void)setUrl:(NSString *)url description:(NSString *)desc email:(NSString *)email {
+    
+    NSLog(@"URL: %@ \n DESC: %@  \n  EMAIL: %@", url, desc, email);
+    
+    urlString = url;
+    descriptionString = desc;
+    emailString = email;
+    
 }
-*/
 
-/*
-// Override to support rearranging the table view.
-- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath {
+-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    
+    if ([segue.identifier isEqualToString:@"toEditMoreInfo"]) {
+        // Pass along variables
+        EditExtraInfoTVC *vc = (EditExtraInfoTVC *)[segue destinationViewController];
+        
+        vc.delegate = self;
+        vc.urlString = urlString;
+        vc.descString = descriptionString;
+        vc.emailString = emailString;
+        
+         /*
+        vc.createdByNameString = createdByNameString;
+        vc.repeatsInt = repeatsInt;
+        vc.frequency = frequencyInt;
+        */
+        [vc setPassedEvent:Event];
+    }
 }
-*/
-
-/*
-// Override to support conditional rearranging of the table view.
-- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the item to be re-orderable.
-    return YES;
-}
-*/
-
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
 
 @end

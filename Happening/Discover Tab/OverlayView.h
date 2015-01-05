@@ -21,4 +21,7 @@ typedef NS_ENUM(NSUInteger , GGOverlayViewMode) {
 @property (nonatomic, strong) UIImageView *imageView;
 @property (nonatomic, strong) UILabel *label;
 
+@property (assign) BOOL forDragView;
+@property (assign) BOOL forFlippedDVB;
+
 @end

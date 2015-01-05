@@ -32,6 +32,9 @@
 @property (nonatomic, strong)UIButton* checkButton;
 @property (nonatomic, strong)UIButton* xButton;
 
+@property (assign) BOOL frontViewIsVisible;
+@property (assign) BOOL userSwipedFromFlippedView;
+
 @end
 
 #import "DraggableView.h"

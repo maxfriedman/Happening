@@ -17,8 +17,6 @@
 #define SWIPE_DOWN_MARGIN 100 //%%% distance from center where the action applies. Higher = swipe further in order for the action to be called
 
 
-
-
 #import "DraggableView.h"
 #import "AppDelegate.h"
 
@@ -27,7 +25,6 @@
     CGFloat yFromCenter;
     
     UIView *cardView;
-    UIImageView *cardBackground;
 }
 
 //delegate is instance of ViewController
@@ -56,7 +53,7 @@
 @synthesize swipesRight;
 
 @synthesize locImage, userImage;
-@synthesize activityView;
+@synthesize activityView, cardBackground;
 
 @synthesize xButton, checkButton, eventStore;
 
@@ -65,19 +62,17 @@
     self = [super initWithFrame:frame];
     if (self) {
         
+        self.actionMargin = ACTION_MARGIN;
+        self.swipeDownMargin = SWIPE_DOWN_MARGIN;
+        
         eventStore = [[EKEventStore alloc] init];
         
         cardBackground = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"cardBackground"]];
-        cardBackground.frame = CGRectMake(10, 320, 270, cardBackground.image.size.height);
+        cardBackground.frame = CGRectMake(10, 320, 270, cardBackground.image.size.height - 5);
         [self addSubview:cardBackground];
         
         [self setupView:frame];
-        /*
-         UIActivityIndicatorView *activityView=[[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-         activityView.center = self.center;
-         [activityView startAnimating];
-         [self addSubview:activityView];
-         */
+
         cardView.backgroundColor = [UIColor whiteColor];
         
         eventImage = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, 290, 190)];
@@ -214,8 +209,7 @@
         //userImage.image = [UIImage imageNamed:@"userImage"];
         [cardView addSubview:userImage];
         
-        activityView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-        activityView.center = CGPointMake(self.frame.size.width / 2, (self.frame.size.height / 2) - 30);
+         activityView = [[MFActivityIndicatorView alloc] initWithFrame:CGRectMake((self.frame.size.width / 2) - 25, ((self.frame.size.height / 2) - 80), 50, 50)];
         [cardView addSubview:activityView];
         
         //[cardView addSubview:transpBackground];
@@ -331,11 +325,11 @@
 -(void)updateOverlay:(CGFloat)xDistance :(CGFloat)yDistance
 {
     
-    if (xDistance > 10 && yFromCenter < SWIPE_DOWN_MARGIN) {
+    if (xDistance > 15 && yFromCenter < SWIPE_DOWN_MARGIN) {
         overlayView.mode = GGOverlayViewModeRight;
         overlayView.alpha = MIN(fabsf(xDistance)/100, 1.0); //based on x coordinate
 
-    } else if (xDistance < -10 && yFromCenter < SWIPE_DOWN_MARGIN) {
+    } else if (xDistance < -15 && yFromCenter < SWIPE_DOWN_MARGIN + 50) { //Higher on swipe left b/c of intent for left swipe
         overlayView.mode = GGOverlayViewModeLeft;
         overlayView.alpha = MIN(fabsf(xDistance)/100, 1.0); //based on x
 
@@ -349,11 +343,11 @@
 //%%% called when the card is let go
 - (void)afterSwipeAction
 {
-    if (xFromCenter > ACTION_MARGIN && yFromCenter < SWIPE_DOWN_MARGIN) {
+    if (xFromCenter > self.actionMargin && yFromCenter < self.swipeDownMargin) {
         [self rightAction];
-    } else if (xFromCenter < -ACTION_MARGIN && yFromCenter < SWIPE_DOWN_MARGIN) {
+    } else if (xFromCenter < -self.actionMargin && yFromCenter < self.swipeDownMargin + 50) { //Higher on swipe left b/c of intent for left swipe
         [self leftAction];
-    } else if (yFromCenter > SWIPE_DOWN_MARGIN) { //add to cal
+    } else if (yFromCenter > self.swipeDownMargin) { //add to cal
         [self downAction];
     } else { //%%% resets the card
         [UIView animateWithDuration:0.3
@@ -379,7 +373,7 @@
                      }];
     
     [cardBackground removeFromSuperview];
-    [delegate cardSwipedRight:self];
+    [delegate cardSwipedRight:self fromFlippedView:NO];
     
     NSLog(@"YES");
 }
@@ -397,7 +391,7 @@
                          [self removeFromSuperview];
                      }];
     
-    [delegate cardSwipedLeft:self];
+    [delegate cardSwipedLeft:self fromFlippedView:NO];
     
     NSLog(@"NO");
 }
@@ -415,7 +409,7 @@
                      }];
     
     [delegate checkEventStoreAccessForCalendar];
-    [delegate cardSwipedRight:self];
+    [delegate cardSwipedRight:self fromFlippedView:NO];
     
     
     NSLog(@"DOWN");
@@ -435,7 +429,7 @@
     }];
 
     
-    [delegate cardSwipedRight:self];
+    [delegate cardSwipedRight:self fromFlippedView:NO];
     
     NSLog(@"YES");
 }
@@ -453,7 +447,7 @@
         [self removeFromSuperview];
     }];
     
-    [delegate cardSwipedLeft:self];
+    [delegate cardSwipedLeft:self fromFlippedView:NO];
     
     NSLog(@"NO");
 }

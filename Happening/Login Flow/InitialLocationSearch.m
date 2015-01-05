@@ -8,7 +8,7 @@
 
 #import "InitialLocationSearch.h"
 
-@interface InitialLocationSearch () <UISearchDisplayDelegate, UISearchBarDelegate, UISearchResultsUpdating, UISearchControllerDelegate, CLLocationManagerDelegate>
+@interface InitialLocationSearch () <UISearchDisplayDelegate, UISearchBarDelegate, /*UISearchResultsUpdating,*/ UISearchControllerDelegate, CLLocationManagerDelegate>
 
 @end
 
