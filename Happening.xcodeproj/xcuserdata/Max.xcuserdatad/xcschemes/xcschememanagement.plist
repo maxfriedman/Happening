@@ -6,11 +6,8 @@
 	<dict>
 		<key>Happening.xcscheme</key>
 		<dict>
-			<key>orderHint</key>
-			<integer>0</integer>
-		</dict>
-		<key>HappeningTests.xcscheme</key>
-		<dict>
+			<key>isShown</key>
+			<true/>
 			<key>orderHint</key>
 			<integer>1</integer>
 		</dict>
@@ -23,6 +20,11 @@
 			<true/>
 		</dict>
 		<key>50248C4B19BBA4C300329910</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>50D252DC1A6385DC0086B7A4</key>
 		<dict>
 			<key>primary</key>
 			<true/>

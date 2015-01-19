@@ -9,6 +9,9 @@
 
 #import "DraggableViewBackground.h"
 #import "CupertinoYankee.h"
+#import "UIImage+ImageEffects.h"
+#import "FXBlurView.h"
+#import "RKDropdownAlert.h"
 
 @interface DraggableViewBackground()
 
@@ -29,8 +32,8 @@
 //this makes it so only two cards are loaded at a time to
 //avoid performance and memory costs
 static const int MAX_BUFFER_SIZE = 2; //%%% max number of cards loaded at any given time, must be greater than 1
-static const float CARD_HEIGHT = 320; //%%% height of the draggable card
-static const float CARD_WIDTH = 290; //%%% width of the draggable card
+static const float CARD_HEIGHT = 310; //%%% height of the draggable card
+static const float CARD_WIDTH = 284; //%%% width of the draggable card
 
 @synthesize exampleCardLabels; //%%% all the labels I'm using as example data at the moment
 @synthesize allCards;//%%% all the cards
@@ -122,6 +125,9 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
             
             for (int i = 0; i < eventObjects.count; i++) {
                 
+                //NSLog(@"%@", eventObjects[i]);
+
+                
                 PFObject *eventObject = eventObjects[i];
                 [objectIDs addObject:eventObject.objectId];
                 
@@ -134,19 +140,19 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
                 NSDate *eventDate = [[NSDate alloc]init];
                 eventDate = eventObject[@"Date"];
                 
+                NSString *finalString;
+                
                 if ([eventDate beginningOfDay] == [[NSDate date]beginningOfDay]) {  // TODAY
                     
                     [formatter setDateFormat:@"h:mma"];
                     NSString *timeString = [formatter stringFromDate:eventDate];
-                    NSString *finalString = [NSString stringWithFormat:@"Today at %@", timeString];
-                    [dateArray addObject:finalString];
+                    finalString = [NSString stringWithFormat:@"Today at %@", timeString];
                     
                 } else if ([eventDate beginningOfDay] == [[NSDate dateWithTimeIntervalSinceNow:86400] beginningOfDay]) { // TOMORROW
                     
                     [formatter setDateFormat:@"h:mma"];
                     NSString *timeString = [formatter stringFromDate:eventDate];
-                    NSString *finalString = [NSString stringWithFormat:@"Tomorrow at %@", timeString];
-                    [dateArray addObject:finalString];
+                    finalString = [NSString stringWithFormat:@"Tomorrow at %@", timeString];
                     
                 } else if ([eventDate endOfWeek] == [[NSDate date]endOfWeek]) { // SAME WEEK
                     
@@ -154,19 +160,24 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
                     NSString *dayOfWeekString = [formatter stringFromDate:eventDate];
                     [formatter setDateFormat:@"h:mma"];
                     NSString *timeString = [formatter stringFromDate:eventDate];
-                    NSString *finalString = [NSString stringWithFormat:@"%@ at %@", dayOfWeekString, timeString];
-                    [dateArray addObject:finalString];
+                    finalString = [NSString stringWithFormat:@"%@ at %@", dayOfWeekString, timeString];
                     
                 } else {
                 
-                NSString *dateString = [formatter stringFromDate:eventDate];
-                [formatter setDateFormat:@"h:mma"];
-                NSString *timeString = [formatter stringFromDate:eventDate];
-                NSString *finalString = [NSString stringWithFormat:@"%@ at %@", dateString, timeString];
-
-                [dateArray addObject:finalString];
+                    NSString *dateString = [formatter stringFromDate:eventDate];
+                    [formatter setDateFormat:@"h:mma"];
+                    NSString *timeString = [formatter stringFromDate:eventDate];
+                    finalString = [NSString stringWithFormat:@"%@ at %@", dateString, timeString];
                     
                 }
+                
+                if ([finalString containsString:@":00"]) {
+                    
+                    finalString = [finalString stringByReplacingOccurrencesOfString:@":00" withString:@" "];
+                    
+                }
+                
+                [dateArray addObject:finalString];
                 
                 /*
                 [formatter setDateFormat:@"h:mm a"];
@@ -199,12 +210,17 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
                 
             }
             
+            if (!error) {
+                loadedCards = [[NSMutableArray alloc] init];
+                allCards = [[NSMutableArray alloc] init];
+                cardsLoadedIndex = 0;
+                [self loadCards];
+            } else {
+                NSLog(@"Error--- perform action");
+            }
+            
         }];
-        
-        loadedCards = [[NSMutableArray alloc] init];
-        allCards = [[NSMutableArray alloc] init];
-        cardsLoadedIndex = 0;
-        [self loadCards];
+    
     }
     return self;
 }
@@ -282,7 +298,7 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
             draggableView.geoLoc.text = distance;
             }
             
-            draggableView.locImage.image = [UIImage imageNamed:@"locationPinThickOutline"];
+            draggableView.locImage.image = [UIImage imageNamed:@"location"];
         }
         
         /*
@@ -295,13 +311,32 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
         [imageFile getDataInBackgroundWithBlock:^(NSData *imageData, NSError *error) {
             if (!error) {
                 draggableView.eventImage.image = [UIImage imageWithData:imageData];
+                
+                FXBlurView *blurView = [[FXBlurView alloc]initWithFrame:draggableView.blurEffectView.frame];
+                [draggableView.eventImage addSubview:blurView];
+                blurView.dynamic = NO;
+                blurView.blurRadius = 30;
+                
+                //UIImage *blurredImage = [draggableView.eventImage.image applyLightEffect];
+                /*
+                CGRect clippedRect  = CGRectMake(0, 240, 480, 140);
+                CGImageRef imageRef = CGImageCreateWithImageInRect([draggableView CGImage], clippedRect);
+                UIImage *newImage   = [UIImage imageWithCGImage:imageRef];
+                CGImageRelease(imageRef);
+                
+                //UIImage *blurImage = draggableView.eventImage.image;
+                UIImageView *imView = [[UIImageView alloc]initWithImage:[newImage applyLightEffect]];
+                imView.frame = CGRectMake(0, 120, 290, 70);
+                [draggableView.eventImage addSubview:imView];
+                 */
+                
             }
             
             storedIndex = index;
         }];
         
         draggableView.userImage.image = [UIImage imageNamed:@"interested_face"];
-        
+                
         //draggableView.transpBackground.backgroundColor = [UIColor blackColor];
         //draggableView.transpBackground.backgroundColor = [UIColor colorWithHue:1.0 saturation:0.0 brightness:0 alpha:0.5];
         
@@ -309,7 +344,9 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
         draggableView.userInteractionEnabled = YES;
         UITapGestureRecognizer *tapGestureRecognizer =
         [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(cardTap)];
-        [draggableView addGestureRecognizer:tapGestureRecognizer];
+        //[draggableView addGestureRecognizer:tapGestureRecognizer];
+        //[draggableView.cardView addGestureRecognizer:tapGestureRecognizer];
+        
         [draggableView.activityView stopAnimating];
     }];
     
@@ -405,6 +442,7 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
     PFObject *swipesObject = [PFObject objectWithClassName:@"Swipes"];
     PFUser *user = [PFUser currentUser];
     swipesObject[@"UserID"] = user.username;
+    swipesObject[@"FBObjectID"] = user[@"FBObjectID"];
     swipesObject[@"EventID"] = c.objectID;
     swipesObject[@"swipedRight"] = @NO;
     swipesObject[@"swipedLeft"] = @YES;
@@ -466,10 +504,15 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
     
     PFObject *swipesObject = [PFObject objectWithClassName:@"Swipes"];
     swipesObject[@"UserID"] = user.username;
+    swipesObject[@"FBObjectID"] = user[@"FBObjectID"];
     swipesObject[@"EventID"] = c.objectID;
     swipesObject[@"swipedRight"] = @YES;
     swipesObject[@"swipedLeft"] = @NO;
     [swipesObject saveInBackground];
+    
+    //PFObject *analyticsObject = [PFObject objectWithClassName:@"Analytics"];
+    //analyticsObject[@"Age"] = user[@"]
+
 
     
     [loadedCards removeObjectAtIndex:0]; //%%% card was swiped, so it's no longer a "loaded card"
@@ -526,6 +569,8 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
 {
     NSLog(@"Card tapped");
     
+    
+    
     PFGeoPoint *loc = self.dragView.geoPoint;
     self.mapLocation = [[CLLocation alloc]initWithLatitude:loc.latitude longitude:loc.longitude];
     
@@ -535,6 +580,17 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
     self.myViewController.locationTitle = self.dragView.location.text;
     
     [self.myViewController flipCurrentView];
+    
+    [dragView cardExpanded:!self.myViewController.frontViewIsVisible];
+}
+
+- (BOOL) gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch
+{
+    //if (CGRectContainsPoint(self.dragView.bounds, [touch locationInView:self.dragView]))
+    if (self.myViewController.frontViewIsVisible)
+        return YES;
+    
+    return NO;
 }
 
 // Check the authorization status of our application for Calendar
@@ -645,9 +701,7 @@ static const float CARD_WIDTH = 290; //%%% width of the draggable card
             event.location = dragView.location.text;
         
         
-        UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Event added to your main calendar!" message:@"" delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-        
-        [alert show];
+        [RKDropdownAlert title:@"Event added to your main calendar!" backgroundColor:[UIColor colorWithRed:.05 green:.29 blue:.49 alpha:1.0] textColor:[UIColor whiteColor]];
         
         [event setCalendar:[eventStore defaultCalendarForNewEvents]];
         NSError *err;

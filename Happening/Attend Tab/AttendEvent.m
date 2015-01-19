@@ -10,6 +10,8 @@
 #import "AttendTableCell.h"
 #import "AppDelegate.h"
 #import "moreDetailFromTable.h"
+#import "UIImage+ImageEffects.h"
+#import "FXBlurView.h"
 
 @interface AttendEvent ()
 
@@ -35,10 +37,7 @@
 - (void)viewDidLoad {
     
     [super viewDidLoad];
-    UIBarButtonItem *temporaryBarButtonItem = [[UIBarButtonItem alloc] init];
-    temporaryBarButtonItem.title = @"Back";
-    self.navigationItem.backBarButtonItem = temporaryBarButtonItem;
-    
+        
 }
 
 -(void)viewWillAppear:(BOOL)animated {
@@ -140,7 +139,6 @@
     
 }
 
-// %%%%%% Runs through this code every time I scroll in "Attend" Table for some reason %%%%%%%%%%%
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     AttendTableCell *cell = [tableView dequeueReusableCellWithIdentifier:@"tag" forIndexPath:indexPath];
 
@@ -169,14 +167,32 @@
     if (endTimeString) {
         eventTimeString = [NSString stringWithFormat:@"%@ to %@", eventTimeString, endTimeString];
     }
+    eventTimeString = [eventTimeString stringByReplacingOccurrencesOfString:@":00" withString:@""];
+    
     [cell.timeLabel setText:[NSString stringWithFormat:@"%@",eventTimeString]];
     
     // Image formatting
     PFFile *imageFile = Event[@"Image"];
     [imageFile getDataInBackgroundWithBlock:^(NSData *imageData, NSError *error) {
         if (!error) {
-            cell.image.image = [UIImage imageWithData:imageData];
-            cell.image.alpha = 0.9;
+            cell.eventImageView.image = [UIImage imageWithData:imageData];
+            FXBlurView *blurView = [[FXBlurView alloc] initWithFrame:cell.eventImageView.frame];
+            blurView.blurRadius = 15;
+            /*
+            CAGradientLayer *l = [CAGradientLayer layer];
+            l.frame = cell.eventImageView.bounds;
+            l.colors = [NSArray arrayWithObjects:(id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:0.0] CGColor], (id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:1] CGColor], nil];
+            
+            l.startPoint = CGPointMake(0.0, 1.00f);
+            l.endPoint = CGPointMake(0.0f, 0.9f);
+            */
+            //cell.eventImageView.layer.mask = l;
+            //blurView.layer.mask = l;
+            
+            //[cell addSubview:blurView];
+            //blurView.dynamic = NO;
+            //cell.blurView.dynamic = NO;
+
         }
     }];
     
@@ -202,9 +218,24 @@
         cell.distance.text = distance;
     }
     
-    cell.selectionStyle = UITableViewCellSelectionStyleDefault;
+    //cell.selectionStyle = UITableViewCellSelectionStyleDefault;
     
     return cell;
+}
+
+- (void)tableView:(UITableView *)tableView willDisplayHeaderView:(UIView *)view forSection:(NSInteger)section
+{
+    // Background color
+    //view.tintColor = [UIColor blackColor];
+    
+    // Text Color
+    UITableViewHeaderFooterView *header = (UITableViewHeaderFooterView *)view;
+    [header.textLabel setTextColor:[UIColor darkTextColor]];
+    [header.textLabel setFont:[UIFont fontWithName:@"OpenSans-Semibold" size:15]];
+    
+    // Another way to set the background color
+    // Note: does not preserve gradient effect of original header
+    // header.contentView.backgroundColor = [UIColor blackColor];
 }
 
 // Method for deleting table cells, only works if there are multiple events/cells in a section
@@ -320,6 +351,7 @@
     return beginningOfDay;
 }
 
+
 #pragma mark - Navigation
 
 // In a storyboard-based application, you will often want to do a little preparation before navigation
@@ -334,7 +366,7 @@
         // Pass data
         vc.eventID = cell.eventID;
         vc.titleText = cell.titleLabel.text;
-        vc.image = cell.image.image;
+        vc.image = cell.eventImageView.image;
         //vc.timeLabel.text
         vc.distanceText = cell.distance.text;
         vc.subtitleText = cell.subtitle.text;

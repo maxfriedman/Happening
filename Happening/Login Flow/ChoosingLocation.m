@@ -25,21 +25,22 @@
     // Do any additional setup after loading the view.
     user = [PFUser currentUser];
     
-    /*
+    
     UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
     UIVisualEffectView *blurEffectView = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
-    blurEffectView.frame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height);
-    blurEffectView.alpha = 0.8;
+    blurEffectView.frame = self.view.bounds;
+    //blurEffectView.alpha = 0.8;
     [self.view addSubview:blurEffectView];
+    [self.view sendSubviewToBack:blurEffectView];
     
     UIVibrancyEffect *vibrancyEffect = [UIVibrancyEffect effectForBlurEffect:blurEffect];
     UIVisualEffectView *vibrancyEffectView = [[UIVisualEffectView alloc] initWithEffect:vibrancyEffect];
     vibrancyEffectView.frame = blurEffectView.bounds;
-    */
+    
      
     currentLocButton.layer.masksToBounds = YES;
     currentLocButton.layer.cornerRadius = 10.0;
-    //currentLocButton.layer.borderColor = [UIColor lightGrayColor].CGColor;
+    currentLocButton.layer.borderColor = [UIColor clearColor].CGColor;
     currentLocButton.layer.borderWidth = 2.0;
 
 }
@@ -51,6 +52,7 @@
 
 - (void)viewWillAppear:(BOOL)animated {
 
+    animated = NO;
     
 }
 

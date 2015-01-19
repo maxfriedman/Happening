@@ -55,6 +55,8 @@
             parseUser[@"gender"] = [result objectForKey:@"gender"];
             parseUser[@"link"] = [result objectForKey:@"link"];
             
+            parseUser[@"link"] = [result objectForKey:@"id"];
+            
             /*
             PFACL *groupACL = [PFACL ACL];
             [groupACL setWriteAccess:YES forUserId:parseUser.objectId];

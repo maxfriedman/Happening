@@ -7,6 +7,7 @@
 //
 
 #import "CustomCalendarActivity.h"
+#import "RKDropdownAlert.h"
 
 @implementation CustomCalendarActivity
 
@@ -40,7 +41,6 @@
 
 - (BOOL)canPerformWithActivityItems:(NSArray *)activityItems
 {
-    NSLog(@"%s", __FUNCTION__);
     return YES;
 }
 
@@ -52,7 +52,6 @@
 
 - (UIViewController *)activityViewController
 {
-    NSLog(@"%s",__FUNCTION__);
     return nil;
 }
 
@@ -177,10 +176,8 @@
             event.location = draggableView.location.text;
         
         
-        UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Event added to your main calendar!" message:@"" delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-        
-        [alert show];
-        
+        [RKDropdownAlert title:@"Event added to your main calendar!" backgroundColor:[UIColor colorWithRed:.05 green:.29 blue:.49 alpha:1.0] textColor:[UIColor whiteColor]];
+                
         [event setCalendar:[eventStore defaultCalendarForNewEvents]];
         NSError *err;
         [eventStore saveEvent:event span:EKSpanThisEvent error:&err];

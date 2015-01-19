@@ -11,23 +11,26 @@
 #import "FlippedDVB.h"
 #import "CustomCalendarActivity.h"
 #import "RKDropdownAlert.h"
+#import "SettingsTVC.h"
 
 @interface DragViewController ()
 
 @property (strong, nonatomic) DraggableViewBackground *draggableBackground;
 @property (strong, nonatomic) FlippedDVB *flippedDVB;
+@property (assign, nonatomic) CGRect mySensitiveRect;
 
 @end
 
 @implementation DragViewController {
     
-    UIView *cardView;
 }
 
-@synthesize shareButton, draggableBackground, flippedDVB, xButton, checkButton, delegate;
+@synthesize shareButton, draggableBackground, flippedDVB, xButton, checkButton, delegate, scrollView, mySensitiveRect, cardView;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+    scrollView.scrollEnabled = NO;
     
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     BOOL hasLaunched = [defaults boolForKey:@"hasLaunched"];
@@ -35,38 +38,59 @@
         [self performSegueWithIdentifier:@"toChooseLoc" sender:self];
     }
     
-    xButton = [[UIButton alloc]initWithFrame:CGRectMake(-100.5, 423, 244.5, 79)]; //423
+    xButton = [[UIButton alloc]initWithFrame:CGRectMake(-100.5, 349, 244.5, 79)]; //413
     [xButton setImage:[UIImage imageNamed:@"NotInterestedButton"] forState:UIControlStateNormal];
     [xButton addTarget:self action:@selector(swipeLeftDVC) forControlEvents:UIControlEventTouchUpInside];
     
-    checkButton = [[UIButton alloc]initWithFrame:CGRectMake(180, 425, 244.5, 79)];  //425
+    checkButton = [[UIButton alloc]initWithFrame:CGRectMake(177, 351, 244.5, 79)];  //415
     [checkButton setImage:[UIImage imageNamed:@"InterestedButton"] forState:UIControlStateNormal];
     [checkButton addTarget:self action:@selector(swipeRightDVC) forControlEvents:UIControlEventTouchUpInside];
     
-    [self.view addSubview:checkButton];
-    [self.view addSubview:xButton];
-    [self.view sendSubviewToBack:checkButton]; //So that card is above buttons
-    [self.view sendSubviewToBack:xButton];
+    [self.scrollView addSubview:checkButton];
+    [self.scrollView addSubview:xButton];
+    //[self.view sendSubviewToBack:checkButton]; //So that card is above buttons
+    //[self.view sendSubviewToBack:xButton];
+    [self.view bringSubviewToFront:scrollView];
     
     self.frontViewIsVisible = YES;
     self.userSwipedFromFlippedView = NO;
     
 }
 
+-(void)testing {
+     NSLog(@"testing");
+    [self viewWillAppear:YES];
+}
+
 -(void)viewWillAppear:(BOOL)animated {
+    
+    //[super viewWillAppear:animated];
+    NSLog(@"MAADEEE ITT!!!");
+    NSLog(@"scroll view subviews: %@", scrollView.subviews);
+
     
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     // Refresh only if there was a change in preferences or the app has loaded for the first time.
     if ([defaults boolForKey:@"refreshData"]) {
         
+        NSLog(@"Refreshing data...");
         
         if (self.frontViewIsVisible == NO) {
             [self flipCurrentView]; // Makes blur view look weird and messes with seg control when flipping
         } else {
-            cardView = self.view.subviews[2]; //Card view is 3rd in hierarchy after sending button views to the back
+            //cardView = self.view.subviews[2]; //Card view is 3rd in hierarchy after sending button views to the back
+            
             for (id viewToRemove in [cardView subviews]){
                 [viewToRemove removeFromSuperview];
             }
+            
+            [scrollView bringSubviewToFront:cardView];
+            
+            //cardView.userInteractionEnabled = YES;
+            //UITapGestureRecognizer *tapGestureRecognizer =
+            //[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(cardTap)];
+            //[cardView addGestureRecognizer:tapGestureRecognizer];
+            
         }
         self.frontViewIsVisible = YES;
         self.userSwipedFromFlippedView = NO;
@@ -97,11 +121,36 @@
         
         delegate = draggableBackground;
         
+        self.mySensitiveRect = CGRectMake(0, 0, 0, 0);
+        UITapGestureRecognizer *gr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleGesture:)];
+        [scrollView addGestureRecognizer:gr];
+
         
-        NSLog(@"Card view subviews: %@", cardView.subviews);
+        NSLog(@"scroll view subviews: %@", scrollView.subviews);
     }
 }
 
+- (void)handleGesture:(UIGestureRecognizer *)gestureRecognizer {
+    CGPoint p = [gestureRecognizer locationInView:self.scrollView];
+    if (CGRectContainsPoint(mySensitiveRect, p)) {
+        NSLog(@"got a tap in the region i care about");
+        [draggableBackground.dragView cardExpanded:self.frontViewIsVisible];
+        [self flipCurrentView];
+        
+    } else {
+        NSLog(@"got a tap, but not where i need it");
+    }
+}
+
+
+- (IBAction)tap:(id)sender {
+    
+    NSLog(@"Tap");
+    
+    [draggableBackground.dragView cardExpanded:self.frontViewIsVisible];
+    [self flipCurrentView];
+    
+}
 
 -(void)swipeLeftDVC
 {
@@ -120,13 +169,87 @@
 
 - (void)flipCurrentView {
     
+    
+    
+    if (self.frontViewIsVisible == YES) {
+        
+        scrollView.contentSize = CGSizeMake(320, 720);
+        scrollView.scrollEnabled = YES;
+        
+        [UIView animateWithDuration:0.5 animations:^{
+            cardView.frame = CGRectMake(cardView.frame.origin.x, cardView.frame.origin.y, cardView.frame.size.width, 320 + 300);
+            draggableBackground.frame = CGRectMake(0, 0, cardView.frame.size.width, 320 + 300);
+            draggableBackground.dragView.frame = CGRectMake(0, 0, cardView.frame.size.width, 320 + 300);
+            draggableBackground.dragView.cardView.frame = CGRectMake(0, 0, cardView.frame.size.width, 620);
+            
+            CGRect frame = self.tabBarController.tabBar.frame;
+            CGFloat offsetY = frame.origin.y;
+            self.tabBarController.tabBar.frame = CGRectOffset(frame, 0, offsetY);
+            
+
+            xButton.center = CGPointMake(-1000, xButton.center.y);;
+            checkButton.center = CGPointMake(1300, checkButton.center.y);;
+                //xButton.transform = CGAffineTransformMakeRotation(1);
+            
+           // draggableBackground.dragView.cardView.frame = CGRectMake(15, 72, cardView.frame.size.width, 620);
+        } completion:^(BOOL finished) {
+            
+            self.mySensitiveRect = CGRectMake(18, 322, 284, 310);
+            
+            //[self.view  addSubview:scrollView];
+            //[self.view sendSubviewToBack:scrollView];
+            //[cardView removeFromSuperview];
+            //[scrollView addSubview:cardView];
+            
+            ///NSLog(@"Self: %@ ... cardView: %@  .... scrollView: %@", self.view.subviews, cardView.subviews, scrollView.subviews);
+            
+            //draggableBackground.dragView.cardView.userInteractionEnabled = YES;
+            //UITapGestureRecognizer *tapGestureRecognizer =
+            //[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(cardTap)];
+            //[draggableBackground.dragView.cardView addGestureRecognizer:tapGestureRecognizer];
+            
+        }];
+    
+    
+    } else {
+        
+        [scrollView setContentOffset:CGPointMake(0, 0) animated:YES];
+        scrollView.scrollEnabled = NO;
+        
+        [UIView animateWithDuration:0.5 animations:^{
+            
+            cardView.frame = CGRectMake(cardView.frame.origin.x, cardView.frame.origin.y, cardView.frame.size.width, 310);
+            draggableBackground.frame = CGRectMake(0, 0, cardView.frame.size.width, 310);
+            draggableBackground.dragView.frame = CGRectMake(0, 0, cardView.frame.size.width, 310);
+            draggableBackground.dragView.cardView.frame = CGRectMake(0, 0, cardView.frame.size.width, 310);
+            
+            xButton.center = CGPointMake(21.75, xButton.center.y);
+            checkButton.center = CGPointMake(302.25, checkButton.center.y);
+            
+            CGRect frame = self.tabBarController.tabBar.frame;
+            self.tabBarController.tabBar.frame = CGRectOffset(frame, 0, -519);
+            
+        } completion:^(BOOL finished) {
+            
+            self.mySensitiveRect = CGRectMake(0, 0, 0, 0);
+            
+        }];
+
+        
+        
+        
+    }
+    
+    self.frontViewIsVisible =! self.frontViewIsVisible;
+    
+    /*
     NSLog(@"VC CODE");
     // disable user interaction during the flip animation
     self.view.userInteractionEnabled = NO;
     
     // setup the animation group
     [UIView beginAnimations:nil context:nil];
-    [UIView setAnimationDuration:0.75];
+    [UIView setAnimationDuration:0.6];
     [UIView setAnimationDelegate:self];
     [UIView setAnimationDidStopSelector:@selector(myTransitionDidStop:finished:context:)];
     
@@ -153,10 +276,14 @@
         flippedDVB.dragView = self.draggableBackground.dragView;
         // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
-        [UIView animateWithDuration:0.75 animations:^{
-            xButton.alpha = 0;
-            checkButton.alpha = 0;
+        CGPoint xButtonFinishPoint = CGPointMake(-600, xButton.center.y);
+        CGPoint checkButtonFinishPoint = CGPointMake(900, checkButton.center.y);
+        [UIView animateWithDuration:0.6 animations:^{
+            xButton.center = xButtonFinishPoint;
+            checkButton.center = checkButtonFinishPoint;
+            //xButton.transform = CGAffineTransformMakeRotation(1);
         }];
+     
         
         [cardView addSubview:self.flippedDVB];
     } else {
@@ -171,18 +298,21 @@
         }
         
         [flippedDVB removeLabels];
-        
-        [UIView animateWithDuration:0.75 animations:^{
-            xButton.alpha = 1;
-            checkButton.alpha = 1;
+
+        CGPoint xButtonFinishPoint = CGPointMake(21.75, xButton.center.y);
+        CGPoint checkButtonFinishPoint = CGPointMake(302.25, checkButton.center.y);
+        [UIView animateWithDuration:0.6 animations:^{
+            xButton.center = xButtonFinishPoint;
+            checkButton.center = checkButtonFinishPoint;
         }];
+
 
         [cardView addSubview:self.draggableBackground];
     }
     [UIView commitAnimations];
     
     [UIView beginAnimations:nil context:nil];
-    [UIView setAnimationDuration:0.75];
+    [UIView setAnimationDuration:0.6];
     [UIView setAnimationDelegate:self];
     [UIView setAnimationDidStopSelector:@selector(myTransitionDidStop:finished:context:)];
     
@@ -190,6 +320,8 @@
     
     // invert the front view state
     self.frontViewIsVisible =! self.frontViewIsVisible;
+
+*/
 }
 
 - (void)myTransitionDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context {
@@ -239,17 +371,58 @@
          {
              
              // Custom action for other activity types...
+             [RKDropdownAlert title:ServiceMsg backgroundColor:[UIColor colorWithRed:.05 green:.29 blue:.49 alpha:1.0] textColor:[UIColor whiteColor]];
              
          }
      }];
     
 }
 
--(void)cardWasTapped {
+-(void)cardTap {
     
-    //[self performSegueWithIdentifier:@"moreDetail" sender:self];
+    NSLog(@"Made it");
+    [draggableBackground.dragView cardExpanded:self.frontViewIsVisible];
+    [self flipCurrentView];
+    //[draggableBackground.dragView tapAction];
+    
+
 }
 
+-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    
+    if ([segue.identifier isEqualToString:@"toSettings"]) {
+        
+        SettingsTVC *vc = (SettingsTVC *)[[segue destinationViewController] topViewController];
+        vc.dragVC = self;
+        
+    }
+    
+    /*
+    if ([segue.identifier isEqualToString: @"toSettings"]) {
+    
+        UINavigationController *navController = [segue destinationViewController];
+        SettingsTVC *vc = (SettingsTVC *)([navController topViewController]);
+        
+    if (!UIAccessibilityIsReduceTransparencyEnabled()) {
+        vc.tableView.backgroundColor = [UIColor clearColor];
+        UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleExtraLight];
+        UIVisualEffectView *blurEffectView = [[UIVisualEffectView alloc]initWithEffect:blurEffect];
+        vc.tableView.backgroundView = blurEffectView;
+        
+        
+        
+        UIVibrancyEffect *vibrancyEffect = [UIVibrancyEffect effectForBlurEffect:blurEffect];
+        
+        UIVisualEffectView *vibrancyEffectView = [[UIVisualEffectView alloc] initWithEffect:vibrancyEffect];
+        vibrancyEffectView.frame = blurEffectView.bounds;
+        
+        //if you want translucent vibrant table view separator lines
+
+        vc.tableView.separatorEffect = vibrancyEffect;
+    }
+    }
+    */
+}
 
 @end
 

@@ -19,6 +19,8 @@
 -(void)cardSwipedRight:(UIView *)card fromFlippedView:(BOOL)flippedBool;
 -(void)checkEventStoreAccessForCalendar;
 
+- (UIImage *) imageWithView:(UIView *)view;
+
 -(void)afterSwipeAction;
 
 @end
@@ -64,6 +66,9 @@
 @property (nonatomic, strong)EKEventStore *eventStore;
 
 @property (nonatomic, strong)UIImageView *cardBackground;
+@property (nonatomic, strong)UIVisualEffectView *blurEffectView;
+
+@property (nonatomic, strong)UIView *cardView;
 
 @property (assign)int actionMargin;
 @property (assign)int swipeDownMargin;
@@ -71,6 +76,6 @@
 -(void)leftClickAction;
 -(void)rightClickAction;
 
--(void)tapAction;
+-(void)cardExpanded:(BOOL)b;
 
 @end

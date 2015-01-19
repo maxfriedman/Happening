@@ -7,6 +7,7 @@
 //
 
 #import "SettingsTVC.h"
+#import "SettingsChoosingLoc.h"
 
 @interface SettingsTVC ()
 
@@ -76,6 +77,8 @@
     
     //if ([appDelegate.userLocation.name isEqualToString:@"Unknown Location"] || [appDelegate.userLocation.name isEqualToString:@""]) {
     
+    [self.tableView deselectRowAtIndexPath:[self.tableView indexPathForSelectedRow] animated:YES];
+    
     if ([[defaults objectForKey:@"userLocSubtitle"] isEqualToString:@""]) {
      
         locSubtitle.text = nil;
@@ -88,6 +91,16 @@
         
     }
 }
+/*
+-(void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    cell.backgroundColor = [UIColor clearColor];
+    UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleExtraLight];
+    UIVisualEffectView *blurEffectView = [[UIVisualEffectView alloc]initWithEffect:blurEffect];
+    cell.backgroundView = blurEffectView;
+    
+}
+ */
 
 - (void)setupCategories {
     
@@ -413,9 +426,14 @@
 
     }
     
-    
-    // Peace out
-    [self dismissViewControllerAnimated:YES completion:nil];
+    //DragViewController* vc = (DragViewController*)self.parentViewController.presentingViewController;
+        // Peace out
+        [self.dragVC testing];
+    [self dismissViewControllerAnimated:YES completion: ^{
+        
+        // call your completion method:
+        
+    }];
     
 }
 
@@ -456,6 +474,35 @@
         return NO;
     }
 }
+/*
+-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    
+    if ([segue.identifier isEqualToString:@"toLoc"]) {
+        
+        SettingsChoosingLoc *vc = segue.destinationViewController;
+        
+        if (!UIAccessibilityIsReduceTransparencyEnabled()) {
+            vc.view.backgroundColor = [UIColor clearColor];
+            UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleExtraLight];
+            UIVisualEffectView *blurEffectView = [[UIVisualEffectView alloc]initWithEffect:blurEffect];
+            [vc.view addSubview: blurEffectView];
+            
+            
+            
+            UIVibrancyEffect *vibrancyEffect = [UIVibrancyEffect effectForBlurEffect:blurEffect];
+            
+            UIVisualEffectView *vibrancyEffectView = [[UIVisualEffectView alloc] initWithEffect:vibrancyEffect];
+            vibrancyEffectView.frame = blurEffectView.bounds;
+            
+            //if you want translucent vibrant table view separator lines
+            
+            vc.tableView.separatorEffect = vibrancyEffect;
+ 
+        }
+    }
+    
+}
+*/
 
 
 @end

@@ -62,6 +62,10 @@
 		50478F181A44DE6900161D01 /* TabBarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50478F131A44DE6900161D01 /* TabBarViewController.m */; };
 		50478F251A45049300161D01 /* MyEventTableCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50478F241A45049300161D01 /* MyEventTableCell.m */; };
 		50594CD01A2FAD1B00749B49 /* AddressBook.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50594CCF1A2FAD1B00749B49 /* AddressBook.framework */; };
+		505CDD571A65B5BA005876DC /* Accounts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 505CDD561A65B5BA005876DC /* Accounts.framework */; };
+		505CDD591A65B5BF005876DC /* Social.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 505CDD581A65B5BF005876DC /* Social.framework */; };
+		505CDD5B1A65B5D0005876DC /* libsqlite3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 505CDD5A1A65B5D0005876DC /* libsqlite3.0.dylib */; };
+		505CDD5D1A65B5DF005876DC /* libstdc++.6.0.9.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 505CDD5C1A65B5DF005876DC /* libstdc++.6.0.9.dylib */; };
 		506DC53E1A46014300DD4591 /* OpenSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50478F191A44DF1500161D01 /* OpenSans-Bold.ttf */; };
 		506DC53F1A46014300DD4591 /* OpenSans-BoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50478F1A1A44DF1500161D01 /* OpenSans-BoldItalic.ttf */; };
 		506DC5411A46014300DD4591 /* OpenSans-ExtraBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50478F1C1A44DF1500161D01 /* OpenSans-ExtraBoldItalic.ttf */; };
@@ -71,6 +75,8 @@
 		506DC5451A46014300DD4591 /* OpenSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50478F201A44DF1500161D01 /* OpenSans-Regular.ttf */; };
 		506DC5461A46014300DD4591 /* OpenSans-Semibold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50478F211A44DF1500161D01 /* OpenSans-Semibold.ttf */; };
 		506DC5471A46014300DD4591 /* OpenSans-SemiboldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50478F221A44DF1500161D01 /* OpenSans-SemiboldItalic.ttf */; };
+		506DFD801A60A94600715079 /* UIImage+ImageEffects.m in Sources */ = {isa = PBXBuildFile; fileRef = 506DFD7F1A60A94600715079 /* UIImage+ImageEffects.m */; };
+		506DFD831A6113CF00715079 /* FXBlurView.m in Sources */ = {isa = PBXBuildFile; fileRef = 506DFD821A6113CF00715079 /* FXBlurView.m */; };
 		5076B5B81A58A05B00B05ABB /* FacebookSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5076B5B61A58A05B00B05ABB /* FacebookSDK.framework */; };
 		5076B5B91A58A05B00B05ABB /* FBAudienceNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5076B5B71A58A05B00B05ABB /* FBAudienceNetwork.framework */; };
 		5076B5BF1A58A07900B05ABB /* Bolts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5076B5BA1A58A07900B05ABB /* Bolts.framework */; };
@@ -82,6 +88,7 @@
 		509248F71A58819D002BE584 /* EditExtraInfoTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 509248F61A58819D002BE584 /* EditExtraInfoTVC.m */; };
 		50A677691A58A57800E1E12A /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 50478F0F1A44DE6900161D01 /* Info.plist */; };
 		50A677761A59B67C00E1E12A /* RKDropdownAlert.m in Sources */ = {isa = PBXBuildFile; fileRef = 50A677751A59B67C00E1E12A /* RKDropdownAlert.m */; };
+		50D255A41A6388A10086B7A4 /* OpenSans-Extrabold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50478F1B1A44DF1500161D01 /* OpenSans-Extrabold.ttf */; };
 		50F7DEA51A5643A6008B8C2B /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 50478F101A44DE6900161D01 /* main.m */; };
 		50F7DEA71A5794D6008B8C2B /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50F7DEA61A5794D5008B8C2B /* MessageUI.framework */; };
 		50F7DEAA1A57B4B8008B8C2B /* UICountingLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = 50F7DEA91A57B4B8008B8C2B /* UICountingLabel.m */; };
@@ -89,12 +96,12 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		50248C4D19BBA4C300329910 /* PBXContainerItemProxy */ = {
+		50D252E31A6385DC0086B7A4 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 50248C2E19BBA4C300329910 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 50248C3519BBA4C300329910;
-			remoteInfo = HappeningParse;
+			remoteInfo = Happening;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -107,7 +114,6 @@
 		500910F719C9FCB4006542CA /* libicucore.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libicucore.dylib; path = usr/lib/libicucore.dylib; sourceTree = SDKROOT; };
 		500910F919C9FCCD006542CA /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		50248C3619BBA4C300329910 /* Happening.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Happening.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		50248C4C19BBA4C300329910 /* HappeningTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HappeningTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		50248C7619BBAAE000329910 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		50248C7819BBAAF800329910 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		50248C7A19BBAB0300329910 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -118,6 +124,7 @@
 		50248C8419BBAB2F00329910 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		50248C8619BBAB3500329910 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		50248C8819BBAB3D00329910 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		503483081A65AF4F00249594 /* libdyld.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libdyld.dylib; path = usr/lib/system/libdyld.dylib; sourceTree = SDKROOT; };
 		503ECF651A506815009D30F1 /* MFActivityIndicatorView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MFActivityIndicatorView.h; path = Happening/Extras/MFActivityIndicatorView.h; sourceTree = SOURCE_ROOT; };
 		503ECF661A506815009D30F1 /* MFActivityIndicatorView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MFActivityIndicatorView.m; path = Happening/Extras/MFActivityIndicatorView.m; sourceTree = SOURCE_ROOT; };
 		504068421A44B13A00C2CA81 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = HappeningTests/Info.plist; sourceTree = SOURCE_ROOT; };
@@ -205,6 +212,14 @@
 		50478F231A45049300161D01 /* MyEventTableCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MyEventTableCell.h; path = "Happening/Create Tab/MyEventTableCell.h"; sourceTree = SOURCE_ROOT; };
 		50478F241A45049300161D01 /* MyEventTableCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MyEventTableCell.m; path = "Happening/Create Tab/MyEventTableCell.m"; sourceTree = SOURCE_ROOT; };
 		50594CCF1A2FAD1B00749B49 /* AddressBook.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AddressBook.framework; path = System/Library/Frameworks/AddressBook.framework; sourceTree = SDKROOT; };
+		505CDD561A65B5BA005876DC /* Accounts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accounts.framework; path = System/Library/Frameworks/Accounts.framework; sourceTree = SDKROOT; };
+		505CDD581A65B5BF005876DC /* Social.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Social.framework; path = System/Library/Frameworks/Social.framework; sourceTree = SDKROOT; };
+		505CDD5A1A65B5D0005876DC /* libsqlite3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.0.dylib; path = usr/lib/libsqlite3.0.dylib; sourceTree = SDKROOT; };
+		505CDD5C1A65B5DF005876DC /* libstdc++.6.0.9.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libstdc++.6.0.9.dylib"; path = "usr/lib/libstdc++.6.0.9.dylib"; sourceTree = SDKROOT; };
+		506DFD7E1A60A94600715079 /* UIImage+ImageEffects.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIImage+ImageEffects.h"; path = "Happening/Extras/UIImage+ImageEffects.h"; sourceTree = SOURCE_ROOT; };
+		506DFD7F1A60A94600715079 /* UIImage+ImageEffects.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIImage+ImageEffects.m"; path = "Happening/Extras/UIImage+ImageEffects.m"; sourceTree = SOURCE_ROOT; };
+		506DFD811A6113CF00715079 /* FXBlurView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FXBlurView.h; path = Happening/Extras/FXBlurView.h; sourceTree = SOURCE_ROOT; };
+		506DFD821A6113CF00715079 /* FXBlurView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FXBlurView.m; path = Happening/Extras/FXBlurView.m; sourceTree = SOURCE_ROOT; };
 		5076B5B61A58A05B00B05ABB /* FacebookSDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FacebookSDK.framework; path = Happening/Frameworks/FacebookSDK/FacebookSDK.framework; sourceTree = "<group>"; };
 		5076B5B71A58A05B00B05ABB /* FBAudienceNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FBAudienceNetwork.framework; path = Happening/Frameworks/FacebookSDK/FBAudienceNetwork.framework; sourceTree = "<group>"; };
 		5076B5BA1A58A07900B05ABB /* Bolts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Bolts.framework; path = "Happening/Frameworks/parse-library/Bolts.framework"; sourceTree = "<group>"; };
@@ -217,6 +232,7 @@
 		509248F61A58819D002BE584 /* EditExtraInfoTVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = EditExtraInfoTVC.m; path = "Happening/Create Tab/EditExtraInfoTVC.m"; sourceTree = SOURCE_ROOT; };
 		50A677741A59B67C00E1E12A /* RKDropdownAlert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RKDropdownAlert.h; path = Happening/Extras/RKDropdownAlert.h; sourceTree = SOURCE_ROOT; };
 		50A677751A59B67C00E1E12A /* RKDropdownAlert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RKDropdownAlert.m; path = Happening/Extras/RKDropdownAlert.m; sourceTree = SOURCE_ROOT; };
+		50D252DD1A6385DC0086B7A4 /* HappeningTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HappeningTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		50F7DEA61A5794D5008B8C2B /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		50F7DEA81A57B4B8008B8C2B /* UICountingLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UICountingLabel.h; path = Happening/Extras/UICountingLabel.h; sourceTree = SOURCE_ROOT; };
 		50F7DEA91A57B4B8008B8C2B /* UICountingLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = UICountingLabel.m; path = Happening/Extras/UICountingLabel.m; sourceTree = SOURCE_ROOT; };
@@ -229,6 +245,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				505CDD5D1A65B5DF005876DC /* libstdc++.6.0.9.dylib in Frameworks */,
+				505CDD5B1A65B5D0005876DC /* libsqlite3.0.dylib in Frameworks */,
+				505CDD591A65B5BF005876DC /* Social.framework in Frameworks */,
+				505CDD571A65B5BA005876DC /* Accounts.framework in Frameworks */,
 				5076B5C51A58A0E300B05ABB /* libsqlite3.dylib in Frameworks */,
 				5076B5BF1A58A07900B05ABB /* Bolts.framework in Frameworks */,
 				5076B5C01A58A07900B05ABB /* Parse.framework in Frameworks */,
@@ -259,7 +279,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		50248C4919BBA4C300329910 /* Frameworks */ = {
+		50D252DA1A6385DC0086B7A4 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -283,7 +303,7 @@
 			isa = PBXGroup;
 			children = (
 				50248C3619BBA4C300329910 /* Happening.app */,
-				50248C4C19BBA4C300329910 /* HappeningTests.xctest */,
+				50D252DD1A6385DC0086B7A4 /* HappeningTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -325,6 +345,11 @@
 		50248C7519BBAAB500329910 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				505CDD5C1A65B5DF005876DC /* libstdc++.6.0.9.dylib */,
+				505CDD5A1A65B5D0005876DC /* libsqlite3.0.dylib */,
+				505CDD581A65B5BF005876DC /* Social.framework */,
+				505CDD561A65B5BA005876DC /* Accounts.framework */,
+				503483081A65AF4F00249594 /* libdyld.dylib */,
 				5076B5C41A58A0E300B05ABB /* libsqlite3.dylib */,
 				5076B5BA1A58A07900B05ABB /* Bolts.framework */,
 				5076B5BB1A58A07900B05ABB /* Parse.framework */,
@@ -410,8 +435,6 @@
 			isa = PBXGroup;
 			children = (
 				5041A1181A44AE5300C151B7 /* Settings */,
-				50478ED91A44DD6C00161D01 /* CustomCalendarActivity.h */,
-				50478EDA1A44DD6C00161D01 /* CustomCalendarActivity.m */,
 				50478EDB1A44DD6C00161D01 /* DraggableView.h */,
 				50478EDC1A44DD6C00161D01 /* DraggableView.m */,
 				50478EDD1A44DD6C00161D01 /* DraggableViewBackground.h */,
@@ -495,6 +518,12 @@
 				50F7DEA91A57B4B8008B8C2B /* UICountingLabel.m */,
 				50A677741A59B67C00E1E12A /* RKDropdownAlert.h */,
 				50A677751A59B67C00E1E12A /* RKDropdownAlert.m */,
+				506DFD7E1A60A94600715079 /* UIImage+ImageEffects.h */,
+				506DFD7F1A60A94600715079 /* UIImage+ImageEffects.m */,
+				506DFD811A6113CF00715079 /* FXBlurView.h */,
+				506DFD821A6113CF00715079 /* FXBlurView.m */,
+				50478ED91A44DD6C00161D01 /* CustomCalendarActivity.h */,
+				50478EDA1A44DD6C00161D01 /* CustomCalendarActivity.m */,
 			);
 			name = Extras;
 			sourceTree = "<group>";
@@ -533,22 +562,22 @@
 			productReference = 50248C3619BBA4C300329910 /* Happening.app */;
 			productType = "com.apple.product-type.application";
 		};
-		50248C4B19BBA4C300329910 /* HappeningTests */ = {
+		50D252DC1A6385DC0086B7A4 /* HappeningTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 50248C5919BBA4C300329910 /* Build configuration list for PBXNativeTarget "HappeningTests" */;
+			buildConfigurationList = 50D252E51A6385DD0086B7A4 /* Build configuration list for PBXNativeTarget "HappeningTests" */;
 			buildPhases = (
-				50248C4819BBA4C300329910 /* Sources */,
-				50248C4919BBA4C300329910 /* Frameworks */,
-				50248C4A19BBA4C300329910 /* Resources */,
+				50D252D91A6385DC0086B7A4 /* Sources */,
+				50D252DA1A6385DC0086B7A4 /* Frameworks */,
+				50D252DB1A6385DC0086B7A4 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				50248C4E19BBA4C300329910 /* PBXTargetDependency */,
+				50D252E41A6385DC0086B7A4 /* PBXTargetDependency */,
 			);
 			name = HappeningTests;
-			productName = HappeningParseTests;
-			productReference = 50248C4C19BBA4C300329910 /* HappeningTests.xctest */;
+			productName = HappeningTests;
+			productReference = 50D252DD1A6385DC0086B7A4 /* HappeningTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
@@ -569,8 +598,8 @@
 							};
 						};
 					};
-					50248C4B19BBA4C300329910 = {
-						CreatedOnToolsVersion = 6.0;
+					50D252DC1A6385DC0086B7A4 = {
+						CreatedOnToolsVersion = 6.2;
 						TestTargetID = 50248C3519BBA4C300329910;
 					};
 				};
@@ -590,7 +619,7 @@
 			projectRoot = "";
 			targets = (
 				50248C3519BBA4C300329910 /* Happening */,
-				50248C4B19BBA4C300329910 /* HappeningTests */,
+				50D252DC1A6385DC0086B7A4 /* HappeningTests */,
 			);
 		};
 /* End PBXProject section */
@@ -600,6 +629,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				50D255A41A6388A10086B7A4 /* OpenSans-Extrabold.ttf in Resources */,
 				506DC53E1A46014300DD4591 /* OpenSans-Bold.ttf in Resources */,
 				506DC53F1A46014300DD4591 /* OpenSans-BoldItalic.ttf in Resources */,
 				506DC5411A46014300DD4591 /* OpenSans-ExtraBoldItalic.ttf in Resources */,
@@ -615,7 +645,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		50248C4A19BBA4C300329910 /* Resources */ = {
+		50D252DB1A6385DC0086B7A4 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -652,6 +682,7 @@
 				50478EE81A44DD6C00161D01 /* DraggableView.m in Sources */,
 				50478EAE1A44DB8D00161D01 /* SplashScreens.m in Sources */,
 				50478ED21A44DD2400161D01 /* buttonOverride.m in Sources */,
+				506DFD831A6113CF00715079 /* FXBlurView.m in Sources */,
 				503ECF671A506815009D30F1 /* MFActivityIndicatorView.m in Sources */,
 				50478EBF1A44DBCC00161D01 /* LoginView.m in Sources */,
 				50478F251A45049300161D01 /* MyEventTableCell.m in Sources */,
@@ -668,11 +699,12 @@
 				50478ED81A44DD2400161D01 /* showMyEventVC.m in Sources */,
 				50478EBC1A44DBCC00161D01 /* FirstTimeScreen.m in Sources */,
 				50F7DEA51A5643A6008B8C2B /* main.m in Sources */,
+				506DFD801A60A94600715079 /* UIImage+ImageEffects.m in Sources */,
 				50478F141A44DE6900161D01 /* AppDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		50248C4819BBA4C300329910 /* Sources */ = {
+		50D252D91A6385DC0086B7A4 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -682,10 +714,10 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		50248C4E19BBA4C300329910 /* PBXTargetDependency */ = {
+		50D252E41A6385DC0086B7A4 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 50248C3519BBA4C300329910 /* Happening */;
-			targetProxy = 50248C4D19BBA4C300329910 /* PBXContainerItemProxy */;
+			targetProxy = 50D252E31A6385DC0086B7A4 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -724,10 +756,11 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "";
+				PRODUCT_NAME = Happening;
 				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 			};
@@ -761,10 +794,11 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "";
+				PRODUCT_NAME = Happening;
 				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
@@ -780,24 +814,18 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"/Users/Max/Downloads/parse-library-1",
-					"/Users/Max/Downloads/GoogleMaps-iOS-1.8.1",
-					"/Users/Max/Downloads/GoogleMaps-iOS-1.8.1/GoogleMapsSDKDemos",
-					"/Users/Max/Downloads/parse-library-1-3",
-					/Users/Max/Documents/FacebookSDK,
-					/Users/Max/Documents/FacebookSDK/FBAudienceNetwork,
 					"$(PROJECT_DIR)/Happening/Frameworks/FacebookSDK",
-					"$(PROJECT_DIR)/parse-library-1-4",
 					"$(PROJECT_DIR)/Happening/Frameworks/parse-library",
-					"/Users/Max/Downloads/Happening-master-5/Happening/Frameworks/parse-library",
-					"/Users/Max/Downloads/Happening-master-6/Happening/Frameworks/FacebookSDK",
-					"/Users/Max/Downloads/Happening-master-6/Happening/Frameworks/parse-library",
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/Happening/Main Files/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SDKROOT)/usr/lib/system",
+				);
 				OTHER_LDFLAGS = "";
-				PRODUCT_NAME = Happening;
+				PRODUCT_NAME = "${PRODUCT_NAME}";
 				PROVISIONING_PROFILE = "";
 			};
 			name = Debug;
@@ -811,63 +839,56 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"/Users/Max/Downloads/parse-library-1",
-					"/Users/Max/Downloads/GoogleMaps-iOS-1.8.1",
-					"/Users/Max/Downloads/GoogleMaps-iOS-1.8.1/GoogleMapsSDKDemos",
-					"/Users/Max/Downloads/parse-library-1-3",
-					/Users/Max/Documents/FacebookSDK,
-					/Users/Max/Documents/FacebookSDK/FBAudienceNetwork,
 					"$(PROJECT_DIR)/Happening/Frameworks/FacebookSDK",
-					"$(PROJECT_DIR)/parse-library-1-4",
 					"$(PROJECT_DIR)/Happening/Frameworks/parse-library",
-					"/Users/Max/Downloads/Happening-master-5/Happening/Frameworks/parse-library",
-					"/Users/Max/Downloads/Happening-master-6/Happening/Frameworks/FacebookSDK",
-					"/Users/Max/Downloads/Happening-master-6/Happening/Frameworks/parse-library",
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/Happening/Main Files/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SDKROOT)/usr/lib/system",
+				);
 				OTHER_LDFLAGS = "";
-				PRODUCT_NAME = Happening;
+				PRODUCT_NAME = "${PRODUCT_NAME}";
 				PROVISIONING_PROFILE = "";
 			};
 			name = Release;
 		};
-		50248C5A19BBA4C300329910 /* Debug */ = {
+		50D252E61A6385DD0086B7A4 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SDKROOT)/Developer/Library/Frameworks",
 					"$(inherited)",
-					"$(PROJECT_DIR)/Happening/Frameworks/FacebookSDK",
-					"$(PROJECT_DIR)/Happening/Frameworks/parse-library",
 				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = HappeningTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_NAME = HappeningTests;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HappeningParse.app/HappeningParse";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Happening.app/Happening";
 			};
 			name = Debug;
 		};
-		50248C5B19BBA4C300329910 /* Release */ = {
+		50D252E71A6385DD0086B7A4 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SDKROOT)/Developer/Library/Frameworks",
 					"$(inherited)",
-					"$(PROJECT_DIR)/Happening/Frameworks/FacebookSDK",
-					"$(PROJECT_DIR)/Happening/Frameworks/parse-library",
 				);
 				INFOPLIST_FILE = HappeningTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_NAME = HappeningTests;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HappeningParse.app/HappeningParse";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Happening.app/Happening";
 			};
 			name = Release;
 		};
@@ -892,11 +913,11 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		50248C5919BBA4C300329910 /* Build configuration list for PBXNativeTarget "HappeningTests" */ = {
+		50D252E51A6385DD0086B7A4 /* Build configuration list for PBXNativeTarget "HappeningTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				50248C5A19BBA4C300329910 /* Debug */,
-				50248C5B19BBA4C300329910 /* Release */,
+				50D252E61A6385DD0086B7A4 /* Debug */,
+				50D252E71A6385DD0086B7A4 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

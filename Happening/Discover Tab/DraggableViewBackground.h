@@ -25,6 +25,7 @@
 //methods called in DraggableView
 -(void)cardSwipedLeft:(UIView *)card fromFlippedView:(BOOL)flippedBool;
 -(void)cardSwipedRight:(UIView *)card fromFlippedView:(BOOL)flippedBool;
+- (UIImage *) imageWithView:(UIView *)view;
 
 -(void)swipeLeft;
 -(void)swipeRight;

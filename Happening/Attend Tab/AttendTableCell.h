@@ -7,17 +7,21 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "FXBlurView.h"
 
 @interface AttendTableCell : UITableViewCell
 
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
 @property (strong, nonatomic) IBOutlet UILabel *locLabel;
 @property (strong, nonatomic) IBOutlet UILabel *timeLabel;
-@property (strong, nonatomic) IBOutlet UIImageView *image;
+@property (strong, nonatomic) IBOutlet UIImageView *eventImageView;
 @property (strong, nonatomic) IBOutlet UILabel *distance;
 @property (strong, nonatomic) IBOutlet UILabel *subtitle;
 
 @property (strong, nonatomic) NSString *eventID;
+
+@property (strong, nonatomic) IBOutlet FXBlurView *blurView;
+
 
 - (void)setupCell;
 

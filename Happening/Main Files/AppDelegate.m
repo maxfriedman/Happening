@@ -9,6 +9,7 @@
 #import "AppDelegate.h"
 #import "TabBarViewController.h"
 #import "ChoosingLocation.h"
+#import <ParseCrashReporting/ParseCrashReporting.h>
 
 @interface AppDelegate ()
 
@@ -44,6 +45,7 @@
     //[PFFacebookUtils initializeFacebook];
     
     [PFAnalytics trackAppOpenedWithLaunchOptions:launchOptions];
+    //[ParseCrashReporting enable];
     
     [FBLoginView class];
     

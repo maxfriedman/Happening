@@ -19,12 +19,11 @@
 
 #import "DraggableView.h"
 #import "AppDelegate.h"
+#import "UIImage+ImageEffects.h"
 
 @implementation DraggableView {
     CGFloat xFromCenter;
     CGFloat yFromCenter;
-    
-    UIView *cardView;
 }
 
 //delegate is instance of ViewController
@@ -53,9 +52,9 @@
 @synthesize swipesRight;
 
 @synthesize locImage, userImage;
-@synthesize activityView, cardBackground;
+@synthesize activityView, cardBackground, cardView;
 
-@synthesize xButton, checkButton, eventStore;
+@synthesize xButton, checkButton, eventStore, blurEffectView;
 
 - (id)initWithFrame:(CGRect)frame {
     
@@ -68,14 +67,14 @@
         eventStore = [[EKEventStore alloc] init];
         
         cardBackground = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"cardBackground"]];
-        cardBackground.frame = CGRectMake(10, 320, 270, cardBackground.image.size.height - 5);
+        cardBackground.frame = CGRectMake(8, 310, 270, cardBackground.image.size.height - 5);
         [self addSubview:cardBackground];
         
         [self setupView:frame];
 
         cardView.backgroundColor = [UIColor whiteColor];
         
-        eventImage = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, 290, 190)];
+        eventImage = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, 290, 180)];
         //eventImage.layer.cornerRadius = 10.0;
         eventImage.layer.masksToBounds = YES;
         eventImage.layer.borderColor = [UIColor lightGrayColor].CGColor;
@@ -86,7 +85,7 @@
         
         panGestureRecognizer = [[UIPanGestureRecognizer alloc]initWithTarget:self action:@selector(beingDragged:)];
         
-        [self addGestureRecognizer:panGestureRecognizer];
+        [self.cardView addGestureRecognizer:panGestureRecognizer];
         
         
         /*
@@ -104,26 +103,36 @@
         [[blurEffectView contentView] addSubview:vibrancyEffectView];
         */
         
-        title = [[UILabel alloc]initWithFrame:CGRectMake(10, 110, eventImage.frame.size.width, 70)];
+        title = [[UILabel alloc]initWithFrame:CGRectMake(15, 106, eventImage.frame.size.width - 10, 70)];
         
-        subtitle = [[UILabel alloc]initWithFrame:CGRectMake(10, 195, self.frame.size.width, 100)];
-        location = [[UILabel alloc]initWithFrame:CGRectMake(10, 160, self.frame.size.width, 100)];
+        subtitle = [[UILabel alloc]initWithFrame:CGRectMake(15, 185, self.frame.size.width - 30, 100)];
+        location = [[UILabel alloc]initWithFrame:CGRectMake(15, 150, self.frame.size.width - 30, 100)];
         
-        date = [[UILabel alloc]initWithFrame:CGRectMake(10, 120, self.frame.size.width, 100)];
-        time = [[UILabel alloc]initWithFrame:CGRectMake(0, 315, self.frame.size.width, 100)];
+        date = [[UILabel alloc]initWithFrame:CGRectMake(15, 110, self.frame.size.width - 30, 100)];
+        time = [[UILabel alloc]initWithFrame:CGRectMake(0, 309, self.frame.size.width - 30, 100)];
         
         //date = [[UILabel alloc]initWithFrame:CGRectMake(0, 285, self.frame.size.width, 100)];
         //time = [[UILabel alloc]initWithFrame:CGRectMake(0, 315, self.frame.size.width, 100)];
 
-        hashtag = [[UILabel alloc]initWithFrame:CGRectMake(10, 255, self.frame.size.width, 100)];
-        geoLoc = [[UILabel alloc]initWithFrame:CGRectMake(0, 120, self.frame.size.width - 10, 100)];
-        swipesRight = [[UILabel alloc]initWithFrame:CGRectMake(-10, 255, self.frame.size.width, 100)];
+        hashtag = [[UILabel alloc]initWithFrame:CGRectMake(15, 240, self.frame.size.width - 30, 100)];
+        geoLoc = [[UILabel alloc]initWithFrame:CGRectMake(15, 100, self.frame.size.width - 30, 100)];
+        swipesRight = [[UILabel alloc]initWithFrame:CGRectMake(0, 240, self.frame.size.width - 15, 100)];
         //createdBy = [[UILabel alloc]initWithFrame:CGRectMake(0, 380, self.frame.size.width, 100)];
         
         UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleLight];
-        UIVisualEffectView *blurEffectView = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
-        blurEffectView.frame = CGRectMake(0, 120, eventImage.frame.size.width, 70);
-        [eventImage addSubview:blurEffectView];
+        blurEffectView = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
+        
+        blurEffectView.frame = CGRectMake(0, 120, eventImage.frame.size.width, 60);
+        //[eventImage addSubview:blurEffectView];
+        
+        //UIImage *blurredImage = [eventImage.image applyLightEffect];
+        
+        UIView *view = [[UIView alloc]initWithFrame:self.blurEffectView.bounds];
+        view.backgroundColor = [UIColor clearColor];
+        UIImageView *imageView = [[UIImageView alloc]initWithImage: [self convertViewToImage:view]];
+        imageView.image = [imageView.image applyLightEffect];
+        
+        //[eventImage addSubview:imageView];
 
         UIVibrancyEffect *vibrancyEffect = [UIVibrancyEffect effectForBlurEffect:blurEffect];
         UIVisualEffectView *vibrancyEffectView = [[UIVisualEffectView alloc] initWithEffect:vibrancyEffect];
@@ -131,11 +140,11 @@
         
         [title setTextAlignment:NSTextAlignmentLeft];
         title.textColor = [UIColor whiteColor];
-        title.font = [UIFont fontWithName:@"OpenSans-Bold" size:21];
+        title.font = [UIFont fontWithName:@"OpenSans-Bold" size:18];
         
         [date setTextAlignment:NSTextAlignmentLeft];
         date.textColor = [UIColor darkTextColor];
-        date.font = [UIFont fontWithName:@"OpenSans-Semibold" size:14.0];
+        date.font = [UIFont fontWithName:@"OpenSans-Semibold" size:12];
         //[vibrancyEffectView.contentView addSubview:date];
         
         //[time setTextAlignment:NSTextAlignmentCenter];
@@ -153,8 +162,8 @@
         objectID = [[NSString alloc]init];
         geoPoint = [[PFGeoPoint alloc]init];
         
-        locImage = [[UIImageView alloc]initWithFrame:CGRectMake(220, 160, 15, 20)];
-        userImage = [[UIImageView alloc]initWithFrame:CGRectMake(193, 297, 18, 18)];
+        locImage = [[UIImageView alloc]initWithFrame:CGRectMake(214, 141, 18, 18)];
+        userImage = [[UIImageView alloc]initWithFrame:CGRectMake(183, 282, 18, 18)];
         
         /*
         [title setTextAlignment:NSTextAlignmentCenter];
@@ -163,14 +172,16 @@
         */
          
         [subtitle setTextAlignment:NSTextAlignmentLeft];
-        subtitle.textColor = [UIColor darkGrayColor];
-        subtitle.font = [UIFont fontWithName:@"OpenSans-Light" size:17];
-        subtitle.numberOfLines = 0;
-        [subtitle setLineBreakMode:NSLineBreakByWordWrapping];
+        //subtitle.textColor = [UIColor darkGrayColor];
+        subtitle.textColor = [UIColor colorWithHue:0 saturation:0 brightness:.64 alpha:1.0];
+        subtitle.font = [UIFont fontWithName:@"OpenSans" size:12];
+        subtitle.numberOfLines = 2;
+        [subtitle setLineBreakMode:NSLineBreakByTruncatingTail];
         
         [location setTextAlignment:NSTextAlignmentLeft];
-        location.textColor = [UIColor darkTextColor];
-        location.font = [UIFont fontWithName:@"OpenSans" size:22];
+        //location.textColor = [UIColor colorWithRed:70/255 green:70/255 blue:70/255 alpha:0.7];
+        location.textColor = [UIColor colorWithHue:0 saturation:0 brightness:.27 alpha:1.0];
+        location.font = [UIFont fontWithName:@"OpenSans-Bold" size:18];
         //location.shadowColor = [UIColor blackColor];
         
         //transpBackground.backgroundColor = [UIColor blackColor];
@@ -187,22 +198,24 @@
         */
          
         [hashtag setTextAlignment:NSTextAlignmentLeft];
-        hashtag.textColor = [UIColor grayColor];
-        hashtag.font = [UIFont fontWithName:@"OpenSans-Light" size:11.0];
+        //hashtag.textColor = [UIColor grayColor];
+        hashtag.textColor = [UIColor colorWithHue:0 saturation:0 brightness:.64 alpha:1.0];
+        hashtag.font = [UIFont fontWithName:@"OpenSans" size:11.0];
         //hashtag.font = [UIFont boldSystemFontOfSize:15];
         //hashtag.shadowColor = [UIColor blackColor];
         
         [geoLoc setTextAlignment:NSTextAlignmentRight];
         geoLoc.textColor = [UIColor whiteColor];
-        geoLoc.font = [UIFont fontWithName:@"OpenSans-Semibold" size:14.0];
+        geoLoc.font = [UIFont fontWithName:@"OpenSans" size:12.0];
         
         [swipesRight setTextAlignment:NSTextAlignmentRight];
-        swipesRight.textColor = [UIColor grayColor];
-        swipesRight.font = [UIFont fontWithName:@"OpenSans-Light" size:11.0];
+        //swipesRight.textColor = [UIColor grayColor];
+        swipesRight.textColor = [UIColor colorWithHue:0 saturation:0 brightness:.64 alpha:1.0];
+        swipesRight.font = [UIFont fontWithName:@"OpenSans" size:11.0];
         
         [createdBy setTextAlignment:NSTextAlignmentLeft];
         createdBy.textColor = [UIColor blackColor];
-        createdBy.font = [UIFont fontWithName:@"OpenSans-Light" size:12.0];
+        createdBy.font = [UIFont fontWithName:@"OpenSans" size:12.0];
         
         //locImage.image = [UIImage imageNamed:@"locImage"];
         [cardView addSubview:locImage];
@@ -228,7 +241,6 @@
         overlayView.alpha = 0;
         [cardView addSubview:overlayView];
         
-        
         //[activityView stopAnimating];
     }
     
@@ -248,8 +260,9 @@
     [cardView.layer setCornerRadius:10.0];
     [cardView.layer setShadowOpacity:0.1];
     [cardView.layer setShadowOffset:CGSizeMake(0, 5)];
+    //UIColor *color = [UIColor colorWithRed:<#(CGFloat)#> green:<#(CGFloat)#> blue:<#(CGFloat)#> alpha:<#(CGFloat)#>]
     [cardView.layer setBorderColor:[UIColor lightGrayColor].CGColor];
-    [cardView.layer setBorderWidth:2.0];
+    [cardView.layer setBorderWidth:1.0];
     
     /*
     self.layer.shadowRadius = 5;
@@ -260,14 +273,24 @@
      */
 }
 
-/*
- // Only override drawRect: if you perform custom drawing.
- // An empty implementation adversely affects performance during animation.
- - (void)drawRect:(CGRect)rect
- {
- // Drawing code
- }
- */
+-(UIImage *)convertViewToImage: (UIView *)view {
+    
+    UIGraphicsBeginImageContext(view.bounds.size);
+    [view drawViewHierarchyInRect:view.bounds afterScreenUpdates:YES];
+    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    return image;
+}
+
+- (UIImage *) imageWithView:(UIView *)view
+{
+    UIGraphicsBeginImageContextWithOptions(view.bounds.size, view.opaque, 0.0f);
+    [view drawViewHierarchyInRect:view.bounds afterScreenUpdates:NO];
+    UIImage * snapshotImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return snapshotImage;
+}
 
 //%%% called when you move your finger across the screen.
 // called many times a second
@@ -338,6 +361,11 @@
         overlayView.alpha = MIN(fabsf(yDistance)/100, 1.0); //based on y
 
     }
+    /*
+    else {
+        overlayView.alpha = MIN(fabsf(xDistance)/100, 1.0); //based on x, fixes a bug and makes overlay view go away in middle
+    }
+     */
 }
 
 //%%% called when the card is let go
@@ -452,9 +480,16 @@
     NSLog(@"NO");
 }
 
--(void)tapAction
+-(void)cardExpanded:(BOOL)b
 {
-    //NSLog(@"Card tapped");
+    NSLog(@"Drag view tapped");
+    
+    if (b) {
+        panGestureRecognizer.enabled = NO;
+    } else {
+        panGestureRecognizer.enabled = YES;
+    }
+    
     
 }
 

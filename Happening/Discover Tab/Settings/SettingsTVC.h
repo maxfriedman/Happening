@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import "AppDelegate.h"
+#import "DragViewController.h"
 
 @protocol SettingsTVCDelegate <NSObject>
 
@@ -24,5 +25,7 @@
 @property (strong, nonatomic) IBOutlet UILabel *distanceLabel;
 @property (strong, nonatomic) IBOutlet UILabel *locTitle;
 @property (strong, nonatomic) IBOutlet UILabel *locSubtitle;
+
+@property (strong, nonatomic) DragViewController *dragVC;
 
 @end

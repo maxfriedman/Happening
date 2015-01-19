@@ -17,7 +17,7 @@
 
 @end
 
-@interface DragViewController : UIViewController 
+@interface DragViewController : UIViewController <UIScrollViewDelegate>
 
 - (void)flipCurrentView;
 
@@ -32,8 +32,13 @@
 @property (nonatomic, strong)UIButton* checkButton;
 @property (nonatomic, strong)UIButton* xButton;
 
+@property (strong, nonatomic) IBOutlet UIView *cardView;
+@property (strong, nonatomic) IBOutlet UIScrollView *scrollView;
+
 @property (assign) BOOL frontViewIsVisible;
 @property (assign) BOOL userSwipedFromFlippedView;
+
+-(void)testing;
 
 @end
 
