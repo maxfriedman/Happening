@@ -114,7 +114,6 @@
     return [self.sections count];
 }
 
-
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
     
     NSDate *eventDate = [[NSDate alloc]init];
@@ -170,28 +169,34 @@
     eventTimeString = [eventTimeString stringByReplacingOccurrencesOfString:@":00" withString:@""];
     
     [cell.timeLabel setText:[NSString stringWithFormat:@"%@",eventTimeString]];
-    
+
     // Image formatting
     PFFile *imageFile = Event[@"Image"];
     [imageFile getDataInBackgroundWithBlock:^(NSData *imageData, NSError *error) {
         if (!error) {
+            
+            
+            
             cell.eventImageView.image = [UIImage imageWithData:imageData];
-            FXBlurView *blurView = [[FXBlurView alloc] initWithFrame:cell.eventImageView.frame];
-            blurView.blurRadius = 15;
-            /*
+            
             CAGradientLayer *l = [CAGradientLayer layer];
             l.frame = cell.eventImageView.bounds;
             l.colors = [NSArray arrayWithObjects:(id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:0.0] CGColor], (id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:1] CGColor], nil];
             
             l.startPoint = CGPointMake(0.0, 1.00f);
-            l.endPoint = CGPointMake(0.0f, 0.9f);
-            */
-            //cell.eventImageView.layer.mask = l;
+            l.endPoint = CGPointMake(0.0f, 0.5f);
+            //l.locations = [NSArray arrayWithObjects:[NSNumber numberWithFloat:0.0],
+                                   //[NSNumber numberWithFloat:0.2],
+                                   //[NSNumber numberWithFloat:0.3],
+                                   //[NSNumber numberWithFloat:0.4], nil];
+            
+            cell.eventImageView.layer.mask = l;
+            //cell.blurView.dynamic = NO;
+            
             //blurView.layer.mask = l;
             
             //[cell addSubview:blurView];
-            //blurView.dynamic = NO;
-            //cell.blurView.dynamic = NO;
+            
 
         }
     }];
@@ -214,7 +219,7 @@
         PFUser *user = [PFUser currentUser];
         PFGeoPoint *userLoc = user[@"userLoc"];
         NSNumber *meters = [NSNumber numberWithDouble:([loc distanceInMilesTo:userLoc])];
-        NSString *distance = [NSString stringWithFormat:(@"%.2f mi"), meters.floatValue];
+        NSString *distance = [NSString stringWithFormat:(@"%.1f mi"), meters.floatValue];
         cell.distance.text = distance;
     }
     
@@ -226,16 +231,62 @@
 - (void)tableView:(UITableView *)tableView willDisplayHeaderView:(UIView *)view forSection:(NSInteger)section
 {
     // Background color
-    //view.tintColor = [UIColor blackColor];
+    //view.tintColor = [UIColor blackColor]
     
     // Text Color
     UITableViewHeaderFooterView *header = (UITableViewHeaderFooterView *)view;
     [header.textLabel setTextColor:[UIColor darkTextColor]];
-    [header.textLabel setFont:[UIFont fontWithName:@"OpenSans-Semibold" size:15]];
+    [header.textLabel setFont:[UIFont fontWithName:@"OpenSans-Semibold" size:14]];
+    
+    // For some reason the the sub label was being added to every header---> this removes it.
+    for (UIView *view in header.contentView.subviews) {
+        
+        if (view.tag == 99)
+            [view removeFromSuperview];
+    }
+
+
+    
+    if ([header.textLabel.text isEqualToString:@"TODAY"]) {
+        UILabel *subDateLabel = [[UILabel alloc] initWithFrame:CGRectMake(65, 16, 100, 20)];
+        subDateLabel.textColor = [UIColor darkTextColor];
+        subDateLabel.font = [UIFont fontWithName:@"OpenSans" size:9];
+        subDateLabel.tag = 99;
+        
+        NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+        [formatter setDateStyle:NSDateFormatterShortStyle];
+        NSString *dateString = [formatter stringFromDate:[NSDate date]];
+        subDateLabel.text = dateString;
+        
+        [header.contentView addSubview:subDateLabel];
+    }  else if ([header.textLabel.text isEqualToString:@"TOMORROW"]) {
+
+        UILabel *subDateLabel = [[UILabel alloc] initWithFrame:CGRectMake(105, 0, 100, 17)];
+        subDateLabel.textColor = [UIColor darkTextColor];
+        subDateLabel.font = [UIFont fontWithName:@"OpenSans" size:9];
+        subDateLabel.tag = 99;
+        
+        NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+        [formatter setDateStyle:NSDateFormatterShortStyle];
+        NSString *dateString = [formatter stringFromDate:[NSDate dateWithTimeIntervalSinceNow:(86400)]];
+        subDateLabel.text = dateString;
+        
+        [header.contentView addSubview:subDateLabel];
+    }
+
+    
     
     // Another way to set the background color
     // Note: does not preserve gradient effect of original header
     // header.contentView.backgroundColor = [UIColor blackColor];
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
+    
+    if (section != 0) {
+        return 22;
+    }
+    return 40;
 }
 
 // Method for deleting table cells, only works if there are multiple events/cells in a section

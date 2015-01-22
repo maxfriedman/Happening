@@ -54,6 +54,7 @@
 @property (nonatomic, strong)PFGeoPoint *geoPoint;
 
 @property (nonatomic,strong)UILabel* swipesRight;
+@property (nonatomic,strong)UILabel* friendsInterested;
 
 @property (nonatomic,strong)UIImageView* locImage;
 @property (nonatomic,strong)UIImageView* userImage;
@@ -66,6 +67,8 @@
 @property (nonatomic, strong)EKEventStore *eventStore;
 
 @property (nonatomic, strong)UIImageView *cardBackground;
+@property (nonatomic, strong)UIImageView *greyLocImageView;
+
 @property (nonatomic, strong)UIVisualEffectView *blurEffectView;
 
 @property (nonatomic, strong)UIView *cardView;

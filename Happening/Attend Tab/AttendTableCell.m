@@ -45,16 +45,17 @@
     
     
     [blurView setUpdateInterval:0.1];
-    blurView.blurRadius = 20;
+    blurView.blurRadius = 14;
+    //blurView.dynamic = NO;
     [self.eventImageView addSubview:blurView];
     
     
     
     //self.eventImageView.layer.mask = l;
-    blurEffectView.layer.mask = l;
+    //blurEffectView.layer.mask = l;
     
     self.contentView.backgroundColor = [UIColor clearColor];
-    UIView *whiteRoundedCornerView = [[UIView alloc] initWithFrame:CGRectMake(10,5,300,117)];
+    UIView *whiteRoundedCornerView = [[UIView alloc] initWithFrame:CGRectMake(18,5,284,138)];
     whiteRoundedCornerView.backgroundColor = [UIColor whiteColor];
     whiteRoundedCornerView.layer.masksToBounds = YES;
     whiteRoundedCornerView.layer.cornerRadius = 8.0;
@@ -68,13 +69,13 @@
     //[self.eventImageView addSubview:blurView];
     //[whiteRoundedCornerView addSubview:blurView];
     
-    UIView *internalShadowView = [[UIView alloc] initWithFrame:CGRectMake(0,114.5,300,2)];
+    UIView *internalShadowView = [[UIView alloc] initWithFrame:CGRectMake(0,135.5,284,2)];
     internalShadowView.backgroundColor = [UIColor groupTableViewBackgroundColor];
-    internalShadowView.alpha = 0.8;
-    //[whiteRoundedCornerView addSubview:internalShadowView];
+    //internalShadowView.alpha = 0.8;
+    [whiteRoundedCornerView addSubview:internalShadowView];
     
 
-    UIView *externalShadowView = [[UIView alloc] initWithFrame:CGRectMake(11,114,299,10)];
+    UIView *externalShadowView = [[UIView alloc] initWithFrame:CGRectMake(19,135,282,10)];
     externalShadowView.layer.cornerRadius = 8.0;
     externalShadowView.backgroundColor = [UIColor lightGrayColor];
     externalShadowView.alpha = 0.3;

@@ -17,9 +17,10 @@
 
 @end
 
-@interface DragViewController : UIViewController <UIScrollViewDelegate>
+@interface DragViewController : UIViewController <UIScrollViewDelegate, MKMapViewDelegate, UIGestureRecognizerDelegate>
 
 - (void)flipCurrentView;
+- (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event;
 
 @property (weak) id <DragViewControllerDelegate> delegate;
 

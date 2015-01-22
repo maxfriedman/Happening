@@ -97,10 +97,10 @@
     [super layoutSubviews];
     if (self.forFlippedDVB == YES) {
         //imageView.frame = CGRectMake(50, 50, 100, 100);
-        label.frame = CGRectMake(0, 120, 290, 50);
+        label.frame = CGRectMake(0, 120, 284, 50);
     } else {
         //imageView.frame = CGRectMake(50, 50, 100, 100);
-        label.frame = CGRectMake(0, 120, 290, 70);
+        label.frame = CGRectMake(0, 120, 284, 60);
     }
     
     

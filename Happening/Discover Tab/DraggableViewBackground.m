@@ -10,7 +10,6 @@
 #import "DraggableViewBackground.h"
 #import "CupertinoYankee.h"
 #import "UIImage+ImageEffects.h"
-#import "FXBlurView.h"
 #import "RKDropdownAlert.h"
 
 @interface DraggableViewBackground()
@@ -56,6 +55,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 
 @synthesize dragView; //CURRENT CARD!
 @synthesize eventStore;
+@synthesize blurView;
 
 
 - (id)initWithFrame:(CGRect)frame
@@ -312,11 +312,11 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             if (!error) {
                 draggableView.eventImage.image = [UIImage imageWithData:imageData];
                 
-                FXBlurView *blurView = [[FXBlurView alloc]initWithFrame:draggableView.blurEffectView.frame];
+                blurView = [[FXBlurView alloc]initWithFrame:draggableView.blurEffectView.frame];
                 [draggableView.eventImage addSubview:blurView];
                 blurView.dynamic = NO;
-                blurView.blurRadius = 30;
-                
+                blurView.blurRadius = 50;
+
                 //UIImage *blurredImage = [draggableView.eventImage.image applyLightEffect];
                 /*
                 CGRect clippedRect  = CGRectMake(0, 240, 480, 140);
@@ -347,6 +347,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         //[draggableView addGestureRecognizer:tapGestureRecognizer];
         //[draggableView.cardView addGestureRecognizer:tapGestureRecognizer];
         
+        [self sendSubviewToBack:dragView.cardBackground];
         [draggableView.activityView stopAnimating];
     }];
     
@@ -411,9 +412,12 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             }
         }
         
-        if (loadedCards.count > 0)
+        if (loadedCards.count > 0) {
             dragView = [loadedCards objectAtIndex:0]; // Make dragView the current card
-        
+            [dragView.cardBackground removeFromSuperview];
+        }
+
+        NSLog(@"%@", loadedCards);
     }];//end of PFQuery
     
     
@@ -514,7 +518,6 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     //analyticsObject[@"Age"] = user[@"]
 
 
-    
     [loadedCards removeObjectAtIndex:0]; //%%% card was swiped, so it's no longer a "loaded card"
     
     if (cardsLoadedIndex < [allCards count]) { //%%% if we haven't reached the end of all cards, put another into the loaded cards
@@ -523,9 +526,13 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         [self insertSubview:[loadedCards objectAtIndex:(MAX_BUFFER_SIZE-1)] belowSubview:[loadedCards objectAtIndex:(MAX_BUFFER_SIZE-2)]];
     }
     
-    //[self checkEventStoreAccessForCalendar];
-    
     dragView = [loadedCards firstObject]; // Make dragView the current card
+    [dragView.cardBackground removeFromSuperview];
+    
+    if (loadedCards.count > 1) {
+        DraggableView *secondDragView = [loadedCards objectAtIndex:1];
+        [secondDragView sendSubviewToBack:secondDragView.cardBackground];
+    }
     
     if (flippedBool == YES) {
         self.myViewController.userSwipedFromFlippedView = YES;

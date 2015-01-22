@@ -19,6 +19,10 @@
     CGRect cachedImageViewSize;
     UIVisualEffectView *blurEffectView;
     int cachedHeight;
+    MKPointAnnotation *annotation;
+    BOOL mapViewExpanded;
+    CLLocation *mapLocation;
+
 }
 
 @synthesize  mapView, cardView;
@@ -28,6 +32,21 @@
     // Do any additional setup after loading the view.
     //self.navigationItem.leftBarButtonItem = self.navigationItem.backBarButtonItem;
     //[self.navigationItem setHidesBackButton:NO];
+    
+    mapView = [[MKMapView alloc] initWithFrame:CGRectMake(15, 376, 254, 133)];
+    [cardView addSubview:mapView];
+    
+    UIView *shadowView = [[UIView alloc] initWithFrame:cardView.frame];
+    shadowView.layer.shadowOffset = CGSizeMake(2, 2);
+    shadowView.layer.shadowRadius = 5.0;
+    shadowView.layer.shadowOpacity = 1.0;
+    [shadowView.layer setCornerRadius:10.0];
+    [shadowView.layer setBorderColor:[UIColor lightGrayColor].CGColor];
+    [shadowView.layer setBorderWidth:1.0];
+    //shadowView.backgroundColor = [UIColor whiteColor];
+    
+    [self.scrollView addSubview: shadowView];
+    [self.scrollView sendSubviewToBack:shadowView];
     
     //cardView = [[UIView alloc]initWithFrame:CGRectMake(15, 15, 290, 900)];
     cardView.layer.masksToBounds = YES;
@@ -100,7 +119,7 @@
     mapView.layer.shadowOpacity = 0.1;
     mapView.layer.shadowOffset = CGSizeMake(0, 5);
     mapView.layer.borderColor = [UIColor lightGrayColor].CGColor;
-    mapView.layer.borderWidth = 1.0;
+    mapView.layer.borderWidth = 0.5;
     mapView.scrollEnabled = NO;
     mapView.zoomEnabled = YES; // Change???
     
@@ -155,9 +174,9 @@
         self.timeLabel.text = finalString;
         
         PFGeoPoint *loc = object[@"GeoLoc"];
-        CLLocation *mapLocation = [[CLLocation alloc]initWithLatitude:loc.latitude longitude:loc.longitude];
+        mapLocation = [[CLLocation alloc]initWithLatitude:loc.latitude longitude:loc.longitude];
         
-        MKPointAnnotation *annotation = [[MKPointAnnotation alloc]init];
+        annotation = [[MKPointAnnotation alloc]init];
         [annotation setCoordinate:mapLocation.coordinate];
         [annotation setTitle:self.locationText];
         
@@ -188,11 +207,109 @@
         [mapView setUserTrackingMode:MKUserTrackingModeNone];
         [mapView regionThatFits:region];
        
+        UITapGestureRecognizer *singleFingerTap =
+        [[UITapGestureRecognizer alloc] initWithTarget:self
+                                                action:@selector(mapViewTapped)];
+        [mapView addGestureRecognizer:singleFingerTap];
+        
+        mapViewExpanded = NO;
+        
         [self loadFBFriends];
         
     }];
     
     NSLog(@"%@", self.eventID);
+    
+}
+
+- (void)mapViewTapped {
+    
+    if (!mapViewExpanded) {
+    
+        //mapView.layer.masksToBounds = NO;
+        UIButton *xButton = [[UIButton alloc] initWithFrame:CGRectMake(240, 30, 50, 50)];
+        [xButton setImage:[UIImage imageNamed:@"noButton"] forState:UIControlStateNormal];
+        xButton.tag = 99;
+        [xButton addTarget:self action:@selector(mapViewTapped) forControlEvents:UIControlEventTouchUpInside];
+    
+        UIButton *directionsButton = [[UIButton alloc] initWithFrame:CGRectMake(85, 400, 150, 30)];
+        //[directionsButton setImage:[UIImage imageNamed:@"noButton"] forState:UIControlStateNormal];
+        [directionsButton setTitle:@"Get Directions" forState:UIControlStateNormal];
+        [directionsButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        directionsButton.backgroundColor = [UIColor blueColor];
+        directionsButton.layer.cornerRadius = 5.0;
+        directionsButton.reversesTitleShadowWhenHighlighted = YES;
+        directionsButton.layer.masksToBounds = YES;
+        directionsButton.tag = 99;
+        [directionsButton addTarget:self action:@selector(redirectToMaps) forControlEvents:UIControlEventTouchUpInside];
+        
+        [cardView bringSubviewToFront:mapView];
+    
+        mapView.scrollEnabled = NO;
+        mapView.zoomEnabled = YES;
+    
+    
+        [UIView animateWithDuration:0.05 animations:^{
+
+            mapView.frame = CGRectMake(0, self.mapView.frame.origin.y, cardView.frame.size.width, self.mapView.frame.size.height);
+
+        } completion:^(BOOL finished) {
+        
+            [UIView animateWithDuration:0.2 animations:^{
+                
+                mapView.frame = CGRectMake(0, 0, cardView.frame.size.width, self.scrollView.contentSize.height);
+                
+            } completion:^(BOOL finished) {
+                
+                [mapView selectAnnotation:annotation animated:YES];
+                [self.view addSubview:xButton];
+                [self.view addSubview: directionsButton];
+                
+                mapViewExpanded = YES;
+                
+            }];
+
+        
+        }];
+        
+    } else {
+        
+        
+        for (UIView *view in self.view.subviews) {
+            
+            if (view.tag == 99) {
+                [view removeFromSuperview];
+            }
+        }
+        
+        [cardView bringSubviewToFront:mapView];
+        
+        mapView.scrollEnabled = NO;
+        mapView.zoomEnabled = NO;
+        
+        
+        [UIView animateWithDuration:0.3 animations:^{
+            
+            mapView.frame = CGRectMake(0, 376, 284, 133);
+            
+        } completion:^(BOOL finished) {
+            
+            [UIView animateWithDuration:0.1 animations:^{
+                
+                mapView.frame = CGRectMake(15, 376, 254, 133);
+                
+            } completion:^(BOOL finished) {
+                
+                [mapView selectAnnotation:annotation animated:YES];
+                mapViewExpanded = NO;
+                
+            }];
+            
+        }];
+        
+    }
+    
+    
     
 }
 
@@ -265,9 +382,19 @@
                     profPicImageView.frame = CGRectMake(50 * friendCount, 0, 40, 40);
                     [self.friendScrollView addSubview:profPicImageView];
                     
+                    UILabel *nameLabel = [[UILabel alloc] init];
+                    nameLabel.font = [UIFont fontWithName:@"OpenSans" size:7];
+                    nameLabel.textColor = [UIColor colorWithRed:(70.0/255.0) green:(70.0/255.0) blue:(70.0/255.0) alpha:1.0];
+                    nameLabel.textAlignment = NSTextAlignmentCenter;
+                    nameLabel.text = friend.first_name;
+                    nameLabel.frame = CGRectMake(5 + (50 * friendCount), 42, 30, 8);
+                    [self.friendScrollView addSubview:nameLabel];
+                    
                     self.friendScrollView.contentSize = CGSizeMake((50 * friendCount) + 40, self.friendScrollView.frame.size.height);
                     
                     friendCount++;
+                    
+                    self.friendsInterestedLabel.text = [NSString stringWithFormat:@"%d friends interested", friendCount];
                 }
             }];
             
@@ -295,6 +422,25 @@
         
     }];
     
+    
+}
+
+- (void)redirectToMaps {
+    
+    [[[CLGeocoder alloc]init] reverseGeocodeLocation:mapLocation completionHandler:^(NSArray *placemarks, NSError *error) {
+        
+        CLPlacemark *placemark = placemarks[0];
+        
+        MKPlacemark* place = [[MKPlacemark alloc] initWithCoordinate: mapLocation.coordinate addressDictionary: placemark.addressDictionary];
+
+        MKMapItem* destination = [[MKMapItem alloc] initWithPlacemark: place];
+        destination.name = self.locationText;
+        NSArray* items = [[NSArray alloc] initWithObjects: destination, nil];
+        NSDictionary* options = [[NSDictionary alloc] initWithObjectsAndKeys:
+                                 MKLaunchOptionsDirectionsModeWalking,
+                                 MKLaunchOptionsDirectionsModeKey, nil];
+        [MKMapItem openMapsWithItems: items launchOptions: options];
+    }];
     
 }
 
@@ -331,14 +477,15 @@
         // Do something awesome - the app is installed! Launch App.
         NSLog(@"Uber button tapped- app exists! Opening app...");
         
+        /*
         PFQuery *query = [PFQuery queryWithClassName:@"Event"];
         [query getObjectInBackgroundWithId:self.eventID block:^(PFObject *object, NSError *error) {
 
             PFGeoPoint *loc = object[@"GeoPoint"];
             NSString *locationName = object[@"Location"];
-            
-            CLLocation *location = [[CLLocation alloc]initWithLatitude:loc.latitude longitude:loc.longitude];
-            [[[CLGeocoder alloc]init] reverseGeocodeLocation:location completionHandler:^(NSArray *placemarks, NSError *error) {
+        */
+         
+            [[[CLGeocoder alloc]init] reverseGeocodeLocation:mapLocation completionHandler:^(NSArray *placemarks, NSError *error) {
                 CLPlacemark *placemark = placemarks[0];
                 NSString *destinationAddress = [[NSString alloc]init];
                 
@@ -359,13 +506,13 @@
                 destinationAddress = [destinationAddress stringByReplacingOccurrencesOfString:@" " withString:@"%20"];
             
             
-                NSString *urlString = [NSString stringWithFormat:@"uber://?client_id=Vmks1LNIHQiiaUYd8Z3FaMNkvD-7s53V&action=setPickup&pickup=my_location&dropoff[latitude]=%f&dropoff[longitude]=%f&dropoff[nickname]=%@&dropoff[formatted_address]=%@", loc.latitude, loc.longitude, locationName, destinationAddress ];
+                NSString *urlString = [NSString stringWithFormat:@"uber://?client_id=Vmks1LNIHQiiaUYd8Z3FaMNkvD-7s53V&action=setPickup&pickup=my_location&dropoff[latitude]=%f&dropoff[longitude]=%f&dropoff[nickname]=%@&dropoff[formatted_address]=%@", mapLocation.coordinate.latitude, mapLocation.coordinate.longitude, self.locationText, destinationAddress ];
                 
                 urlString = [urlString stringByAddingPercentEscapesUsingEncoding:NSStringEncodingConversionExternalRepresentation];
             
                 [[UIApplication sharedApplication] openURL:[NSURL URLWithString: urlString]];
             
-            }];
+            //}];
             
         }];
     }
@@ -375,12 +522,6 @@
         
         PFUser *currentUser = [PFUser currentUser];
         
-        PFQuery *query = [PFQuery queryWithClassName:@"Event"];
-        [query getObjectInBackgroundWithId:self.eventID block:^(PFObject *object, NSError *error) {
-            
-            PFGeoPoint *loc = object[@"GeoPoint"];
-            NSString *locationName = object[@"Location"];
-            
             NSString *firstName = currentUser[@"firstName"];
             NSString *lastName = currentUser[@"lastName"];
             NSString *userEmail = currentUser.email;
@@ -389,8 +530,7 @@
             }
             
             
-            CLLocation *location = [[CLLocation alloc]initWithLatitude:loc.latitude longitude:loc.longitude];
-            [[[CLGeocoder alloc]init] reverseGeocodeLocation:location completionHandler:^(NSArray *placemarks, NSError *error) {
+            [[[CLGeocoder alloc]init] reverseGeocodeLocation:mapLocation completionHandler:^(NSArray *placemarks, NSError *error) {
                 CLPlacemark *placemark = placemarks[0];
                 NSMutableString *destinationAddress = [[NSMutableString alloc]init];
                     
@@ -420,13 +560,11 @@
             
                 NSLog(@"%@", destinationAddress);
                 
-            NSString *urlString = [NSString stringWithFormat:@"https://m.uber.com/sign-up?client_id=Vmks1LNIHQiiaUYd8Z3FaMNkvD-7s53V&first_name=%@&last_name=%@&email=%@&country_code=us&&dropoff_latitude=%f&dropoff_longitude=%f&dropoff_nickname=%@", firstName, lastName, userEmail, loc.latitude, loc.longitude, locationName ];
+            NSString *urlString = [NSString stringWithFormat:@"https://m.uber.com/sign-up?client_id=Vmks1LNIHQiiaUYd8Z3FaMNkvD-7s53V&first_name=%@&last_name=%@&email=%@&country_code=us&&dropoff_latitude=%f&dropoff_longitude=%f&dropoff_nickname=%@", firstName, lastName, userEmail, mapLocation.coordinate.latitude, mapLocation.coordinate.longitude, self.locationText ];
             
                 //urlString = [urlString stringByAddingPercentEscapesUsingEncoding:NSStringEncodingConversionExternalRepresentation];
                 
             [[UIApplication sharedApplication] openURL:[NSURL URLWithString: urlString]];
-                
-            }];
             
         }];
         

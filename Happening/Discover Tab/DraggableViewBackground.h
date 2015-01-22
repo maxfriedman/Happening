@@ -14,6 +14,7 @@
 #import "DraggableView.h"
 #import <EventKit/EventKit.h>
 #import "FlippedDVB.h" // imports drag view controller
+#import "FXBlurView.h"
 
 
 @interface DraggableViewBackground : UIView <DraggableViewDelegate, CLLocationManagerDelegate, DragViewControllerDelegate, FlippedDVBDelegate>
@@ -50,6 +51,8 @@
 @property (retain,nonatomic)NSMutableArray* createdByArray;
 
 @property (retain, nonatomic)CLLocation *mapLocation;
+
+@property (retain, nonatomic)FXBlurView *blurView;
 
 @property NSInteger storedIndex;
 

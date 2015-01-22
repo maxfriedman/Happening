@@ -52,7 +52,7 @@
 @synthesize swipesRight;
 
 @synthesize locImage, userImage;
-@synthesize activityView, cardBackground, cardView;
+@synthesize activityView, cardBackground, cardView, greyLocImageView;
 
 @synthesize xButton, checkButton, eventStore, blurEffectView;
 
@@ -67,19 +67,30 @@
         eventStore = [[EKEventStore alloc] init];
         
         cardBackground = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"cardBackground"]];
-        cardBackground.frame = CGRectMake(8, 310, 270, cardBackground.image.size.height - 5);
+        cardBackground.frame = CGRectMake(7, 308, 270, cardBackground.image.size.height - 5);
         [self addSubview:cardBackground];
         
         [self setupView:frame];
 
         cardView.backgroundColor = [UIColor whiteColor];
         
-        eventImage = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, 290, 180)];
+        eventImage = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, 284, 180)];
         //eventImage.layer.cornerRadius = 10.0;
         eventImage.layer.masksToBounds = YES;
         eventImage.layer.borderColor = [UIColor lightGrayColor].CGColor;
         eventImage.layer.borderWidth = 1.0;
         //eventImage.alpha = 0.7;
+        
+        UIBezierPath *maskPath;
+        maskPath = [UIBezierPath bezierPathWithRoundedRect:eventImage.bounds
+                                         byRoundingCorners:(UIRectCornerTopLeft | UIRectCornerTopRight)
+                                               cornerRadii:CGSizeMake(10.0, 10.0)];
+        
+        CAShapeLayer *maskLayer = [[CAShapeLayer alloc] init];
+        maskLayer.frame = self.bounds;
+        maskLayer.path = maskPath.CGPath;
+        eventImage.layer.mask = maskLayer;
+        
         
         //[self.Xinformation setContentMode:UIViewContentModeScaleAspectFit];
         
@@ -103,7 +114,7 @@
         [[blurEffectView contentView] addSubview:vibrancyEffectView];
         */
         
-        title = [[UILabel alloc]initWithFrame:CGRectMake(15, 106, eventImage.frame.size.width - 10, 70)];
+        title = [[UILabel alloc]initWithFrame:CGRectMake(15, 106, eventImage.frame.size.width - 92, 70)];
         
         subtitle = [[UILabel alloc]initWithFrame:CGRectMake(15, 185, self.frame.size.width - 30, 100)];
         location = [[UILabel alloc]initWithFrame:CGRectMake(15, 150, self.frame.size.width - 30, 100)];
@@ -116,7 +127,7 @@
 
         hashtag = [[UILabel alloc]initWithFrame:CGRectMake(15, 240, self.frame.size.width - 30, 100)];
         geoLoc = [[UILabel alloc]initWithFrame:CGRectMake(15, 100, self.frame.size.width - 30, 100)];
-        swipesRight = [[UILabel alloc]initWithFrame:CGRectMake(0, 240, self.frame.size.width - 15, 100)];
+        swipesRight = [[UILabel alloc]initWithFrame:CGRectMake(204, 240, 65, 100)];
         //createdBy = [[UILabel alloc]initWithFrame:CGRectMake(0, 380, self.frame.size.width, 100)];
         
         UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleLight];
@@ -141,10 +152,14 @@
         [title setTextAlignment:NSTextAlignmentLeft];
         title.textColor = [UIColor whiteColor];
         title.font = [UIFont fontWithName:@"OpenSans-Bold" size:18];
+        title.minimumScaleFactor = 0.75;
+        title.adjustsFontSizeToFitWidth = YES;
         
         [date setTextAlignment:NSTextAlignmentLeft];
         date.textColor = [UIColor darkTextColor];
         date.font = [UIFont fontWithName:@"OpenSans-Semibold" size:12];
+        date.minimumScaleFactor = 0.75;
+        date.adjustsFontSizeToFitWidth = YES;
         //[vibrancyEffectView.contentView addSubview:date];
         
         //[time setTextAlignment:NSTextAlignmentCenter];
@@ -165,6 +180,11 @@
         locImage = [[UIImageView alloc]initWithFrame:CGRectMake(214, 141, 18, 18)];
         userImage = [[UIImageView alloc]initWithFrame:CGRectMake(183, 282, 18, 18)];
         
+        greyLocImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"locationGrey"]];
+        greyLocImageView.frame = CGRectMake(216, 186, 14, 18);
+        greyLocImageView.alpha = 0;
+        [self.cardView addSubview:greyLocImageView];
+        
         /*
         [title setTextAlignment:NSTextAlignmentCenter];
         title.textColor = [UIColor blackColor];
@@ -178,10 +198,13 @@
         subtitle.numberOfLines = 2;
         [subtitle setLineBreakMode:NSLineBreakByTruncatingTail];
         
+        
         [location setTextAlignment:NSTextAlignmentLeft];
         //location.textColor = [UIColor colorWithRed:70/255 green:70/255 blue:70/255 alpha:0.7];
         location.textColor = [UIColor colorWithHue:0 saturation:0 brightness:.27 alpha:1.0];
         location.font = [UIFont fontWithName:@"OpenSans-Bold" size:18];
+        location.minimumScaleFactor = 0.75;
+        location.adjustsFontSizeToFitWidth = YES;
         //location.shadowColor = [UIColor blackColor];
         
         //transpBackground.backgroundColor = [UIColor blackColor];
@@ -212,6 +235,8 @@
         //swipesRight.textColor = [UIColor grayColor];
         swipesRight.textColor = [UIColor colorWithHue:0 saturation:0 brightness:.64 alpha:1.0];
         swipesRight.font = [UIFont fontWithName:@"OpenSans" size:11.0];
+        swipesRight.minimumScaleFactor = 0.75;
+        swipesRight.adjustsFontSizeToFitWidth = YES;
         
         [createdBy setTextAlignment:NSTextAlignmentLeft];
         createdBy.textColor = [UIColor blackColor];
@@ -242,6 +267,7 @@
         [cardView addSubview:overlayView];
         
         //[activityView stopAnimating];
+
     }
     
     return self;
@@ -255,11 +281,11 @@
 {
     cardView = [[UIView alloc]initWithFrame:frame];
     [self addSubview:cardView];
-    cardView.layer.masksToBounds = YES;
+    cardView.layer.masksToBounds = NO;
     
     [cardView.layer setCornerRadius:10.0];
-    [cardView.layer setShadowOpacity:0.1];
-    [cardView.layer setShadowOffset:CGSizeMake(0, 5)];
+    [cardView.layer setShadowOpacity:0.05];
+    [cardView.layer setShadowOffset:CGSizeMake(1, 1)];
     //UIColor *color = [UIColor colorWithRed:<#(CGFloat)#> green:<#(CGFloat)#> blue:<#(CGFloat)#> alpha:<#(CGFloat)#>]
     [cardView.layer setBorderColor:[UIColor lightGrayColor].CGColor];
     [cardView.layer setBorderWidth:1.0];
