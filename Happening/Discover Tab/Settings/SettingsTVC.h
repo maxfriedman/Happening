@@ -25,6 +25,7 @@
 @property (strong, nonatomic) IBOutlet UILabel *distanceLabel;
 @property (strong, nonatomic) IBOutlet UILabel *locTitle;
 @property (strong, nonatomic) IBOutlet UILabel *locSubtitle;
+@property (strong, nonatomic) IBOutlet UISwitch *socialSwitch;
 
 @property (strong, nonatomic) DragViewController *dragVC;
 

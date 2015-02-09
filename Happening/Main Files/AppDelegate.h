@@ -12,6 +12,7 @@
 #import <AddressBook/AddressBook.h>
 #import <Parse/Parse.h>
 #import <FacebookSDK/FacebookSDK.h>
+#import "RKSwipeBetweenViewControllers.h"
 
 
 @interface AppDelegate : UIResponder <UIApplicationDelegate, CLLocationManagerDelegate>
@@ -29,6 +30,8 @@
 @property int sliderValue;
 
 @property BOOL wasHandled;
+
+@property (strong, nonatomic) RKSwipeBetweenViewControllers *rk;
 
 @end
 

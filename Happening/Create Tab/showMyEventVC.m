@@ -7,6 +7,7 @@
 //
 
 #import "showMyEventVC.h"
+#import "FXBlurView.h"
 
 @interface showMyEventVC ()
 
@@ -31,27 +32,49 @@
     [dragView removeFromSuperview];
     [flippedView removeFromSuperview];
     
-    dragView = [[DraggableView alloc] initWithFrame:CGRectMake(0, 0, 290, 320)];
-    dragView.center = CGPointMake(self.view.frame.size.width/2, self.view.frame.size.height/2 - 40);
+    dragView = [[DraggableView alloc] initWithFrame:CGRectMake(0, 0, 284, 310)];
+    dragView.center = CGPointMake(160, 173);
     dragView.swipeDownMargin = 10000;
     dragView.actionMargin = 10000;
     [self loadDragView];
     [self.view addSubview:dragView];
     
-    flippedView = [[FlippedDVB alloc]initWithFrame:CGRectMake(0, 0, 290, 320)];
-    flippedView.center = CGPointMake(self.view.frame.size.width/2, self.view.frame.size.height/2 - 40);
-    flippedView.actionMargin = 10000;
-    flippedView.swipeDownMargin = 10000;
+    UIButton *eventURLButton = [[UIButton alloc] init];
+    NSString *urlString = [NSString stringWithFormat: @"www.happening.city/events/%@", self.eventID];
+    [eventURLButton setTitle:urlString forState:UIControlStateNormal];
+    [eventURLButton sizeToFit];
+    eventURLButton.center = CGPointMake(160, 340);
+    eventURLButton.titleLabel.font = [UIFont fontWithName:@"OpenSans-Light" size:12.0];
+    [eventURLButton setTitleColor:[UIColor blueColor] forState:UIControlStateNormal];
+    [eventURLButton addTarget:self action:@selector(eventURLPressed) forControlEvents:UIControlEventTouchUpInside];
     
-    flippedView.hidden = YES;
+    [self.view addSubview:eventURLButton];
     
 }
 
+-(void)eventURLPressed {
+    
+    // IN APP EXPERIENCE
+    
+    /*
+     UIWebView *webView = [[UIWebView alloc] init];
+     [webView setFrame:CGRectMake(0, 0, 320, 460)];
+     [webView loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"http://gethappeningapp.com"]]];
+     [[self view] addSubview:webView];
+     */
+    
+    // OPENS IN SAFARI
+    NSString *urlString = [NSString stringWithFormat: @"http://www.happening.city/events/%@", self.eventID];
+    NSURL *url = [[NSURL alloc] initWithString:urlString];
+    [[UIApplication sharedApplication] openURL:url];
+    
+}
 
 - (void)loadDragView {
     
     dragView.userInteractionEnabled = NO;
     dragView.cardBackground.hidden = YES;
+    dragView.overlayView.hidden = YES;
     
     PFQuery *query = [PFQuery queryWithClassName:@"Event"];
     [query getObjectInBackgroundWithId:self.eventID block:^(PFObject *event, NSError *error) {
@@ -149,7 +172,13 @@
         PFFile *imageFile = event[@"Image"];
         [imageFile getDataInBackgroundWithBlock:^(NSData *imageData, NSError *error) {
             if (!error) {
+                
                 dragView.eventImage.image = [UIImage imageWithData:imageData];
+                
+                FXBlurView *blurView = [[FXBlurView alloc]initWithFrame:dragView.blurEffectView.frame];
+                [dragView.eventImage addSubview:blurView];
+                blurView.dynamic = NO;
+                blurView.blurRadius = 50;
             }
             
         }];
@@ -232,6 +261,12 @@
     NSURL *url = [[NSURL alloc] initWithString:@"http://gethappeningapp.com"];
     [[UIApplication sharedApplication] openURL:url];
     
+}
+- (IBAction)xButton:(id)sender {
+    
+    [self dismissViewControllerAnimated:YES completion:^{
+        
+    }];
 }
 
 - (void)didReceiveMemoryWarning {

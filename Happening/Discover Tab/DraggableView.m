@@ -436,7 +436,7 @@
 -(void)leftAction
 {
     self.superview.superview.superview.userInteractionEnabled = NO; // BE CAREFUL... disables UI during button click
-    CGPoint finishPoint = CGPointMake(-500, 2*yFromCenter +self.originalPoint.y);
+    CGPoint finishPoint = CGPointMake(-300, 2*yFromCenter +self.originalPoint.y);
     [UIView animateWithDuration:0.3
                      animations:^{
                          cardView.center = finishPoint;

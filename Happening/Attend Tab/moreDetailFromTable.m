@@ -37,7 +37,7 @@
     [cardView addSubview:mapView];
     
     UIView *shadowView = [[UIView alloc] initWithFrame:cardView.frame];
-    shadowView.layer.shadowOffset = CGSizeMake(2, 2);
+    shadowView.layer.shadowOffset = CGSizeMake(1, 1);
     shadowView.layer.shadowRadius = 5.0;
     shadowView.layer.shadowOpacity = 1.0;
     [shadowView.layer setCornerRadius:10.0];
@@ -243,21 +243,25 @@
         directionsButton.tag = 99;
         [directionsButton addTarget:self action:@selector(redirectToMaps) forControlEvents:UIControlEventTouchUpInside];
         
-        [cardView bringSubviewToFront:mapView];
+        //[cardView bringSubviewToFront:mapView];
+        mapView.center = self.view.center;
+        [self.view addSubview:mapView];
     
         mapView.scrollEnabled = NO;
         mapView.zoomEnabled = YES;
     
     
-        [UIView animateWithDuration:0.05 animations:^{
+        [UIView animateWithDuration:0.2 animations:^{
 
-            mapView.frame = CGRectMake(0, self.mapView.frame.origin.y, cardView.frame.size.width, self.mapView.frame.size.height);
+            //mapView.frame = CGRectMake(0, self.mapView.frame.origin.y, self.view.frame.size.width, self.mapView.frame.size.height);
+            mapView.frame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height);
+
 
         } completion:^(BOOL finished) {
         
             [UIView animateWithDuration:0.2 animations:^{
                 
-                mapView.frame = CGRectMake(0, 0, cardView.frame.size.width, self.scrollView.contentSize.height);
+                //mapView.frame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height);
                 
             } completion:^(BOOL finished) {
                 
@@ -274,6 +278,7 @@
         
     } else {
         
+        [cardView addSubview:mapView];
         
         for (UIView *view in self.view.subviews) {
             
@@ -290,13 +295,15 @@
         
         [UIView animateWithDuration:0.3 animations:^{
             
-            mapView.frame = CGRectMake(0, 376, 284, 133);
+            //mapView.frame = CGRectMake(0, 376, 284, 133);
+            mapView.frame = CGRectMake(15, 376, 254, 133);
+
             
         } completion:^(BOOL finished) {
             
             [UIView animateWithDuration:0.1 animations:^{
                 
-                mapView.frame = CGRectMake(15, 376, 254, 133);
+                //mapView.frame = CGRectMake(15, 376, 254, 133);
                 
             } completion:^(BOOL finished) {
                 
@@ -360,12 +367,14 @@
             PFQuery *friendQuery = [PFQuery queryWithClassName:@"Swipes"];
             [friendQuery whereKey:@"FBObjectID" equalTo:friend.objectID];
             [friendQuery whereKey:@"EventID" equalTo:self.eventID];
+            [friendQuery whereKey:@"swipedRight" equalTo:@YES];
             [friendQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
                 
                 NSLog(@"%@ with id %@", friend.name, friend.objectID);
                 if (object != nil && !error) {
                     NSLog(@"LIKES THIS EVENT");
                     
+                    /*
                     NSString *path = [NSString stringWithFormat:@"http://graph.facebook.com/%@/picture?type=square", friend.objectID];
                     
                     NSURL *url = [NSURL URLWithString:path];
@@ -381,7 +390,16 @@
                     profPicImageView.layer.masksToBounds = YES;
                     profPicImageView.frame = CGRectMake(50 * friendCount, 0, 40, 40);
                     [self.friendScrollView addSubview:profPicImageView];
+                    */
                     
+                    
+                    FBProfilePictureView *profPicView = [[FBProfilePictureView alloc] initWithProfileID:friend.objectID pictureCropping:FBProfilePictureCroppingSquare];
+                    profPicView.layer.cornerRadius = 20;
+                    profPicView.layer.masksToBounds = YES;
+                    profPicView.frame = CGRectMake(50 * friendCount, 0, 40, 40);
+                    [self.friendScrollView addSubview:profPicView];
+                    
+                     
                     UILabel *nameLabel = [[UILabel alloc] init];
                     nameLabel.font = [UIFont fontWithName:@"OpenSans" size:7];
                     nameLabel.textColor = [UIColor colorWithRed:(70.0/255.0) green:(70.0/255.0) blue:(70.0/255.0) alpha:1.0];
@@ -636,6 +654,13 @@
  
  */
 
+- (IBAction)backButtonAction:(id)sender {
+    
+    [self dismissViewControllerAnimated:YES completion:^{
+        
+    }];
+    
+}
 
 
 - (IBAction)shareAction:(id)sender {

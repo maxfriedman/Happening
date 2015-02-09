@@ -9,17 +9,22 @@
 #import <UIKit/UIKit.h>
 #import <Parse/Parse.h>
 #import <MapKit/MapKit.h>
+#import "dropdownSettingsView.h"
 
 @protocol DragViewControllerDelegate <NSObject>
 
 - (void)swipeRight;
 - (void)swipeLeft;
 
+- (void)refreshData;
+- (void)setLocationSegue;
+
 @end
 
 @interface DragViewController : UIViewController <UIScrollViewDelegate, MKMapViewDelegate, UIGestureRecognizerDelegate>
 
 - (void)flipCurrentView;
+- (void)tutorialCardTapped:(UIView *)view ;
 - (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event;
 
 @property (weak) id <DragViewControllerDelegate> delegate;
@@ -36,10 +41,13 @@
 @property (strong, nonatomic) IBOutlet UIView *cardView;
 @property (strong, nonatomic) IBOutlet UIScrollView *scrollView;
 
+@property (strong, nonatomic) UIScrollView *pageScrollView;
+
 @property (assign) BOOL frontViewIsVisible;
 @property (assign) BOOL userSwipedFromFlippedView;
 
 -(void)testing;
+-(void)stopPanning;
 
 @end
 

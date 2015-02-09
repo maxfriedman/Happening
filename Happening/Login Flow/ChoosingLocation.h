@@ -11,7 +11,16 @@
 #import <Parse/Parse.h>
 #import "AppDelegate.h"
 
+@protocol ChoosingLocationDelegate <NSObject>
+
+-(void) refreshData;
+
+@end
+
+
 @interface ChoosingLocation : UIViewController <CLLocationManagerDelegate, UIAlertViewDelegate>
+
+@property (weak) id <ChoosingLocationDelegate> delegate;
 
 @property (strong, nonatomic) IBOutlet UIButton *currentLocButton;
 @property (strong, nonatomic) IBOutlet UIButton *choosingLocButton;
@@ -19,5 +28,6 @@
 @property (strong, nonatomic)CLLocationManager* locManager;
 
 @property (strong, nonatomic) IBOutlet UIButton *continueButton;
+@property (strong, nonatomic) IBOutlet UILabel *sliderLabel;
 
 @end

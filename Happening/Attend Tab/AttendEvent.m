@@ -176,7 +176,7 @@
         if (!error) {
             
             
-            
+            //cell.blurView.alpha = 0;
             cell.eventImageView.image = [UIImage imageWithData:imageData];
             
             CAGradientLayer *l = [CAGradientLayer layer];
@@ -184,7 +184,7 @@
             l.colors = [NSArray arrayWithObjects:(id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:0.0] CGColor], (id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:1] CGColor], nil];
             
             l.startPoint = CGPointMake(0.0, 1.00f);
-            l.endPoint = CGPointMake(0.0f, 0.5f);
+            l.endPoint = CGPointMake(0.0f, 0.6f);
             //l.locations = [NSArray arrayWithObjects:[NSNumber numberWithFloat:0.0],
                                    //[NSNumber numberWithFloat:0.2],
                                    //[NSNumber numberWithFloat:0.3],
@@ -259,8 +259,23 @@
         subDateLabel.text = dateString;
         
         [header.contentView addSubview:subDateLabel];
-    }  else if ([header.textLabel.text isEqualToString:@"TOMORROW"]) {
+        
+    }  else if ([header.textLabel.text isEqualToString:@"TOMORROW"] && section == 0) {
 
+        UILabel *subDateLabel = [[UILabel alloc] initWithFrame:CGRectMake(105, 16, 100, 20)];
+        subDateLabel.textColor = [UIColor darkTextColor];
+        subDateLabel.font = [UIFont fontWithName:@"OpenSans" size:9];
+        subDateLabel.tag = 99;
+        
+        NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+        [formatter setDateStyle:NSDateFormatterShortStyle];
+        NSString *dateString = [formatter stringFromDate:[NSDate dateWithTimeIntervalSinceNow:(86400)]];
+        subDateLabel.text = dateString;
+        
+        [header.contentView addSubview:subDateLabel];
+        
+    } else if ([header.textLabel.text isEqualToString:@"TOMORROW"] && section == 1) {
+        
         UILabel *subDateLabel = [[UILabel alloc] initWithFrame:CGRectMake(105, 0, 100, 17)];
         subDateLabel.textColor = [UIColor darkTextColor];
         subDateLabel.font = [UIFont fontWithName:@"OpenSans" size:9];
@@ -412,7 +427,9 @@
     if ([segue.identifier isEqualToString:@"toMoreDetail"]) {
         NSIndexPath *selectedIndexPath = [self.tableView indexPathForSelectedRow];
         AttendTableCell *cell = [self.tableView cellForRowAtIndexPath:selectedIndexPath];
-        moreDetailFromTable *vc = (moreDetailFromTable *)segue.destinationViewController;
+        
+        UINavigationController *navController = [segue destinationViewController];
+        moreDetailFromTable *vc = (moreDetailFromTable *)([navController topViewController]);
         
         // Pass data
         vc.eventID = cell.eventID;

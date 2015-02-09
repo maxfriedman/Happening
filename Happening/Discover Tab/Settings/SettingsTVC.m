@@ -90,6 +90,9 @@
         locSubtitle.text = [defaults objectForKey:@"userLocSubtitle"];
         
     }
+    
+    self.socialSwitch.on = [defaults boolForKey:@"socialMode"];
+    
 }
 /*
 -(void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -462,6 +465,14 @@
     }
     
 }
+
+- (IBAction)socialModeSwitched:(UISwitch *)sender {
+    
+    [defaults setBool:sender.on forKey:@"socialMode"];
+    categoryChanged = YES;
+    
+}
+
 
 - (BOOL)didPreferencesChange {
     

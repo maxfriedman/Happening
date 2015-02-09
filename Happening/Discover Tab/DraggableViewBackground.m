@@ -417,7 +417,6 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             [dragView.cardBackground removeFromSuperview];
         }
 
-        NSLog(@"%@", loadedCards);
     }];//end of PFQuery
     
     
@@ -446,10 +445,14 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     PFObject *swipesObject = [PFObject objectWithClassName:@"Swipes"];
     PFUser *user = [PFUser currentUser];
     swipesObject[@"UserID"] = user.username;
-    swipesObject[@"FBObjectID"] = user[@"FBObjectID"];
     swipesObject[@"EventID"] = c.objectID;
     swipesObject[@"swipedRight"] = @NO;
     swipesObject[@"swipedLeft"] = @YES;
+    
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"socialMode"]) {
+        swipesObject[@"FBObjectID"] = user[@"FBObjectID"];
+    }
+    
     [swipesObject saveInBackground];
     
     
@@ -462,6 +465,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     }
  
     dragView = [loadedCards firstObject]; // Make dragView the current card
+    [dragView.cardBackground removeFromSuperview];
 
     if (flippedBool == YES) {
         self.myViewController.userSwipedFromFlippedView = YES;
@@ -508,10 +512,15 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     
     PFObject *swipesObject = [PFObject objectWithClassName:@"Swipes"];
     swipesObject[@"UserID"] = user.username;
-    swipesObject[@"FBObjectID"] = user[@"FBObjectID"];
     swipesObject[@"EventID"] = c.objectID;
     swipesObject[@"swipedRight"] = @YES;
     swipesObject[@"swipedLeft"] = @NO;
+    
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"socialMode"]) {
+        swipesObject[@"FBObjectID"] = user[@"FBObjectID"];
+    }
+
+    
     [swipesObject saveInBackground];
     
     //PFObject *analyticsObject = [PFObject objectWithClassName:@"Analytics"];

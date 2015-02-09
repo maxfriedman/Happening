@@ -12,12 +12,17 @@
 #import "CustomCalendarActivity.h"
 #import "RKDropdownAlert.h"
 #import "SettingsTVC.h"
+#import "dropdownSettingsView.h"
+#import "TutorialDragView.h"
+#import "ChoosingLocation.h"
 
-@interface DragViewController ()
+
+@interface DragViewController () <ChoosingLocationDelegate>
 
 @property (strong, nonatomic) DraggableViewBackground *draggableBackground;
 @property (strong, nonatomic) FlippedDVB *flippedDVB;
 @property (assign, nonatomic) CGRect mySensitiveRect;
+@property (strong, nonatomic) IBOutlet dropdownSettingsView *settingsView;
 
 @end
 
@@ -26,20 +31,32 @@
     MKMapView *mapView;
     BOOL mapViewExpanded;
     MKPointAnnotation *annotation;
+    BOOL dropdownExpanded;
+    NSUserDefaults *defaults;
+    TutorialDragView *tutorialScreens;
+    BOOL showTut;
     
 }
 
-@synthesize shareButton, draggableBackground, flippedDVB, xButton, checkButton, delegate, scrollView, mySensitiveRect, cardView;
+@synthesize shareButton, draggableBackground, flippedDVB, xButton, checkButton, delegate, scrollView, mySensitiveRect, cardView, settingsView;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+
+    showTut = YES;
+    
+    settingsView.layer.masksToBounds = YES;
+    [settingsView.dropdownButton addTarget:self action:@selector(dropdownPressed) forControlEvents:UIControlEventTouchUpInside];
+    dropdownExpanded = NO;
         
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    defaults = [NSUserDefaults standardUserDefaults];
+    
+    /*
     BOOL hasLaunched = [defaults boolForKey:@"hasLaunched"];
     if (!hasLaunched) {
         [self performSegueWithIdentifier:@"toChooseLoc" sender:self];
     }
-    
+    */
     
     [scrollView setCanCancelContentTouches:YES];
     [scrollView setDelaysContentTouches:NO];
@@ -62,6 +79,11 @@
     self.frontViewIsVisible = YES;
     self.userSwipedFromFlippedView = NO;
     
+    /*
+    dropdownSettingsView *settingsView = [[dropdownSettingsView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 40)];
+    settingsView.layer.masksToBounds = YES;
+    [self.view addSubview:settingsView];
+    */
 }
 
 -(BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
@@ -80,77 +102,34 @@
 }
 
 -(void)viewWillAppear:(BOOL)animated {
-    
+
     //[super viewWillAppear:animated];
-    NSLog(@"MAADEEE ITT!!!");
-    NSLog(@"scroll view subviews: %@", scrollView.subviews);
+   // NSLog(@"MAADEEE ITT!!!");
+    //NSLog(@"scroll view subviews: %@", scrollView.subviews);
 
     
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     // Refresh only if there was a change in preferences or the app has loaded for the first time.
-    if ([defaults boolForKey:@"refreshData"]) {
+    
+    if (![defaults boolForKey:@"hasLaunched"]) {
         
-        NSLog(@"Refreshing data...");
-        
-        if (self.frontViewIsVisible == NO) {
-            [self flipCurrentView]; // Makes blur view look weird and messes with seg control when flipping
-        } else {
-            //cardView = self.view.subviews[2]; //Card view is 3rd in hierarchy after sending button views to the back
-            
-            /*
-            for (id viewToRemove in [cardView subviews]){
-                [viewToRemove removeFromSuperview];
-            } */
-            [draggableBackground removeFromSuperview];
-            //[scrollView bringSubviewToFront:cardView];
-            
-            //cardView.userInteractionEnabled = YES;
-            //UITapGestureRecognizer *tapGestureRecognizer =
-            //[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(cardTap)];
-            //[cardView addGestureRecognizer:tapGestureRecognizer];
-            
+        if (showTut) {
+            tutorialScreens = [[TutorialDragView alloc] initWithFrame:CGRectMake(18, 12, 284, 310)];
+            tutorialScreens.myViewController = self;
+            [scrollView addSubview:tutorialScreens];
+    
+            UITapGestureRecognizer *singleFingerTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tutorialCardTapped:)];
+            singleFingerTap.cancelsTouchesInView = NO;
+            [tutorialScreens addGestureRecognizer:singleFingerTap];
+            showTut =! showTut;
         }
-        self.frontViewIsVisible = YES;
-        self.userSwipedFromFlippedView = NO;
-        
-        // Removes the previous content!!!!!! (when view was burned in behind the cards)
-        //NSLog(@"%lu", (unsigned long)[self.view.subviews count] );
-        
-        UIActivityIndicatorView *activityView=[[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-        activityView.center=self.view.center;
-        [activityView startAnimating];
-        [self.view addSubview:activityView];
-        
-        draggableBackground = [[DraggableViewBackground alloc]initWithFrame:CGRectMake(18, 12, 284, 310)];
-        
-        [scrollView addSubview:draggableBackground];
-        [scrollView bringSubviewToFront:draggableBackground];
 
+    }
+    else if ([defaults boolForKey:@"refreshData"]) {
         
-        draggableBackground.myViewController = self;
-        //[cardView addSubview:draggableBackground];
-        
-        UITapGestureRecognizer *singleFingerTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap:)];
-        singleFingerTap.cancelsTouchesInView = NO;
-        [draggableBackground addGestureRecognizer:singleFingerTap];
-        
-        //[self.view addSubview:flippedDVB];
-        
-        [activityView stopAnimating];
-        [activityView removeFromSuperview];
-        
-        [defaults setBool:NO forKey:@"refreshData"];
-        [defaults synchronize];
-        
-        delegate = draggableBackground;
-        
-        self.mySensitiveRect = CGRectMake(0, 0, 0, 0);
-        UITapGestureRecognizer *gr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleGesture:)];
-        //[scrollView addGestureRecognizer:gr];
-                
-        NSLog(@"card view subviews: %@", cardView.subviews);
+        [self refreshData];
     }
 }
+
 /*
 - (void)handleSingleTap:(UITapGestureRecognizer *)recognizer {
     CGPoint location = [recognizer locationInView:[recognizer.view superview]];
@@ -160,6 +139,79 @@
         NSLog(@"outside bounds");
 }
  */
+
+-(void)refreshData {
+    
+    NSLog(@"Refreshing data...");
+    
+    [tutorialScreens removeFromSuperview];
+    
+    if (self.frontViewIsVisible == NO) {
+        [self flipCurrentView]; // Makes blur view look weird and messes with seg control when flipping
+    } else {
+        //cardView = self.view.subviews[2]; //Card view is 3rd in hierarchy after sending button views to the back
+        
+        /*
+         for (id viewToRemove in [cardView subviews]){
+         [viewToRemove removeFromSuperview];
+         } */
+        [draggableBackground removeFromSuperview];
+        //[scrollView bringSubviewToFront:cardView];
+        
+        //cardView.userInteractionEnabled = YES;
+        //UITapGestureRecognizer *tapGestureRecognizer =
+        //[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(cardTap)];
+        //[cardView addGestureRecognizer:tapGestureRecognizer];
+        
+    }
+    self.frontViewIsVisible = YES;
+    self.userSwipedFromFlippedView = NO;
+    
+    // Removes the previous content!!!!!! (when view was burned in behind the cards)
+    //NSLog(@"%lu", (unsigned long)[self.view.subviews count] );
+    
+    UIActivityIndicatorView *activityView=[[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+    activityView.center=self.view.center;
+    [activityView startAnimating];
+    [self.view addSubview:activityView];
+    
+    draggableBackground = [[DraggableViewBackground alloc]initWithFrame:CGRectMake(18, 12, 284, 310)];
+    
+    [scrollView addSubview:draggableBackground];
+    [scrollView bringSubviewToFront:draggableBackground];
+    
+    
+    draggableBackground.myViewController = self;
+    //[cardView addSubview:draggableBackground];
+    
+    UITapGestureRecognizer *singleFingerTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap:)];
+    singleFingerTap.cancelsTouchesInView = NO;
+    [draggableBackground addGestureRecognizer:singleFingerTap];
+    
+    //[self.view addSubview:flippedDVB];
+    
+    [activityView stopAnimating];
+    [activityView removeFromSuperview];
+    
+    [defaults setBool:NO forKey:@"refreshData"];
+    [defaults synchronize];
+    
+    delegate = draggableBackground;
+    
+    self.mySensitiveRect = CGRectMake(0, 0, 0, 0);
+    UITapGestureRecognizer *gr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleGesture:)];
+    //[scrollView addGestureRecognizer:gr];
+    
+    NSLog(@"card view subviews: %@", cardView.subviews);
+    
+}
+
+- (void) setLocationSegue {
+    
+    [self performSegueWithIdentifier:@"toChooseLoc" sender:self];
+    
+}
+
 
 // ADD RECTS AROUND SENSITIVE POINTS LIKE MAP VIEW WHERE I DISABLE ACTION
 - (void)handleGesture:(UIGestureRecognizer *)gestureRecognizer {
@@ -705,12 +757,14 @@
             PFQuery *friendQuery = [PFQuery queryWithClassName:@"Swipes"];
             [friendQuery whereKey:@"FBObjectID" equalTo:friend.objectID];
             [friendQuery whereKey:@"EventID" equalTo:draggableBackground.dragView.objectID];
+            [friendQuery whereKey:@"swipedRight" equalTo:@YES];
             [friendQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
                 
                 NSLog(@"%@ with id %@", friend.name, friend.objectID);
                 if (object != nil && !error) {
                     NSLog(@"LIKES THIS EVENT");
                     
+                    /*
                     NSString *path = [NSString stringWithFormat:@"http://graph.facebook.com/%@/picture?type=square", friend.objectID];
                     
                     NSURL *url = [NSURL URLWithString:path];
@@ -726,6 +780,10 @@
                     profPicImageView.layer.masksToBounds = YES;
                     profPicImageView.frame = CGRectMake(50 * friendCount, 0, 40, 40);
                     [friendScrollView addSubview:profPicImageView];
+                    
+                     */
+                     
+                    
                     
                     UILabel *nameLabel = [[UILabel alloc] init];
                     nameLabel.font = [UIFont fontWithName:@"OpenSans" size:7];
@@ -1026,6 +1084,41 @@
     
 }
 
+-(void)dropdownPressed {
+    
+    if (!dropdownExpanded) {
+        
+        NSLog(@"expanding dropdown menu...");
+        
+    [UIView animateWithDuration:0.5 animations:^{
+        settingsView.frame = CGRectMake(0, 0, self.view.frame.size.width, 502);
+    } completion:^(BOOL finished) {
+        dropdownExpanded = YES;
+    }];
+        
+    } else {
+        
+        NSLog(@"contracting dropdown menu...");
+        
+        [UIView animateWithDuration:0.5 animations:^{
+            settingsView.frame = CGRectMake(0, 0, self.view.frame.size.width, 35);
+        } completion:^(BOOL finished) {
+            dropdownExpanded = NO;
+        }];
+
+        
+    }
+    
+}
+
+- (void) stopPanning {
+    
+    NSLog(@"Stopping panning");
+    for (UIPanGestureRecognizer *pgr in [self.parentViewController.view gestureRecognizers]) {
+        pgr.enabled = NO;
+    }
+}
+
 
 - (void)myTransitionDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context {
     
@@ -1091,6 +1184,81 @@
 
 }
 
+-(void)tutorialCardTapped:(UITapGestureRecognizer *)gr {
+    
+    NSLog(@"tap");
+    
+    //TutorialDragView *view = gr.view;
+    
+    scrollView.delaysContentTouches = NO;
+    tutorialScreens.dragView.userInteractionEnabled = YES;
+    
+    if ((tutorialScreens.dragView.tag == 3) || (tutorialScreens.dragView.tag == 50)) {
+    
+    if (!tutorialScreens.cardExpanded) {
+        
+        NSLog(@"expand tut card");
+        
+        //[self addSubviewsToCard:draggableBackground.dragView];
+        
+        scrollView.contentSize = CGSizeMake(320, 650);
+        scrollView.scrollEnabled = YES;
+        
+        [UIView animateWithDuration:0.5 animations:^{
+            
+            tutorialScreens.dragView.layer.masksToBounds = YES;
+            tutorialScreens.dragView.frame = CGRectMake(tutorialScreens.dragView.frame.origin.x, tutorialScreens.dragView.frame.origin.y, tutorialScreens.dragView.frame.size.width, 620);
+            tutorialScreens.frame = CGRectMake(tutorialScreens.frame.origin.x, tutorialScreens.frame.origin.y, tutorialScreens.frame.size.width, 620);
+            
+        } completion:^(BOOL finished) {
+            
+            tutorialScreens.dragView.layer.masksToBounds = NO;
+            //tutorialScreens.dragView.tag = 1;
+            
+            for (UIPanGestureRecognizer *pgr in [tutorialScreens.dragView gestureRecognizers]) {
+                pgr.enabled = NO;
+            }
+            
+        }];
+        
+        
+    } else {
+        
+        NSLog(@"contract tut card");
+        
+        tutorialScreens.dragView.layer.masksToBounds = YES;
+        tutorialScreens.allowCardSwipe = YES;
+        tutorialScreens.dragView.tag = 50;
+        
+        [scrollView setContentOffset:CGPointMake(0, 0) animated:YES];
+        scrollView.scrollEnabled = NO;
+        
+        [UIView animateWithDuration:0.5 animations:^{
+            
+            tutorialScreens.dragView.frame = CGRectMake(tutorialScreens.dragView.frame.origin.x, tutorialScreens.dragView.frame.origin.y, tutorialScreens.dragView.frame.size.width, 310);
+            tutorialScreens.frame = CGRectMake(tutorialScreens.frame.origin.x, tutorialScreens.frame.origin.y, tutorialScreens.frame.size.width, 310);
+            
+        } completion:^(BOOL finished) {
+            
+            tutorialScreens.dragView.layer.masksToBounds = NO;
+            //tutorialScreens.dragView.tag = 0;
+            
+            for (UIPanGestureRecognizer *pgr in [tutorialScreens.dragView gestureRecognizers]) {
+                pgr.enabled = YES;
+            }
+            
+        }];
+        
+    
+        }
+        
+        tutorialScreens.cardExpanded =! tutorialScreens.cardExpanded;
+    }
+
+    
+}
+
+
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     
     if ([segue.identifier isEqualToString:@"toSettings"]) {
@@ -1099,7 +1267,12 @@
         vc.dragVC = self;
         
     }
-    
+    else if ([segue.identifier isEqualToString:@"toChooseLoc"]) {
+        
+        ChoosingLocation *vc = (ChoosingLocation *)[segue destinationViewController];
+        vc.delegate = self;
+        
+    }
     /*
     if ([segue.identifier isEqualToString: @"toSettings"]) {
     

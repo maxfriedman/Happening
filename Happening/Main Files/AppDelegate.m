@@ -9,7 +9,11 @@
 #import "AppDelegate.h"
 #import "TabBarViewController.h"
 #import "ChoosingLocation.h"
+#import "RKSwipeBetweenViewControllers.h"
 #import <ParseCrashReporting/ParseCrashReporting.h>
+
+#import "DragViewController.h"
+#import "MyEventsTVC.h"
 
 @interface AppDelegate ()
 
@@ -17,7 +21,7 @@
 
 @implementation AppDelegate
 
-@synthesize locationManager = _locationManager, item, userLocation, locSubtitle;
+@synthesize locationManager = _locationManager, item, userLocation, locSubtitle, rk;
 
 -(void)locationManager:(CLLocationManager *)manager didUpdateToLocation:(CLLocation *)newLocation fromLocation:(CLLocation *)oldLocation{
     NSDate* eventDate = newLocation.timestamp;
@@ -77,25 +81,30 @@
     if ([[NSUserDefaults standardUserDefaults] boolForKey:@"hasLaunched"])
     {
         // app already launched
+        [defaults setBool:YES forKey:@"refreshData"];
     }
     else
     {
         NSLog(@"First launch ever!");
-        [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"hasLaunched"];
+        [defaults setBool:NO forKey:@"refreshData"];
         
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"nightlife"];
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"entertainment"];
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"music"];
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"dining"];
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"happyHour"];
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"sports"];
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"shopping"];
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"fundraiser"];
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"meetup"];
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"freebies"];
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"other"];
+        [defaults setBool:NO forKey:@"hasLaunched"];
         
-        [[NSUserDefaults standardUserDefaults] synchronize];
+        [defaults setBool:YES forKey:@"socialMode"];
+        
+        [defaults setBool:YES forKey:@"nightlife"];
+        [defaults setBool:YES forKey:@"entertainment"];
+        [defaults setBool:YES forKey:@"music"];
+        [defaults setBool:YES forKey:@"dining"];
+        [defaults setBool:YES forKey:@"happyHour"];
+        [defaults setBool:YES forKey:@"sports"];
+        [defaults setBool:YES forKey:@"shopping"];
+        [defaults setBool:YES forKey:@"fundraiser"];
+        [defaults setBool:YES forKey:@"meetup"];
+        [defaults setBool:YES forKey:@"freebies"];
+        [defaults setBool:YES forKey:@"other"];
+        
+        [defaults synchronize];
         // This is the first launch ever
     }
     
@@ -110,13 +119,21 @@
                                           // also for intermediate states and NOT just when the session open
                                           [self sessionStateChanged:session state:state error:error];
                                       }];
-        self.window.rootViewController = tabBar;
+        //self.window.rootViewController = tabBar;
+        
+        
+        rk = [storyboard instantiateViewControllerWithIdentifier:@"rk"];
+        
+        self.window.rootViewController = rk;
+        
         
         // If there's no cached session, view goes to first screen (splash screens) which is set in storyboard
     } else {
         //UIButton *loginButton = [self.customLoginViewController loginButton];
         //[loginButton setTitle:@"Log in with Facebook" forState:UIControlStateNormal];
     }
+    
+    //self.window.rootViewController = [storyboard instantiateViewControllerWithIdentifier:@"ChoosingLocation"];
     
     return YES;
 }
@@ -160,8 +177,12 @@
     [FBAppCall handleDidBecomeActive];
     
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    [defaults setBool:YES forKey:@"refreshData"];
-    [defaults synchronize];
+    if ([defaults boolForKey:@"hasLaunched"])
+    {
+        // app already launched
+        [defaults setBool:YES forKey:@"refreshData"];
+        [defaults synchronize];
+    }
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application {

@@ -114,7 +114,7 @@
     }
     
     Event[@"Repeats"] = @"Never";
-    Event[@"CreatedBy"] = user.username;
+    Event[@"CreatedBy"] = user.objectId;
     Event[@"CreatedByName"] = createdByNameString;
 }
 

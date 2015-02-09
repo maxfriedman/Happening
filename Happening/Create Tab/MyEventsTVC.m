@@ -54,7 +54,7 @@
     PFUser *user = [PFUser currentUser];
     
     PFQuery *eventQuery = [PFQuery queryWithClassName:@"Event"];
-    [eventQuery whereKey:@"CreatedBy" equalTo:user.username];
+    [eventQuery whereKey:@"CreatedBy" equalTo:user.objectId];
     
     // Works for now, but doesn't allow for events to be shown from the past
     [eventQuery whereKey:@"Date" greaterThan:[NSDate dateWithTimeIntervalSinceNow:-2592000]]; //30 days
@@ -62,7 +62,6 @@
     
     [eventQuery findObjectsInBackgroundWithBlock:^(NSArray *eventsArray, NSError *error) {
     
-        
         for (PFObject *event in eventsArray)
         {
             // Reduce event start date to date components (year, month, day)
@@ -265,6 +264,13 @@
     [self.tableView reloadData];
 }
 
+- (IBAction)xButtonPressed:(id)sender {
+    
+    [self dismissViewControllerAnimated:YES completion:^{
+        //code
+    }];
+    
+}
  #pragma mark - Navigation
  
  // In a storyboard-based application, you will often want to do a little preparation before navigation
