@@ -8,7 +8,18 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol dropdownSettingsViewDelegate
+
+-(void)refreshData;
+-(void)dropdownPressed;
+
+@end
+
 @interface dropdownSettingsView : UIView <UITableViewDataSource, UITableViewDelegate>
+
+-(BOOL)didPreferencesChange;
+
+@property (weak) id <dropdownSettingsViewDelegate> delegate;
 
 @property (nonatomic, strong) IBOutlet UITextField *locationField;
 @property (nonatomic, strong) IBOutlet UILabel *distanceLabel;
@@ -24,5 +35,10 @@
 
 @property (nonatomic, strong) IBOutlet UIButton *dropdownButton;
 
+@property (nonatomic, strong) IBOutlet UIImageView *cogImageView;
+
+@property (nonatomic, strong) IBOutlet UILabel *topLabel;
+
+@property (nonatomic, strong) IBOutlet UIView *dropdownView;
 
 @end

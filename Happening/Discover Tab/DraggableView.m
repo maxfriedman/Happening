@@ -119,7 +119,7 @@
         subtitle = [[UILabel alloc]initWithFrame:CGRectMake(15, 185, self.frame.size.width - 30, 100)];
         location = [[UILabel alloc]initWithFrame:CGRectMake(15, 150, self.frame.size.width - 30, 100)];
         
-        date = [[UILabel alloc]initWithFrame:CGRectMake(15, 110, self.frame.size.width - 30, 100)];
+        date = [[UILabel alloc]initWithFrame:CGRectMake(15, 110, self.frame.size.width - 100, 100)];
         time = [[UILabel alloc]initWithFrame:CGRectMake(0, 309, self.frame.size.width - 30, 100)];
         
         //date = [[UILabel alloc]initWithFrame:CGRectMake(0, 285, self.frame.size.width, 100)];
@@ -416,7 +416,7 @@
 //%%% called when a swipe exceeds the ACTION_MARGIN to the right
 -(void)rightAction
 {
-    self.superview.superview.superview.userInteractionEnabled = NO; // BE CAREFUL... disables UI during button click
+    //self.superview.superview.superview.userInteractionEnabled = NO; // BE CAREFUL... disables UI during button click
     CGPoint finishPoint = CGPointMake(500, 2*yFromCenter +self.originalPoint.y);
     [UIView animateWithDuration:0.3
                      animations:^{
@@ -435,7 +435,7 @@
 //%%% called when a swipe exceeds the ACTION_MARGIN to the left
 -(void)leftAction
 {
-    self.superview.superview.superview.userInteractionEnabled = NO; // BE CAREFUL... disables UI during button click
+    //self.superview.superview.superview.userInteractionEnabled = NO; // BE CAREFUL... disables UI during button click
     CGPoint finishPoint = CGPointMake(-300, 2*yFromCenter +self.originalPoint.y);
     [UIView animateWithDuration:0.3
                      animations:^{
@@ -452,7 +452,7 @@
 
 -(void)downAction
 {
-    self.superview.superview.superview.userInteractionEnabled = NO; // BE CAREFUL... disables UI during button click
+    //self.superview.superview.superview.userInteractionEnabled = NO; // BE CAREFUL... disables UI during button click
     CGPoint finishPoint = CGPointMake(cardView.frame.size.width / 2, 1000);
     [UIView animateWithDuration:0.3
                      animations:^{
@@ -472,7 +472,7 @@
 -(void)rightClickAction
 {
 
-    self.superview.superview.superview.userInteractionEnabled = NO; // BE CAREFUL... disables UI during button click
+    //self.superview.superview.superview.userInteractionEnabled = NO; // BE CAREFUL... disables UI during button click
     CGPoint finishPoint = CGPointMake(900, self.center.y);
     [UIView animateWithDuration:0.5 delay:0.3 options:UIViewAnimationOptionCurveEaseInOut animations:^{
         cardView.center = finishPoint;
@@ -491,7 +491,7 @@
 -(void)leftClickAction
 {
     
-    self.superview.superview.superview.userInteractionEnabled = NO; // BE CAREFUL... disables UI during button click
+    //self.superview.superview.superview.userInteractionEnabled = NO; // BE CAREFUL... disables UI during button click
     CGPoint finishPoint = CGPointMake(-600, self.center.y);
     [UIView animateWithDuration:0.5 delay:0.3 options:UIViewAnimationOptionCurveEaseInOut animations:^{
         cardView.center = finishPoint;

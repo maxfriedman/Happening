@@ -92,6 +92,16 @@
         
         [defaults setBool:YES forKey:@"socialMode"];
         
+        [defaults setInteger:0 forKey:@"categoryIndex"];
+        [defaults setValue:@"Most Popular" forKey:@"categoryName"];
+        
+        [defaults setBool:@"YES" forKey:@"today"];
+        [defaults setBool:@"NO" forKey:@"tomorrow"];
+        [defaults setBool:@"NO" forKey:@"thisWeekend"];
+        
+        [defaults setBool:YES forKey:@"mostPopular"];
+        [defaults setBool:NO forKey:@"bestDeals"];
+        
         [defaults setBool:YES forKey:@"nightlife"];
         [defaults setBool:YES forKey:@"entertainment"];
         [defaults setBool:YES forKey:@"music"];
@@ -103,6 +113,8 @@
         [defaults setBool:YES forKey:@"meetup"];
         [defaults setBool:YES forKey:@"freebies"];
         [defaults setBool:YES forKey:@"other"];
+        
+        [defaults setBool:NO forKey:@"noMoreEvents"];
         
         [defaults synchronize];
         // This is the first launch ever

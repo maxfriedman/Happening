@@ -27,6 +27,8 @@
     UIButton* checkButton;
     UIButton* xButton;
     
+    PFQuery *eventQuery;
+    
 }
 //this makes it so only two cards are loaded at a time to
 //avoid performance and memory costs
@@ -67,6 +69,10 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     if (self) {
         [super layoutSubviews];
         [self setupView];
+        
+        //self.superview.superview.userInteractionEnabled = YES;
+        //self.myViewController.view.userInteractionEnabled = YES;
+        
         self.myViewController.frontViewIsVisible = YES; // Cards start off with front view visible
         
         eventStore = [[EKEventStore alloc] init];
@@ -98,7 +104,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         swipes = [[NSMutableArray alloc]init];
         createdByArray = [[NSMutableArray alloc]init];
         
-        PFQuery *eventQuery = [PFQuery queryWithClassName:@"Event"];
+        eventQuery = [PFQuery queryWithClassName:@"Event"];
         
         // Sorts the query by categories chosen in settings... Default = ALL categories (set on first launch)
         NSArray *categories = [[NSArray alloc]init];
@@ -106,8 +112,63 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         [eventQuery whereKey:@"Hashtag" containedIn:categories];
         
         // Sorts the query by most recent event and only shows those after today's date
+        
+        BOOL shouldLimit =! [[NSUserDefaults standardUserDefaults] boolForKey:@"noMoreEvents"];
+        
+        if ([[NSUserDefaults standardUserDefaults] boolForKey:@"today"]) {
+            
+            NSLog(@"today");
+            
+            [eventQuery whereKey:@"EndTime" greaterThan:[NSDate dateWithTimeIntervalSinceNow:1800]]; // show today's events, must be at least 30 minutes left in the event (END)
+             if (shouldLimit) [eventQuery whereKey:@"Date" lessThan:[[NSDate date]endOfDay]];
+            
+        } else if ([[NSUserDefaults standardUserDefaults] boolForKey:@"tomorrow"]) {
+            
+            NSLog(@"tomorrow");
+
+            NSDate *tomorrowDate = [[NSDate dateWithTimeIntervalSinceNow:86400] beginningOfDay];
+            [eventQuery whereKey:@"Date" greaterThan:tomorrowDate]; // show tomorrow's events -- must START after beginning of tomorrow or later
+            if (shouldLimit) [eventQuery whereKey:@"Date" lessThan:[tomorrowDate endOfDay]];
+            
+        } else {
+            
+            NSDate *nextWeekDate = [[NSDate date] dateByAddingTimeInterval:604800];
+            NSDate *sundayDate = [nextWeekDate beginningOfWeek];
+            
+            /*
+            NSLog(@"%@", [[NSDate date] endOfDay]);
+            NSLog(@"%@", [[NSDate date] endOfWeek]);
+            NSLog(@"%@", [[NSDate date] beginningOfDay]);// dateByAddingTimeInterval:-18000]);
+             */
+            
+            if ([[NSDate date] beginningOfDay] == sundayDate) { // Person chose "This weekend" on a sunday
+                
+                NSLog(@"sunday");
+                
+                [eventQuery whereKey:@"EndTime" greaterThan:[NSDate dateWithTimeIntervalSinceNow:1800]]; // show Sunday's events, must be at least 30 minutes left in the event (END)
+                if (shouldLimit) [eventQuery whereKey:@"Date" lessThan:[sundayDate endOfDay]];
+                
+            } else if ([[NSDate date] beginningOfDay] == [sundayDate dateByAddingTimeInterval:-86400]) {
+            
+                NSLog(@"saturday middle of day");
+                
+                [eventQuery whereKey:@"EndTime" greaterThan:[NSDate dateWithTimeIntervalSinceNow:1800]]; // show ONLY events from now (Saturday) to Sunday
+                if (shouldLimit) [eventQuery whereKey:@"Date" lessThan:[sundayDate endOfDay]];
+            
+            } else {
+                
+                NSLog(@"weekday");
+                
+                [eventQuery whereKey:@"Date" greaterThan:[sundayDate dateByAddingTimeInterval:-86400]]; // show ALL events that start after this SATURDAY
+                if (shouldLimit) [eventQuery whereKey:@"Date" lessThan:[sundayDate endOfDay]];
+            
+            }
+            
+            //NSLog(@"Beg of week: %@", [sundayDate dateByAddingTimeInterval:-86400]);
+            
+        }
+        
         [eventQuery orderByAscending:@"Date"];
-        [eventQuery whereKey:@"Date" greaterThan:[NSDate date]]; // ADD DATE MINUS 2 HOURS TO SHOW EVENTS
         
         PFQuery *didUserSwipe = [PFQuery queryWithClassName:@"Swipes"];
         [didUserSwipe whereKey:@"UserID" containsString:user.username];
@@ -119,18 +180,21 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         NSInteger radius = [defaults integerForKey:@"sliderValue"];
         [eventQuery whereKey:@"GeoLoc" nearGeoPoint:userLoc withinMiles:radius];
         
+        if ([eventQuery countObjects] == 0) {
+            NSLog(@"FUCK");
+        }
+        
+        NSLog(@"BLAH");
+        NSLog(@"%d", shouldLimit);
         
         //NSLog(@"events: %@", [eventQuery findObjects]);
         [eventQuery findObjectsInBackgroundWithBlock:^(NSArray *eventObjects, NSError *error) {
             
             for (int i = 0; i < eventObjects.count; i++) {
-                
-                //NSLog(@"%@", eventObjects[i]);
 
-                
                 PFObject *eventObject = eventObjects[i];
                 [objectIDs addObject:eventObject.objectId];
-                
+
                 [titleArray addObject:eventObject[@"Title"]];
                 [subtitleArray addObject:eventObject[@"Subtitle"]];
                 [locationArray addObject:eventObject[@"Location"]];
@@ -141,6 +205,10 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                 eventDate = eventObject[@"Date"];
                 
                 NSString *finalString;
+                
+                // FORMAT FOR MULTI-DAY EVENT
+                NSDate *endDate = eventObject[@"EndTime"];
+                
                 
                 if ([eventDate beginningOfDay] == [[NSDate date]beginningOfDay]) {  // TODAY
                     
@@ -162,7 +230,18 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                     NSString *timeString = [formatter stringFromDate:eventDate];
                     finalString = [NSString stringWithFormat:@"%@ at %@", dayOfWeekString, timeString];
                     
-                } else {
+                } else if ([eventDate beginningOfDay] != [endDate beginningOfDay]) { //MULTI-DAY EVENT
+                    
+                    [formatter setDateFormat:@"MMM d"];
+                    NSString *dateString = [formatter stringFromDate:eventDate];
+                    NSString *endDateString = [formatter stringFromDate:endDate];
+                    [formatter setDateFormat:@"h:mma"];
+                    NSString *timeString = [formatter stringFromDate:eventDate];
+                    NSString *endTimeString = [formatter stringFromDate:endDate];
+                    
+                    finalString = [NSString stringWithFormat:@"%@ at %@ to %@ at %@", dateString, timeString, endDateString, endTimeString];
+                
+                } else { // Past this week- uses abbreviated date format
                 
                     NSString *dateString = [formatter stringFromDate:eventDate];
                     [formatter setDateFormat:@"h:mma"];
@@ -176,7 +255,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                     finalString = [finalString stringByReplacingOccurrencesOfString:@":00" withString:@" "];
                     
                 }
-                
+               
                 [dateArray addObject:finalString];
                 
                 /*
@@ -196,18 +275,18 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                 NSString *tagString = [NSString stringWithFormat:@"tags: %@", eventObject[@"Hashtag"]];
                 [hashtagArray addObject:tagString];
                 [geoLocArray addObject:eventObject[@"GeoLoc"]];
-                
+
                 NSNumber *swipe = eventObject[@"swipesRight"];
                 NSString *swipeString = [NSString stringWithFormat:@"%@ interested", [swipe stringValue]];
                 
                 [swipesRightArray addObject:swipeString];
-                
+
                 [imageArray addObject:eventObject[@"Image"]];
                 
                 NSString *name = eventObject[@"CreatedByName"];
                 NSString *fullName = [NSString stringWithFormat:@"Created by: %@", name];
                 [createdByArray addObject:fullName];
-                
+
             }
             
             if (!error) {
@@ -358,29 +437,10 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 //%%% loads all the cards and puts the first x in the "loaded cards" array
 -(void)loadCards
 {
-    PFUser *user = [PFUser currentUser];
-    // PFQuery to get number of objects so I know how many cards to make
-    PFQuery *query = [PFQuery queryWithClassName:@"Event"];
-    [query whereKey:@"Date" greaterThan:[NSDate date]];
     
-    
-    PFQuery *didUserSwipe = [PFQuery queryWithClassName:@"Swipes"];
-    [didUserSwipe whereKey:@"UserID" containsString:user.username];
-    
-    
-    [query whereKey:@"objectId" doesNotMatchKey:@"EventID" inQuery:didUserSwipe];
-    
-    PFGeoPoint *userLoc = user[@"userLoc"];
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    NSInteger radius = [defaults integerForKey:@"sliderValue"];
-    [query whereKey:@"GeoLoc" nearGeoPoint:userLoc withinMiles:radius];
-    
-    [query findObjectsInBackgroundWithBlock:^(NSArray *eventObjects, NSError *error) {
-        
-        NSInteger eventCount = [eventObjects count];
+    [eventQuery countObjectsInBackgroundWithBlock:^(int eventCount, NSError *error) {
         
         NSLog(@"%lu cards loaded",(unsigned long)eventCount);
-        
         
         if(eventCount > 0) {
             NSInteger numLoadedCardsCap =((eventCount > MAX_BUFFER_SIZE)?MAX_BUFFER_SIZE:eventCount);
@@ -398,8 +458,6 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                 }
             }
             
-            
-            
             //%%% displays the small number of loaded cards dictated by MAX_BUFFER_SIZE so that not all the cards
             // are showing at once and clogging a ton of data
             for (int i = 0; i<[loadedCards count]; i++) {
@@ -410,6 +468,14 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                 }
                 cardsLoadedIndex++; //%%% we loaded a card into loaded cards, so we have to increment
             }
+            
+            [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"noMoreEvents"];
+            
+        } else {
+            
+            NSLog(@"no more events :(");
+            [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"noMoreEvents"];
+            [self.myViewController refreshData];
         }
         
         if (loadedCards.count > 0) {
@@ -472,6 +538,11 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         [self.myViewController flipCurrentView];
     } else
         self.myViewController.userSwipedFromFlippedView = NO;
+    
+    if (loadedCards.count == 0) {
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"noMoreEvents"];
+        [self.myViewController refreshData];
+    }
     
 }
 
@@ -548,6 +619,11 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         [self.myViewController flipCurrentView];
     } else
         self.myViewController.userSwipedFromFlippedView = NO;
+    
+    if (loadedCards.count == 0) {
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"noMoreEvents"];
+        [self.myViewController refreshData];
+    }
     
 }
 

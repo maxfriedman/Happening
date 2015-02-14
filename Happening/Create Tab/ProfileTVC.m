@@ -14,7 +14,7 @@
 #import <Parse/Parse.h>
 #import <FacebookSDK/FacebookSDK.h>
 
-@interface ProfileTVC ()
+@interface ProfileTVC () <EventTVCDelegate>
 
 @property (strong, nonatomic) NSMutableDictionary *sections;
 @property (strong, nonatomic) NSArray *sortedDays;
@@ -188,7 +188,9 @@
         NSString *distance = [NSString stringWithFormat:(@"%.1f mi"), meters.floatValue];
         cell.distance.text = distance;
     }
-            
+    
+    cell.interestedLabel.text = [NSString stringWithFormat:@"%@ interested", Event[@"swipesRight"]];
+    
     //cell.selectionStyle = UITableViewCellSelectionStyleDefault;
     
     return cell;

@@ -46,9 +46,11 @@
     eventURLButton.center = CGPointMake(160, 340);
     eventURLButton.titleLabel.font = [UIFont fontWithName:@"OpenSans-Light" size:12.0];
     [eventURLButton setTitleColor:[UIColor blueColor] forState:UIControlStateNormal];
+    eventURLButton.reversesTitleShadowWhenHighlighted = YES;
     [eventURLButton addTarget:self action:@selector(eventURLPressed) forControlEvents:UIControlEventTouchUpInside];
     
     [self.view addSubview:eventURLButton];
+    [self.view sendSubviewToBack:eventURLButton];
     
 }
 

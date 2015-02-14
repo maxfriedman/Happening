@@ -280,7 +280,7 @@
      
      if ([segue.identifier isEqualToString:@"showMyEvent"]) {
          NSIndexPath *selectedIndexPath = [self.tableView indexPathForSelectedRow];
-         MyEventTableCell *cell = [self.tableView cellForRowAtIndexPath:selectedIndexPath];
+         MyEventTableCell *cell = (MyEventTableCell *)[self.tableView cellForRowAtIndexPath:selectedIndexPath];
          showMyEventVC *vc = (showMyEventVC *)segue.destinationViewController;
          vc.eventID = cell.eventID;
          //vc.eventIDLabel.text = cell.eventID;

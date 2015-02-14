@@ -18,6 +18,8 @@
 @property (strong, nonatomic) IBOutlet UILabel *distance;
 @property (strong, nonatomic) IBOutlet UILabel *subtitle;
 
+@property (strong, nonatomic) IBOutlet UILabel *interestedLabel;
+
 @property (strong, nonatomic) NSString *eventID;
 
 @property (strong, nonatomic) IBOutlet FXBlurView *blurView;

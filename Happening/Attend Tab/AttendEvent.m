@@ -223,6 +223,8 @@
         cell.distance.text = distance;
     }
     
+    cell.interestedLabel.text = [NSString stringWithFormat:@"%@ interested", Event[@"swipesRight"]];
+    
     //cell.selectionStyle = UITableViewCellSelectionStyleDefault;
     
     return cell;

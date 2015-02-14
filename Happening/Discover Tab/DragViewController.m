@@ -15,9 +15,10 @@
 #import "dropdownSettingsView.h"
 #import "TutorialDragView.h"
 #import "ChoosingLocation.h"
+#import "DragMapViewController.h"
 
 
-@interface DragViewController () <ChoosingLocationDelegate>
+@interface DragViewController () <ChoosingLocationDelegate, dropdownSettingsViewDelegate>
 
 @property (strong, nonatomic) DraggableViewBackground *draggableBackground;
 @property (strong, nonatomic) FlippedDVB *flippedDVB;
@@ -43,13 +44,23 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
 
+    
+    defaults = [NSUserDefaults standardUserDefaults];
+    
+    ////////////////////////
+    
+    [defaults setBool:YES forKey:@"hasLaunched"];
+    
+    ////////////////////////
+    
+    
+
     showTut = YES;
     
+    settingsView.delegate = self;
     settingsView.layer.masksToBounds = YES;
     [settingsView.dropdownButton addTarget:self action:@selector(dropdownPressed) forControlEvents:UIControlEventTouchUpInside];
     dropdownExpanded = NO;
-        
-    defaults = [NSUserDefaults standardUserDefaults];
     
     /*
     BOOL hasLaunched = [defaults boolForKey:@"hasLaunched"];
@@ -832,15 +843,29 @@
 
 - (void)mapViewTapped {
     
+    [self performSegueWithIdentifier:@"toMapView" sender:self];
+    
+    /*
+    
     if (!mapViewExpanded) {
         
+        scrollView.scrollEnabled = NO;
+        
+        [draggableBackground.dragView.cardView bringSubviewToFront:mapView];
+        
+        draggableBackground.dragView.cardView.layer.masksToBounds = NO;
+        
+        mapView.scrollEnabled = YES;
+        mapView.zoomEnabled = YES;
+        
+        
         //mapView.layer.masksToBounds = NO;
-        UIButton *xMapButton = [[UIButton alloc] initWithFrame:CGRectMake(240, 90, 50, 50)];
+        UIButton *xMapButton = [[UIButton alloc] initWithFrame:CGRectMake(240, 100, 50, 50)];
         [xMapButton setImage:[UIImage imageNamed:@"noButton"] forState:UIControlStateNormal];
         xMapButton.tag = 99;
         [xMapButton addTarget:self action:@selector(mapViewTapped) forControlEvents:UIControlEventTouchUpInside];
         
-        UIButton *directionsButton = [[UIButton alloc] initWithFrame:CGRectMake(85, 500, 150, 30)];
+        UIButton *directionsButton = [[UIButton alloc] initWithFrame:CGRectMake(85, 400, 150, 30)];
         //[directionsButton setImage:[UIImage imageNamed:@"noButton"] forState:UIControlStateNormal];
         [directionsButton setTitle:@"Get Directions" forState:UIControlStateNormal];
         [directionsButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
@@ -851,21 +876,20 @@
         directionsButton.tag = 99;
         [directionsButton addTarget:self action:@selector(redirectToMaps) forControlEvents:UIControlEventTouchUpInside];
         
-        [draggableBackground.dragView.cardView bringSubviewToFront:mapView];
-        
-        mapView.scrollEnabled = NO;
-        mapView.zoomEnabled = YES;
-        
         
         [UIView animateWithDuration:0.05 animations:^{
             
-            mapView.frame = CGRectMake(0, mapView.frame.origin.y, draggableBackground.dragView.cardView.frame.size.width, mapView.frame.size.height);
+            mapView.frame = CGRectMake(-18, mapView.frame.origin.y, draggableBackground.dragView.cardView.frame.size.width + 36, mapView.frame.size.height);
+            
+            settingsView.alpha = 0;
             
         } completion:^(BOOL finished) {
             
             [UIView animateWithDuration:0.2 animations:^{
                 
-                mapView.frame = CGRectMake(0, 0, draggableBackground.dragView.cardView.frame.size.width, draggableBackground.dragView.cardView.frame.size.height);
+                [settingsView removeFromSuperview];
+                
+                mapView.frame = CGRectMake(-18, -53, draggableBackground.dragView.cardView.frame.size.width + 36, scrollView.frame.size.height + 53);
                 
             } completion:^(BOOL finished) {
                 
@@ -890,15 +914,22 @@
             }
         }
         
+        scrollView.scrollEnabled = YES;
+        
         mapView.scrollEnabled = NO;
         mapView.zoomEnabled = NO;
         
+        [scrollView.superview addSubview:settingsView];
         
         [UIView animateWithDuration:0.3 animations:^{
             
-            mapView.frame = CGRectMake(0, 390, 284, 133);
+            mapView.frame = CGRectMake(-18, 390, 320, 133);
+            
+            settingsView.alpha = 1;
             
         } completion:^(BOOL finished) {
+            
+            [settingsView.superview bringSubviewToFront:settingsView];
             
             [UIView animateWithDuration:0.1 animations:^{
                 
@@ -908,6 +939,7 @@
                 
                 [mapView selectAnnotation:annotation animated:YES];
                 mapViewExpanded = NO;
+                draggableBackground.dragView.cardView.layer.masksToBounds = YES;
                 
             }];
             
@@ -915,7 +947,7 @@
         
     }
     
-    
+    */
     
 }
 
@@ -1090,18 +1122,50 @@
         
         NSLog(@"expanding dropdown menu...");
         
-    [UIView animateWithDuration:0.5 animations:^{
-        settingsView.frame = CGRectMake(0, 0, self.view.frame.size.width, 502);
-    } completion:^(BOOL finished) {
-        dropdownExpanded = YES;
-    }];
+        CABasicAnimation *rotation;
+        rotation = [CABasicAnimation animationWithKeyPath:@"transform.rotation"];
+        
+        rotation.removedOnCompletion = NO;
+        rotation.fromValue = [NSNumber numberWithFloat:0];
+        rotation.toValue = [NSNumber numberWithFloat:(3*M_PI)];
+        rotation.duration = 1.0; // Speed
+        rotation.repeatCount = 1; //HUGE_VALF; // Repeat forever. Can be a finite number.
+        rotation.fillMode = kCAFillModeForwards;
+        [settingsView.cogImageView.layer addAnimation:rotation forKey:@"Spin"];
+        
+        NSIndexPath *indexPath = [NSIndexPath indexPathForRow:[defaults integerForKey:@"categoryIndex"] inSection:0];
+        [settingsView.categoryTableView selectRowAtIndexPath:indexPath animated:NO scrollPosition:UITableViewScrollPositionMiddle];
+        
+        [UIView animateWithDuration:0.5 animations:^{
+            settingsView.frame = CGRectMake(0, 0, self.view.frame.size.width, 502);
+        } completion:^(BOOL finished) {
+            dropdownExpanded = YES;
+        }];
         
     } else {
         
+        
         NSLog(@"contracting dropdown menu...");
+        
+        CABasicAnimation *rotation;
+        rotation = [CABasicAnimation animationWithKeyPath:@"transform.rotation"];
+        
+        rotation.removedOnCompletion = NO;
+        rotation.fromValue = [NSNumber numberWithFloat:M_PI];
+        rotation.toValue = [NSNumber numberWithFloat:-(2*M_PI)];
+        rotation.duration = 1.0; // Speed
+        rotation.repeatCount = 1; //HUGE_VALF; // Repeat forever. Can be a finite number.
+        rotation.fillMode = kCAFillModeForwards;
+        [settingsView.cogImageView.layer addAnimation:rotation forKey:@"Spin"];
         
         [UIView animateWithDuration:0.5 animations:^{
             settingsView.frame = CGRectMake(0, 0, self.view.frame.size.width, 35);
+            
+            if ([settingsView didPreferencesChange]) {
+                
+                [self refreshData];
+            }
+            
         } completion:^(BOOL finished) {
             dropdownExpanded = NO;
         }];
@@ -1272,7 +1336,15 @@
         ChoosingLocation *vc = (ChoosingLocation *)[segue destinationViewController];
         vc.delegate = self;
         
+    } else if ([segue.identifier isEqualToString:@"toMapView"]) {
+        
+        DragMapViewController *vc = (DragMapViewController *)[segue destinationViewController];
+        //vc.mapView = mapView;
+        vc.objectID = draggableBackground.dragView.objectID;
+        vc.locationTitle = annotation.title;
+        vc.locationSubtitle = annotation.subtitle;
     }
+    
     /*
     if ([segue.identifier isEqualToString: @"toSettings"]) {
     

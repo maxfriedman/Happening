@@ -86,6 +86,7 @@
 		5076B5C21A58A07900B05ABB /* ParseFacebookUtils.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5076B5BD1A58A07900B05ABB /* ParseFacebookUtils.framework */; };
 		5076B5C31A58A07900B05ABB /* ParseUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5076B5BE1A58A07900B05ABB /* ParseUI.framework */; };
 		5076B5C51A58A0E300B05ABB /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5076B5C41A58A0E300B05ABB /* libsqlite3.dylib */; };
+		508FC9A41A8B04A300BF246B /* DragMapViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 508FC9A31A8B04A300BF246B /* DragMapViewController.m */; };
 		509248F71A58819D002BE584 /* EditExtraInfoTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 509248F61A58819D002BE584 /* EditExtraInfoTVC.m */; };
 		50965A641A76A6DB00EDF5FC /* dropdownSettingsView.m in Sources */ = {isa = PBXBuildFile; fileRef = 50965A631A76A6DB00EDF5FC /* dropdownSettingsView.m */; };
 		50A677691A58A57800E1E12A /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 50478F0F1A44DE6900161D01 /* Info.plist */; };
@@ -236,6 +237,8 @@
 		5076B5BD1A58A07900B05ABB /* ParseFacebookUtils.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ParseFacebookUtils.framework; path = "Happening/Frameworks/parse-library/ParseFacebookUtils.framework"; sourceTree = "<group>"; };
 		5076B5BE1A58A07900B05ABB /* ParseUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ParseUI.framework; path = "Happening/Frameworks/parse-library/ParseUI.framework"; sourceTree = "<group>"; };
 		5076B5C41A58A0E300B05ABB /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = usr/lib/libsqlite3.dylib; sourceTree = SDKROOT; };
+		508FC9A21A8B04A300BF246B /* DragMapViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DragMapViewController.h; path = "Happening/Discover Tab/DragMapViewController.h"; sourceTree = SOURCE_ROOT; };
+		508FC9A31A8B04A300BF246B /* DragMapViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DragMapViewController.m; path = "Happening/Discover Tab/DragMapViewController.m"; sourceTree = SOURCE_ROOT; };
 		509248F51A58819D002BE584 /* EditExtraInfoTVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = EditExtraInfoTVC.h; path = "Happening/Create Tab/EditExtraInfoTVC.h"; sourceTree = SOURCE_ROOT; };
 		509248F61A58819D002BE584 /* EditExtraInfoTVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = EditExtraInfoTVC.m; path = "Happening/Create Tab/EditExtraInfoTVC.m"; sourceTree = SOURCE_ROOT; };
 		50965A621A76A6DB00EDF5FC /* dropdownSettingsView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = dropdownSettingsView.h; path = "Happening/Discover Tab/Settings/dropdownSettingsView.h"; sourceTree = SOURCE_ROOT; };
@@ -461,6 +464,8 @@
 				50478EDE1A44DD6C00161D01 /* DraggableViewBackground.m */,
 				50478EDF1A44DD6C00161D01 /* DragViewController.h */,
 				50478EE01A44DD6C00161D01 /* DragViewController.m */,
+				508FC9A21A8B04A300BF246B /* DragMapViewController.h */,
+				508FC9A31A8B04A300BF246B /* DragMapViewController.m */,
 				50478EE11A44DD6C00161D01 /* FlippedDVB.h */,
 				50478EE21A44DD6C00161D01 /* FlippedDVB.m */,
 				50478EE31A44DD6C00161D01 /* moreDetailFromCard.h */,
@@ -715,6 +720,7 @@
 				50478ED21A44DD2400161D01 /* buttonOverride.m in Sources */,
 				506DFD831A6113CF00715079 /* FXBlurView.m in Sources */,
 				503ECF671A506815009D30F1 /* MFActivityIndicatorView.m in Sources */,
+				508FC9A41A8B04A300BF246B /* DragMapViewController.m in Sources */,
 				50478EBF1A44DBCC00161D01 /* LoginView.m in Sources */,
 				50478F251A45049300161D01 /* MyEventTableCell.m in Sources */,
 				50478EF91A44DDE300161D01 /* RightToLeftSegue.m in Sources */,

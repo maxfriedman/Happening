@@ -23,6 +23,7 @@
 
 @interface DragViewController : UIViewController <UIScrollViewDelegate, MKMapViewDelegate, UIGestureRecognizerDelegate>
 
+- (void)refreshData;
 - (void)flipCurrentView;
 - (void)tutorialCardTapped:(UIView *)view ;
 - (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event;
