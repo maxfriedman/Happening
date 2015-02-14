@@ -55,7 +55,7 @@
     
     PFQuery *eventQuery = [PFQuery queryWithClassName:@"Event"];
     [eventQuery whereKey:@"objectId" matchesKey:@"EventID" inQuery:swipesQuery];
-    [eventQuery whereKey:@"Date" greaterThan:[NSDate date]];
+    [eventQuery whereKey:@"EndTime" greaterThan:[NSDate dateWithTimeIntervalSinceNow:1800]]; // show today's events, must be at least 30 minutes left in the event (END)
     [eventQuery orderByAscending:@"Date"];
     
     count = 0;
@@ -70,6 +70,9 @@
         {
             // Reduce event start date to date components (year, month, day)
             NSDate *dateRepresentingThisDay = [self dateAtBeginningOfDayForDate:event[@"Date"]];
+            if ([dateRepresentingThisDay compare:[NSDate date]] == NSOrderedAscending) {
+                dateRepresentingThisDay = [self dateAtBeginningOfDayForDate:[NSDate date]];
+            }
             
             // If we don't yet have an array to hold the events for this day, create one
             NSMutableArray *eventsOnThisDay = [self.sections objectForKey:dateRepresentingThisDay];
@@ -428,7 +431,7 @@
     // Pass the selected object to the new view controller.
     if ([segue.identifier isEqualToString:@"toMoreDetail"]) {
         NSIndexPath *selectedIndexPath = [self.tableView indexPathForSelectedRow];
-        AttendTableCell *cell = [self.tableView cellForRowAtIndexPath:selectedIndexPath];
+        AttendTableCell *cell = (AttendTableCell *)[self.tableView cellForRowAtIndexPath:selectedIndexPath];
         
         UINavigationController *navController = [segue destinationViewController];
         moreDetailFromTable *vc = (moreDetailFromTable *)([navController topViewController]);

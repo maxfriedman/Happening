@@ -51,7 +51,7 @@
 @synthesize geoPoint;
 @synthesize swipesRight;
 
-@synthesize locImage, userImage;
+@synthesize locImage, userImage, shareButton;
 @synthesize activityView, cardBackground, cardView, greyLocImageView;
 
 @synthesize xButton, checkButton, eventStore, blurEffectView;
@@ -125,10 +125,12 @@
         //date = [[UILabel alloc]initWithFrame:CGRectMake(0, 285, self.frame.size.width, 100)];
         //time = [[UILabel alloc]initWithFrame:CGRectMake(0, 315, self.frame.size.width, 100)];
 
-        hashtag = [[UILabel alloc]initWithFrame:CGRectMake(15, 240, self.frame.size.width - 30, 100)];
+        //hashtag = [[UILabel alloc]initWithFrame:CGRectMake(15, 240, self.frame.size.width - 30, 100)];
         geoLoc = [[UILabel alloc]initWithFrame:CGRectMake(15, 100, self.frame.size.width - 30, 100)];
         swipesRight = [[UILabel alloc]initWithFrame:CGRectMake(204, 240, 65, 100)];
-        //createdBy = [[UILabel alloc]initWithFrame:CGRectMake(0, 380, self.frame.size.width, 100)];
+        createdBy = [[UILabel alloc]initWithFrame:CGRectMake(15, 240, 160, 100)];
+        
+        shareButton = [[UIButton alloc] initWithFrame:CGRectMake(self.frame.size.width - 45, 15, 30, 30)];
         
         UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleLight];
         blurEffectView = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
@@ -238,9 +240,13 @@
         swipesRight.minimumScaleFactor = 0.75;
         swipesRight.adjustsFontSizeToFitWidth = YES;
         
+        [createdBy setUserInteractionEnabled:YES];
         [createdBy setTextAlignment:NSTextAlignmentLeft];
-        createdBy.textColor = [UIColor blackColor];
-        createdBy.font = [UIFont fontWithName:@"OpenSans" size:12.0];
+        createdBy.textColor = [UIColor colorWithHue:0 saturation:0 brightness:.64 alpha:1.0];
+        createdBy.font = [UIFont fontWithName:@"OpenSans" size:11.0];
+        
+        [shareButton setImage:[UIImage imageNamed:@"interested_face"] forState:UIControlStateNormal];
+        [cardView addSubview:shareButton];
         
         //locImage.image = [UIImage imageNamed:@"locImage"];
         [cardView addSubview:locImage];
@@ -256,10 +262,10 @@
         [cardView addSubview:location];
         [cardView addSubview:date];
         //[cardView addSubview:time];
-        [cardView addSubview:hashtag];
+        //[cardView addSubview:hashtag];
         [cardView addSubview:geoLoc];
         [cardView addSubview:swipesRight];
-        //[cardView addSubview:createdBy];
+        [cardView addSubview:createdBy];
         
         //overlayView = [[OverlayView alloc]initWithFrame:CGRectMake(self.frame.size.width/2-100, 0, 100, 100)];
         overlayView = [[OverlayView alloc]initWithFrame:CGRectMake(0, 0, eventImage.frame.size.width, 70)];

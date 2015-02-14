@@ -349,7 +349,7 @@
     
     selectionBar.frame = CGRectMake(xCoor-xFromCenter/[viewControllerArray count], selectionBar.frame.origin.y, selectionBar.frame.size.width, selectionBar.frame.size.height);
     
-    NSLog(@"%f", xFromCenter);
+    //NSLog(@"%f", xFromCenter);
     
     if (leftButtonTapScrolling) {
         [self fadeLabels:0];

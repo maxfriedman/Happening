@@ -1,20 +1,21 @@
 //
-//  ProfileTVC.m
+//  ExternalProfileTVC.m
 //  Happening
 //
-//  Created by Max on 2/8/15.
+//  Created by Max on 2/14/15.
 //  Copyright (c) 2015 Happening. All rights reserved.
 //
 
-#import "ProfileTVC.h"
+#import "ExternalProfileTVC.h"
 #import "AttendTableCell.h"
 #import "CupertinoYankee.h"
 #import "showMyEventVC.h"
 #import "EventTVC.h"
+#import "moreDetailFromTable.h"
 #import <Parse/Parse.h>
 #import <FacebookSDK/FacebookSDK.h>
 
-@interface ProfileTVC () <EventTVCDelegate>
+@interface ExternalProfileTVC () <EventTVCDelegate>
 
 @property (strong, nonatomic) NSMutableDictionary *sections;
 @property (strong, nonatomic) NSArray *sortedDays;
@@ -25,30 +26,63 @@
 
 @end
 
-@implementation ProfileTVC {
+@implementation ExternalProfileTVC {
     
-    PFUser *user;
     NSArray *eventsArray;
+    PFUser *user;
 }
 
 //@synthesize locManager, refreshControl;
-@synthesize sections, sortedDays, locManager;
-@synthesize nameLabel, detailLabel, profilePicImageView, myEventsTableView;
+@synthesize sections, sortedDays, locManager, eventID;
+@synthesize nameLabel, detailLabel, profilePicImageView, myEventsTableView, nameEventsLabel;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
-    user = [PFUser currentUser];
-    nameLabel.text = [NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]];
-    detailLabel.text = [NSString stringWithFormat:@"%@", user[@"city"]];
-    
-    FBProfilePictureView *profPicView = [[FBProfilePictureView alloc] initWithProfileID:user[@"FBObjectID"] pictureCropping:FBProfilePictureCroppingSquare];
-    profPicView.layer.cornerRadius = 10;
-    profPicView.layer.masksToBounds = YES;
-    profPicView.layer.borderColor = [UIColor colorWithRed:232.0/255 green:232.0/255 blue:232.0/255 alpha:1.0].CGColor;
-    profPicView.layer.borderWidth = 3.0;
-    profPicView.frame = CGRectMake(120, 24, 80, 80);
-    [self.view addSubview:profPicView];
+    NSLog(@"Made it");
+    PFQuery *eventQuery = [PFQuery queryWithClassName:@"Event"];
+    [eventQuery getObjectInBackgroundWithId:eventID block:^(PFObject *event, NSError *error) {
+        
+        user = [PFQuery getUserObjectWithId:event[@"CreatedBy"]];
+        
+        nameLabel.text = [NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]];
+        detailLabel.text = [NSString stringWithFormat:@"%@", user[@"city"]];
+        nameEventsLabel.text = [NSString stringWithFormat:@"%@'s events", user[@"firstName"]];
+            
+            
+        FBProfilePictureView *profPicView = [[FBProfilePictureView alloc] initWithProfileID:user[@"FBObjectID"] pictureCropping: FBProfilePictureCroppingSquare];
+        profPicView.layer.cornerRadius = 10;
+        profPicView.layer.masksToBounds = YES;
+        profPicView.layer.borderColor = [UIColor colorWithRed:232.0/255 green:232.0/255 blue:232.0/255 alpha:1.0].CGColor;
+        profPicView.layer.borderWidth = 3.0;
+        profPicView.frame = CGRectMake(120, 24, 80, 80);
+        [self.view addSubview:profPicView];
+        
+        
+        // Instantiate event dictionary--- this is where all event info is stored
+        self.sections = [NSMutableDictionary dictionary];
+        
+        PFQuery *eventQuery = [PFQuery queryWithClassName:@"Event"];
+        [eventQuery whereKey:@"CreatedBy" equalTo:user.objectId];
+        
+        // Works for now, but doesn't allow for events to be shown from the past
+        [eventQuery whereKey:@"Date" greaterThan:[NSDate dateWithTimeIntervalSinceNow:-2592000]]; //30 days
+        [eventQuery orderByAscending:@"Date"];
+        
+        [eventQuery findObjectsInBackgroundWithBlock:^(NSArray *array, NSError *error) {
+            
+            eventsArray = array;
+            
+            [self.tableView reloadData];
+        }];
+        
+        self.sectionDateFormatter = [[NSDateFormatter alloc] init];
+        [self.sectionDateFormatter setDateFormat:@"EEEE, MMMM d"];
+        
+        self.cellDateFormatter = [[NSDateFormatter alloc] init];
+        [self.cellDateFormatter setDateStyle:NSDateFormatterNoStyle];
+        [self.cellDateFormatter setTimeStyle:NSDateFormatterShortStyle];
+        
+    }];
     
     profilePicImageView.layer.cornerRadius = 10;
     profilePicImageView.layer.masksToBounds = YES;
@@ -64,12 +98,11 @@
 }
 
 -(void)viewWillAppear:(BOOL)animated {
-    
+    /*
     //[self.tableView reloadData];
     
     // Instantiate event dictionary--- this is where all event info is stored
     self.sections = [NSMutableDictionary dictionary];
-    
     
     PFQuery *eventQuery = [PFQuery queryWithClassName:@"Event"];
     [eventQuery whereKey:@"CreatedBy" equalTo:user.objectId];
@@ -91,6 +124,7 @@
     self.cellDateFormatter = [[NSDateFormatter alloc] init];
     [self.cellDateFormatter setDateStyle:NSDateFormatterNoStyle];
     [self.cellDateFormatter setTimeStyle:NSDateFormatterShortStyle];
+     */
 }
 
 #pragma mark - Table view data source
@@ -150,11 +184,11 @@
     } else if ([eventDate endOfWeek] == [[NSDate date]endOfWeek]) { // SAME WEEK
         
         /*
-        [formatter setDateFormat:@"EEEE"];
-        NSString *dayOfWeekString = [formatter stringFromDate:eventDate];
-        [formatter setDateFormat:@"h:mma"];
-        NSString *timeString = [formatter stringFromDate:eventDate];
-        finalString = [NSString stringWithFormat:@"%@ at %@", dayOfWeekString, timeString];
+         [formatter setDateFormat:@"EEEE"];
+         NSString *dayOfWeekString = [formatter stringFromDate:eventDate];
+         [formatter setDateFormat:@"h:mma"];
+         NSString *timeString = [formatter stringFromDate:eventDate];
+         finalString = [NSString stringWithFormat:@"%@ at %@", dayOfWeekString, timeString];
          */
         NSString *dateString = [formatter stringFromDate:eventDate];
         [formatter setDateFormat:@"h:mma"];
@@ -182,6 +216,7 @@
     }
     
     [cell.timeLabel setText:[NSString stringWithFormat:@"%@",finalString]];
+    
     
     // Image formatting
     PFFile *imageFile = Event[@"Image"];
@@ -281,24 +316,35 @@
     return beginningOfDay;
 }
 
+- (IBAction)backButton:(id)sender {
+    [self dismissViewControllerAnimated:YES completion:^{
+        //code
+    }];
+}
+
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     // Get the new view controller using [segue destinationViewController].
     // Pass the selected object to the new view controller.
     
-    if ([segue.identifier isEqualToString:@"showMyEvent"]) {
+    if ([segue.identifier isEqualToString:@"showUserEvent"]) {
+        
         NSIndexPath *selectedIndexPath = [self.tableView indexPathForSelectedRow];
         AttendTableCell *cell = (AttendTableCell *)[self.tableView cellForRowAtIndexPath:selectedIndexPath];
-        
+            
         UINavigationController *navController = [segue destinationViewController];
-        showMyEventVC *vc = (showMyEventVC *)([navController topViewController]);
+        moreDetailFromTable *vc = (moreDetailFromTable *)([navController topViewController]);
+        
+        // Pass data
         vc.eventID = cell.eventID;
-        
-    } else if ([segue.identifier isEqualToString:@"createNewEvent"]) {
-        
-        UINavigationController *navController = [segue destinationViewController];
-        EventTVC *vc = (EventTVC *)([navController topViewController]);
-        vc.delegate = self;
+        vc.titleText = cell.titleLabel.text;
+        vc.image = cell.eventImageView.image;
+        //vc.timeLabel.text
+        vc.distanceText = cell.distance.text;
+        vc.subtitleText = cell.subtitle.text;
+        vc.locationText = cell.locLabel.text;
+    
+        vc.hidesBottomBarWhenPushed = YES;
         
     }
 }

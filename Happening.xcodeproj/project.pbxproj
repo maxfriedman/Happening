@@ -66,6 +66,7 @@
 		505CDD591A65B5BF005876DC /* Social.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 505CDD581A65B5BF005876DC /* Social.framework */; };
 		505CDD5B1A65B5D0005876DC /* libsqlite3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 505CDD5A1A65B5D0005876DC /* libsqlite3.0.dylib */; };
 		505CDD5D1A65B5DF005876DC /* libstdc++.6.0.9.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 505CDD5C1A65B5DF005876DC /* libstdc++.6.0.9.dylib */; };
+		506961FC1A8F122C009CB5DB /* ExternalProfileTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 506961FB1A8F122C009CB5DB /* ExternalProfileTVC.m */; };
 		506DC53E1A46014300DD4591 /* OpenSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50478F191A44DF1500161D01 /* OpenSans-Bold.ttf */; };
 		506DC53F1A46014300DD4591 /* OpenSans-BoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50478F1A1A44DF1500161D01 /* OpenSans-BoldItalic.ttf */; };
 		506DC5411A46014300DD4591 /* OpenSans-ExtraBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50478F1C1A44DF1500161D01 /* OpenSans-ExtraBoldItalic.ttf */; };
@@ -223,6 +224,8 @@
 		505CDD581A65B5BF005876DC /* Social.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Social.framework; path = System/Library/Frameworks/Social.framework; sourceTree = SDKROOT; };
 		505CDD5A1A65B5D0005876DC /* libsqlite3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.0.dylib; path = usr/lib/libsqlite3.0.dylib; sourceTree = SDKROOT; };
 		505CDD5C1A65B5DF005876DC /* libstdc++.6.0.9.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libstdc++.6.0.9.dylib"; path = "usr/lib/libstdc++.6.0.9.dylib"; sourceTree = SDKROOT; };
+		506961FA1A8F122C009CB5DB /* ExternalProfileTVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ExternalProfileTVC.h; path = "Happening/Discover Tab/ExternalProfileTVC.h"; sourceTree = SOURCE_ROOT; };
+		506961FB1A8F122C009CB5DB /* ExternalProfileTVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ExternalProfileTVC.m; path = "Happening/Discover Tab/ExternalProfileTVC.m"; sourceTree = SOURCE_ROOT; };
 		506DFD7E1A60A94600715079 /* UIImage+ImageEffects.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIImage+ImageEffects.h"; path = "Happening/Extras/UIImage+ImageEffects.h"; sourceTree = SOURCE_ROOT; };
 		506DFD7F1A60A94600715079 /* UIImage+ImageEffects.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIImage+ImageEffects.m"; path = "Happening/Extras/UIImage+ImageEffects.m"; sourceTree = SOURCE_ROOT; };
 		506DFD811A6113CF00715079 /* FXBlurView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FXBlurView.h; path = Happening/Extras/FXBlurView.h; sourceTree = SOURCE_ROOT; };
@@ -458,22 +461,8 @@
 			isa = PBXGroup;
 			children = (
 				5041A1181A44AE5300C151B7 /* Settings */,
-				50478EDB1A44DD6C00161D01 /* DraggableView.h */,
-				50478EDC1A44DD6C00161D01 /* DraggableView.m */,
-				50478EDD1A44DD6C00161D01 /* DraggableViewBackground.h */,
-				50478EDE1A44DD6C00161D01 /* DraggableViewBackground.m */,
-				50478EDF1A44DD6C00161D01 /* DragViewController.h */,
-				50478EE01A44DD6C00161D01 /* DragViewController.m */,
-				508FC9A21A8B04A300BF246B /* DragMapViewController.h */,
-				508FC9A31A8B04A300BF246B /* DragMapViewController.m */,
-				50478EE11A44DD6C00161D01 /* FlippedDVB.h */,
-				50478EE21A44DD6C00161D01 /* FlippedDVB.m */,
-				50478EE31A44DD6C00161D01 /* moreDetailFromCard.h */,
-				50478EE41A44DD6C00161D01 /* moreDetailFromCard.m */,
-				50478EE51A44DD6C00161D01 /* OverlayView.h */,
-				50478EE61A44DD6C00161D01 /* OverlayView.m */,
-				50FA6B871A7ECC35009AA6A0 /* TutorialDragView.h */,
-				50FA6B881A7ECC35009AA6A0 /* TutorialDragView.m */,
+				506961F81A8F11CD009CB5DB /* Draggables */,
+				506961F91A8F11E4009CB5DB /* Other */,
 			);
 			name = "Discover Tab";
 			sourceTree = "<group>";
@@ -573,6 +562,38 @@
 				50478F131A44DE6900161D01 /* TabBarViewController.m */,
 			);
 			name = "Main Files";
+			sourceTree = "<group>";
+		};
+		506961F81A8F11CD009CB5DB /* Draggables */ = {
+			isa = PBXGroup;
+			children = (
+				50478EDB1A44DD6C00161D01 /* DraggableView.h */,
+				50478EDC1A44DD6C00161D01 /* DraggableView.m */,
+				50478EDD1A44DD6C00161D01 /* DraggableViewBackground.h */,
+				50478EDE1A44DD6C00161D01 /* DraggableViewBackground.m */,
+				50478EDF1A44DD6C00161D01 /* DragViewController.h */,
+				50478EE01A44DD6C00161D01 /* DragViewController.m */,
+				508FC9A21A8B04A300BF246B /* DragMapViewController.h */,
+				508FC9A31A8B04A300BF246B /* DragMapViewController.m */,
+			);
+			name = Draggables;
+			sourceTree = "<group>";
+		};
+		506961F91A8F11E4009CB5DB /* Other */ = {
+			isa = PBXGroup;
+			children = (
+				50478EE11A44DD6C00161D01 /* FlippedDVB.h */,
+				50478EE21A44DD6C00161D01 /* FlippedDVB.m */,
+				50478EE31A44DD6C00161D01 /* moreDetailFromCard.h */,
+				50478EE41A44DD6C00161D01 /* moreDetailFromCard.m */,
+				50478EE51A44DD6C00161D01 /* OverlayView.h */,
+				50478EE61A44DD6C00161D01 /* OverlayView.m */,
+				50FA6B871A7ECC35009AA6A0 /* TutorialDragView.h */,
+				50FA6B881A7ECC35009AA6A0 /* TutorialDragView.m */,
+				506961FA1A8F122C009CB5DB /* ExternalProfileTVC.h */,
+				506961FB1A8F122C009CB5DB /* ExternalProfileTVC.m */,
+			);
+			name = Other;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -693,6 +714,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				506961FC1A8F122C009CB5DB /* ExternalProfileTVC.m in Sources */,
 				507677D31A88761100B9F21D /* ProfileTVC.m in Sources */,
 				509248F71A58819D002BE584 /* EditExtraInfoTVC.m in Sources */,
 				50478EEB1A44DD6C00161D01 /* FlippedDVB.m in Sources */,

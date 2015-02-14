@@ -16,6 +16,7 @@
 #import "TutorialDragView.h"
 #import "ChoosingLocation.h"
 #import "DragMapViewController.h"
+#import "ExternalProfileTVC.h"
 
 
 @interface DragViewController () <ChoosingLocationDelegate, dropdownSettingsViewDelegate>
@@ -97,10 +98,7 @@
     */
 }
 
--(BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
-    
-    return YES;
-}
+
 
 - (BOOL)touchesShouldCancelInContentView:(UIView *)view {
     NSLog(@"LHJBDVLSJKHBV");
@@ -196,7 +194,7 @@
     //[cardView addSubview:draggableBackground];
     
     UITapGestureRecognizer *singleFingerTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap:)];
-    singleFingerTap.cancelsTouchesInView = NO;
+    singleFingerTap.cancelsTouchesInView = YES;
     [draggableBackground addGestureRecognizer:singleFingerTap];
     
     //[self.view addSubview:flippedDVB];
@@ -1192,7 +1190,7 @@
         [flippedDVB removeFromSuperview];
 }
 
-- (IBAction)shareAction:(id)sender {
+- (void)shareAction {
     
     APActivityProvider *ActivityProvider = [[APActivityProvider alloc] init];
     ActivityProvider.APdragView = draggableBackground.dragView;
@@ -1245,7 +1243,10 @@
     [self flipCurrentView];
     //[draggableBackground.dragView tapAction];
     
+}
 
+-(void)showCreatedByProfile {
+    [self performSegueWithIdentifier:@"showProfile" sender:self];
 }
 
 -(void)tutorialCardTapped:(UITapGestureRecognizer *)gr {
@@ -1343,6 +1344,12 @@
         vc.objectID = draggableBackground.dragView.objectID;
         vc.locationTitle = annotation.title;
         vc.locationSubtitle = annotation.subtitle;
+        
+    } else if ([segue.identifier isEqualToString:@"showProfile"]) {
+        
+        ExternalProfileTVC *vc = (ExternalProfileTVC *)[segue destinationViewController];
+        vc.eventID = draggableBackground.dragView.objectID;
+        
     }
     
     /*

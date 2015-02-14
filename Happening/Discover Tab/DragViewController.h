@@ -27,6 +27,8 @@
 - (void)flipCurrentView;
 - (void)tutorialCardTapped:(UIView *)view ;
 - (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event;
+- (void)shareAction;
+- (void)showCreatedByProfile;
 
 @property (weak) id <DragViewControllerDelegate> delegate;
 

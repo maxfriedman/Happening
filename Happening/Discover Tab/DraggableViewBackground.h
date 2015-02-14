@@ -49,6 +49,8 @@
 @property (retain,nonatomic)NSMutableArray* swipes;
 @property (retain,nonatomic)NSMutableArray* imageArray;
 @property (retain,nonatomic)NSMutableArray* createdByArray;
+@property (retain,nonatomic)NSMutableArray* createdByUserIDArray;
+
 
 @property (retain, nonatomic)CLLocation *mapLocation;
 

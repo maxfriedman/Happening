@@ -71,6 +71,8 @@
 
 @property (nonatomic, strong)UIVisualEffectView *blurEffectView;
 
+@property (nonatomic, strong)UIButton *shareButton;
+
 @property (nonatomic, strong)UIView *cardView;
 
 @property (assign)int actionMargin;

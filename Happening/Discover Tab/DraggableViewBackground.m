@@ -11,6 +11,7 @@
 #import "CupertinoYankee.h"
 #import "UIImage+ImageEffects.h"
 #import "RKDropdownAlert.h"
+#import <CoreText/CoreText.h>
 
 @interface DraggableViewBackground()
 
@@ -181,12 +182,9 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         [eventQuery whereKey:@"GeoLoc" nearGeoPoint:userLoc withinMiles:radius];
         
         if ([eventQuery countObjects] == 0) {
-            NSLog(@"FUCK");
+            // Do something?
         }
-        
-        NSLog(@"BLAH");
-        NSLog(@"%d", shouldLimit);
-        
+                
         //NSLog(@"events: %@", [eventQuery findObjects]);
         [eventQuery findObjectsInBackgroundWithBlock:^(NSArray *eventObjects, NSError *error) {
             
@@ -284,8 +282,8 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                 [imageArray addObject:eventObject[@"Image"]];
                 
                 NSString *name = eventObject[@"CreatedByName"];
-                NSString *fullName = [NSString stringWithFormat:@"Created by: %@", name];
-                [createdByArray addObject:fullName];
+                NSString *fullName = [NSString stringWithFormat:@"%@", name];
+                [createdByArray addObject:name];
 
             }
             
@@ -350,16 +348,23 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         //NSLog(@"%@", objects[index]);
         //NSLog(objectIDs[index]);
+
         draggableView.objectID = objectIDs[index];
         draggableView.title.text = titleArray[index];
         draggableView.subtitle.text = subtitleArray[index];
         draggableView.location.text = locationArray[index];
         draggableView.date.text = dateArray[index];
         //draggableView.time.text = timeArray[index];
-        draggableView.hashtag.text = hashtagArray[index];
+        //draggableView.hashtag.text = hashtagArray[index];
         draggableView.swipesRight.text = swipesRightArray[index];
-        //draggableView.createdBy.text = createdByArray[index];
-        
+
+        NSMutableAttributedString *attString = [[NSMutableAttributedString alloc] initWithString:createdByArray[index]];
+        [attString addAttribute:(NSString*)kCTUnderlineStyleAttributeName
+                          value:[NSNumber numberWithInt:kCTUnderlineStyleSingle]
+                          range:(NSRange){0,[attString length]}];
+        draggableView.createdBy.attributedText = attString;
+        //draggableView.createdBy.textColor =
+
         PFGeoPoint *loc = geoLocArray[index];
         draggableView.geoPoint = loc;
         if (loc.latitude == 0) {
@@ -413,7 +418,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             
             storedIndex = index;
         }];
-        
+
         draggableView.userImage.image = [UIImage imageNamed:@"interested_face"];
                 
         //draggableView.transpBackground.backgroundColor = [UIColor blackColor];
@@ -421,13 +426,15 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         
         // Only allow interaction once all data is loaded
         draggableView.userInteractionEnabled = YES;
-        UITapGestureRecognizer *tapGestureRecognizer =
-        [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(cardTap)];
-        //[draggableView addGestureRecognizer:tapGestureRecognizer];
-        //[draggableView.cardView addGestureRecognizer:tapGestureRecognizer];
+        
+        [draggableView.shareButton addTarget:self action:@selector(shareAction) forControlEvents:UIControlEventTouchUpInside];
+        
+        UITapGestureRecognizer *createdByTapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(createdByTap)];
+        [draggableView.createdBy addGestureRecognizer:createdByTapRecognizer];
         
         [self sendSubviewToBack:dragView.cardBackground];
         [draggableView.activityView stopAnimating];
+        
     }];
     
     draggableView.delegate = self;
@@ -802,6 +809,14 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         
     }];
 
+}
+
+- (void)shareAction {
+    [self.myViewController shareAction];
+}
+
+- (void)createdByTap {
+    [self.myViewController showCreatedByProfile];
 }
 
 - (NSMutableArray *) setCategories {
