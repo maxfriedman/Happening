@@ -22,5 +22,7 @@
 @property CLLocationManager *locManager;
 
 @property (assign) NSString *eventID;
+@property (assign) NSString *userID;
+
 
 @end

@@ -13,6 +13,7 @@
 #import "EventTVC.h"
 #import <Parse/Parse.h>
 #import <FacebookSDK/FacebookSDK.h>
+#import "AppDelegate.h"
 
 @interface ProfileTVC () <EventTVCDelegate>
 
@@ -67,6 +68,8 @@
     
     //[self.tableView reloadData];
     
+    [self setEnabledSidewaysScrolling:YES];
+    
     // Instantiate event dictionary--- this is where all event info is stored
     self.sections = [NSMutableDictionary dictionary];
     
@@ -118,7 +121,7 @@
     
     [cell.titleLabel setText:[NSString stringWithFormat:@"%@",Event[@"Title"]]];
     
-    [cell.subtitle setText:[NSString stringWithFormat:@"%@",Event[@"Subtitle"]]];
+    [cell.subtitle setText:[NSString stringWithFormat:@"%@",Event[@"Description"]]];
     
     [cell.locLabel setText:[NSString stringWithFormat:@"%@",Event[@"Location"]]];
     
@@ -301,6 +304,14 @@
         vc.delegate = self;
         
     }
+}
+
+- (void)setEnabledSidewaysScrolling:(BOOL)enabled {
+    
+    AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+    RKSwipeBetweenViewControllers *rk = appDelegate.rk;
+    [rk scrolling:enabled];
+    
 }
 
 @end

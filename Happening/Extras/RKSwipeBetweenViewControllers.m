@@ -361,7 +361,7 @@
     
     if (xCoor == -2) {
         
-        if (abs((int)xFromCenter) > 0) {
+        if (abs((int)xFromCenter) >= 0) {
         
             //NSLog (@"Left label");
             
@@ -391,7 +391,7 @@
      
         //NSLog (@"Right Label");
         
-        if (abs((int)xFromCenter) > 0) {
+        if (abs((int)xFromCenter) >= 0) {
             
             rightLabel.alpha = 1 - abs((int)xFromCenter) / 320.0;
             

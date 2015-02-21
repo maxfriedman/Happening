@@ -41,6 +41,7 @@
     dropdownView.layer.borderWidth = 1.0;
     dropdownView.layer.borderColor = [UIColor colorWithRed:172.0/255 green:172.0/255 blue:172.0/255 alpha:1.0].CGColor;
     
+    [locationField setTitle:[NSString stringWithFormat:@"        near %@", [defaults objectForKey:@"userLocTitle"]] forState:UIControlStateNormal];
     locationField.layer.masksToBounds = YES;
     locationField.layer.cornerRadius = 10.0;
     locationField.layer.borderColor = [UIColor whiteColor].CGColor;
@@ -69,8 +70,6 @@
     
     self.socialSwitch.on = [defaults boolForKey:@"socialMode"];
     */
-    
-    locationField.text = [NSString stringWithFormat:@"near %@", [defaults objectForKey:@"userLocTitle"]];
     
     selectionBar = [[UIView alloc]init];
 
@@ -435,6 +434,13 @@
 }
 */
 
+-(void)refreshSettings {
+    
+    [locationField setTitle:[NSString stringWithFormat:@"        near %@", [defaults objectForKey:@"userLocTitle"]] forState:UIControlStateNormal];
+    categoryChanged = YES;
+    
+}
+
 
 - (BOOL)didPreferencesChange {
     
@@ -454,8 +460,5 @@
         return NO;
     }
 }
-
-
-
 
 @end

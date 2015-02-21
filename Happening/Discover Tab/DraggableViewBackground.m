@@ -12,6 +12,7 @@
 #import "UIImage+ImageEffects.h"
 #import "RKDropdownAlert.h"
 #import <CoreText/CoreText.h>
+#import "SVProgressHUD.h"
 
 @interface DraggableViewBackground()
 
@@ -55,6 +56,8 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 @synthesize imageArray;
 @synthesize createdByArray;
 @synthesize storedIndex;
+@synthesize URLArray;
+@synthesize calDayArray, calDayOfWeekArray, calMonthArray, calTimeArray;
 
 @synthesize dragView; //CURRENT CARD!
 @synthesize eventStore;
@@ -104,6 +107,11 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         imageArray = [[NSMutableArray alloc]init];
         swipes = [[NSMutableArray alloc]init];
         createdByArray = [[NSMutableArray alloc]init];
+        URLArray = [[NSMutableArray alloc]init];
+        calTimeArray = [[NSMutableArray alloc]init];
+        calMonthArray = [[NSMutableArray alloc]init];
+        calDayOfWeekArray = [[NSMutableArray alloc]init];
+        calDayArray = [[NSMutableArray alloc]init];
         
         eventQuery = [PFQuery queryWithClassName:@"Event"];
         
@@ -172,7 +180,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         [eventQuery orderByAscending:@"Date"];
         
         PFQuery *didUserSwipe = [PFQuery queryWithClassName:@"Swipes"];
-        [didUserSwipe whereKey:@"UserID" containsString:user.username];
+        [didUserSwipe whereKey:@"UserID" containsString:user.objectId];
         NSLog(@"current user: %@", user.username);
         
         [eventQuery whereKey:@"objectId" doesNotMatchKey:@"EventID" inQuery:didUserSwipe];
@@ -180,13 +188,14 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
         NSInteger radius = [defaults integerForKey:@"sliderValue"];
         [eventQuery whereKey:@"GeoLoc" nearGeoPoint:userLoc withinMiles:radius];
-        
-        if ([eventQuery countObjects] == 0) {
-            // Do something?
-        }
                 
         //NSLog(@"events: %@", [eventQuery findObjects]);
         [eventQuery findObjectsInBackgroundWithBlock:^(NSArray *eventObjects, NSError *error) {
+            
+            if (eventObjects.count == 0) {
+                // Do something?
+                NSLog(@"~~~~~~~~~~~~ NO EVENTS ~~~~~~~~~~~~~~~~~");
+            }
             
             for (int i = 0; i < eventObjects.count; i++) {
 
@@ -194,7 +203,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                 [objectIDs addObject:eventObject.objectId];
 
                 [titleArray addObject:eventObject[@"Title"]];
-                [subtitleArray addObject:eventObject[@"Subtitle"]];
+                [subtitleArray addObject:eventObject[@"Description"]];
                 [locationArray addObject:eventObject[@"Location"]];
                 
                 NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
@@ -214,11 +223,15 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                     NSString *timeString = [formatter stringFromDate:eventDate];
                     finalString = [NSString stringWithFormat:@"Today at %@", timeString];
                     
+                    [calDayOfWeekArray addObject:@"Today"];
+                    
                 } else if ([eventDate beginningOfDay] == [[NSDate dateWithTimeIntervalSinceNow:86400] beginningOfDay]) { // TOMORROW
                     
                     [formatter setDateFormat:@"h:mma"];
                     NSString *timeString = [formatter stringFromDate:eventDate];
                     finalString = [NSString stringWithFormat:@"Tomorrow at %@", timeString];
+                    
+                    [calDayOfWeekArray addObject:@"Tomorrow"];
                     
                 } else if ([eventDate endOfWeek] == [[NSDate date]endOfWeek]) { // SAME WEEK
                     
@@ -227,6 +240,9 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                     [formatter setDateFormat:@"h:mma"];
                     NSString *timeString = [formatter stringFromDate:eventDate];
                     finalString = [NSString stringWithFormat:@"%@ at %@", dayOfWeekString, timeString];
+                    
+                    [formatter setDateFormat:@"EEEE"];
+                    [calDayOfWeekArray addObject:[formatter stringFromDate:eventDate]];
                     
                 } else if ([eventDate beginningOfDay] != [endDate beginningOfDay]) { //MULTI-DAY EVENT
                     
@@ -238,6 +254,9 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                     NSString *endTimeString = [formatter stringFromDate:endDate];
                     
                     finalString = [NSString stringWithFormat:@"%@ at %@ to %@ at %@", dateString, timeString, endDateString, endTimeString];
+                    
+                    [formatter setDateFormat:@"EEEE"];
+                    [calDayOfWeekArray addObject:[formatter stringFromDate:eventDate]];
                 
                 } else { // Past this week- uses abbreviated date format
                 
@@ -246,7 +265,27 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                     NSString *timeString = [formatter stringFromDate:eventDate];
                     finalString = [NSString stringWithFormat:@"%@ at %@", dateString, timeString];
                     
+                    [formatter setDateFormat:@"EEEE"];
+                    [calDayOfWeekArray addObject:[formatter stringFromDate:eventDate]];
+                    
                 }
+                
+                [formatter setDateFormat:@"MMM"];
+                [calMonthArray addObject:[formatter stringFromDate:eventDate]];
+                [formatter setDateFormat:@"d"];
+                [calDayArray addObject:[formatter stringFromDate:eventDate]];
+                
+                [formatter setDateFormat:@"h:mma"];
+                NSString *calTimeString = [NSString stringWithFormat:@"%@ - %@", [formatter stringFromDate:eventDate], [formatter stringFromDate:endDate]];
+                
+                if ([calTimeString containsString:@":00"]) {
+                    
+                    calTimeString = [calTimeString stringByReplacingOccurrencesOfString:@":00" withString:@" "];
+                    
+                }
+                
+                [calTimeArray addObject:calTimeString];
+                
                 
                 if ([finalString containsString:@":00"]) {
                     
@@ -284,6 +323,12 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                 NSString *name = eventObject[@"CreatedByName"];
                 NSString *fullName = [NSString stringWithFormat:@"%@", name];
                 [createdByArray addObject:name];
+                
+                NSString *urlString = eventObject[@"URL"];
+                if (urlString == nil || [urlString isEqualToString:@""])
+                    [URLArray addObject:@""];
+                else
+                    [URLArray addObject:urlString];
 
             }
             
@@ -294,6 +339,13 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                 [self loadCards];
             } else {
                 NSLog(@"Error--- perform action");
+                
+                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                    // time-consuming task
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [SVProgressHUD showErrorWithStatus:@"Houston, we have a problem." maskType:SVProgressHUDMaskTypeGradient];
+                    });
+                });
             }
             
         }];
@@ -341,7 +393,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 -(DraggableView *)createDraggableViewWithDataAtIndex:(NSInteger)index
 {
     DraggableView *draggableView = [[DraggableView alloc]initWithFrame:CGRectMake(0, 0, CARD_WIDTH, CARD_HEIGHT)];
-    [draggableView.activityView startAnimating];
+    //[draggableView.activityView startAnimating];
     draggableView.userInteractionEnabled = NO;
     // &&& Adds image cards from array
     PFQuery *query = [PFQuery queryWithClassName:@"Event"];
@@ -352,18 +404,23 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         draggableView.objectID = objectIDs[index];
         draggableView.title.text = titleArray[index];
         draggableView.subtitle.text = subtitleArray[index];
+        [draggableView.subtitle sizeToFit];
         draggableView.location.text = locationArray[index];
         draggableView.date.text = dateArray[index];
         //draggableView.time.text = timeArray[index];
         //draggableView.hashtag.text = hashtagArray[index];
         draggableView.swipesRight.text = swipesRightArray[index];
+        draggableView.URL = URLArray[index];
 
         NSMutableAttributedString *attString = [[NSMutableAttributedString alloc] initWithString:createdByArray[index]];
         [attString addAttribute:(NSString*)kCTUnderlineStyleAttributeName
                           value:[NSNumber numberWithInt:kCTUnderlineStyleSingle]
                           range:(NSRange){0,[attString length]}];
         draggableView.createdBy.attributedText = attString;
-        //draggableView.createdBy.textColor =
+        [draggableView.createdBy sizeToFit];
+        if (draggableView.createdBy.frame.size.width > 160) {
+            draggableView.createdBy.frame = CGRectMake(draggableView.createdBy.frame.origin.x, draggableView.createdBy.frame.origin.y, 160, draggableView.createdBy.frame.size.height);
+        }
 
         PFGeoPoint *loc = geoLocArray[index];
         draggableView.geoPoint = loc;
@@ -427,13 +484,42 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         // Only allow interaction once all data is loaded
         draggableView.userInteractionEnabled = YES;
         
+        UIImage *calImage = [UIImage imageNamed:@"calendar light grey"]; //[DraggableViewBackground drawText:calMonthArray[index] inImage:[UIImage imageNamed:@"calendar light grey"] atPoint:CGPointMake(20, 20) withColor:[UIColor blackColor] withFont:[UIFont fontWithName:@"OpenSans" size:10.0]];
+        // calImage = [DraggableViewBackground drawText:calDayArray[index] inImage:[UIImage imageNamed:@"calendar light grey"] atPoint:CGPointMake(40, 40) withColor:[UIColor blackColor] withFont:[UIFont fontWithName:@"OpenSans" size:12.0]];
+        
+        draggableView.calImageView.image = calImage;
+        
+        draggableView.calMonthLabel.text = calMonthArray[index];
+        draggableView.calDayLabel.text = calDayArray[index];
+        draggableView.calDayOfWeekLabel.text = calDayOfWeekArray[index];
+        [draggableView.calDayOfWeekLabel sizeToFit];
+        draggableView.calTimeLabel.text = calTimeArray[index];
+        [draggableView.calTimeLabel sizeToFit];
+        
+        UIGestureRecognizer *gr1 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(checkEventStoreAccessForCalendar)];
+        [draggableView.calImageView addGestureRecognizer:gr1];
+        UIGestureRecognizer *gr2 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(checkEventStoreAccessForCalendar)];
+        [draggableView.calMonthLabel addGestureRecognizer:gr2];
+        UIGestureRecognizer *gr3 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(checkEventStoreAccessForCalendar)];
+        [draggableView.calDayLabel addGestureRecognizer:gr3];
+        UIGestureRecognizer *gr4 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(checkEventStoreAccessForCalendar)];
+        [draggableView.calDayOfWeekLabel addGestureRecognizer:gr4];
+        UIGestureRecognizer *gr5 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(checkEventStoreAccessForCalendar)];
+        [draggableView.calTimeLabel addGestureRecognizer:gr5];
+        
+        
+        //draggableView.calImageView.frame = CGRectMake(0, 0, calImage.size.width, calImage.size.height);
+        
+        NSLog(@"DATE: ==> %@, %@, %@, %@", calMonthArray[index], calDayArray[index], calDayOfWeekArray[index], calTimeArray[index]);
+        
+        
         [draggableView.shareButton addTarget:self action:@selector(shareAction) forControlEvents:UIControlEventTouchUpInside];
         
         UITapGestureRecognizer *createdByTapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(createdByTap)];
         [draggableView.createdBy addGestureRecognizer:createdByTapRecognizer];
         
         [self sendSubviewToBack:dragView.cardBackground];
-        [draggableView.activityView stopAnimating];
+        //[draggableView.activityView stopAnimating];
         
     }];
     
@@ -478,6 +564,16 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             
             [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"noMoreEvents"];
             
+            if (!error) {
+                
+                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                    // time-consuming task
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [SVProgressHUD dismiss];
+                    });
+                });
+            }
+            
         } else {
             
             NSLog(@"no more events :(");
@@ -517,7 +613,8 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     
     PFObject *swipesObject = [PFObject objectWithClassName:@"Swipes"];
     PFUser *user = [PFUser currentUser];
-    swipesObject[@"UserID"] = user.username;
+    swipesObject[@"UserID"] = user.objectId;
+    swipesObject[@"username"] = user.username;
     swipesObject[@"EventID"] = c.objectID;
     swipesObject[@"swipedRight"] = @NO;
     swipesObject[@"swipedLeft"] = @YES;
@@ -525,9 +622,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     if ([[NSUserDefaults standardUserDefaults] boolForKey:@"socialMode"]) {
         swipesObject[@"FBObjectID"] = user[@"FBObjectID"];
     }
-    
-    [swipesObject saveInBackground];
-    
+
     
     [loadedCards removeObjectAtIndex:0]; //%%% card was swiped, so it's no longer a "loaded card"
     
@@ -547,8 +642,19 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         self.myViewController.userSwipedFromFlippedView = NO;
     
     if (loadedCards.count == 0) {
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"noMoreEvents"];
-        [self.myViewController refreshData];
+        
+        [swipesObject saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+            
+            if (succeeded) {
+                
+                [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"noMoreEvents"];
+                [self.myViewController refreshData];
+            }
+            
+        }];
+    
+    } else {
+        [swipesObject saveInBackground];
     }
     
 }
@@ -589,7 +695,8 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     }];
     
     PFObject *swipesObject = [PFObject objectWithClassName:@"Swipes"];
-    swipesObject[@"UserID"] = user.username;
+    swipesObject[@"UserID"] = user.objectId;
+    swipesObject[@"username"] = user.username;
     swipesObject[@"EventID"] = c.objectID;
     swipesObject[@"swipedRight"] = @YES;
     swipesObject[@"swipedLeft"] = @NO;
@@ -598,8 +705,6 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         swipesObject[@"FBObjectID"] = user[@"FBObjectID"];
     }
 
-    
-    [swipesObject saveInBackground];
     
     //PFObject *analyticsObject = [PFObject objectWithClassName:@"Analytics"];
     //analyticsObject[@"Age"] = user[@"]
@@ -628,9 +733,45 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         self.myViewController.userSwipedFromFlippedView = NO;
     
     if (loadedCards.count == 0) {
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"noMoreEvents"];
-        [self.myViewController refreshData];
+        
+        [swipesObject saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+            
+            if (succeeded) {
+                
+                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                    // time-consuming task
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        NSString *message = [[NSString alloc] init];
+                        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                        if ([defaults boolForKey:@"today"]) {
+                            
+                            message = @"No more events today.\nLoading future events...";
+                            
+                        } else if ([defaults boolForKey:@"tomorrow"]) {
+                            
+                            message = @"No more events tomorrow.\nLoading future events...";
+                            
+                        } else {
+
+                            message = @"No more events this weekend.\nLoading future events...";
+                            
+                        }
+                        
+                        [SVProgressHUD showWithStatus:message maskType:SVProgressHUDMaskTypeGradient];
+                        [SVProgressHUD setFont:[UIFont fontWithName:@"OpenSans" size:14.0]];
+                    });
+                });
+                
+                [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"noMoreEvents"];
+                [self.myViewController refreshData];
+            }
+            
+        }];
+        
+    } else {
+        [swipesObject saveInBackground];
     }
+
     
 }
 
@@ -711,7 +852,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         {
             UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Privacy Warning" message:@"Permission was not granted for Calendar"
                                                            delegate:nil
-                                                  cancelButtonTitle:@"OK"
+                                                  cancelButtonTitle:@"Okaaay"
                                                   otherButtonTitles:nil];
             [alert show];
         }
@@ -740,10 +881,13 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 -(void)accessGrantedForCalendar
 {
     
+    
+    
     PFQuery *query = [PFQuery queryWithClassName:@"Event"];
     PFObject *object = [query getObjectWithId:dragView.objectID];
     
     EKEvent *event = [EKEvent eventWithEventStore:eventStore];
+    EKEventViewController *evc = [[EKEventViewController alloc] init];
     
     event.title = dragView.title.text;
 
@@ -754,14 +898,18 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     PFGeoPoint *geoPoint = object[@"GeoLoc"];
     CLLocation *eventLocation = [[CLLocation alloc]initWithLatitude:geoPoint.latitude longitude:geoPoint.longitude];
     
+    NSString *ticketLink = object[@"TicketLink"];
+    NSString *description = dragView.subtitle.text;
     
-    NSString *subtitle = dragView.subtitle.text;
-    NSString *description = object[@"Description"];
-    
-    if (description == nil)
-        event.notes = [NSString stringWithFormat:@"%@ // %@", dragView.location.text, subtitle];
-    else
-        event.notes = [NSString stringWithFormat:@"%@ // %@ // %@", dragView.location.text, subtitle, description];
+    if ((description == nil || [description isEqualToString:@""]) && (ticketLink == nil || [ticketLink isEqualToString:@""])) {
+        event.notes = [NSString stringWithFormat:@"Venue name: %@", dragView.location.text];
+    } else if (ticketLink == nil || [ticketLink isEqualToString:@""]) {
+        event.notes = [NSString stringWithFormat:@"Venue name: %@ // %@", dragView.location.text, description];
+    } else if (description == nil || [description isEqualToString:@""]) {
+        event.notes = [NSString stringWithFormat:@"Venue name: %@ // Get tickets at: %@", dragView.location.text, ticketLink];
+    } else {
+        event.notes = [NSString stringWithFormat:@"Venue name: %@ // Get tickets at: %@ // %@", dragView.location.text, ticketLink, description];
+    }
     
     
     NSString *url = object[@"URL"];
@@ -791,22 +939,24 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         NSString *zipCode = placemark.addressDictionary[@"ZIP"];
         //NSString *country = placemark.addressDictionary[@"Country"];
         
-        if (zipCode) {
-            event.location = [NSString stringWithFormat:@"%@, %@ %@, %@", streetName, cityName, stateName, zipCode];
-        }
-        else if (cityName) {
-            event.location = [NSString stringWithFormat:@"%@, %@, %@", streetName, cityName, stateName];
+        if (streetName && zipCode && cityName) {
+            event.location = [NSString stringWithFormat:@"%@ %@, %@ %@", streetName, cityName, stateName, zipCode];
+        } else if (zipCode && !streetName) {
+            event.location = [NSString stringWithFormat:@"%@, %@ %@", cityName, stateName, zipCode];
+        } else if (cityName && streetName) {
+            event.location = [NSString stringWithFormat:@"%@ %@, %@", streetName, cityName, stateName];
         } else
             event.location = dragView.location.text;
         
         
-        [RKDropdownAlert title:@"Event added to your main calendar!" backgroundColor:[UIColor colorWithRed:.05 green:.29 blue:.49 alpha:1.0] textColor:[UIColor whiteColor]];
+        //[RKDropdownAlert title:@"Event added to your main calendar!" backgroundColor:[UIColor colorWithRed:.05 green:.29 blue:.49 alpha:1.0] textColor:[UIColor whiteColor]];
         
         [event setCalendar:[eventStore defaultCalendarForNewEvents]];
         NSError *err;
-        [eventStore saveEvent:event span:EKSpanThisEvent error:&err];
-        NSLog(@"Added %@ to calendar. Object ID: %@", dragView.title.text, dragView.objectID);
+        //[eventStore saveEvent:event span:EKSpanThisEvent error:&err];
+        //NSLog(@"Added %@ to calendar. Object ID: %@", dragView.title.text, dragView.objectID);
         
+        [self.myViewController showEditEventVCWithEvent:event eventStore:eventStore];
     }];
 
 }
@@ -860,6 +1010,28 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     
     
     return categories;
+}
+
++(UIImage*) drawText:(NSString*) text
+             inImage:(UIImage*)  image
+             atPoint:(CGPoint)   point
+           withColor:(UIColor*)  color
+            withFont:(UIFont *)  font
+{
+    
+    //UIFont *font = [UIFont fontWithName:@"LetterGothicStd" size:12.0]; // fixed-width font
+    UIGraphicsBeginImageContext(image.size);
+    [image drawInRect:CGRectMake(0,0,image.size.width,image.size.height)];
+    CGRect rect = CGRectMake(point.x, point.y, image.size.width, image.size.height);
+    [color set];
+    UILabel *label;
+    //label.text = text;
+    //[label drawTextInRect:rect];
+    [text drawInRect:CGRectIntegral(rect) withFont:font];
+    UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    return newImage;
 }
 
 @end

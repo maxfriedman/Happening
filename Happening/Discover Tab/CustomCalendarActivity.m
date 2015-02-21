@@ -86,7 +86,7 @@
         {
             UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Privacy Warning" message:@"Permission was not granted for Calendar"
                                                            delegate:nil
-                                                  cancelButtonTitle:@"OK"
+                                                  cancelButtonTitle:@"Okaaay"
                                                   otherButtonTitles:nil];
             [alert show];
         }
@@ -131,16 +131,21 @@
     CLLocation *eventLocation = [[CLLocation alloc]initWithLatitude:geoPoint.latitude longitude:geoPoint.longitude];
     
     
-    NSString *subtitle = draggableView.subtitle.text;
-    NSString *description = object[@"Description"];
+    NSString *ticketLink = object[@"TicketLink"];
+    NSString *description = draggableView.subtitle.text;
     
-    if (description == nil)
-        event.notes = [NSString stringWithFormat:@"%@ // %@", draggableView.location.text, subtitle];
-    else
-        event.notes = [NSString stringWithFormat:@"%@ // %@ // %@", draggableView.location.text, subtitle, description];
+    if ((description == nil || [description isEqualToString:@""]) && (ticketLink == nil || [ticketLink isEqualToString:@""])) {
+        event.notes = [NSString stringWithFormat:@"Venue name: %@", draggableView.location.text];
+    } else if (ticketLink == nil || [ticketLink isEqualToString:@""]) {
+        event.notes = [NSString stringWithFormat:@"Venue name: %@ // %@", draggableView.location.text, description];
+    } else if (description == nil || [description isEqualToString:@""]) {
+        event.notes = [NSString stringWithFormat:@"Venue name: %@ // Get tickets at: %@", draggableView.location.text, ticketLink];
+    } else {
+        event.notes = [NSString stringWithFormat:@"Venue name: %@ // Get tickets at: %@ // %@", draggableView.location.text, ticketLink, description];
+    }
     
     
-    NSString *url = object[@"URL"];
+    NSString *url = draggableView.URL;
     NSURL *urlFromString = [NSURL URLWithString:url];
     
     if (urlFromString != nil)
@@ -167,21 +172,22 @@
         NSString *zipCode = placemark.addressDictionary[@"ZIP"];
         //NSString *country = placemark.addressDictionary[@"Country"];
         
-        if (zipCode) {
-            event.location = [NSString stringWithFormat:@"%@, %@ %@, %@", streetName, cityName, stateName, zipCode];
-        }
-        else if (cityName) {
-            event.location = [NSString stringWithFormat:@"%@, %@, %@", streetName, cityName, stateName];
+        if (streetName && zipCode && cityName) {
+            event.location = [NSString stringWithFormat:@"%@ %@, %@ %@", streetName, cityName, stateName, zipCode];
+        } else if (zipCode && !streetName) {
+            event.location = [NSString stringWithFormat:@"%@, %@ %@", cityName, stateName, zipCode];
+        } else if (cityName && streetName) {
+            event.location = [NSString stringWithFormat:@"%@ %@, %@", streetName, cityName, stateName];
         } else
             event.location = draggableView.location.text;
         
         
-        [RKDropdownAlert title:@"Event added to your main calendar!" backgroundColor:[UIColor colorWithRed:.05 green:.29 blue:.49 alpha:1.0] textColor:[UIColor whiteColor]];
+        //[RKDropdownAlert title:@"Event added to your main calendar!" backgroundColor:[UIColor colorWithRed:.05 green:.29 blue:.49 alpha:1.0] textColor:[UIColor whiteColor]];
                 
         [event setCalendar:[eventStore defaultCalendarForNewEvents]];
         NSError *err;
         [eventStore saveEvent:event span:EKSpanThisEvent error:&err];
-        NSLog(@"Event added to calendar!");
+        //NSLog(@"Event added to calendar!");
         
     }];
     

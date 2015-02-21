@@ -42,6 +42,7 @@
 
 -(void)viewWillAppear:(BOOL)animated {
     
+    [self setEnabledSidewaysScrolling:YES];
     
     // Instantiate event dictionary--- this is where all event info is stored
     self.sections = [NSMutableDictionary dictionary];
@@ -49,7 +50,7 @@
     PFQuery *swipesQuery = [PFQuery queryWithClassName:@"Swipes"];
     // Query only for current user's events
     PFUser *user = [PFUser currentUser];
-    [swipesQuery whereKey:@"UserID" equalTo:user.username];
+    [swipesQuery whereKey:@"UserID" equalTo:user.objectId];
     [swipesQuery whereKey:@"swipedRight" equalTo:@YES];
     //NSArray *swipesArray = [swipesQuery findObjects];
     
@@ -153,7 +154,7 @@
     
     [cell.titleLabel setText:[NSString stringWithFormat:@"%@",Event[@"Title"]]];
     
-    [cell.subtitle setText:[NSString stringWithFormat:@"%@",Event[@"Subtitle"]]];
+    [cell.subtitle setText:[NSString stringWithFormat:@"%@",Event[@"Description"]]];
     
     [cell.locLabel setText:[NSString stringWithFormat:@"%@",Event[@"Location"]]];
     
@@ -422,6 +423,13 @@
     return beginningOfDay;
 }
 
+- (void)setEnabledSidewaysScrolling:(BOOL)enabled {
+    
+    AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+    RKSwipeBetweenViewControllers *rk = appDelegate.rk;
+    [rk scrolling:enabled];
+    
+}
 
 #pragma mark - Navigation
 

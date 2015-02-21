@@ -32,6 +32,10 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    self.navigationController.navigationBar.barTintColor = [UIColor clearColor]; //%%% bartint
+    [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"navBar"] forBarMetrics:UIBarMetricsDefault];
+    self.navigationController.navigationBar.translucent = NO;
+    
     currentRow = 1;
     //self.frequencyInt = 3; data is now set when segue is performed
     //So we set 3 as default if it's first time opening page

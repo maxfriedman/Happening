@@ -27,6 +27,10 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    self.navigationController.navigationBar.barTintColor = [UIColor clearColor]; //%%% bartint
+    [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"navBar"] forBarMetrics:UIBarMetricsDefault];
+    self.navigationController.navigationBar.translucent = NO;
+    
     NSLog(@"%@", passedEvent);
     
     url = urlString;
@@ -97,7 +101,7 @@
         [delegate setUrl:url description:description email:email];
         
     } else {
-        UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Not a valid web address" message:@"" delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+        UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Not a valid web address" message:@"" delegate:self cancelButtonTitle:@"Oops!" otherButtonTitles:nil, nil];
         [alert show];
         
         currentCell.accessoryType = UITableViewCellAccessoryNone;
@@ -121,7 +125,7 @@
         [delegate setUrl:url description:description email:email];
         
     } else {
-        UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Not a valid email address" message:@"" delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+        UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Not a valid email address" message:@"" delegate:self cancelButtonTitle:@"Roger that" otherButtonTitles:nil, nil];
         [alert show];
         
         currentCell.accessoryType = UITableViewCellAccessoryNone;

@@ -13,6 +13,7 @@
 #import <MapKit/MapKit.h>
 #import "DraggableView.h"
 #import <EventKit/EventKit.h>
+#import <EventKitUI/EventKitUI.h>
 #import "FlippedDVB.h" // imports drag view controller
 #import "FXBlurView.h"
 
@@ -50,6 +51,14 @@
 @property (retain,nonatomic)NSMutableArray* imageArray;
 @property (retain,nonatomic)NSMutableArray* createdByArray;
 @property (retain,nonatomic)NSMutableArray* createdByUserIDArray;
+@property (retain,nonatomic)NSMutableArray* URLArray;
+
+
+@property (retain,nonatomic)NSMutableArray* calMonthArray;
+@property (retain,nonatomic)NSMutableArray* calDayArray;
+@property (retain,nonatomic)NSMutableArray* calDayOfWeekArray;
+@property (retain,nonatomic)NSMutableArray* calTimeArray;
+
 
 
 @property (retain, nonatomic)CLLocation *mapLocation;

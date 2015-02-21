@@ -27,6 +27,12 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    
+    self.navigationController.navigationBar.barTintColor = [UIColor clearColor]; //%%% bartint
+    [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"navBar"] forBarMetrics:UIBarMetricsDefault];
+    [self.navigationController.navigationBar setBarStyle:UIBarStyleBlack];
+    self.navigationController.navigationBar.translucent = NO;
+    
     [self.searchDisplayController setDelegate:self];
     [self.searchBar setDelegate:self];
     Event = [PFObject objectWithClassName:@"Event"];

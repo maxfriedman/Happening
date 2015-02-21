@@ -33,6 +33,10 @@
     //self.navigationItem.leftBarButtonItem = self.navigationItem.backBarButtonItem;
     //[self.navigationItem setHidesBackButton:NO];
     
+    self.navigationController.navigationBar.barTintColor = [UIColor clearColor]; //%%% bartint
+    [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"navBar"] forBarMetrics:UIBarMetricsDefault];
+    self.navigationController.navigationBar.translucent = NO;
+    
     mapView = [[MKMapView alloc] initWithFrame:CGRectMake(15, 376, 254, 133)];
     [cardView addSubview:mapView];
     
@@ -191,9 +195,15 @@
             NSString *cityName = placemark.addressDictionary[@"City"];
             NSString *stateName = placemark.addressDictionary[@"State"];
             NSString *zipCode = placemark.addressDictionary[@"ZIP"];
-            if (zipCode)
-                annotation.subtitle = [NSString stringWithFormat:@"%@, %@ %@, %@", streetName, cityName, stateName, zipCode];
-            else annotation.subtitle = [NSString stringWithFormat:@"%@, %@, %@", streetName, cityName, stateName];
+            
+            if (streetName && zipCode && cityName) {
+                annotation.subtitle = [NSString stringWithFormat:@"%@ %@, %@ %@", streetName, cityName, stateName, zipCode];
+            } else if (zipCode && !streetName) {
+                annotation.subtitle = [NSString stringWithFormat:@"%@, %@ %@", cityName, stateName, zipCode];;
+            } else if (cityName && streetName) {
+                annotation.subtitle = [NSString stringWithFormat:@"%@ %@, %@", streetName, cityName, stateName];
+            } else
+                annotation.subtitle = self.locationText;
             
         }];
         
@@ -332,10 +342,10 @@
                                                           FBSessionState state,
                                                           NSError *error) {
                                           if (error) {
-                                              UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Error"
+                                              UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Facebook Error"
                                                                                                   message:error.localizedDescription
                                                                                                  delegate:nil
-                                                                                        cancelButtonTitle:@"OK"
+                                                                                        cancelButtonTitle:@"That's odd"
                                                                                         otherButtonTitles:nil];
                                               [alertView show];
                                           } else if (session.isOpen) {
@@ -514,12 +524,14 @@
                 NSString *country = placemark.addressDictionary[@"Country"];
                 
                 
-                if (zipCode) {
-                    destinationAddress = [NSMutableString stringWithFormat:@"%@ %@, %@ %@, %@", streetName, cityName, stateName, zipCode, country];
-                }
-                else if (cityName) {
-                    destinationAddress = [NSMutableString stringWithFormat:@"%@ %@, %@, %@", streetName, cityName, stateName, country];
-                }
+                if (streetName && zipCode && cityName) {
+                    destinationAddress = [NSString stringWithFormat:@"%@ %@, %@, %@ %@", streetName, cityName, stateName, zipCode, country];
+                } else if (zipCode && !streetName) {
+                    destinationAddress = [NSString stringWithFormat:@"%@, %@ %@ %@", cityName, stateName, zipCode, country];
+                } else if (cityName && streetName) {
+                    destinationAddress = [NSString stringWithFormat:@"%@, %@, %@ %@", streetName, cityName, stateName, country];
+                } else
+                    destinationAddress = self.locationText;
                 
                 destinationAddress = [destinationAddress stringByReplacingOccurrencesOfString:@" " withString:@"%20"];
             
@@ -550,7 +562,7 @@
             
             [[[CLGeocoder alloc]init] reverseGeocodeLocation:mapLocation completionHandler:^(NSArray *placemarks, NSError *error) {
                 CLPlacemark *placemark = placemarks[0];
-                NSMutableString *destinationAddress = [[NSMutableString alloc]init];
+                NSString *destinationAddress = [[NSString alloc]init];
                     
                     NSString *streetName = placemark.addressDictionary[@"Street"];
                     NSString *cityName = placemark.addressDictionary[@"City"];
@@ -559,22 +571,16 @@
                     NSString *country = placemark.addressDictionary[@"Country"];
                     
                     
-                    if (zipCode) {
-                        destinationAddress = [NSMutableString stringWithFormat:@"%@ %@, %@ %@, %@", streetName, cityName, stateName, zipCode, country];
-                    }
-                    else if (cityName) {
-                        destinationAddress = [NSMutableString stringWithFormat:@"%@ %@, %@, %@", streetName, cityName, stateName, country];
-                    }
+                if (streetName && zipCode && cityName) {
+                    destinationAddress = [NSString stringWithFormat:@"%@ %@, %@, %@ %@", streetName, cityName, stateName, zipCode, country];
+                } else if (zipCode && !streetName) {
+                    destinationAddress = [NSString stringWithFormat:@"%@, %@ %@ %@", cityName, stateName, zipCode, country];
+                } else if (cityName && streetName) {
+                    destinationAddress = [NSString stringWithFormat:@"%@, %@, %@ %@", streetName, cityName, stateName, country];
+                } else
+                    destinationAddress = self.locationText;
                 
-                for (int i = 0; i < destinationAddress.length; i++) {
-                    
-                    if ([destinationAddress characterAtIndex:i] == ' '){
-                        
-                        [destinationAddress insertString:@"%20" atIndex:i];
-                        
-                    }
-                    
-                }
+                [destinationAddress stringByReplacingOccurrencesOfString:@" " withString:@"%20"];
             
                 NSLog(@"%@", destinationAddress);
                 

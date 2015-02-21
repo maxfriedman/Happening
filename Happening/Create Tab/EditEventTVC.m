@@ -64,6 +64,10 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    self.navigationController.navigationBar.barTintColor = [UIColor clearColor]; //%%% bartint
+    [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"navBar"] forBarMetrics:UIBarMetricsDefault];
+    self.navigationController.navigationBar.translucent = NO;
+    
     intervalInSeconds = 3600;
     
     datePicker.alpha = 0;
@@ -90,7 +94,7 @@
     self.navigationItem.title = [NSString stringWithFormat:@"%@", Event[@"Title"]];
     
     titleField.text = Event[@"Title"];
-    subtitleField.text = Event[@"Subtitle"];
+    subtitleField.text = Event[@"Description"];
     locationField.text = Event[@"Location"];
     
     dateFormatter = [[NSDateFormatter alloc]init];
@@ -152,18 +156,14 @@
         NSString *addressString = [lines componentsJoinedByString:@" "];
         NSLog(@"Address: %@", addressString);
         
-        NSString *name = placemark.addressDictionary[@"Name"];
-        //NSString *streetName = placemark.addressDictionary[@"Street"];
+        //NSString *name = placemark.addressDictionary[@"Name"];
+        NSString *streetName = placemark.addressDictionary[@"Street"];
         NSString *cityName = placemark.addressDictionary[@"City"];
         NSString *stateName = placemark.addressDictionary[@"State"];
         NSString *zipCode = placemark.addressDictionary[@"ZIP"];
         NSString *country = placemark.addressDictionary[@"Country"];
         
-        if (Event[@"LocTitle"] != nil) {
-            locTitle.text = Event[@"LocTitle"];
-        } else {
-            locTitle.text = [NSString stringWithFormat:@"%@", name];
-        }
+        locTitle.text = streetName;
         
         if (zipCode) {
             locSubtitle.font = [locSubtitle.font fontWithSize:11.0];
@@ -331,7 +331,7 @@
 
 - (IBAction)subtitleTextInput:(UITextField *)sender {
 
-    Event[@"Subtitle"] = self.subtitleField.text;
+    Event[@"Description"] = self.subtitleField.text;
 }
 
 - (IBAction)locationTextInput:(UITextField *)sender {
@@ -348,7 +348,7 @@
         // Title check
         if (self.titleField.text.length < 3)
         {
-            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Oops!" message:@"Title must be at least 3 characters long" delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Oops!" message:@"Title must be at least 3 characters long" delegate:self cancelButtonTitle:@"I'll fix that" otherButtonTitles:nil, nil];
             [alert show];
             break;
         }
@@ -357,14 +357,14 @@
         
         if (self.locationField.text.length < 3)
         {
-            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Oops!" message:@"What is the name of the event's location? Must be at least 3 characters long." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Oops!" message:@"What is the name of the event's location? Must be at least 3 characters long." delegate:self cancelButtonTitle:@"I'll fix that" otherButtonTitles:nil, nil];
             [alert show];
             break;
         }
         
         if (datePicker.date.timeIntervalSinceNow < 0) {
             
-            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Oops!" message:@"The event can't take place in the past! Please change the date." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Oops!" message:@"The event can't take place in the past! Please change the date." delegate:self cancelButtonTitle:@"I'm on it" otherButtonTitles:nil, nil];
             [alert show];
             break;
         }
@@ -600,7 +600,7 @@ clickedButtonAtIndex:(NSInteger)buttonIndex{
         
         if (size > 10485760) {
             
-            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Oops!" message:@"Image size is too large. Please try another image." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Oops!" message:@"Image size is too large. Please try another image." delegate:self cancelButtonTitle:@"Aww man" otherButtonTitles:nil, nil];
             [alert show];
             
         } else {

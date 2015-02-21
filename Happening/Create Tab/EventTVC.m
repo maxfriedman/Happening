@@ -68,6 +68,10 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    self.navigationController.navigationBar.barTintColor = [UIColor clearColor]; //%%% bartint
+    [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"navBar"] forBarMetrics:UIBarMetricsDefault];
+    self.navigationController.navigationBar.translucent = NO;
+    
     intervalInSeconds = 3600;
     
     locTitle.text = @"";
@@ -285,7 +289,7 @@
 
 - (IBAction)subtitleTextInput:(UITextField *)sender {
     
-    Event[@"Subtitle"] = self.subtitleField.text;
+    Event[@"Description"] = self.subtitleField.text;
     NSIndexPath *path = [[NSIndexPath alloc]init];
     path = [NSIndexPath indexPathForRow:1 inSection:0];
     UITableViewCell *locCell = [self.tableView cellForRowAtIndexPath:path];
@@ -318,7 +322,7 @@
         // Title check
         if (self.titleField.text.length < 3)
         {
-            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Oops!" message:@"Title must be at least 3 characters long" delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Oops!" message:@"Title must be at least 3 characters long" delegate:self cancelButtonTitle:@"I'm on it" otherButtonTitles:nil, nil];
             [alert show];
             break;
         }
@@ -327,14 +331,14 @@
         
         if (self.locationField.text.length < 3)
         {
-            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Oops!" message:@"What is the name of the event's location? Must be at least 3 characters long." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Oops!" message:@"What is the name of the event's location? Must be at least 3 characters long." delegate:self cancelButtonTitle:@"Hmmm..." otherButtonTitles:nil, nil];
             [alert show];
             break;
         }
         
         if (datePicker.date.timeIntervalSinceNow < 0) {
             
-            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Oops!" message:@"The event can't take place in the past! Please change the date." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Oops!" message:@"The event can't take place in the past! Please change the date." delegate:self cancelButtonTitle:@"Well that makes sense." otherButtonTitles:nil, nil];
             [alert show];
             break;
         }
@@ -342,7 +346,7 @@
         // Did user choose a loc?
         if (!item.placemark.location.coordinate.longitude)
         {
-            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Oops!" message:@"Please select a location for this event. If you cannot find or do not know the exact location, just use the city name (i.e. Washington, DC)." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Oops!" message:@"Please select a location for this event. If you cannot find or do not know the exact location, just use the city name (i.e. Washington, DC)." delegate:self cancelButtonTitle:@"You got it" otherButtonTitles:nil, nil];
             [alert show];
             break;
         }
@@ -350,7 +354,7 @@
         // Did user choose a tag?
         if ([hashtagDetailLabel.text isEqualToString:@"Tap to set"])
         {
-            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Oops!" message:@"Please select a tag for this event." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Oops!" message:@"Please select a tag for this event." delegate:self cancelButtonTitle:@"Roger that" otherButtonTitles:nil, nil];
             [alert show];
             break;
         }
@@ -627,7 +631,7 @@ clickedButtonAtIndex:(NSInteger)buttonIndex{
         
         if (size > 10485760) {
         
-            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Oops!" message:@"Image size is too large. Please try another image." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Uh-oh" message:@"Image size is too large. Please try another image." delegate:self cancelButtonTitle:@"Aww man!" otherButtonTitles:nil, nil];
             [alert show];
             
         } else {

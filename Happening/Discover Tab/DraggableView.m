@@ -52,7 +52,7 @@
 @synthesize swipesRight;
 
 @synthesize locImage, userImage, shareButton;
-@synthesize activityView, cardBackground, cardView, greyLocImageView;
+@synthesize activityView, cardBackground, cardView, greyLocImageView, calImageView, calDayLabel, calDayOfWeekLabel, calMonthLabel, calTimeLabel;
 
 @synthesize xButton, checkButton, eventStore, blurEffectView;
 
@@ -116,7 +116,7 @@
         
         title = [[UILabel alloc]initWithFrame:CGRectMake(15, 106, eventImage.frame.size.width - 92, 70)];
         
-        subtitle = [[UILabel alloc]initWithFrame:CGRectMake(15, 185, self.frame.size.width - 30, 100)];
+        subtitle = [[UILabel alloc]initWithFrame:CGRectMake(15, 220, self.frame.size.width - 30, 80)];
         location = [[UILabel alloc]initWithFrame:CGRectMake(15, 150, self.frame.size.width - 30, 100)];
         
         date = [[UILabel alloc]initWithFrame:CGRectMake(15, 110, self.frame.size.width - 100, 100)];
@@ -128,7 +128,7 @@
         //hashtag = [[UILabel alloc]initWithFrame:CGRectMake(15, 240, self.frame.size.width - 30, 100)];
         geoLoc = [[UILabel alloc]initWithFrame:CGRectMake(15, 100, self.frame.size.width - 30, 100)];
         swipesRight = [[UILabel alloc]initWithFrame:CGRectMake(204, 240, 65, 100)];
-        createdBy = [[UILabel alloc]initWithFrame:CGRectMake(15, 240, 160, 100)];
+        createdBy = [[UILabel alloc]initWithFrame:CGRectMake(15, 282, 160, 30)];
         
         shareButton = [[UIButton alloc] initWithFrame:CGRectMake(self.frame.size.width - 45, 15, 30, 30)];
         
@@ -237,7 +237,7 @@
         //swipesRight.textColor = [UIColor grayColor];
         swipesRight.textColor = [UIColor colorWithHue:0 saturation:0 brightness:.64 alpha:1.0];
         swipesRight.font = [UIFont fontWithName:@"OpenSans" size:11.0];
-        swipesRight.minimumScaleFactor = 0.75;
+        swipesRight.minimumScaleFactor = 0.6;
         swipesRight.adjustsFontSizeToFitWidth = YES;
         
         [createdBy setUserInteractionEnabled:YES];
@@ -245,7 +245,8 @@
         createdBy.textColor = [UIColor colorWithHue:0 saturation:0 brightness:.64 alpha:1.0];
         createdBy.font = [UIFont fontWithName:@"OpenSans" size:11.0];
         
-        [shareButton setImage:[UIImage imageNamed:@"interested_face"] forState:UIControlStateNormal];
+        [shareButton setImage:[UIImage imageNamed:@"share"] forState:UIControlStateNormal];
+        [shareButton setImage:[UIImage imageNamed:@"share pressed"] forState:UIControlStateSelected];
         [cardView addSubview:shareButton];
         
         //locImage.image = [UIImage imageNamed:@"locImage"];
@@ -273,6 +274,51 @@
         [cardView addSubview:overlayView];
         
         //[activityView stopAnimating];
+        
+        calImageView = [[UIImageView alloc] initWithFrame:CGRectMake(15, 230, 25, 25)];
+        calImageView.alpha = 0;
+        calImageView.userInteractionEnabled = YES;
+        [cardView addSubview:calImageView];
+    
+        UIColor *grayColor = [UIColor colorWithRed:(70.0/255.0) green:(70.0/255.0) blue:(70.0/255.0) alpha:1.0];
+        UIColor *lightGrayColor = [UIColor colorWithRed:(164.0/255.0) green:(163.0/255.0) blue:(163.0/255.0) alpha:1.0];
+        
+        calMonthLabel = [[UILabel alloc] initWithFrame:CGRectMake(17.5, 230, 20, 20)];
+        calMonthLabel.textAlignment = NSTextAlignmentCenter;
+        calMonthLabel.font = [UIFont fontWithName:@"OpenSans" size:8.0];
+        calMonthLabel.textColor = grayColor;
+        calMonthLabel.alpha = 0;
+        calMonthLabel.userInteractionEnabled = YES;
+        [cardView addSubview:calMonthLabel];
+        
+        calDayLabel = [[UILabel alloc] initWithFrame:CGRectMake(17.5, 238, 20, 20)];
+        calDayLabel.textAlignment = NSTextAlignmentCenter;
+        calDayLabel.font = [UIFont fontWithName:@"OpenSans-Light" size:10.0];
+        calDayLabel.textColor = grayColor;
+        calDayLabel.alpha = 0;
+        calDayLabel.userInteractionEnabled = YES;
+        [cardView addSubview:calDayLabel];
+        
+        calDayOfWeekLabel = [[UILabel alloc] initWithFrame:CGRectMake(43, 231, 100, 20)];
+        calDayOfWeekLabel.textAlignment = NSTextAlignmentLeft;
+        calDayOfWeekLabel.font = [UIFont fontWithName:@"OpenSans" size:10.0];
+        calDayOfWeekLabel.textColor = grayColor;
+        calDayOfWeekLabel.alpha = 0;
+        calDayOfWeekLabel.userInteractionEnabled = YES;
+        [cardView addSubview:calDayOfWeekLabel];
+        
+        calTimeLabel = [[UILabel alloc] initWithFrame:CGRectMake(43, 242, 62, 20)];
+        calTimeLabel.textAlignment = NSTextAlignmentLeft;
+        calTimeLabel.font = [UIFont fontWithName:@"OpenSans" size:8.0];
+        calTimeLabel.textColor = grayColor;
+        calTimeLabel.minimumScaleFactor = 0.75;
+        calTimeLabel.adjustsFontSizeToFitWidth = YES;
+        calTimeLabel.alpha = 0;
+        calTimeLabel.userInteractionEnabled = YES;
+        [cardView addSubview:calTimeLabel];
+        
+        
+        
 
     }
     
@@ -423,12 +469,15 @@
 -(void)rightAction
 {
     //self.superview.superview.superview.userInteractionEnabled = NO; // BE CAREFUL... disables UI during button click
+    [self setEnabledSidewaysScrolling:NO];
+
     CGPoint finishPoint = CGPointMake(500, 2*yFromCenter +self.originalPoint.y);
     [UIView animateWithDuration:0.3
                      animations:^{
                          cardView.center = finishPoint;
                      }completion:^(BOOL complete){
                          self.superview.superview.superview.userInteractionEnabled = YES;
+                         [self setEnabledSidewaysScrolling:YES];
                          [self removeFromSuperview];
                      }];
     
@@ -442,12 +491,15 @@
 -(void)leftAction
 {
     //self.superview.superview.superview.userInteractionEnabled = NO; // BE CAREFUL... disables UI during button click
+    [self setEnabledSidewaysScrolling:NO];
+
     CGPoint finishPoint = CGPointMake(-300, 2*yFromCenter +self.originalPoint.y);
     [UIView animateWithDuration:0.3
                      animations:^{
                          cardView.center = finishPoint;
                      }completion:^(BOOL complete){
                          self.superview.superview.superview.userInteractionEnabled = YES;
+                         [self setEnabledSidewaysScrolling:YES];
                          [self removeFromSuperview];
                      }];
     
@@ -459,12 +511,15 @@
 -(void)downAction
 {
     //self.superview.superview.superview.userInteractionEnabled = NO; // BE CAREFUL... disables UI during button click
+    [self setEnabledSidewaysScrolling:NO];
+    
     CGPoint finishPoint = CGPointMake(cardView.frame.size.width / 2, 1000);
     [UIView animateWithDuration:0.3
                      animations:^{
                          cardView.center = finishPoint;
                      }completion:^(BOOL complete){
                          self.superview.superview.superview.userInteractionEnabled = YES;
+                         [self setEnabledSidewaysScrolling:YES];
                          [self removeFromSuperview];
                      }];
     
@@ -479,12 +534,15 @@
 {
 
     //self.superview.superview.superview.userInteractionEnabled = NO; // BE CAREFUL... disables UI during button click
+    [self setEnabledSidewaysScrolling:NO];
+
     CGPoint finishPoint = CGPointMake(900, self.center.y);
     [UIView animateWithDuration:0.5 delay:0.3 options:UIViewAnimationOptionCurveEaseInOut animations:^{
         cardView.center = finishPoint;
         cardView.transform = CGAffineTransformMakeRotation(1);
     }completion:^(BOOL complete){
         self.superview.superview.superview.userInteractionEnabled = YES;
+        [self setEnabledSidewaysScrolling:YES];
         [self removeFromSuperview];
     }];
 
@@ -498,12 +556,15 @@
 {
     
     //self.superview.superview.superview.userInteractionEnabled = NO; // BE CAREFUL... disables UI during button click
+    [self setEnabledSidewaysScrolling:NO];
+    
     CGPoint finishPoint = CGPointMake(-600, self.center.y);
     [UIView animateWithDuration:0.5 delay:0.3 options:UIViewAnimationOptionCurveEaseInOut animations:^{
         cardView.center = finishPoint;
         cardView.transform = CGAffineTransformMakeRotation(-1);
     }completion:^(BOOL complete){
         self.superview.superview.superview.userInteractionEnabled = YES;
+        [self setEnabledSidewaysScrolling:YES];
         [self removeFromSuperview];
     }];
     
@@ -544,7 +605,7 @@
         {
             UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Privacy Warning" message:@"Permission was not granted for Calendar"
                                                            delegate:nil
-                                                  cancelButtonTitle:@"OK"
+                                                  cancelButtonTitle:@"Okaaaay"
                                                   otherButtonTitles:nil];
             [alert show];
         }
@@ -573,6 +634,14 @@
 -(void)accessGrantedForCalendar
 {
     // Let's get the default calendar associated with our event store
+    
+}
+
+- (void)setEnabledSidewaysScrolling:(BOOL)enabled {
+    
+    AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+    RKSwipeBetweenViewControllers *rk = appDelegate.rk;
+    [rk scrolling:enabled];
     
 }
 

@@ -24,6 +24,7 @@
 		50248C8519BBAB2F00329910 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50248C8419BBAB2F00329910 /* Security.framework */; };
 		50248C8719BBAB3500329910 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50248C8619BBAB3500329910 /* StoreKit.framework */; };
 		50248C8919BBAB3D00329910 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50248C8819BBAB3D00329910 /* SystemConfiguration.framework */; };
+		5031EBEC1A939489007E3523 /* webViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5031EBEB1A939489007E3523 /* webViewController.m */; };
 		503ECF671A506815009D30F1 /* MFActivityIndicatorView.m in Sources */ = {isa = PBXBuildFile; fileRef = 503ECF661A506815009D30F1 /* MFActivityIndicatorView.m */; };
 		5041A0F71A44AC1000C151B7 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5041A0BE1A44AC1000C151B7 /* Images.xcassets */; };
 		50478EAE1A44DB8D00161D01 /* SplashScreens.m in Sources */ = {isa = PBXBuildFile; fileRef = 50478EAD1A44DB8D00161D01 /* SplashScreens.m */; };
@@ -66,6 +67,8 @@
 		505CDD591A65B5BF005876DC /* Social.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 505CDD581A65B5BF005876DC /* Social.framework */; };
 		505CDD5B1A65B5D0005876DC /* libsqlite3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 505CDD5A1A65B5D0005876DC /* libsqlite3.0.dylib */; };
 		505CDD5D1A65B5DF005876DC /* libstdc++.6.0.9.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 505CDD5C1A65B5DF005876DC /* libstdc++.6.0.9.dylib */; };
+		505F9FBC1A98C33B00CE5C7E /* EventKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 505F9FBA1A98C33B00CE5C7E /* EventKit.framework */; };
+		505F9FBD1A98C33B00CE5C7E /* EventKitUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 505F9FBB1A98C33B00CE5C7E /* EventKitUI.framework */; };
 		506961FC1A8F122C009CB5DB /* ExternalProfileTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 506961FB1A8F122C009CB5DB /* ExternalProfileTVC.m */; };
 		506DC53E1A46014300DD4591 /* OpenSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50478F191A44DF1500161D01 /* OpenSans-Bold.ttf */; };
 		506DC53F1A46014300DD4591 /* OpenSans-BoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50478F1A1A44DF1500161D01 /* OpenSans-BoldItalic.ttf */; };
@@ -92,6 +95,9 @@
 		50965A641A76A6DB00EDF5FC /* dropdownSettingsView.m in Sources */ = {isa = PBXBuildFile; fileRef = 50965A631A76A6DB00EDF5FC /* dropdownSettingsView.m */; };
 		50A677691A58A57800E1E12A /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 50478F0F1A44DE6900161D01 /* Info.plist */; };
 		50A677761A59B67C00E1E12A /* RKDropdownAlert.m in Sources */ = {isa = PBXBuildFile; fileRef = 50A677751A59B67C00E1E12A /* RKDropdownAlert.m */; };
+		50AE93CB1A92557B00B4698D /* SVIndefiniteAnimatedView.m in Sources */ = {isa = PBXBuildFile; fileRef = 50AE93C61A92557B00B4698D /* SVIndefiniteAnimatedView.m */; };
+		50AE93CC1A92557B00B4698D /* SVProgressHUD.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 50AE93C81A92557B00B4698D /* SVProgressHUD.bundle */; };
+		50AE93CD1A92557B00B4698D /* SVProgressHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 50AE93CA1A92557B00B4698D /* SVProgressHUD.m */; };
 		50BF2CE31A75531B00160B5E /* movieLoginVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 50BF2CE21A75531B00160B5E /* movieLoginVC.m */; };
 		50BF2CE61A758D8300160B5E /* RKSwipeBetweenViewControllers.m in Sources */ = {isa = PBXBuildFile; fileRef = 50BF2CE51A758D8300160B5E /* RKSwipeBetweenViewControllers.m */; };
 		50C2938F1A83D37A00F9185C /* Happening Intro vid.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 50C2938E1A83D37A00F9185C /* Happening Intro vid.mp4 */; };
@@ -132,6 +138,8 @@
 		50248C8419BBAB2F00329910 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		50248C8619BBAB3500329910 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		50248C8819BBAB3D00329910 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		5031EBEA1A939489007E3523 /* webViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = webViewController.h; path = Happening/webViewController.h; sourceTree = SOURCE_ROOT; };
+		5031EBEB1A939489007E3523 /* webViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = webViewController.m; path = Happening/webViewController.m; sourceTree = SOURCE_ROOT; };
 		503483081A65AF4F00249594 /* libdyld.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libdyld.dylib; path = usr/lib/system/libdyld.dylib; sourceTree = SDKROOT; };
 		503ECF651A506815009D30F1 /* MFActivityIndicatorView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MFActivityIndicatorView.h; path = Happening/Extras/MFActivityIndicatorView.h; sourceTree = SOURCE_ROOT; };
 		503ECF661A506815009D30F1 /* MFActivityIndicatorView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MFActivityIndicatorView.m; path = Happening/Extras/MFActivityIndicatorView.m; sourceTree = SOURCE_ROOT; };
@@ -224,6 +232,8 @@
 		505CDD581A65B5BF005876DC /* Social.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Social.framework; path = System/Library/Frameworks/Social.framework; sourceTree = SDKROOT; };
 		505CDD5A1A65B5D0005876DC /* libsqlite3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.0.dylib; path = usr/lib/libsqlite3.0.dylib; sourceTree = SDKROOT; };
 		505CDD5C1A65B5DF005876DC /* libstdc++.6.0.9.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libstdc++.6.0.9.dylib"; path = "usr/lib/libstdc++.6.0.9.dylib"; sourceTree = SDKROOT; };
+		505F9FBA1A98C33B00CE5C7E /* EventKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = EventKit.framework; path = System/Library/Frameworks/EventKit.framework; sourceTree = SDKROOT; };
+		505F9FBB1A98C33B00CE5C7E /* EventKitUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = EventKitUI.framework; path = System/Library/Frameworks/EventKitUI.framework; sourceTree = SDKROOT; };
 		506961FA1A8F122C009CB5DB /* ExternalProfileTVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ExternalProfileTVC.h; path = "Happening/Discover Tab/ExternalProfileTVC.h"; sourceTree = SOURCE_ROOT; };
 		506961FB1A8F122C009CB5DB /* ExternalProfileTVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ExternalProfileTVC.m; path = "Happening/Discover Tab/ExternalProfileTVC.m"; sourceTree = SOURCE_ROOT; };
 		506DFD7E1A60A94600715079 /* UIImage+ImageEffects.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIImage+ImageEffects.h"; path = "Happening/Extras/UIImage+ImageEffects.h"; sourceTree = SOURCE_ROOT; };
@@ -248,6 +258,12 @@
 		50965A631A76A6DB00EDF5FC /* dropdownSettingsView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = dropdownSettingsView.m; path = "Happening/Discover Tab/Settings/dropdownSettingsView.m"; sourceTree = SOURCE_ROOT; };
 		50A677741A59B67C00E1E12A /* RKDropdownAlert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RKDropdownAlert.h; path = Happening/Extras/RKDropdownAlert.h; sourceTree = SOURCE_ROOT; };
 		50A677751A59B67C00E1E12A /* RKDropdownAlert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RKDropdownAlert.m; path = Happening/Extras/RKDropdownAlert.m; sourceTree = SOURCE_ROOT; };
+		50AE93C51A92557B00B4698D /* SVIndefiniteAnimatedView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SVIndefiniteAnimatedView.h; sourceTree = "<group>"; };
+		50AE93C61A92557B00B4698D /* SVIndefiniteAnimatedView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SVIndefiniteAnimatedView.m; sourceTree = "<group>"; };
+		50AE93C71A92557B00B4698D /* SVProgressHUD-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SVProgressHUD-Prefix.pch"; sourceTree = "<group>"; };
+		50AE93C81A92557B00B4698D /* SVProgressHUD.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = SVProgressHUD.bundle; sourceTree = "<group>"; };
+		50AE93C91A92557B00B4698D /* SVProgressHUD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SVProgressHUD.h; sourceTree = "<group>"; };
+		50AE93CA1A92557B00B4698D /* SVProgressHUD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SVProgressHUD.m; sourceTree = "<group>"; };
 		50BF2CE11A75531B00160B5E /* movieLoginVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = movieLoginVC.h; path = "Happening/Login Flow/movieLoginVC.h"; sourceTree = SOURCE_ROOT; };
 		50BF2CE21A75531B00160B5E /* movieLoginVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = movieLoginVC.m; path = "Happening/Login Flow/movieLoginVC.m"; sourceTree = SOURCE_ROOT; };
 		50BF2CE41A758D8300160B5E /* RKSwipeBetweenViewControllers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RKSwipeBetweenViewControllers.h; path = Happening/Extras/RKSwipeBetweenViewControllers.h; sourceTree = SOURCE_ROOT; };
@@ -268,6 +284,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				505F9FBC1A98C33B00CE5C7E /* EventKit.framework in Frameworks */,
+				505F9FBD1A98C33B00CE5C7E /* EventKitUI.framework in Frameworks */,
 				505CDD5D1A65B5DF005876DC /* libstdc++.6.0.9.dylib in Frameworks */,
 				505CDD5B1A65B5D0005876DC /* libsqlite3.0.dylib in Frameworks */,
 				505CDD591A65B5BF005876DC /* Social.framework in Frameworks */,
@@ -340,7 +358,6 @@
 				5041A1101A44ACF500C151B7 /* Create Tab */,
 				5041A10F1A44ACB900C151B7 /* Discover Tab */,
 				5041A1141A44ADE100C151B7 /* Attend Tab */,
-				5041A10D1A44AC5900C151B7 /* Custom Segues */,
 				5041A1191A44AE7E00C151B7 /* Extras */,
 				5041A0BE1A44AC1000C151B7 /* Images.xcassets */,
 			);
@@ -369,6 +386,8 @@
 		50248C7519BBAAB500329910 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				505F9FBA1A98C33B00CE5C7E /* EventKit.framework */,
+				505F9FBB1A98C33B00CE5C7E /* EventKitUI.framework */,
 				505CDD5C1A65B5DF005876DC /* libstdc++.6.0.9.dylib */,
 				505CDD5A1A65B5D0005876DC /* libsqlite3.0.dylib */,
 				505CDD581A65B5BF005876DC /* Social.framework */,
@@ -525,6 +544,8 @@
 		5041A1191A44AE7E00C151B7 /* Extras */ = {
 			isa = PBXGroup;
 			children = (
+				5041A10D1A44AC5900C151B7 /* Custom Segues */,
+				50AE93C41A92557B00B4698D /* SVProgressHUD */,
 				504068791A44BB1E00C2CA81 /* Open Sans */,
 				50BF2CE41A758D8300160B5E /* RKSwipeBetweenViewControllers.h */,
 				50BF2CE51A758D8300160B5E /* RKSwipeBetweenViewControllers.m */,
@@ -558,6 +579,8 @@
 				50478F0F1A44DE6900161D01 /* Info.plist */,
 				50478F101A44DE6900161D01 /* main.m */,
 				50478F111A44DE6900161D01 /* Main.storyboard */,
+				5031EBEA1A939489007E3523 /* webViewController.h */,
+				5031EBEB1A939489007E3523 /* webViewController.m */,
 				50478F121A44DE6900161D01 /* TabBarViewController.h */,
 				50478F131A44DE6900161D01 /* TabBarViewController.m */,
 			);
@@ -595,6 +618,19 @@
 			);
 			name = Other;
 			sourceTree = "<group>";
+		};
+		50AE93C41A92557B00B4698D /* SVProgressHUD */ = {
+			isa = PBXGroup;
+			children = (
+				50AE93C51A92557B00B4698D /* SVIndefiniteAnimatedView.h */,
+				50AE93C61A92557B00B4698D /* SVIndefiniteAnimatedView.m */,
+				50AE93C71A92557B00B4698D /* SVProgressHUD-Prefix.pch */,
+				50AE93C81A92557B00B4698D /* SVProgressHUD.bundle */,
+				50AE93C91A92557B00B4698D /* SVProgressHUD.h */,
+				50AE93CA1A92557B00B4698D /* SVProgressHUD.m */,
+			);
+			path = SVProgressHUD;
+			sourceTree = SOURCE_ROOT;
 		};
 /* End PBXGroup section */
 
@@ -693,6 +729,7 @@
 				50C2938F1A83D37A00F9185C /* Happening Intro vid.mp4 in Resources */,
 				506DC5451A46014300DD4591 /* OpenSans-Regular.ttf in Resources */,
 				506DC5461A46014300DD4591 /* OpenSans-Semibold.ttf in Resources */,
+				50AE93CC1A92557B00B4698D /* SVProgressHUD.bundle in Resources */,
 				50A677691A58A57800E1E12A /* Info.plist in Resources */,
 				506DC5471A46014300DD4591 /* OpenSans-SemiboldItalic.ttf in Resources */,
 				5041A0F71A44AC1000C151B7 /* Images.xcassets in Resources */,
@@ -719,6 +756,7 @@
 				509248F71A58819D002BE584 /* EditExtraInfoTVC.m in Sources */,
 				50478EEB1A44DD6C00161D01 /* FlippedDVB.m in Sources */,
 				50478ED71A44DD2400161D01 /* MyEventsTVC.m in Sources */,
+				50AE93CD1A92557B00B4698D /* SVProgressHUD.m in Sources */,
 				50478EF31A44DD9800161D01 /* SettingsTVC.m in Sources */,
 				50F7DEAA1A57B4B8008B8C2B /* UICountingLabel.m in Sources */,
 				50478EC31A44DCAD00161D01 /* PageContentViewController.m in Sources */,
@@ -732,6 +770,7 @@
 				50478EBB1A44DBCC00161D01 /* ChoosingLocation.m in Sources */,
 				50A677761A59B67C00E1E12A /* RKDropdownAlert.m in Sources */,
 				50478F001A44DE0500161D01 /* AttendEvent.m in Sources */,
+				5031EBEC1A939489007E3523 /* webViewController.m in Sources */,
 				50478ED51A44DD2400161D01 /* ExtraInfoTVC.m in Sources */,
 				50478EF81A44DDE300161D01 /* LeftToRightSegue.m in Sources */,
 				50478F181A44DE6900161D01 /* TabBarViewController.m in Sources */,
@@ -739,6 +778,7 @@
 				50BF2CE31A75531B00160B5E /* movieLoginVC.m in Sources */,
 				50478EE81A44DD6C00161D01 /* DraggableView.m in Sources */,
 				50478EAE1A44DB8D00161D01 /* SplashScreens.m in Sources */,
+				50AE93CB1A92557B00B4698D /* SVIndefiniteAnimatedView.m in Sources */,
 				50478ED21A44DD2400161D01 /* buttonOverride.m in Sources */,
 				506DFD831A6113CF00715079 /* FXBlurView.m in Sources */,
 				503ECF671A506815009D30F1 /* MFActivityIndicatorView.m in Sources */,

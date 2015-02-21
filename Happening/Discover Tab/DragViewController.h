@@ -10,6 +10,7 @@
 #import <Parse/Parse.h>
 #import <MapKit/MapKit.h>
 #import "dropdownSettingsView.h"
+#import <EventKit/EventKit.h>
 
 @protocol DragViewControllerDelegate <NSObject>
 
@@ -29,6 +30,7 @@
 - (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event;
 - (void)shareAction;
 - (void)showCreatedByProfile;
+- (void)showEditEventVCWithEvent:(EKEvent *)event eventStore:(EKEventStore *)es;
 
 @property (weak) id <DragViewControllerDelegate> delegate;
 

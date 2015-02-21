@@ -268,7 +268,7 @@
         [[[UIAlertView alloc] initWithTitle:alertTitle
                                     message:alertMessage
                                    delegate:nil
-                          cancelButtonTitle:@"OK"
+                          cancelButtonTitle:@"That's odd"
                           otherButtonTitles:nil] show];
     }
 }

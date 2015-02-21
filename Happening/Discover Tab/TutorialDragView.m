@@ -499,7 +499,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         {
             UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Privacy Warning" message:@"Permission was not granted for Calendar"
                                                            delegate:nil
-                                                  cancelButtonTitle:@"OK"
+                                                  cancelButtonTitle:@"Oops"
                                                   otherButtonTitles:nil];
             [alert show];
         }
@@ -770,7 +770,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 - (void)didChooseCurrentLoc {
     
     if (![CLLocationManager locationServicesEnabled]) {
-        UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Oops" message:@"Please turn on your location services! Go to Settings -> Privacy -> Location Services -> On" delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+        UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Uh-oh" message:@"Please turn on your location services! Go to Settings -> Privacy -> Location Services -> On" delegate:self cancelButtonTitle:@"I'm on it" otherButtonTitles:nil, nil];
         [alert show];
     } else if(self.locManager==nil){
         locManager = [[CLLocationManager alloc] init];

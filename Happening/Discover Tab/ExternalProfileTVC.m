@@ -33,12 +33,14 @@
 }
 
 //@synthesize locManager, refreshControl;
-@synthesize sections, sortedDays, locManager, eventID;
+@synthesize sections, sortedDays, locManager, eventID, userID;
 @synthesize nameLabel, detailLabel, profilePicImageView, myEventsTableView, nameEventsLabel;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    NSLog(@"Made it");
+
+    if (eventID != nil) {
+    
     PFQuery *eventQuery = [PFQuery queryWithClassName:@"Event"];
     [eventQuery getObjectInBackgroundWithId:eventID block:^(PFObject *event, NSError *error) {
         
@@ -83,6 +85,50 @@
         [self.cellDateFormatter setTimeStyle:NSDateFormatterShortStyle];
         
     }];
+    
+    } else {
+        
+        user = [PFQuery getUserObjectWithId:userID];
+        
+        nameLabel.text = [NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]];
+        detailLabel.text = [NSString stringWithFormat:@"%@", user[@"city"]];
+        nameEventsLabel.text = [NSString stringWithFormat:@"%@'s events", user[@"firstName"]];
+        
+        
+        FBProfilePictureView *profPicView = [[FBProfilePictureView alloc] initWithProfileID:user[@"FBObjectID"] pictureCropping: FBProfilePictureCroppingSquare];
+        profPicView.layer.cornerRadius = 10;
+        profPicView.layer.masksToBounds = YES;
+        profPicView.layer.borderColor = [UIColor colorWithRed:232.0/255 green:232.0/255 blue:232.0/255 alpha:1.0].CGColor;
+        profPicView.layer.borderWidth = 3.0;
+        profPicView.frame = CGRectMake(120, 24, 80, 80);
+        [self.view addSubview:profPicView];
+        
+        
+        // Instantiate event dictionary--- this is where all event info is stored
+        self.sections = [NSMutableDictionary dictionary];
+        
+        PFQuery *eventQuery = [PFQuery queryWithClassName:@"Event"];
+        [eventQuery whereKey:@"CreatedBy" equalTo:user.objectId];
+        
+        // Works for now, but doesn't allow for events to be shown from the past
+        [eventQuery whereKey:@"Date" greaterThan:[NSDate dateWithTimeIntervalSinceNow:-2592000]]; //30 days
+        [eventQuery orderByAscending:@"Date"];
+        
+        [eventQuery findObjectsInBackgroundWithBlock:^(NSArray *array, NSError *error) {
+            
+            eventsArray = array;
+            
+            [self.tableView reloadData];
+        }];
+        
+        self.sectionDateFormatter = [[NSDateFormatter alloc] init];
+        [self.sectionDateFormatter setDateFormat:@"EEEE, MMMM d"];
+        
+        self.cellDateFormatter = [[NSDateFormatter alloc] init];
+        [self.cellDateFormatter setDateStyle:NSDateFormatterNoStyle];
+        [self.cellDateFormatter setTimeStyle:NSDateFormatterShortStyle];
+        
+    }
     
     profilePicImageView.layer.cornerRadius = 10;
     profilePicImageView.layer.masksToBounds = YES;
@@ -152,7 +198,7 @@
     
     [cell.titleLabel setText:[NSString stringWithFormat:@"%@",Event[@"Title"]]];
     
-    [cell.subtitle setText:[NSString stringWithFormat:@"%@",Event[@"Subtitle"]]];
+    [cell.subtitle setText:[NSString stringWithFormat:@"%@",Event[@"Description"]]];
     
     [cell.locLabel setText:[NSString stringWithFormat:@"%@",Event[@"Location"]]];
     

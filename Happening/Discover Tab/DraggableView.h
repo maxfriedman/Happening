@@ -75,6 +75,16 @@
 
 @property (nonatomic, strong)UIView *cardView;
 
+@property (nonatomic, strong)UIImageView *calImageView;
+
+@property (nonatomic,strong)UILabel* calDayLabel;
+@property (nonatomic,strong)UILabel* calMonthLabel;
+@property (nonatomic,strong)UILabel* calDayOfWeekLabel;
+@property (nonatomic,strong)UILabel* calTimeLabel;
+
+@property (assign) NSString *URL;
+
+
 @property (assign)int actionMargin;
 @property (assign)int swipeDownMargin;
 

@@ -8,6 +8,7 @@
 
 #import "showMyEventVC.h"
 #import "FXBlurView.h"
+#import "webViewController.h"
 
 @interface showMyEventVC ()
 
@@ -16,6 +17,8 @@
 @implementation showMyEventVC {
     DraggableView *dragView;
     FlippedDVB *flippedView;
+    NSString *urlString;
+    NSString *urlTitleString;
 }
 
 @synthesize segControl, notInterestedLabel, interestedLabel;
@@ -25,6 +28,9 @@
     // Do any additional setup after loading the view.
     //self.eventIDLabel.text = self.eventID;
     
+    self.navigationController.navigationBar.barTintColor = [UIColor clearColor]; //%%% bartint
+    [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"navBar"] forBarMetrics:UIBarMetricsDefault];
+    self.navigationController.navigationBar.translucent = NO;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -40,8 +46,8 @@
     [self.view addSubview:dragView];
     
     UIButton *eventURLButton = [[UIButton alloc] init];
-    NSString *urlString = [NSString stringWithFormat: @"www.happening.city/events/%@", self.eventID];
-    [eventURLButton setTitle:urlString forState:UIControlStateNormal];
+    NSString *myUrlString = [NSString stringWithFormat: @"www.happening.city/events/%@", self.eventID];
+    [eventURLButton setTitle:myUrlString forState:UIControlStateNormal];
     [eventURLButton sizeToFit];
     eventURLButton.center = CGPointMake(160, 340);
     eventURLButton.titleLabel.font = [UIFont fontWithName:@"OpenSans-Light" size:12.0];
@@ -66,9 +72,13 @@
      */
     
     // OPENS IN SAFARI
-    NSString *urlString = [NSString stringWithFormat: @"http://www.happening.city/events/%@", self.eventID];
-    NSURL *url = [[NSURL alloc] initWithString:urlString];
-    [[UIApplication sharedApplication] openURL:url];
+    
+    urlString = [NSString stringWithFormat: @"http://www.happening.city/events/%@", self.eventID];
+    urlTitleString = dragView.title.text;
+    [self performSegueWithIdentifier:@"toWebVC" sender:self];
+    
+    //NSURL *url = [[NSURL alloc] initWithString:urlString];
+    //[[UIApplication sharedApplication] openURL:url];
     
 }
 
@@ -105,7 +115,7 @@
         dragView.title.text = event[@"Title"];
         self.navigationItem.title = dragView.title.text;
         
-        dragView.subtitle.text = event[@"Subtitle"];
+        dragView.subtitle.text = event[@"Description"];
         dragView.location.text = event[@"Location"];
         
         NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
@@ -196,7 +206,7 @@
             
         } else {
             NSLog(@"ERROR SHOWING EVENT: %@", error);
-            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Something went wrong :(" message:@"Event cannot be viewed, please check your internet connection and try again." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Something went wrong :(" message:@"Event cannot be viewed, please check your internet connection and try again." delegate:self cancelButtonTitle:@"That's odd" otherButtonTitles:nil, nil];
             [alert show];
         }
 
@@ -239,7 +249,7 @@
             [self.view addSubview:flippedView];
         } else {
             NSLog(@"ERROR SHOWING EVENT: %@", error);
-            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Something went wrong :(" message:@"Event cannot be viewed, please check your internet connection and try again." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Something went wrong :(" message:@"Event cannot be viewed, please check your internet connection and try again." delegate:self cancelButtonTitle:@"That's odd" otherButtonTitles:nil, nil];
             [alert show];
         }
         
@@ -248,6 +258,10 @@
 }
 
 - (IBAction)websiteButtonTapped:(id)sender {
+    
+    urlString = @"http://www.happening.city";
+    urlTitleString = @"Happening";
+    [self performSegueWithIdentifier:@"toWebVC" sender:self];
     
     // IN APP EXPERIENCE
     
@@ -258,10 +272,6 @@
     [[self view] addSubview:webView];
      */
     
-    // OPENS IN SAFARI
-    
-    NSURL *url = [[NSURL alloc] initWithString:@"http://gethappeningapp.com"];
-    [[UIApplication sharedApplication] openURL:url];
     
 }
 - (IBAction)xButton:(id)sender {
@@ -289,6 +299,11 @@
          EditEventTVC* vc = (EditEventTVC *)[[segue destinationViewController] topViewController];
          [vc setEventID:self.eventID];
      
+     } else if ([segue.identifier isEqualToString:@"toWebVC"]) {
+         
+         webViewController* vc = (webViewController *)[[segue destinationViewController] topViewController];
+         vc.urlString = urlString;
+         vc.titleString = urlTitleString;
      }
  }
 

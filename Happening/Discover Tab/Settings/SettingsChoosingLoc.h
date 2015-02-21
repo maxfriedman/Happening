@@ -15,7 +15,7 @@
 
 @protocol SettingsChoosingLocDelegate <NSObject>
 
-- (void)addItemViewController:(SettingsChoosingLoc *)controller didFinishEnteringItem:(MKMapItem *)item;
+- (void)refreshSettings;
 
 @end
 
@@ -26,6 +26,8 @@
 @property (strong, nonatomic) CLLocationManager *locManager;
 
 @property (strong, nonatomic) IBOutlet UISearchBar *searchBar;
+
+@property (strong, nonatomic) IBOutlet UITableView *tableView;
 
 @property (strong, nonatomic) PFUser *user;
 

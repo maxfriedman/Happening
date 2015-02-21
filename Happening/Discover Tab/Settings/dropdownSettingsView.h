@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "SettingsChoosingLoc.h"
 
 @protocol dropdownSettingsViewDelegate
 
@@ -15,13 +16,13 @@
 
 @end
 
-@interface dropdownSettingsView : UIView <UITableViewDataSource, UITableViewDelegate>
+@interface dropdownSettingsView : UIView <UITableViewDataSource, UITableViewDelegate, SettingsChoosingLocDelegate>
 
 -(BOOL)didPreferencesChange;
 
 @property (weak) id <dropdownSettingsViewDelegate> delegate;
 
-@property (nonatomic, strong) IBOutlet UITextField *locationField;
+@property (nonatomic, strong) IBOutlet UIButton *locationField;
 @property (nonatomic, strong) IBOutlet UILabel *distanceLabel;
 @property (nonatomic, strong) IBOutlet UIButton *todayButton;
 @property (nonatomic, strong) IBOutlet UIButton *tomorrowButton;
