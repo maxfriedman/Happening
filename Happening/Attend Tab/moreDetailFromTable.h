@@ -11,8 +11,10 @@
 #import <MapKit/MapKit.h>
 #import "CupertinoYankee.h"
 #import <FacebookSDK/FacebookSDK.h>
+#import <EventKitUI/EventKitUI.h>
+#import <EventKit/EventKit.h>
 
-@interface moreDetailFromTable : UIViewController <UIScrollViewDelegate, MKMapViewDelegate, MKAnnotation>
+@interface moreDetailFromTable : UIViewController <UIScrollViewDelegate, MKMapViewDelegate, MKAnnotation, EKEventEditViewDelegate>
 
 @property (strong, nonatomic) IBOutlet UIBarButtonItem *backButton;
 
@@ -37,6 +39,18 @@
 @property (strong, nonatomic) IBOutlet UIView *cardView;
 
 @property (strong, nonatomic) IBOutlet UIScrollView *friendScrollView;
+
+@property (strong, nonatomic) IBOutlet UILabel *createdBy;
+@property (strong, nonatomic) IBOutlet UILabel *calMonthLabel;
+@property (strong, nonatomic) IBOutlet UILabel *calDayLabel;
+@property (strong, nonatomic) IBOutlet UILabel *calDayOfWeekLabel;
+@property (strong, nonatomic) IBOutlet UILabel *calTimeLabel;
+
+
+
+@property (strong, nonatomic) UIButton *ticketsButton;
+@property (strong, nonatomic) UIButton *uberButton;
+
 
 @property NSString *eventID;
 @property NSString *titleText;

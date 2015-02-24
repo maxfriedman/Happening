@@ -10,6 +10,9 @@
 
 @interface moreDetailFromCard : UIViewController
 
-@property (strong, nonatomic) IBOutlet UINavigationBar *doneButton;
+@property (assign) NSString *eventID;
+@property (assign) NSString *subtitleText;
+@property (assign) NSString *titleText;
+@property (assign) NSString *locationText;
 
 @end

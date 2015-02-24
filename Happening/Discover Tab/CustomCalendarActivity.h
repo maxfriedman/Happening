@@ -10,10 +10,12 @@
 #import <Parse/Parse.h>
 #import <EventKit/EventKit.h>
 #import "DraggableView.h"
+#import "DragViewController.h"
 
 @interface CustomCalendarActivity : UIActivity
 
 @property (nonatomic, strong) EKEventStore *eventStore;
 @property (nonatomic, strong) DraggableView *draggableView;
+@property (nonatomic, strong) DragViewController *myViewController;
 
 @end

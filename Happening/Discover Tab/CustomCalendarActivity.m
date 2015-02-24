@@ -186,8 +186,10 @@
                 
         [event setCalendar:[eventStore defaultCalendarForNewEvents]];
         NSError *err;
-        [eventStore saveEvent:event span:EKSpanThisEvent error:&err];
+        //[eventStore saveEvent:event span:EKSpanThisEvent error:&err];
         //NSLog(@"Event added to calendar!");
+        
+        [self.myViewController showEditEventVCWithEvent:event eventStore:eventStore];
         
     }];
     

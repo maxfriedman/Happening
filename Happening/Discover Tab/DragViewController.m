@@ -21,6 +21,7 @@
 #import "CupertinoYankee.h"
 #import "webViewController.h"
 #import "SettingsChoosingLoc.h"
+#import "moreDetailFromCard.h"
 
 
 @interface DragViewController () <ChoosingLocationDelegate, dropdownSettingsViewDelegate>
@@ -41,6 +42,7 @@
     NSUserDefaults *defaults;
     TutorialDragView *tutorialScreens;
     BOOL showTut;
+    BOOL tutIsShown;
     NSString *friendObjectID;
     NSString *urlString;
     EKEvent *calEvent;
@@ -64,15 +66,9 @@
     
     defaults = [NSUserDefaults standardUserDefaults];
     
-    ////////////////////////
-    
-    [defaults setBool:YES forKey:@"hasLaunched"];
-    
-    ////////////////////////
-    
-    
-
-    showTut = YES;
+    if (![defaults boolForKey:@"hasLaunched"]) {
+        showTut = YES;
+    }
     
     settingsView.delegate = self;
     settingsView.layer.masksToBounds = YES;
@@ -145,6 +141,9 @@
             UITapGestureRecognizer *singleFingerTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tutorialCardTapped:)];
             singleFingerTap.cancelsTouchesInView = NO;
             [tutorialScreens addGestureRecognizer:singleFingerTap];
+            
+            settingsView.userInteractionEnabled = NO;
+            tutIsShown = YES;
             showTut =! showTut;
         }
 
@@ -156,7 +155,7 @@
             dispatch_async(dispatch_get_main_queue(), ^{
                 [SVProgressHUD showWithMaskType:SVProgressHUDMaskTypeGradient];
                 [SVProgressHUD setFont:[UIFont fontWithName:@"OpenSans" size:15.0]];
-                [SVProgressHUD setStatus:@"Loading events"];
+                [SVProgressHUD setStatus:@"Loading Happenings"];
             });
         });
         
@@ -240,7 +239,7 @@
     UITapGestureRecognizer *gr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleGesture:)];
     //[scrollView addGestureRecognizer:gr];
     
-    NSLog(@"card view subviews: %@", cardView.subviews);
+    //NSLog(@"card view subviews: %@", cardView.subviews);
     
 }
 
@@ -947,7 +946,11 @@
                     
                     friendCount++;
                     
-                    draggableBackground.dragView.friendsInterested.text = [NSString stringWithFormat:@"%d friends interested", friendCount];
+                    if (friendCount == 1) {
+                        draggableBackground.dragView.friendsInterested.text = [NSString stringWithFormat:@"%d friend interested", friendCount];
+                    } else {
+                        draggableBackground.dragView.friendsInterested.text = [NSString stringWithFormat:@"%d friends interested", friendCount];
+                    }
                     
                 }
                 
@@ -1375,40 +1378,55 @@
             settingsView.frame = CGRectMake(0, 0, self.view.frame.size.width, 502);
         } completion:^(BOOL finished) {
             dropdownExpanded = YES;
+            
+            if (tutIsShown) {
+                [settingsView tutViewAction];
+            }
+            
         }];
         
     } else {
         
+        if (!tutIsShown) {
+        
         NSLog(@"contracting dropdown menu...");
         
-        [self setEnabledSidewaysScrolling:YES];
+            [self setEnabledSidewaysScrolling:YES];
         
-        CABasicAnimation *rotation;
-        rotation = [CABasicAnimation animationWithKeyPath:@"transform.rotation"];
+            CABasicAnimation *rotation;
+            rotation = [CABasicAnimation animationWithKeyPath:@"transform.rotation"];
         
-        rotation.removedOnCompletion = NO;
-        rotation.fromValue = [NSNumber numberWithFloat:M_PI];
-        rotation.toValue = [NSNumber numberWithFloat:-(2*M_PI)];
-        rotation.duration = 0.5; // Speed
-        rotation.repeatCount = 1; //HUGE_VALF; // Repeat forever. Can be a finite number.
-        rotation.fillMode = kCAFillModeForwards;
-        [settingsView.cogImageView.layer addAnimation:rotation forKey:@"Spin"];
+            rotation.removedOnCompletion = NO;
+            rotation.fromValue = [NSNumber numberWithFloat:M_PI];
+            rotation.toValue = [NSNumber numberWithFloat:-(2*M_PI)];
+            rotation.duration = 0.5; // Speed
+            rotation.repeatCount = 1; //HUGE_VALF; // Repeat forever. Can be a finite number.
+            rotation.fillMode = kCAFillModeForwards;
+            [settingsView.cogImageView.layer addAnimation:rotation forKey:@"Spin"];
         
-        [UIView animateWithDuration:0.5 animations:^{
-            settingsView.frame = CGRectMake(0, 0, self.view.frame.size.width, 35);
+            [UIView animateWithDuration:0.5 animations:^{
+                settingsView.frame = CGRectMake(0, 0, self.view.frame.size.width, 35);
             
-            if ([settingsView didPreferencesChange]) {
+                if ([settingsView didPreferencesChange]) {
                 
-                [self refreshData];
-            }
+                    [self refreshData];
+                }
             
-        } completion:^(BOOL finished) {
-            dropdownExpanded = NO;
-        }];
-
-        
+            } completion:^(BOOL finished) {
+                dropdownExpanded = NO;
+            }];
+        }
     }
+}
+
+-(void)dropdownPressedFromTut:(BOOL)var {
     
+    tutIsShown = var;
+    //[self dropdownPressed];
+    [defaults setBool:!var forKey:@"hasLaunched"];
+    [defaults synchronize];
+    
+    settingsView.userInteractionEnabled = YES;
 }
 
 - (void)setEnabledSidewaysScrolling:(BOOL)enabled {
@@ -1445,6 +1463,7 @@
     
     CustomCalendarActivity *addToCalendar = [[CustomCalendarActivity alloc]init];
     addToCalendar.draggableView = draggableBackground.dragView;
+    addToCalendar.myViewController = self;
     
     NSArray *itemsToShare = @[ActivityProvider, myWebsite];
     
@@ -1467,11 +1486,23 @@
     [activityVC setCompletionHandler:^(NSString *act, BOOL done)
      {
          NSString *ServiceMsg = @"Done!";
-         if ( [act isEqualToString:UIActivityTypeMail] )           ServiceMsg = @"Mail sent!";
-         if ( [act isEqualToString:UIActivityTypePostToTwitter] )  ServiceMsg = @"Your tweet has been posted!";
-         if ( [act isEqualToString:UIActivityTypePostToFacebook] ) ServiceMsg = @"Your Facebook status has been updated!";
-         if ( [act isEqualToString:UIActivityTypeMessage] )        ServiceMsg = @"Message sent!";
-         if ( done )
+         BOOL calendarAction = NO;
+         
+         if ( [act isEqualToString:UIActivityTypeMail] ) {
+             ServiceMsg = @"Mail sent!";
+         }
+         else if ( [act isEqualToString:UIActivityTypePostToTwitter] ) {
+             ServiceMsg = @"Your tweet has been posted!";
+         }
+         else if ( [act isEqualToString:UIActivityTypePostToFacebook] ){
+             ServiceMsg = @"Your Facebook status has been updated!";
+         }
+         else if ( [act isEqualToString:UIActivityTypeMessage] ) {
+             ServiceMsg = @"Message sent!";
+         } else {
+             calendarAction = YES;
+         }
+         if ( done && (calendarAction == NO) )
          {
              
              // Custom action for other activity types...
@@ -1501,6 +1532,10 @@
     [self performSegueWithIdentifier:@"showFriendProfile" sender:self];
 }
 
+-(void)showMoreDetail {
+    [self performSegueWithIdentifier:@"toMoreDetail" sender:self];
+}
+
 -(void)showEditEventVCWithEvent:(EKEvent *)event eventStore:(EKEventStore *)es {
     calEvent = event;
     calEventStore = es;
@@ -1509,8 +1544,27 @@
     EKEventEditViewController *vc = [[EKEventEditViewController alloc] initWithNibName:nil bundle:nil];
     vc.eventStore = calEventStore;
     vc.event = event;
+    
+    vc.navigationBar.barTintColor = [UIColor clearColor]; //%%% bartint
+    [vc.navigationBar setBackgroundImage:[UIImage imageNamed:@"navBar"] forBarMetrics:UIBarMetricsDefault];
+    vc.navigationBar.translucent = NO;
+    vc.navigationBar.barStyle = UIBarStyleBlack;
+    vc.navigationBar.tintColor =[UIColor whiteColor];
+    vc.navigationItem.title = @"Add to Calendar";
+
     [self presentViewController:vc animated:YES completion:nil];
     vc.editViewDelegate = self;
+}
+
+- (void)eventEditViewController:(EKEventEditViewController *)controller didCompleteWithAction:(EKEventEditViewAction)action {
+    
+    if (action == EKEventEditViewActionCancelled || action == EKEventEditViewActionCanceled) {
+        NSLog(@"Clicked Cancel");
+    } else if (action == EKEventEditViewActionSaved) {
+        NSLog(@"Clicked Add -- event saved to calendar");
+        [RKDropdownAlert title:@"Event added to your main calendar!" backgroundColor:[UIColor colorWithRed:.05 green:.29 blue:.49 alpha:1.0] textColor:[UIColor whiteColor]];
+    }
+        [self dismissViewControllerAnimated:YES completion:nil];
 }
 
 -(void)tutorialCardTapped:(UITapGestureRecognizer *)gr {
@@ -1637,6 +1691,14 @@
         vc.delegate = self;
         vc.event = calEvent;
         vc.eventStore = calEventStore;
+        
+    } else if ([segue.identifier isEqualToString:@"toMoreDetail"]) {
+        
+        moreDetailFromCard *vc = (moreDetailFromCard *)[[segue destinationViewController] topViewController];
+        vc.eventID = self.eventID;
+        vc.titleText = draggableBackground.dragView.title.text;
+        vc.subtitleText = draggableBackground.dragView.subtitle.text;
+        vc.locationText = draggableBackground.dragView.location.text;
     }
     
     /*

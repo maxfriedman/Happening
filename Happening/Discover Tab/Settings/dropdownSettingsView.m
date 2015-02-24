@@ -434,10 +434,18 @@
 }
 */
 
+-(void)tutViewAction {
+    
+    locationField.showsTouchWhenHighlighted = YES;
+    [locationField sendActionsForControlEvents:UIControlEventTouchUpInside];
+
+}
+
 -(void)refreshSettings {
     
     [locationField setTitle:[NSString stringWithFormat:@"        near %@", [defaults objectForKey:@"userLocTitle"]] forState:UIControlStateNormal];
     categoryChanged = YES;
+    [delegate dropdownPressedFromTut:NO];
     
 }
 

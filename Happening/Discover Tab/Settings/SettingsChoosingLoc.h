@@ -31,4 +31,6 @@
 
 @property (strong, nonatomic) PFUser *user;
 
+@property (assign) BOOL fromTut;
+
 @end

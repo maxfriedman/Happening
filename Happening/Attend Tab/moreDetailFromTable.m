@@ -9,8 +9,15 @@
 #import "moreDetailFromTable.h"
 #import "CustomCalendarActivity.h"
 #import "RKDropdownAlert.h"
+#import "webViewController.h"
+#import <CoreText/CoreText.h>
+#import "ExternalProfileTVC.h"
+#import "moreDetailFromCard.h"
 
 @interface moreDetailFromTable ()
+
+@property (nonatomic, strong) EKEventStore *eventStore;
+
 
 @end
 
@@ -22,30 +29,32 @@
     MKPointAnnotation *annotation;
     BOOL mapViewExpanded;
     CLLocation *mapLocation;
+    NSString *urlString;
+    int friendScrollHeight;
+    NSString *friendObjectID;
 
 }
 
-@synthesize  mapView, cardView;
+@synthesize  mapView, cardView, ticketsButton, uberButton, scrollView, friendScrollView, createdBy, calDayLabel, calDayOfWeekLabel, calMonthLabel, calTimeLabel, eventStore;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    // Do any additional setup after loading the view.
-    //self.navigationItem.leftBarButtonItem = self.navigationItem.backBarButtonItem;
-    //[self.navigationItem setHidesBackButton:NO];
     
     self.navigationController.navigationBar.barTintColor = [UIColor clearColor]; //%%% bartint
     [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"navBar"] forBarMetrics:UIBarMetricsDefault];
     self.navigationController.navigationBar.translucent = NO;
     
-    mapView = [[MKMapView alloc] initWithFrame:CGRectMake(15, 376, 254, 133)];
+    eventStore = [[EKEventStore alloc] init];
+    
+    mapView = [[MKMapView alloc] initWithFrame:CGRectMake(15, 398, 254, 133)];
     [cardView addSubview:mapView];
     
     UIView *shadowView = [[UIView alloc] initWithFrame:cardView.frame];
     shadowView.layer.shadowOffset = CGSizeMake(1, 1);
-    shadowView.layer.shadowRadius = 5.0;
-    shadowView.layer.shadowOpacity = 1.0;
+    shadowView.layer.shadowRadius = 1.0;
+    shadowView.layer.shadowOpacity = 0.5;
     [shadowView.layer setCornerRadius:10.0];
-    [shadowView.layer setBorderColor:[UIColor lightGrayColor].CGColor];
+    [shadowView.layer setBorderColor:[UIColor clearColor].CGColor];
     [shadowView.layer setBorderWidth:1.0];
     //shadowView.backgroundColor = [UIColor whiteColor];
     
@@ -66,8 +75,11 @@
     self.titleLabel.text = self.titleText;
     self.distanceLabel.text = self.distanceText;
     self.imageView.image = self.image;
-    self.subtitleLabel.text = self.subtitleText;
     self.locationLabel.text = self.locationText;
+
+    self.subtitleLabel.text = self.subtitleText;
+    UITapGestureRecognizer *tgr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(sendToMoreInfo)];
+    [self.subtitleLabel addGestureRecognizer:tgr];
     
     /*
     [self.imageView addSubview:self.titleLabel];
@@ -96,14 +108,9 @@
     
     cachedHeight = self.subtitleLabel.frame.size.height;
     
-    self.scrollView.contentSize = CGSizeMake(320, 720);
-    
-    /*
-    self.imageView.contentMode = UIViewContentModeScaleAspectFill;
-    cachedImageViewSize = self.imageView.frame;
-    [self.view sendSubviewToBack:self.imageView];
-    //self.tableView.tableHeaderView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 170)];
-    */
+    self.scrollView.contentSize = CGSizeMake(320, 580);
+    ticketsButton.alpha = 0;
+    uberButton.alpha = 0;
     
     UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleLight];
     blurEffectView = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
@@ -140,42 +147,58 @@
         
         NSString *finalString;
         
-        if ([eventDate beginningOfDay] == [[NSDate date]beginningOfDay]) {  // TODAY
-            
-            [formatter setDateFormat:@"h:mma"];
-            NSString *timeString = [formatter stringFromDate:eventDate];
-            finalString = [NSString stringWithFormat:@"Today at %@", timeString];
+        NSDate *endDate = object[@"EndTime"];
+        
+        if ([eventDate beginningOfDay] <= [[NSDate date]beginningOfDay]) {  // TODAY
+
+            calDayOfWeekLabel.text = @"Today";
             
         } else if ([eventDate beginningOfDay] == [[NSDate dateWithTimeIntervalSinceNow:86400] beginningOfDay]) { // TOMORROW
             
-            [formatter setDateFormat:@"h:mma"];
-            NSString *timeString = [formatter stringFromDate:eventDate];
-            finalString = [NSString stringWithFormat:@"Tomorrow at %@", timeString];
+            calDayOfWeekLabel.text = @"Tomorrow";
             
         } else if ([eventDate endOfWeek] == [[NSDate date]endOfWeek]) { // SAME WEEK
             
             [formatter setDateFormat:@"EEEE"];
-            NSString *dayOfWeekString = [formatter stringFromDate:eventDate];
-            [formatter setDateFormat:@"h:mma"];
-            NSString *timeString = [formatter stringFromDate:eventDate];
-            finalString = [NSString stringWithFormat:@"%@ at %@", dayOfWeekString, timeString];
+            calDayOfWeekLabel.text = [formatter stringFromDate:eventDate];
             
-        } else {
+        } else if ([eventDate beginningOfDay] != [endDate beginningOfDay]) { //MULTI-DAY EVENT
             
-            NSString *dateString = [formatter stringFromDate:eventDate];
-            [formatter setDateFormat:@"h:mma"];
-            NSString *timeString = [formatter stringFromDate:eventDate];
-            finalString = [NSString stringWithFormat:@"%@ at %@", dateString, timeString];
+            [formatter setDateFormat:@"EEEE"];
+             calDayOfWeekLabel.text = [formatter stringFromDate:eventDate];
             
-        }
-        
-        if ([finalString containsString:@":00"]) {
+        } else { // Past this week- uses abbreviated date format
             
-            finalString = [finalString stringByReplacingOccurrencesOfString:@":00" withString:@" "];
+            [formatter setDateFormat:@"EEEE"];
+             calDayOfWeekLabel.text = [formatter stringFromDate:eventDate];
             
         }
         
-        self.timeLabel.text = finalString;
+        [formatter setDateFormat:@"MMM"];
+         calMonthLabel.text = [formatter stringFromDate:eventDate];
+        [formatter setDateFormat:@"d"];
+        calDayLabel.text =[formatter stringFromDate:eventDate];
+        
+        [formatter setDateFormat:@"h:mma"];
+        NSString *calTimeString = [NSString stringWithFormat:@"%@ - %@", [formatter stringFromDate:eventDate], [formatter stringFromDate:endDate]];
+        
+        if ([calTimeString containsString:@":00"]) {
+            
+            calTimeString = [calTimeString stringByReplacingOccurrencesOfString:@":00" withString:@" "];
+            
+        }
+        
+        calTimeLabel.text = calTimeString;
+
+        UIGestureRecognizer *gr2 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(checkEventStoreAccessForCalendar)];
+        [calMonthLabel addGestureRecognizer:gr2];
+        UIGestureRecognizer *gr3 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(checkEventStoreAccessForCalendar)];
+        [calDayLabel addGestureRecognizer:gr3];
+        UIGestureRecognizer *gr4 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(checkEventStoreAccessForCalendar)];
+        [calDayOfWeekLabel addGestureRecognizer:gr4];
+        UIGestureRecognizer *gr5 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(checkEventStoreAccessForCalendar)];
+        [calTimeLabel addGestureRecognizer:gr5];
+        
         
         PFGeoPoint *loc = object[@"GeoLoc"];
         mapLocation = [[CLLocation alloc]initWithLatitude:loc.latitude longitude:loc.longitude];
@@ -224,6 +247,88 @@
         
         mapViewExpanded = NO;
         
+        
+        NSMutableAttributedString *attString = [[NSMutableAttributedString alloc] initWithString:object[@"CreatedByName"]];
+        [attString addAttribute:(NSString*)kCTUnderlineStyleAttributeName
+                          value:[NSNumber numberWithInt:kCTUnderlineStyleSingle]
+                          range:(NSRange){0,[attString length]}];
+        createdBy.attributedText = attString;
+        UITapGestureRecognizer *gr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(showCreatedByProfile)];
+        [createdBy addGestureRecognizer:gr];
+        
+        
+        
+        NSString *ticketLink = [NSString stringWithFormat:@"%@", object[@"TicketLink"]];
+        int height = 0;
+        
+        if ([object objectForKey:@"TicketLink"]) {
+            
+            height += 30;
+            ticketsButton.alpha = 1.0;
+            
+            NSLog(@"ticket link::: %@", ticketLink);
+            
+            ticketsButton = [[UIButton alloc] initWithFrame:CGRectMake(79, 552, 126, 20)];
+            ticketsButton.enabled = YES;
+            ticketsButton.userInteractionEnabled = YES;
+            ticketsButton.tag = 3;
+            
+            if ([ticketLink containsString:@"eventbrite"]) {
+                
+                //ticketsButton = [[UIButton alloc] initWithFrame:CGRectMake(79, 500, 126, 20)];
+                [ticketsButton setImage:[UIImage imageNamed:@"buy tickets"] forState:UIControlStateNormal];
+                [ticketsButton setImage:[UIImage imageNamed:@"buy tickets pressed"] forState:UIControlStateSelected];
+                
+                //[self ticketsUpdateFrameBy:20];
+            } else {
+                
+                //ticketsButton = [[UIButton alloc] initWithFrame:CGRectMake(79, 500, 126, 20)];
+                [ticketsButton setImage:[UIImage imageNamed:@"buy tickets"] forState:UIControlStateNormal];
+                [ticketsButton setImage:[UIImage imageNamed:@"buy tickets pressed"] forState:UIControlStateSelected];
+                
+                //[self ticketsUpdateFrameBy:20];
+            }
+            
+            ticketsButton.accessibilityIdentifier = ticketLink;
+            [ticketsButton addTarget:self action:@selector(ticketsButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
+            [cardView addSubview:ticketsButton];
+            
+        }
+        
+        NSDate *startDate = object[@"Date"];
+        //NSDate *endDate = object[@"EndTime"];
+        
+        // Show call uber button if the event is today or if the end date is later than now
+        if ( /*[defaults boolForKey:@"today"] */ [startDate beginningOfDay] <= [[NSDate date] beginningOfDay] ) {
+            
+            height += 30;
+            uberButton.alpha = 1.0;
+
+            // adding "height" variable allows flexibility if there is no tickets button
+            if (height == 30) {
+                
+                uberButton = [[UIButton alloc] initWithFrame:CGRectMake(86.5, 552, 111, 20)];
+                
+            } else {
+                
+                uberButton = [[UIButton alloc] initWithFrame:CGRectMake(86.5, 520 + height, 111, 20)];
+                
+            }
+            NSLog(@"%@", uberButton.constraints);
+            [uberButton setImage:[UIImage imageNamed:@"call uber"] forState:UIControlStateNormal];
+            [uberButton setImage:[UIImage imageNamed: @"call uber pressed"] forState:UIControlStateSelected];
+            [uberButton addTarget:self action:@selector(grabAnUberButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
+            uberButton.tag = 3;
+            
+            [cardView addSubview:uberButton];
+            
+            //[self uberUpdateFrameBy:20];
+        }
+        
+        [self ticketsAndUberUpdateFrameBy:height + 8];
+        
+        mapViewExpanded = NO;
+    
         [self loadFBFriends];
         
     }];
@@ -231,6 +336,16 @@
     NSLog(@"%@", self.eventID);
     
 }
+/*
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self ticketsAndUberUpdateFrameBy:40 + 8];
+    });
+    
+}
+*/
+
 
 - (void)mapViewTapped {
     
@@ -369,89 +484,134 @@
         
         __block int friendCount = 0;
         
+        NSMutableArray *friendObjectIDs = [[NSMutableArray alloc] init];
         for (int i = 0; i < friends.count; i ++) {
-            
             NSDictionary<FBGraphUser>* friend = friends[i];
-            NSLog(@"I have a friend named %@ with id %@", friend.name, friend.objectID);
-            
-            PFQuery *friendQuery = [PFQuery queryWithClassName:@"Swipes"];
-            [friendQuery whereKey:@"FBObjectID" equalTo:friend.objectID];
-            [friendQuery whereKey:@"EventID" equalTo:self.eventID];
-            [friendQuery whereKey:@"swipedRight" equalTo:@YES];
-            [friendQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
-                
-                NSLog(@"%@ with id %@", friend.name, friend.objectID);
-                if (object != nil && !error) {
-                    NSLog(@"LIKES THIS EVENT");
-                    
-                    /*
-                    NSString *path = [NSString stringWithFormat:@"http://graph.facebook.com/%@/picture?type=square", friend.objectID];
-                    
-                    NSURL *url = [NSURL URLWithString:path];
-                    NSData *data = [NSData dataWithContentsOfURL:url];
-                    UIImage *img = [[UIImage alloc] initWithData:data];
-                    
-                    //CGSize size = img.size;
-                    
-                    NSLog(@"IMAGE %@", img);
-                    
-                    UIImageView *profPicImageView = [[UIImageView alloc] initWithImage:img];
-                    profPicImageView.layer.cornerRadius = 20;
-                    profPicImageView.layer.masksToBounds = YES;
-                    profPicImageView.frame = CGRectMake(50 * friendCount, 0, 40, 40);
-                    [self.friendScrollView addSubview:profPicImageView];
-                    */
-                    
-                    
-                    FBProfilePictureView *profPicView = [[FBProfilePictureView alloc] initWithProfileID:friend.objectID pictureCropping:FBProfilePictureCroppingSquare];
-                    profPicView.layer.cornerRadius = 20;
-                    profPicView.layer.masksToBounds = YES;
-                    profPicView.frame = CGRectMake(50 * friendCount, 0, 40, 40);
-                    [self.friendScrollView addSubview:profPicView];
-                    
-                     
-                    UILabel *nameLabel = [[UILabel alloc] init];
-                    nameLabel.font = [UIFont fontWithName:@"OpenSans" size:7];
-                    nameLabel.textColor = [UIColor colorWithRed:(70.0/255.0) green:(70.0/255.0) blue:(70.0/255.0) alpha:1.0];
-                    nameLabel.textAlignment = NSTextAlignmentCenter;
-                    nameLabel.text = friend.first_name;
-                    nameLabel.frame = CGRectMake(5 + (50 * friendCount), 42, 30, 8);
-                    [self.friendScrollView addSubview:nameLabel];
-                    
-                    self.friendScrollView.contentSize = CGSizeMake((50 * friendCount) + 40, self.friendScrollView.frame.size.height);
-                    
-                    friendCount++;
-                    
-                    self.friendsInterestedLabel.text = [NSString stringWithFormat:@"%d friends interested", friendCount];
-                }
-            }];
-            
-            
-            /*
-            NSDictionary *params = [NSDictionary dictionaryWithObjectsAndKeys:
-                                    @"false", @"url",
-                                    @"200", @"height",
-                                    @"normal", @"type",
-                                    @"200", @"width",
-                                    nil
-                                    ];
-            
-            [FBRequestConnection startWithGraphPath:@"/me/picture"
-                                         parameters:params
-                                         HTTPMethod:@"GET"
-                                  completionHandler:^(
-                                                      FBRequestConnection *connection,
-                                                      id result,
-                                                      NSError *error
-                                                      ) {
-                                  }];
-            */
+            [friendObjectIDs addObject:friend.objectID];
         }
         
+        PFQuery *friendQuery = [PFQuery queryWithClassName:@"Swipes"];
+        [friendQuery whereKey:@"FBObjectID" containedIn:friendObjectIDs];
+        [friendQuery whereKey:@"EventID" equalTo:self.eventID];
+        [friendQuery whereKey:@"swipedRight" equalTo:@YES];
+        
+        PFQuery *userQuery = [PFUser query];
+        [userQuery whereKey:@"objectId" matchesKey:@"UserID" inQuery:friendQuery];
+        
+        [userQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+
+                    
+                    if (!error) {
+                        
+                        for (PFObject *object in objects) {
+                        
+                    
+                            FBProfilePictureView *profPicView = [[FBProfilePictureView alloc] initWithProfileID:object[@"FBObjectID"] pictureCropping:FBProfilePictureCroppingSquare];
+                            profPicView.layer.cornerRadius = 20;
+                            profPicView.layer.masksToBounds = YES;
+                            profPicView.accessibilityIdentifier = object.objectId;
+                            profPicView.frame = CGRectMake(50 * friendCount, 0, 40, 40);
+                            profPicView.userInteractionEnabled = YES;
+                            [self.friendScrollView addSubview:profPicView];
+                    
+                            UITapGestureRecognizer *gr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(showFriendProfile:)];
+                            [profPicView addGestureRecognizer:gr];
+                            
+                            UILabel *nameLabel = [[UILabel alloc] init];
+                            nameLabel.font = [UIFont fontWithName:@"OpenSans" size:7];
+                            nameLabel.textColor = [UIColor colorWithRed:(70.0/255.0) green:(70.0/255.0) blue:(70.0/255.0) alpha:    1.0];
+                            nameLabel.textAlignment = NSTextAlignmentCenter;
+                            nameLabel.text = object[@"firstName"];
+                            nameLabel.frame = CGRectMake(5 + (50 * friendCount), 42, 30, 8);
+                            [self.friendScrollView addSubview:nameLabel];
+                    
+                            self.friendScrollView.contentSize = CGSizeMake((50 * friendCount) + 40, self.friendScrollView.frame.size.height);
+                    
+                            friendCount++;
+                    
+                            if (friendCount == 1) {
+                                self.friendsInterestedLabel.text = [NSString stringWithFormat:@"%d friend interested", friendCount];
+                            } else {
+                                self.friendsInterestedLabel.text = [NSString stringWithFormat:@"%d friends interested", friendCount];
+                            }
+                            
+                        }
+                    
+                        if (objects.count == 0) {
+                            NSLog(@"No new friends");
+                            [self noFriendsAddButton];
+                        }
+                        
+                    }
+                    
+            
+        
+        }];
     }];
     
     
+    
 }
+
+- (void)noFriendsAddButton {
+    
+    friendScrollView.scrollEnabled = NO;
+    
+    UIButton *noFriendsButton = [[UIButton alloc] initWithFrame:CGRectMake(35, 5, 184, 40)];
+    [noFriendsButton setTitle:@"Invite your friends" forState:UIControlStateNormal];
+    noFriendsButton.titleLabel.font = [UIFont fontWithName:@"OpenSans" size:15.0];
+    [noFriendsButton setTitleColor:[UIColor colorWithRed:41.0/255 green:181.0/255 blue:1.0 alpha:1.0] forState:UIControlStateNormal];
+    noFriendsButton.layer.masksToBounds = YES;
+    noFriendsButton.layer.borderColor = [UIColor colorWithRed:41.0/255 green:181.0/255 blue:1.0 alpha:1.0].CGColor;
+    noFriendsButton.layer.borderWidth = 2.0;
+    noFriendsButton.layer.cornerRadius = 5.0;
+    
+    [friendScrollView addSubview:noFriendsButton];
+    
+}
+
+- (void)ticketsAndUberUpdateFrameBy:(int)height {
+    
+    NSLog(@"height: %d   %s", height, __FUNCTION__);
+    
+    
+    [UIView animateWithDuration:0.2 animations:^{
+            
+            //uberButton.center = CGPointMake(uberButton.center.x, uberButton.center.y + height);
+            //ticketsButton.center = CGPointMake(ticketsButton.center.x, ticketsButton.center.y + height);
+
+        NSLayoutConstraint *constraint = scrollView.constraints[3];
+        constraint.constant = cardView.frame.size.height + height;
+        
+        scrollView.contentSize = CGSizeMake(320, scrollView.contentSize.height + height);
+            
+            
+        } completion:^(BOOL finished) {
+
+        }];
+    
+}
+
+/*
+- (void)uberUpdateFrameBy:(int)height {
+    
+    if (!self.frontViewIsVisible) {
+        
+        [UIView animateWithDuration:0.2 animations:^{
+            
+            draggableBackground.frame = CGRectMake(draggableBackground.frame.origin.x, draggableBackground.frame.origin.y, draggableBackground.frame.size.width, draggableBackground.frame.size.height + height);
+            
+            scrollView.contentSize = CGSizeMake(320, scrollView.contentSize.height + height);
+            
+            
+        } completion:^(BOOL finished) {
+            
+        }];
+        
+    }
+    
+}
+*/
 
 - (void)redirectToMaps {
     
@@ -536,11 +696,11 @@
                 destinationAddress = [destinationAddress stringByReplacingOccurrencesOfString:@" " withString:@"%20"];
             
             
-                NSString *urlString = [NSString stringWithFormat:@"uber://?client_id=Vmks1LNIHQiiaUYd8Z3FaMNkvD-7s53V&action=setPickup&pickup=my_location&dropoff[latitude]=%f&dropoff[longitude]=%f&dropoff[nickname]=%@&dropoff[formatted_address]=%@", mapLocation.coordinate.latitude, mapLocation.coordinate.longitude, self.locationText, destinationAddress ];
+                NSString *urlStringUber = [NSString stringWithFormat:@"uber://?client_id=Vmks1LNIHQiiaUYd8Z3FaMNkvD-7s53V&action=setPickup&pickup=my_location&dropoff[latitude]=%f&dropoff[longitude]=%f&dropoff[nickname]=%@&dropoff[formatted_address]=%@", mapLocation.coordinate.latitude, mapLocation.coordinate.longitude, self.locationText, destinationAddress ];
                 
-                urlString = [urlString stringByAddingPercentEscapesUsingEncoding:NSStringEncodingConversionExternalRepresentation];
+                urlStringUber = [urlString stringByAddingPercentEscapesUsingEncoding:NSStringEncodingConversionExternalRepresentation];
             
-                [[UIApplication sharedApplication] openURL:[NSURL URLWithString: urlString]];
+                [[UIApplication sharedApplication] openURL:[NSURL URLWithString: urlStringUber]];
             
             //}];
             
@@ -584,11 +744,11 @@
             
                 NSLog(@"%@", destinationAddress);
                 
-            NSString *urlString = [NSString stringWithFormat:@"https://m.uber.com/sign-up?client_id=Vmks1LNIHQiiaUYd8Z3FaMNkvD-7s53V&first_name=%@&last_name=%@&email=%@&country_code=us&&dropoff_latitude=%f&dropoff_longitude=%f&dropoff_nickname=%@", firstName, lastName, userEmail, mapLocation.coordinate.latitude, mapLocation.coordinate.longitude, self.locationText ];
+            NSString *urlStringUber = [NSString stringWithFormat:@"https://m.uber.com/sign-up?client_id=Vmks1LNIHQiiaUYd8Z3FaMNkvD-7s53V&first_name=%@&last_name=%@&email=%@&country_code=us&&dropoff_latitude=%f&dropoff_longitude=%f&dropoff_nickname=%@", firstName, lastName, userEmail, mapLocation.coordinate.latitude, mapLocation.coordinate.longitude, self.locationText ];
             
                 //urlString = [urlString stringByAddingPercentEscapesUsingEncoding:NSStringEncodingConversionExternalRepresentation];
                 
-            [[UIApplication sharedApplication] openURL:[NSURL URLWithString: urlString]];
+            [[UIApplication sharedApplication] openURL:[NSURL URLWithString: urlStringUber]];
             
         }];
         
@@ -608,8 +768,27 @@
     
 }
 
-
-
+- (void)ticketsButtonTapped:(UIButton *)button {
+    
+    urlString = button.accessibilityIdentifier;
+    
+    [self performSegueWithIdentifier:@"toWebVC" sender:self];
+    
+    // IN APP EXPERIENCE
+    
+    /*
+     UIWebView *webView = [[UIWebView alloc] init];
+     [webView setFrame:CGRectMake(0, 0, 320, 460)];
+     [webView loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"http://gethappeningapp.com"]]];
+     [[self view] addSubview:webView];
+     */
+    
+    // OPENS IN SAFARI
+    
+    //NSURL *url = [[NSURL alloc] initWithString:urlString];
+    //[[UIApplication sharedApplication] openURL:url];
+    
+}
 
 
 
@@ -668,6 +847,176 @@
     
 }
 
+-(void)showCreatedByProfile {
+    [self performSegueWithIdentifier:@"showProf" sender:self];
+}
+
+-(void)showFriendProfile:(UITapGestureRecognizer *)gr {
+    UIView *view = gr.view;
+    friendObjectID = view.accessibilityIdentifier;
+    [self performSegueWithIdentifier:@"showFriendProf" sender:self];
+}
+
+-(void)sendToMoreInfo {
+    [self performSegueWithIdentifier:@"toMoreInfo" sender:self];
+}
+
+// Check the authorization status of our application for Calendar
+-(void)checkEventStoreAccessForCalendar
+{
+    EKAuthorizationStatus status = [EKEventStore authorizationStatusForEntityType:EKEntityTypeEvent];
+    
+    switch (status)
+    {
+            // Update our UI if the user has granted access to their Calendar
+        case EKAuthorizationStatusAuthorized: [self accessGrantedForCalendar];
+            break;
+            // Prompt the user for access to Calendar if there is no definitive answer
+        case EKAuthorizationStatusNotDetermined: [self requestCalendarAccess];
+            break;
+            // Display a message if the user has denied or restricted access to Calendar
+        case EKAuthorizationStatusDenied:
+        case EKAuthorizationStatusRestricted:
+        {
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Privacy Warning" message:@"Permission was not granted for Calendar"
+                                                           delegate:nil
+                                                  cancelButtonTitle:@"Okaaay"
+                                                  otherButtonTitles:nil];
+            [alert show];
+        }
+            break;
+        default:
+            break;
+    }
+}
+
+
+// Prompt the user for access to their Calendar
+-(void)requestCalendarAccess
+{
+    
+    [eventStore requestAccessToEntityType:EKEntityTypeEvent completion:^(BOOL granted, NSError *error)
+     {
+         if (granted)
+         {
+             [self accessGrantedForCalendar];
+         }
+     }];
+}
+
+
+// This method is called when the user has granted permission to Calendar
+-(void)accessGrantedForCalendar
+{
+    
+    PFQuery *query = [PFQuery queryWithClassName:@"Event"];
+    PFObject *object = [query getObjectWithId:self.eventID];
+    
+    EKEvent *event = [EKEvent eventWithEventStore:eventStore];
+    EKEventViewController *evc = [[EKEventViewController alloc] init];
+    
+    event.title = self.titleText;
+    
+    event.startDate = object[@"Date"];
+    event.endDate = object[@"EndTime"];
+    
+    //get address REMINDER 76597869876
+    PFGeoPoint *geoPoint = object[@"GeoLoc"];
+    CLLocation *eventLocation = [[CLLocation alloc]initWithLatitude:geoPoint.latitude longitude:geoPoint.longitude];
+    
+    NSString *ticketLink = object[@"TicketLink"];
+    NSString *description = self.subtitleText;
+    
+    if ((description == nil || [description isEqualToString:@""]) && (ticketLink == nil || [ticketLink isEqualToString:@""])) {
+        event.notes = [NSString stringWithFormat:@"Venue name: %@", self.locationText];
+    } else if (ticketLink == nil || [ticketLink isEqualToString:@""]) {
+        event.notes = [NSString stringWithFormat:@"Venue name: %@ // %@", self.locationText, description];
+    } else if (description == nil || [description isEqualToString:@""]) {
+        event.notes = [NSString stringWithFormat:@"Venue name: %@ // Get tickets at: %@", self.locationText, ticketLink];
+    } else {
+        event.notes = [NSString stringWithFormat:@"Venue name: %@ // Get tickets at: %@ // %@", self.locationText, ticketLink, description];
+    }
+    
+    
+    NSString *url = object[@"URL"];
+    NSURL *urlFromString = [NSURL URLWithString:url];
+    
+    if (urlFromString != nil)
+        event.URL = urlFromString;
+    else
+        event.URL = [NSURL URLWithString:@"http://www.gethappeningapp.com"];
+    
+    
+    //[event addAlarm:[EKAlarm alarmWithRelativeOffset:60.0f * -60.0f * 24]];
+    //[event addAlarm:[EKAlarm alarmWithRelativeOffset:60.0f * -15.0f]];
+    
+    
+    [[[CLGeocoder alloc]init] reverseGeocodeLocation:eventLocation completionHandler:^(NSArray *placemarks, NSError *error) {
+        CLPlacemark *placemark = placemarks[0];
+        
+        NSArray *lines = placemark.addressDictionary[ @"FormattedAddressLines"];
+        NSString *addressString = [lines componentsJoinedByString:@" "];
+        NSLog(@"Address: %@", addressString);
+        
+        //NSString *name = placemark.addressDictionary[@"Name"];
+        NSString *streetName = placemark.addressDictionary[@"Street"];
+        NSString *cityName = placemark.addressDictionary[@"City"];
+        NSString *stateName = placemark.addressDictionary[@"State"];
+        NSString *zipCode = placemark.addressDictionary[@"ZIP"];
+        //NSString *country = placemark.addressDictionary[@"Country"];
+        
+        if (streetName && zipCode && cityName) {
+            event.location = [NSString stringWithFormat:@"%@ %@, %@ %@", streetName, cityName, stateName, zipCode];
+        } else if (zipCode && !streetName) {
+            event.location = [NSString stringWithFormat:@"%@, %@ %@", cityName, stateName, zipCode];
+        } else if (cityName && streetName) {
+            event.location = [NSString stringWithFormat:@"%@ %@, %@", streetName, cityName, stateName];
+        } else
+            event.location = self.locationText;
+        
+        
+        //[RKDropdownAlert title:@"Event added to your main calendar!" backgroundColor:[UIColor colorWithRed:.05 green:.29 blue:.49 alpha:1.0] textColor:[UIColor whiteColor]];
+        
+        [event setCalendar:[eventStore defaultCalendarForNewEvents]];
+        NSError *err;
+        //[eventStore saveEvent:event span:EKSpanThisEvent error:&err];
+        //NSLog(@"Added %@ to calendar. Object ID: %@", dragView.title.text, dragView.objectID);
+        
+        [self showEditEventVCWithEvent:event eventStore:eventStore];
+    }];
+    
+}
+
+-(void)showEditEventVCWithEvent:(EKEvent *)event eventStore:(EKEventStore *)es {
+
+    //[self performSegueWithIdentifier:@"toEKEventEdit" sender:self];
+    
+    EKEventEditViewController *vc = [[EKEventEditViewController alloc] initWithNibName:nil bundle:nil];
+    vc.eventStore = es;
+    vc.event = event;
+    
+    vc.navigationBar.barTintColor = [UIColor clearColor]; //%%% bartint
+    [vc.navigationBar setBackgroundImage:[UIImage imageNamed:@"navBar"] forBarMetrics:UIBarMetricsDefault];
+    vc.navigationBar.translucent = NO;
+    vc.navigationBar.barStyle = UIBarStyleBlack;
+    vc.navigationBar.tintColor =[UIColor whiteColor];
+    vc.navigationItem.title = @"Add to Calendar";
+    
+    [self presentViewController:vc animated:YES completion:nil];
+    vc.editViewDelegate = self;
+}
+
+- (void)eventEditViewController:(EKEventEditViewController *)controller didCompleteWithAction:(EKEventEditViewAction)action {
+    
+    if (action == EKEventEditViewActionCancelled || action == EKEventEditViewActionCanceled) {
+        NSLog(@"Clicked Cancel");
+    } else if (action == EKEventEditViewActionSaved) {
+        NSLog(@"Clicked Add -- event saved to calendar");
+        [RKDropdownAlert title:@"Event added to your main calendar!" backgroundColor:[UIColor colorWithRed:.05 green:.29 blue:.49 alpha:1.0] textColor:[UIColor whiteColor]];
+    }
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
+
 
 - (IBAction)shareAction:(id)sender {
     
@@ -718,6 +1067,36 @@
              
          }
      }];
+    
+}
+
+-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    
+    if ([segue.identifier isEqualToString:@"toWebVC"]) {
+        
+        webViewController *vc = (webViewController *)[[segue destinationViewController] topViewController];
+        vc.urlString = urlString;
+        vc.titleString = self.titleText;
+        
+    } else if ([segue.identifier isEqualToString:@"showProf"]) {
+        
+        ExternalProfileTVC *vc = (ExternalProfileTVC *)[segue destinationViewController];
+        vc.eventID = self.eventID;
+        
+    } else if ([segue.identifier isEqualToString:@"showFriendProf"]) {
+        
+        ExternalProfileTVC *vc = (ExternalProfileTVC *)[segue destinationViewController];
+        vc.userID = friendObjectID;
+        NSLog(@"friend oID = %@", friendObjectID);
+        
+    } else if ([segue.identifier isEqualToString:@"toMoreInfo"]) {
+        
+        moreDetailFromCard *vc = (moreDetailFromCard *)[[segue destinationViewController] topViewController];
+        vc.eventID = self.eventID;
+        vc.titleText = self.titleText;
+        vc.subtitleText = self.subtitleText;
+        vc.locationText = self.locationText;
+    }
     
 }
 

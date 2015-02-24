@@ -13,12 +13,14 @@
 
 -(void)refreshData;
 -(void)dropdownPressed;
+-(void)dropdownPressedFromTut:(BOOL)var;
 
 @end
 
 @interface dropdownSettingsView : UIView <UITableViewDataSource, UITableViewDelegate, SettingsChoosingLocDelegate>
 
 -(BOOL)didPreferencesChange;
+-(void)tutViewAction;
 
 @property (weak) id <dropdownSettingsViewDelegate> delegate;
 

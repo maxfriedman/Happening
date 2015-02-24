@@ -101,10 +101,10 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         UIImageView *swipeLeftImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"interested_face"]];
         UIImageView *swipeDownImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"interested_face"]];
         UIImageView *tapToExpandImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"interested_face"]];
-        UIImageView *currentLocImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"interested_face"]];
+        //UIImageView *currentLocImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"interested_face"]];
         //UIView *cityAndRadiusView = [[UIView alloc] init];
         
-        imageArray = [[NSArray alloc] initWithObjects:swipeRightImageView, swipeLeftImageView, swipeDownImageView, tapToExpandImageView, currentLocImageView, nil];
+        imageArray = [[NSArray alloc] initWithObjects:swipeRightImageView, swipeLeftImageView, swipeDownImageView, tapToExpandImageView, /*currentLocImageView,*/ nil];
         
         for (UIImageView *view in imageArray) {
             
@@ -530,9 +530,6 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     
 
 
-
-
-
 }
 
 
@@ -705,9 +702,10 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 -(void)rightAction:(UIView *)card
 {
     
+    /*
     if (card.tag == 4) {
         [self didChooseCurrentLoc];
-    }
+    } */
     
     CGPoint finishPoint = CGPointMake(500, 2*yFromCenter +self.originalPoint.y);
     [UIView animateWithDuration:0.3
@@ -716,7 +714,10 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                      }completion:^(BOOL complete){
                          [card removeFromSuperview];
                          
-                         if (card.tag == 4) {
+                         if (card.tag == 50 || card.tag == 3) {
+                             NSLog(@"Last card swiped");
+                             [self.myViewController dropdownPressedFromTut:YES];
+                             [self.myViewController dropdownPressed];
                          }
                      }];
     
@@ -729,6 +730,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 //%%% called when a swipe exceeds the ACTION_MARGIN to the left
 -(void)leftAction:(UIView *)card
 {
+    
     CGPoint finishPoint = CGPointMake(-200, 2*yFromCenter +self.originalPoint.y);
     [UIView animateWithDuration:0.3
                      animations:^{
@@ -736,8 +738,10 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                      }completion:^(BOOL complete){
                          [card removeFromSuperview];
                          
-                         if (card.tag == 4) {
-                             //[delegate setLocationSegue];
+                         if (card.tag == 50 || card.tag == 3) {
+                             NSLog(@"Last card swiped");
+                             [self.myViewController dropdownPressedFromTut:YES];
+                             [self.myViewController dropdownPressed];
                          }
                      }];
     
@@ -748,6 +752,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 
 -(void)downAction:(UIView *)card
 {
+
     CGPoint finishPoint = CGPointMake(dragView.frame.size.width / 2, 700);
     [UIView animateWithDuration:0.3
                      animations:^{
@@ -755,8 +760,10 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                      }completion:^(BOOL complete){
                          [card removeFromSuperview];
                          
-                         if (card.tag == 4) {
-                             //[delegate setLocationSegue];
+                         if (card.tag == 50 || card.tag == 3) {
+                             NSLog(@"Last card swiped");
+                             [self.myViewController dropdownPressedFromTut:YES];
+                             [self.myViewController dropdownPressed];
                          }
                      }];
     

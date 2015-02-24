@@ -11,6 +11,7 @@
 #import <MapKit/MapKit.h>
 #import "dropdownSettingsView.h"
 #import <EventKit/EventKit.h>
+#import <EventKitUI/EventKitUI.h>
 
 @protocol DragViewControllerDelegate <NSObject>
 
@@ -20,16 +21,22 @@
 - (void)refreshData;
 - (void)setLocationSegue;
 
+- (void)dropdownPressedFromTut:(BOOL)var;
+- (void)dropdownPressed;
+
 @end
 
-@interface DragViewController : UIViewController <UIScrollViewDelegate, MKMapViewDelegate, UIGestureRecognizerDelegate>
+@interface DragViewController : UIViewController <UIScrollViewDelegate, MKMapViewDelegate, UIGestureRecognizerDelegate, EKEventEditViewDelegate>
 
 - (void)refreshData;
 - (void)flipCurrentView;
+- (void)dropdownPressed;
+- (void)dropdownPressedFromTut:(BOOL)var;
 - (void)tutorialCardTapped:(UIView *)view ;
 - (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event;
 - (void)shareAction;
 - (void)showCreatedByProfile;
+- (void)showMoreDetail;
 - (void)showEditEventVCWithEvent:(EKEvent *)event eventStore:(EKEventStore *)es;
 
 @property (weak) id <DragViewControllerDelegate> delegate;

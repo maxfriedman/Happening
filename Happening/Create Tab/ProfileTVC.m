@@ -121,7 +121,10 @@
     
     [cell.titleLabel setText:[NSString stringWithFormat:@"%@",Event[@"Title"]]];
     
-    [cell.subtitle setText:[NSString stringWithFormat:@"%@",Event[@"Description"]]];
+    if (Event[@"Description"])
+        [cell.subtitle setText:[NSString stringWithFormat:@"%@",Event[@"Description"]]];
+    else
+        [cell.subtitle setText:[NSString stringWithFormat:@""]];
     
     [cell.locLabel setText:[NSString stringWithFormat:@"%@",Event[@"Location"]]];
     

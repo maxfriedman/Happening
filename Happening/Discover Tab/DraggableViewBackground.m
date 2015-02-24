@@ -129,7 +129,9 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             NSLog(@"today");
             
             [eventQuery whereKey:@"EndTime" greaterThan:[NSDate dateWithTimeIntervalSinceNow:1800]]; // show today's events, must be at least 30 minutes left in the event (END)
-             if (shouldLimit) [eventQuery whereKey:@"Date" lessThan:[[NSDate date]endOfDay]];
+            if (shouldLimit) {
+                [eventQuery whereKey:@"Date" lessThan:[[NSDate date]endOfDay]];
+            }
             
         } else if ([[NSUserDefaults standardUserDefaults] boolForKey:@"tomorrow"]) {
             
@@ -137,7 +139,9 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 
             NSDate *tomorrowDate = [[NSDate dateWithTimeIntervalSinceNow:86400] beginningOfDay];
             [eventQuery whereKey:@"Date" greaterThan:tomorrowDate]; // show tomorrow's events -- must START after beginning of tomorrow or later
-            if (shouldLimit) [eventQuery whereKey:@"Date" lessThan:[tomorrowDate endOfDay]];
+            if (shouldLimit) {
+                [eventQuery whereKey:@"Date" lessThan:[tomorrowDate endOfDay]];
+            }
             
         } else {
             
@@ -155,21 +159,27 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                 NSLog(@"sunday");
                 
                 [eventQuery whereKey:@"EndTime" greaterThan:[NSDate dateWithTimeIntervalSinceNow:1800]]; // show Sunday's events, must be at least 30 minutes left in the event (END)
-                if (shouldLimit) [eventQuery whereKey:@"Date" lessThan:[sundayDate endOfDay]];
+                if (shouldLimit) {
+                    [eventQuery whereKey:@"Date" lessThan:[sundayDate endOfDay]];
+                }
                 
             } else if ([[NSDate date] beginningOfDay] == [sundayDate dateByAddingTimeInterval:-86400]) {
             
                 NSLog(@"saturday middle of day");
                 
                 [eventQuery whereKey:@"EndTime" greaterThan:[NSDate dateWithTimeIntervalSinceNow:1800]]; // show ONLY events from now (Saturday) to Sunday
-                if (shouldLimit) [eventQuery whereKey:@"Date" lessThan:[sundayDate endOfDay]];
+                if (shouldLimit) {
+                    [eventQuery whereKey:@"Date" lessThan:[sundayDate endOfDay]];
+                }
             
             } else {
                 
                 NSLog(@"weekday");
                 
                 [eventQuery whereKey:@"Date" greaterThan:[sundayDate dateByAddingTimeInterval:-86400]]; // show ALL events that start after this SATURDAY
-                if (shouldLimit) [eventQuery whereKey:@"Date" lessThan:[sundayDate endOfDay]];
+                if (shouldLimit) {
+                    [eventQuery whereKey:@"Date" lessThan:[sundayDate endOfDay]];
+                }
             
             }
             
@@ -177,7 +187,11 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             
         }
         
-        [eventQuery orderByAscending:@"Date"];
+        if (shouldLimit) {
+            [eventQuery orderByAscending:@"swipesRight"];
+        } else {
+            [eventQuery orderByAscending:@"Date"];
+        }
         
         PFQuery *didUserSwipe = [PFQuery queryWithClassName:@"Swipes"];
         [didUserSwipe whereKey:@"UserID" containsString:user.objectId];
@@ -203,7 +217,12 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                 [objectIDs addObject:eventObject.objectId];
 
                 [titleArray addObject:eventObject[@"Title"]];
-                [subtitleArray addObject:eventObject[@"Description"]];
+                
+                if (eventObject[@"Description"])
+                    [subtitleArray addObject:eventObject[@"Description"]];
+                else
+                    [subtitleArray addObject:@""];
+                
                 [locationArray addObject:eventObject[@"Location"]];
                 
                 NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
@@ -508,9 +527,8 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         [draggableView.calTimeLabel addGestureRecognizer:gr5];
         
         
-        //draggableView.calImageView.frame = CGRectMake(0, 0, calImage.size.width, calImage.size.height);
-        
-        NSLog(@"DATE: ==> %@, %@, %@, %@", calMonthArray[index], calDayArray[index], calDayOfWeekArray[index], calTimeArray[index]);
+        UIGestureRecognizer *tgr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(subtitleTap)];
+        [draggableView.subtitle addGestureRecognizer:tgr];
         
         
         [draggableView.shareButton addTarget:self action:@selector(shareAction) forControlEvents:UIControlEventTouchUpInside];
@@ -881,8 +899,6 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 -(void)accessGrantedForCalendar
 {
     
-    
-    
     PFQuery *query = [PFQuery queryWithClassName:@"Event"];
     PFObject *object = [query getObjectWithId:dragView.objectID];
     
@@ -967,6 +983,10 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 
 - (void)createdByTap {
     [self.myViewController showCreatedByProfile];
+}
+
+- (void)subtitleTap {
+    [self.myViewController showMoreDetail];
 }
 
 - (NSMutableArray *) setCategories {

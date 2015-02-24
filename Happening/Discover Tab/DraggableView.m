@@ -199,7 +199,7 @@
         subtitle.font = [UIFont fontWithName:@"OpenSans" size:12];
         subtitle.numberOfLines = 2;
         [subtitle setLineBreakMode:NSLineBreakByTruncatingTail];
-        
+        subtitle.userInteractionEnabled = YES;
         
         [location setTextAlignment:NSTextAlignmentLeft];
         //location.textColor = [UIColor colorWithRed:70/255 green:70/255 blue:70/255 alpha:0.7];

@@ -7,6 +7,7 @@
 //
 
 #import "SettingsChoosingLoc.h"
+#import "RKDropdownAlert.h"
 
 @interface SettingsChoosingLoc () <UISearchDisplayDelegate, UISearchBarDelegate, /*UISearchResultsUpdating,*/ UISearchControllerDelegate, CLLocationManagerDelegate>
 
@@ -259,6 +260,7 @@
         [user saveInBackground];
         [defaults synchronize];
         [delegate refreshSettings];
+        
         [self dismissViewControllerAnimated:YES completion:nil];
     }
     
@@ -349,7 +351,13 @@
      LocationSearching *locationSearching = [[LocationSearching alloc]initWithNibName:@"LocationSearching" bundle:nil];
      locationSearching.delegate = self;
      */
-    [self dismissViewControllerAnimated:YES completion:nil];
+    
+    if (!self.fromTut) {
+        [self dismissViewControllerAnimated:YES completion:nil];
+    
+    } else {
+        [RKDropdownAlert title:@"Hey there" message:@"Please choose a location before continuing" backgroundColor:[UIColor redColor] textColor:[UIColor whiteColor]];
+    }
     
 }
 
