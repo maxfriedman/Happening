@@ -13,6 +13,7 @@
 #import <CoreText/CoreText.h>
 #import "ExternalProfileTVC.h"
 #import "moreDetailFromCard.h"
+#import "DragMapViewController.h"
 
 @interface moreDetailFromTable ()
 
@@ -349,6 +350,10 @@
 
 - (void)mapViewTapped {
     
+    [self performSegueWithIdentifier:@"toMapView" sender:self];
+    
+    /*
+    
     if (!mapViewExpanded) {
     
         //mapView.layer.masksToBounds = NO;
@@ -441,7 +446,7 @@
         
     }
     
-    
+    */
     
 }
 
@@ -659,7 +664,7 @@
     // Dispose of any resources that can be recreated.
 }
 
-- (IBAction)grabAnUberButtonTapped:(id)sender {
+- (void)grabAnUberButtonTapped:(id)sender {
     
     if ([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"uber://"]]) {
         // Do something awesome - the app is installed! Launch App.
@@ -698,7 +703,7 @@
             
                 NSString *urlStringUber = [NSString stringWithFormat:@"uber://?client_id=Vmks1LNIHQiiaUYd8Z3FaMNkvD-7s53V&action=setPickup&pickup=my_location&dropoff[latitude]=%f&dropoff[longitude]=%f&dropoff[nickname]=%@&dropoff[formatted_address]=%@", mapLocation.coordinate.latitude, mapLocation.coordinate.longitude, self.locationText, destinationAddress ];
                 
-                urlStringUber = [urlString stringByAddingPercentEscapesUsingEncoding:NSStringEncodingConversionExternalRepresentation];
+                urlStringUber = [urlStringUber stringByAddingPercentEscapesUsingEncoding:NSStringEncodingConversionExternalRepresentation];
             
                 [[UIApplication sharedApplication] openURL:[NSURL URLWithString: urlStringUber]];
             
@@ -1096,6 +1101,15 @@
         vc.titleText = self.titleText;
         vc.subtitleText = self.subtitleText;
         vc.locationText = self.locationText;
+        
+    }  else if ([segue.identifier isEqualToString:@"toMapView"]) {
+        
+        DragMapViewController *vc = (DragMapViewController *)[segue destinationViewController];
+        //vc.mapView = mapView;
+        vc.objectID = self.eventID;
+        vc.locationTitle = annotation.title;
+        vc.locationSubtitle = annotation.subtitle;
+        
     }
     
 }

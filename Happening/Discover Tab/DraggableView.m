@@ -174,7 +174,7 @@
         
         [cardView addSubview:eventImage];
         
-        //transpBackground = [[UILabel alloc]initWithFrame:CGRectMake(0, 93, self.frame.size.width, 70)];
+        transpBackground = [[UILabel alloc]initWithFrame:blurEffectView.frame];
         
         objectID = [[NSString alloc]init];
         geoPoint = [[PFGeoPoint alloc]init];
@@ -209,8 +209,8 @@
         location.adjustsFontSizeToFitWidth = YES;
         //location.shadowColor = [UIColor blackColor];
         
-        //transpBackground.backgroundColor = [UIColor blackColor];
-        //transpBackground.backgroundColor = [UIColor colorWithHue:1.0 saturation:0.0 brightness:0 alpha:0.5];
+        transpBackground.backgroundColor = [UIColor grayColor];
+        transpBackground.backgroundColor = [UIColor colorWithHue:1.0 saturation:0.0 brightness:0.7 alpha:0.9];
         
         /*
         [date setTextAlignment:NSTextAlignmentCenter];
@@ -643,6 +643,34 @@
     RKSwipeBetweenViewControllers *rk = appDelegate.rk;
     [rk scrolling:enabled];
     
+}
+
+- (BOOL) colorOfPointIsWhite:(CGPoint)point
+{
+    unsigned char pixel[4] = {0};
+    
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    
+    CGContextRef context = CGBitmapContextCreate(pixel, 1, 1, 8, 4, colorSpace, kCGBitmapAlphaInfoMask & kCGImageAlphaPremultipliedLast);
+    
+    CGContextTranslateCTM(context, -point.x, -point.y);
+    
+    [self.layer renderInContext:context];
+    
+    CGContextRelease(context);
+    CGColorSpaceRelease(colorSpace);
+    
+    //NSLog(@"pixel: %d %d %d %d", pixel[0], pixel[1], pixel[2], pixel[3]);
+    
+    //UIColor *color = [UIColor colorWithRed:pixel[0]/255.0 green:pixel[1]/255.0 blue:pixel[2]/255.0 alpha:pixel[3]/255.0];
+    
+    BOOL isWhite = false;
+    
+    if (pixel[0]/255.0 > 0.75 && pixel[1]/255.0 > 0.75 && pixel[2]/255.0 > 0.75) {
+        isWhite = true;
+    }
+    
+    return isWhite;
 }
 
 

@@ -62,6 +62,7 @@
 		50478F171A44DE6900161D01 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 50478F111A44DE6900161D01 /* Main.storyboard */; };
 		50478F181A44DE6900161D01 /* TabBarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50478F131A44DE6900161D01 /* TabBarViewController.m */; };
 		50478F251A45049300161D01 /* MyEventTableCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50478F241A45049300161D01 /* MyEventTableCell.m */; };
+		50512F051AB389B600118FD9 /* UIButton+Extensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 50512F041AB389B600118FD9 /* UIButton+Extensions.m */; };
 		50594CD01A2FAD1B00749B49 /* AddressBook.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50594CCF1A2FAD1B00749B49 /* AddressBook.framework */; };
 		505CDD571A65B5BA005876DC /* Accounts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 505CDD561A65B5BA005876DC /* Accounts.framework */; };
 		505CDD591A65B5BF005876DC /* Social.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 505CDD581A65B5BF005876DC /* Social.framework */; };
@@ -227,6 +228,8 @@
 		50478F221A44DF1500161D01 /* OpenSans-SemiboldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "OpenSans-SemiboldItalic.ttf"; path = "Happening/Extras/Open Sans/OpenSans-SemiboldItalic.ttf"; sourceTree = SOURCE_ROOT; };
 		50478F231A45049300161D01 /* MyEventTableCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MyEventTableCell.h; path = "Happening/Create Tab/MyEventTableCell.h"; sourceTree = SOURCE_ROOT; };
 		50478F241A45049300161D01 /* MyEventTableCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MyEventTableCell.m; path = "Happening/Create Tab/MyEventTableCell.m"; sourceTree = SOURCE_ROOT; };
+		50512F031AB389B600118FD9 /* UIButton+Extensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIButton+Extensions.h"; path = "Happening/Extras/UIButton+Extensions.h"; sourceTree = SOURCE_ROOT; };
+		50512F041AB389B600118FD9 /* UIButton+Extensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIButton+Extensions.m"; path = "Happening/Extras/UIButton+Extensions.m"; sourceTree = SOURCE_ROOT; };
 		50594CCF1A2FAD1B00749B49 /* AddressBook.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AddressBook.framework; path = System/Library/Frameworks/AddressBook.framework; sourceTree = SDKROOT; };
 		505CDD561A65B5BA005876DC /* Accounts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accounts.framework; path = System/Library/Frameworks/Accounts.framework; sourceTree = SDKROOT; };
 		505CDD581A65B5BF005876DC /* Social.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Social.framework; path = System/Library/Frameworks/Social.framework; sourceTree = SDKROOT; };
@@ -549,6 +552,8 @@
 				504068791A44BB1E00C2CA81 /* Open Sans */,
 				50BF2CE41A758D8300160B5E /* RKSwipeBetweenViewControllers.h */,
 				50BF2CE51A758D8300160B5E /* RKSwipeBetweenViewControllers.m */,
+				5031EBEA1A939489007E3523 /* webViewController.h */,
+				5031EBEB1A939489007E3523 /* webViewController.m */,
 				503ECF651A506815009D30F1 /* MFActivityIndicatorView.h */,
 				503ECF661A506815009D30F1 /* MFActivityIndicatorView.m */,
 				50478F031A44DE1F00161D01 /* MapViewController.h */,
@@ -567,6 +572,8 @@
 				506DFD821A6113CF00715079 /* FXBlurView.m */,
 				50478ED91A44DD6C00161D01 /* CustomCalendarActivity.h */,
 				50478EDA1A44DD6C00161D01 /* CustomCalendarActivity.m */,
+				50512F031AB389B600118FD9 /* UIButton+Extensions.h */,
+				50512F041AB389B600118FD9 /* UIButton+Extensions.m */,
 			);
 			name = Extras;
 			sourceTree = "<group>";
@@ -579,8 +586,6 @@
 				50478F0F1A44DE6900161D01 /* Info.plist */,
 				50478F101A44DE6900161D01 /* main.m */,
 				50478F111A44DE6900161D01 /* Main.storyboard */,
-				5031EBEA1A939489007E3523 /* webViewController.h */,
-				5031EBEB1A939489007E3523 /* webViewController.m */,
 				50478F121A44DE6900161D01 /* TabBarViewController.h */,
 				50478F131A44DE6900161D01 /* TabBarViewController.m */,
 			);
@@ -801,6 +806,7 @@
 				50BF2CE61A758D8300160B5E /* RKSwipeBetweenViewControllers.m in Sources */,
 				50478EBC1A44DBCC00161D01 /* FirstTimeScreen.m in Sources */,
 				50F7DEA51A5643A6008B8C2B /* main.m in Sources */,
+				50512F051AB389B600118FD9 /* UIButton+Extensions.m in Sources */,
 				506DFD801A60A94600715079 /* UIImage+ImageEffects.m in Sources */,
 				50478F141A44DE6900161D01 /* AppDelegate.m in Sources */,
 			);

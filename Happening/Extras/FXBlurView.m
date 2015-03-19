@@ -581,7 +581,7 @@
 {
     return [snapshot blurredImageWithRadius:blurRadius
                                  iterations:self.iterations
-                                  tintColor:[UIColor lightGrayColor]];  // I SET AUTO CLEAR COLOR SINCE DEFAULT WAS ALWAYS BLUE
+                                  tintColor:self.tintColor];  // I SET AUTO CLEAR COLOR SINCE DEFAULT WAS ALWAYS BLUE
 }
 
 - (void)setLayerContents:(UIImage *)image

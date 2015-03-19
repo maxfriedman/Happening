@@ -90,6 +90,7 @@
 
 -(void)leftClickAction;
 -(void)rightClickAction;
+- (BOOL) colorOfPointIsWhite:(CGPoint)point;
 
 -(void)cardExpanded:(BOOL)b;
 

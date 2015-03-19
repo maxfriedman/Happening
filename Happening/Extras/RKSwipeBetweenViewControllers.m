@@ -11,6 +11,7 @@
 #import "DragViewController.h"
 #import "MyEventsTVC.h"
 #import "AttendEvent.h"
+#import "UIButton+Extensions.h"
 
 //%%% customizeable button attributes
 #define X_BUFFER 0 //%%% the number of pixels on either side of the segment
@@ -178,6 +179,13 @@
     //[middleButton setImage:[UIImage imageNamed:@"discover"] forState:UIControlStateNormal];
     [rightButton setImage:[UIImage imageNamed:@"attend_white"] forState:UIControlStateNormal];
 
+    //[leftButton setFrame: CGRectMake(leftButton.frame.origin.x, leftButton.frame.origin.y, 60, 30)];
+    //leftButton.imageEdgeInsets = UIEdgeInsetsMake(-10, -10, -10, -10);
+    [leftButton setTitle:@"TESTING" forState:UIControlStateNormal];
+    //[leftButton sizeToFit];
+    
+    [leftButton setHitTestEdgeInsets:UIEdgeInsetsMake(-10, -10, -10, -30)];
+    [rightButton setHitTestEdgeInsets:UIEdgeInsetsMake(-10, -30, -10, -10)];
     
     leftLabel.alpha = 0;
     rightLabel.alpha = 0;
@@ -497,6 +505,9 @@
         longScroll = YES;
     } else longScroll = NO;
     
+    [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"refresData"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+    
 }
 
 - (void)middleButtonTapped {
@@ -526,6 +537,8 @@
         longScroll = YES;
     } else longScroll = NO;
     
+    [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"refresData"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
        
 }
 

@@ -189,36 +189,43 @@
     
     [cell.timeLabel setText:[NSString stringWithFormat:@"%@",finalString]];
     
-    // Image formatting
-    PFFile *imageFile = Event[@"Image"];
-    [imageFile getDataInBackgroundWithBlock:^(NSData *imageData, NSError *error) {
-        if (!error) {
-            
-            
-            //cell.blurView.alpha = 0;
-            cell.eventImageView.image = [UIImage imageWithData:imageData];
-            
-            CAGradientLayer *l = [CAGradientLayer layer];
-            l.frame = cell.eventImageView.bounds;
-            l.colors = [NSArray arrayWithObjects:(id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:0.0] CGColor], (id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:1] CGColor], nil];
-            
-            l.startPoint = CGPointMake(0.0, 1.00f);
-            l.endPoint = CGPointMake(0.0f, 0.6f);
-            //l.locations = [NSArray arrayWithObjects:[NSNumber numberWithFloat:0.0],
-            //[NSNumber numberWithFloat:0.2],
-            //[NSNumber numberWithFloat:0.3],
-            //[NSNumber numberWithFloat:0.4], nil];
-            
-            cell.eventImageView.layer.mask = l;
-            //cell.blurView.dynamic = NO;
-            
-            //blurView.layer.mask = l;
-            
-            //[cell addSubview:blurView];
-            
-            
-        }
-    }];
+    cell.eventImageView.image = [UIImage imageNamed:Event[@"Hashtag"]];
+    
+    if (Event[@"Image"] != nil) {
+        // Image formatting
+        PFFile *imageFile = Event[@"Image"];
+        [imageFile getDataInBackgroundWithBlock:^(NSData *imageData, NSError *error) {
+            if (!error) {
+                
+                
+                //cell.blurView.alpha = 0;
+                cell.eventImageView.image = [UIImage imageWithData:imageData];
+                
+                CAGradientLayer *l = [CAGradientLayer layer];
+                l.frame = cell.eventImageView.bounds;
+                l.colors = [NSArray arrayWithObjects:(id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:0.0] CGColor], (id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:1] CGColor], nil];
+                
+                l.startPoint = CGPointMake(0.0, 1.00f);
+                l.endPoint = CGPointMake(0.0f, 0.6f);
+                //l.locations = [NSArray arrayWithObjects:[NSNumber numberWithFloat:0.0],
+                //[NSNumber numberWithFloat:0.2],
+                //[NSNumber numberWithFloat:0.3],
+                //[NSNumber numberWithFloat:0.4], nil];
+                
+                cell.eventImageView.layer.mask = l;
+                //cell.blurView.dynamic = NO;
+                
+                //blurView.layer.mask = l;
+                
+                //[cell addSubview:blurView];
+            }
+        }];
+        
+    } else {
+        
+        // default image
+    }
+
     
     // Location formatting
     if(locManager && [CLLocationManager locationServicesEnabled]){

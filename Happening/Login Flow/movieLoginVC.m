@@ -78,7 +78,8 @@
                                   completionHandler:^(FBSession *session, FBSessionState status, NSError *error) {
                                       /* handle success + failure in block */
                                  // }];
-    
+    self.fbButton.alpha = 0.8;
+    self.fbButton.userInteractionEnabled = NO;
     [activityView startAnimating];
     
     FBSessionStateHandler completionHandler = ^(FBSession *session, FBSessionState status, NSError *error) {
@@ -108,26 +109,40 @@
                     NSLog(@"User disabled email permissions");
                     parseUser.username = [result objectForKey:@"link"];
                 }
-                
                 parseUser.password = [result objectForKey:@"link"];
                 
-                parseUser[@"firstName"] = [result objectForKey:@"first_name"];
-                parseUser[@"lastName"] = [result objectForKey:@"last_name"];
-                parseUser[@"gender"] = [result objectForKey:@"gender"];
-                parseUser[@"link"] = [result objectForKey:@"link"];
-                
-                parseUser[@"bio"] = [result objectForKey:@"bio"];
-                parseUser[@"birthday"] = [result objectForKey:@"birthday"];
-                
-                NSDictionary *locationDict = [result objectForKey:@"location"];
-                parseUser[@"fbLocationName"] = [locationDict objectForKey:@"name"];
                 
                 parseUser[@"FBObjectID"] = [result objectForKey:@"id"];
+                parseUser[@"link"] = [result objectForKey:@"link"];
                 
+                
+                if ([result objectForKey:@"first_name"] != nil)
+                    parseUser[@"firstName"] = [result objectForKey:@"first_name"];
+                
+                if ([result objectForKey:@"last_name"] != nil)
+                    parseUser[@"lastName"] = [result objectForKey:@"last_name"];
+                
+                if ([result objectForKey:@"gender"] != nil)
+                    parseUser[@"gender"] = [result objectForKey:@"gender"];
+
+                if ([result objectForKey:@"bio"] != nil)
+                    parseUser[@"bio"] = [result objectForKey:@"bio"];
+
+                if ([result objectForKey:@"birthday"] != nil)
+                    parseUser[@"birthday"] = [result objectForKey:@"birthday"];
+
+                if ([result objectForKey:@"location"] != nil) {
+                    NSDictionary *locationDict = [result objectForKey:@"location"];
+                    
+                    if ([locationDict objectForKey:@"name"] != nil)
+                        parseUser[@"fbLocationName"] = [locationDict objectForKey:@"name"];
+                    
+                }
+
                 // Default radius
                 NSNumber *fifty = [NSNumber numberWithInt:50];
                 parseUser[@"radius"] = fifty;
-                
+
                 NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
                 [defaults setInteger:50 forKey:@"sliderValue"];
                 [defaults synchronize];
@@ -142,6 +157,8 @@
                         if (parseUser) {
                             NSLog(@"CU3: %@", parseUser.username);
                             
+                            self.fbButton.alpha = 1.0;
+                            self.fbButton.userInteractionEnabled = YES;
                             [activityView stopAnimating];
                             [self performSegueWithIdentifier:@"toMain" sender:self];
                         }
@@ -161,6 +178,8 @@
                                                                     [self performSegueWithIdentifier:@"toMain" sender:self];
                                                                 } else {
                                                                     // The login failed. Check error to see why.
+                                                                    self.fbButton.alpha = 1.0;
+                                                                    self.fbButton.userInteractionEnabled = YES;
                                                                     [activityView stopAnimating];
                                                                     NSLog(@"%@", error);
                                                                     
@@ -180,6 +199,8 @@
                 
             } else {
                 NSLog(@"error");
+                self.fbButton.alpha = 1.0;
+                self.fbButton.userInteractionEnabled = YES;
                 // An error occurred, we need to handle the error
                 // See: https://developers.facebook.com/docs/ios/errors
             }

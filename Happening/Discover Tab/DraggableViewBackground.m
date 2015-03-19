@@ -328,7 +328,8 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                  */
                 //NSLog(@"%@ to %@", startTimeString, endTimeString);
                 //[timeArray addObject:@"Delete this"];
-                NSString *tagString = [NSString stringWithFormat:@"tags: %@", eventObject[@"Hashtag"]];
+                //NSString *tagString = [NSString stringWithFormat:@"tags: %@", eventObject[@"Hashtag"]];
+                NSString *tagString = [NSString stringWithFormat:@"%@", eventObject[@"Hashtag"]];
                 [hashtagArray addObject:tagString];
                 [geoLocArray addObject:eventObject[@"GeoLoc"]];
 
@@ -337,7 +338,11 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                 
                 [swipesRightArray addObject:swipeString];
 
-                [imageArray addObject:eventObject[@"Image"]];
+                if (eventObject[@"Image"] != nil) {
+                    [imageArray addObject:eventObject[@"Image"]];
+                } else {
+                    [imageArray addObject:eventObject[@"Hashtag"]];
+                }
                 
                 NSString *name = eventObject[@"CreatedByName"];
                 NSString *fullName = [NSString stringWithFormat:@"%@", name];
@@ -430,6 +435,9 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         //draggableView.hashtag.text = hashtagArray[index];
         draggableView.swipesRight.text = swipesRightArray[index];
         draggableView.URL = URLArray[index];
+        
+        NSLog(@"1");
+        draggableView.eventImage.image = [UIImage imageNamed:hashtagArray[index]];
 
         NSMutableAttributedString *attString = [[NSMutableAttributedString alloc] initWithString:createdByArray[index]];
         [attString addAttribute:(NSString*)kCTUnderlineStyleAttributeName
@@ -467,33 +475,117 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
          img = [img stringByAppendingString:@".jpg"];
          draggableView.eventImage.image = [UIImage imageNamed:img];
          */
-        PFFile *imageFile = imageArray[index];
-        [imageFile getDataInBackgroundWithBlock:^(NSData *imageData, NSError *error) {
-            if (!error) {
-                draggableView.eventImage.image = [UIImage imageWithData:imageData];
-                
-                blurView = [[FXBlurView alloc]initWithFrame:draggableView.blurEffectView.frame];
-                [draggableView.eventImage addSubview:blurView];
-                blurView.dynamic = NO;
-                blurView.blurRadius = 50;
-
-                //UIImage *blurredImage = [draggableView.eventImage.image applyLightEffect];
-                /*
-                CGRect clippedRect  = CGRectMake(0, 240, 480, 140);
-                CGImageRef imageRef = CGImageCreateWithImageInRect([draggableView CGImage], clippedRect);
-                UIImage *newImage   = [UIImage imageWithCGImage:imageRef];
-                CGImageRelease(imageRef);
-                
-                //UIImage *blurImage = draggableView.eventImage.image;
-                UIImageView *imView = [[UIImageView alloc]initWithImage:[newImage applyLightEffect]];
-                imView.frame = CGRectMake(0, 120, 290, 70);
-                [draggableView.eventImage addSubview:imView];
-                 */
-                
-            }
+        
+        UIImageView *im = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"noButton"]];
+        im.center = CGPointMake(68, 168);
+        //[self addSubview:im];
+        
+        UIImageView *im1 = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"noButton"]];
+        im1.center = CGPointMake(142, 150);
+        //[draggableView addSubview:im1];
+        
+        UIImageView *im2 = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"noButton"]];
+        im2.center = CGPointMake(234, 150);
+        //[draggableView addSubview:im2];
+        
+        if ([imageArray[index] isKindOfClass:[PFFile class]]) {
             
-            storedIndex = index;
-        }];
+            PFFile *imageFile = imageArray[index];
+        
+            [imageFile getDataInBackgroundWithBlock:^(NSData *imageData, NSError *error) {
+                if (!error) {
+                    
+                    NSLog(@"2");
+                    
+                    draggableView.eventImage.contentMode = UIViewContentModeScaleAspectFill;
+                    
+                    draggableView.eventImage.autoresizingMask =
+                    ( UIViewAutoresizingFlexibleBottomMargin
+                     | UIViewAutoresizingFlexibleHeight
+                     | UIViewAutoresizingFlexibleLeftMargin
+                     | UIViewAutoresizingFlexibleRightMargin
+                     | UIViewAutoresizingFlexibleTopMargin
+                     | UIViewAutoresizingFlexibleWidth );
+
+                    draggableView.eventImage.image = [UIImage imageWithData:imageData];
+
+                    
+                    BOOL changeColor = false;
+                    //UIColor *c1 = [self colorOfPoint:CGPointMake(68, 168)];
+                    //UIColor *c2 = [self colorOfPoint:CGPointMake(160, 168)];
+                    //UIColor *c3 = [self colorOfPoint:CGPointMake(252, 168)];
+                    
+                    //NSLog(@"%f, %f, %f", c1., c1.CIColor.green, c1.CIColor.blue);
+                    
+                    if ([draggableView colorOfPointIsWhite:CGPointMake(50, 145)]) {
+                        NSLog(@"Made it 1");
+                        changeColor = true;
+                        
+                        UIImageView *im = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"noButton"]];
+                        im.center = CGPointMake(50, 145);
+                        [draggableView.cardView addSubview:im];
+                        
+                    } else if ([draggableView colorOfPointIsWhite:CGPointMake(142, 150)]) {
+                        NSLog(@"Made it 2");
+                        changeColor = true;
+                        
+                        UIImageView *im = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"noButton"]];
+                        im.center = CGPointMake(142, 150);
+                        [draggableView.cardView addSubview:im];
+                        
+                    } else if ([draggableView colorOfPointIsWhite:CGPointMake(234, 155)]) {
+                        NSLog(@"Made it 3");
+                        changeColor = true;
+                        
+                        UIImageView *im = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"noButton"]];
+                        im.center = CGPointMake(234, 155);
+                        [draggableView.cardView addSubview:im];
+                        
+                    }
+                    
+                    if (changeColor)
+                    {
+                        NSLog(@"White color-- change color");
+                        
+                        [draggableView.cardView insertSubview:draggableView.transpBackground belowSubview:draggableView.locImage];
+                        
+                        //blurView.tintColor = [UIColor blackColor];
+                        
+                    } else {
+                        
+                        blurView = [[FXBlurView alloc]initWithFrame:draggableView.blurEffectView.frame];
+                        blurView.blurRadius = 50;
+                        blurView.tintColor = [UIColor clearColor];
+                        [draggableView.eventImage addSubview:blurView];
+                        blurView.dynamic = NO;
+                        
+                    }
+                    
+                    //UIImage *blurredImage = [draggableView.eventImage.image applyLightEffect];
+                    /*
+                     CGRect clippedRect  = CGRectMake(0, 240, 480, 140);
+                     CGImageRef imageRef = CGImageCreateWithImageInRect([draggableView CGImage], clippedRect);
+                    UIImage *newImage   = [UIImage imageWithCGImage:imageRef];
+                     CGImageRelease(imageRef);
+                
+                     //UIImage *blurImage = draggableView.eventImage.image;
+                     UIImageView *imView = [[UIImageView alloc]initWithImage:[newImage applyLightEffect]];
+                     imView.frame = CGRectMake(0, 120, 290, 70);
+                     [draggableView.eventImage addSubview:imView];
+                     */
+                
+                } else {
+                
+                    NSLog(@"Error retrieving image");
+                }
+            
+                storedIndex = index;
+            }];
+            
+        } else {
+         
+            // Use default image
+        }
 
         draggableView.userImage.image = [UIImage imageNamed:@"interested_face"];
                 
