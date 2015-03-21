@@ -436,7 +436,6 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         draggableView.swipesRight.text = swipesRightArray[index];
         draggableView.URL = URLArray[index];
         
-        NSLog(@"1");
         draggableView.eventImage.image = [UIImage imageNamed:hashtagArray[index]];
 
         NSMutableAttributedString *attString = [[NSMutableAttributedString alloc] initWithString:createdByArray[index]];
@@ -495,8 +494,6 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             [imageFile getDataInBackgroundWithBlock:^(NSData *imageData, NSError *error) {
                 if (!error) {
                     
-                    NSLog(@"2");
-                    
                     draggableView.eventImage.contentMode = UIViewContentModeScaleAspectFill;
                     
                     draggableView.eventImage.autoresizingMask =
@@ -518,28 +515,28 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                     //NSLog(@"%f, %f, %f", c1., c1.CIColor.green, c1.CIColor.blue);
                     
                     if ([draggableView colorOfPointIsWhite:CGPointMake(50, 145)]) {
-                        NSLog(@"Made it 1");
+                        //NSLog(@"Made it 1");
                         changeColor = true;
                         
                         UIImageView *im = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"noButton"]];
                         im.center = CGPointMake(50, 145);
-                        [draggableView.cardView addSubview:im];
+                        //[draggableView.cardView addSubview:im];
                         
                     } else if ([draggableView colorOfPointIsWhite:CGPointMake(142, 150)]) {
-                        NSLog(@"Made it 2");
+                        //NSLog(@"Made it 2");
                         changeColor = true;
                         
                         UIImageView *im = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"noButton"]];
                         im.center = CGPointMake(142, 150);
-                        [draggableView.cardView addSubview:im];
+                        //[draggableView.cardView addSubview:im];
                         
                     } else if ([draggableView colorOfPointIsWhite:CGPointMake(234, 155)]) {
-                        NSLog(@"Made it 3");
+                        //NSLog(@"Made it 3");
                         changeColor = true;
                         
                         UIImageView *im = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"noButton"]];
                         im.center = CGPointMake(234, 155);
-                        [draggableView.cardView addSubview:im];
+                        //[draggableView.cardView addSubview:im];
                         
                     }
                     

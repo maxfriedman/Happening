@@ -1,5 +1,5 @@
 //
-//  ViewController.m
+//  DragViewController.m
 //  Happening
 //
 //  Created by Max on 9/6/14.
@@ -63,6 +63,10 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
 
+    [[NSNotificationCenter defaultCenter]addObserver:self
+                                            selector:@selector(refreshData)
+                                                name:UIApplicationDidBecomeActiveNotification
+                                              object:nil];
     
     defaults = [NSUserDefaults standardUserDefaults];
     
@@ -305,7 +309,7 @@
         
         [self setEnabledSidewaysScrolling:NO];
         
-        scrollView.contentSize = CGSizeMake(320, 530);
+        scrollView.contentSize = CGSizeMake(320, 588);
         scrollView.scrollEnabled = YES;
         
         [UIView animateWithDuration:0.5 animations:^{
@@ -337,9 +341,9 @@
             NSLog(@"%@", draggableBackground.dragView.eventImage.layer.sublayers);
             
              //cardView.frame = CGRectMake(cardView.frame.origin.x, cardView.frame.origin.y, cardView.frame.size.width, 320 + 300);
-            draggableBackground.frame = CGRectMake(draggableBackground.frame.origin.x, draggableBackground.frame.origin.y, draggableBackground.frame.size.width, 320 + 185);
-            draggableBackground.dragView.frame = CGRectMake(draggableBackground.dragView.frame.origin.x, draggableBackground.dragView.frame.origin.y, draggableBackground.dragView.frame.size.width, 320 + 185);
-            draggableBackground.dragView.cardView.frame = CGRectMake(draggableBackground.dragView.cardView.frame.origin.x, draggableBackground.dragView.cardView.frame.origin.y, draggableBackground.dragView.cardView.frame.size.width, 320 + 185);
+            draggableBackground.frame = CGRectMake(draggableBackground.frame.origin.x, draggableBackground.frame.origin.y, draggableBackground.frame.size.width, 320 + 235);
+            draggableBackground.dragView.frame = CGRectMake(draggableBackground.dragView.frame.origin.x, draggableBackground.dragView.frame.origin.y, draggableBackground.dragView.frame.size.width, 320 + 235);
+            draggableBackground.dragView.cardView.frame = CGRectMake(draggableBackground.dragView.cardView.frame.origin.x, draggableBackground.dragView.cardView.frame.origin.y, draggableBackground.dragView.cardView.frame.size.width, 320 + 235);
             
             CGRect frame = self.tabBarController.tabBar.frame;
             CGFloat offsetY = frame.origin.y;
@@ -379,6 +383,7 @@
             
             draggableBackground.dragView.date.alpha = 0.0;
             
+            // Make the location label always be 5 points to the right of either the time label or DOW label
             CGRect calTimeFrame = draggableBackground.dragView.calTimeLabel.frame;
             CGRect calDayOfWeekFrame = draggableBackground.dragView.calDayOfWeekLabel.frame;
             
@@ -415,6 +420,7 @@
                 
             } completion:nil];
             
+            draggableBackground.dragView.transpBackground.alpha = 0;
             
         } completion:^(BOOL finished) {
             
@@ -529,6 +535,8 @@
                 [draggableBackground.dragView.geoLoc setTextColor:[UIColor whiteColor]];
                 
             } completion:nil];
+            
+            draggableBackground.dragView.transpBackground.alpha = 1.0;
             
         } completion:^(BOOL finished) {
             
@@ -668,13 +676,13 @@
     friendImageView.frame = CGRectMake(148, 306, 18, 18);
     friendImageView.tag = 3;
     
-    friendScrollHeight = 0;
-    UIScrollView *friendScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(15, 330, 254, friendScrollHeight)];
+    UIScrollView *friendScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(15, 330, 254, 50)];
     friendScrollView.scrollEnabled = YES;
+    [card.cardView addSubview:friendScrollView];
     [self loadFBFriends:friendScrollView];
     friendScrollView.tag = 3;
     
-    mapView = [[MKMapView alloc] initWithFrame:CGRectMake(15, 340, 254, 133)];
+    mapView = [[MKMapView alloc] initWithFrame:CGRectMake(15, 390, 254, 133)];
     [card.cardView addSubview:mapView];
     mapView.tag = 3;
     
@@ -754,7 +762,7 @@
             
             NSLog(@"ticket link::: %@", ticketLink);
             
-            ticketsButton = [[UIButton alloc] initWithFrame:CGRectMake(79, 490, 126, 20)];
+            ticketsButton = [[UIButton alloc] initWithFrame:CGRectMake(79, 540, 126, 20)];
             ticketsButton.enabled = YES;
             ticketsButton.userInteractionEnabled = YES;
             ticketsButton.tag = 3;
@@ -795,11 +803,11 @@
             // adding "height" variable allows flexibility if there is no tickets button
             if (height == 20) {
                 
-                uberButton = [[UIButton alloc] initWithFrame:CGRectMake(86.5, 490, 111, 20)];
+                uberButton = [[UIButton alloc] initWithFrame:CGRectMake(86.5, 540, 111, 20)];
             
             } else {
                 
-                uberButton = [[UIButton alloc] initWithFrame:CGRectMake(86.5, 478 + height, 111, 20)];
+                uberButton = [[UIButton alloc] initWithFrame:CGRectMake(86.5, 528 + height, 111, 20)];
 
             }
             
@@ -885,21 +893,24 @@
         
         __block int friendCount = 0;
         
+        NSMutableArray *friendObjectIDs = [[NSMutableArray alloc] init];
         for (int i = 0; i < friends.count; i ++) {
-            
             NSDictionary<FBGraphUser>* friend = friends[i];
-            NSLog(@"I have a friend named %@ with id %@", friend.name, friend.objectID);
-            
-            PFQuery *friendQuery = [PFQuery queryWithClassName:@"Swipes"];
-            [friendQuery whereKey:@"FBObjectID" equalTo:friend.objectID];
-            [friendQuery whereKey:@"EventID" equalTo:draggableBackground.dragView.objectID];
-            [friendQuery whereKey:@"swipedRight" equalTo:@YES];
-            [friendQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
+            [friendObjectIDs addObject:friend.objectID];
+        }
+        
+        PFQuery *friendQuery = [PFQuery queryWithClassName:@"Swipes"];
+        [friendQuery whereKey:@"FBObjectID" containedIn:friendObjectIDs];
+        [friendQuery whereKey:@"EventID" equalTo:draggableBackground.dragView.objectID];
+        [friendQuery whereKey:@"swipedRight" equalTo:@YES];
+        
+        PFQuery *userQuery = [PFUser query];
+        [userQuery whereKey:@"objectId" matchesKey:@"UserID" inQuery:friendQuery];
+        
+        [userQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+        
+            if (!error) {
                 
-                NSLog(@"%@ with id %@", friend.name, friend.objectID);
-                if (object != nil && !error) {
-                    NSLog(@"LIKES THIS EVENT");
-                    
                     /*
                     NSString *path = [NSString stringWithFormat:@"http://graph.facebook.com/%@/picture?type=square", friend.objectID];
                     
@@ -916,10 +927,11 @@
                     profPicImageView.layer.masksToBounds = YES;
                     profPicImageView.frame = CGRectMake(50 * friendCount, 0, 40, 40);
                     [friendScrollView addSubview:profPicImageView];
-                    
                      */
-                    
-                    FBProfilePictureView *profPicView = [[FBProfilePictureView alloc] initWithProfileID:friend.objectID pictureCropping:FBProfilePictureCroppingSquare];
+                
+                for (PFObject *object in objects) {
+
+                    FBProfilePictureView *profPicView = [[FBProfilePictureView alloc] initWithProfileID:object[@"FBObjectID"] pictureCropping:FBProfilePictureCroppingSquare];
                     profPicView.layer.cornerRadius = 20;
                     profPicView.layer.masksToBounds = YES;
                     profPicView.frame = CGRectMake(50 * friendCount, 0, 40, 40);
@@ -934,15 +946,13 @@
                     nameLabel.font = [UIFont fontWithName:@"OpenSans" size:7];
                     nameLabel.textColor = [UIColor blackColor];
                     nameLabel.textAlignment = NSTextAlignmentCenter;
-                    nameLabel.text = friend.first_name;
+                    nameLabel.text = object[@"firstName"];
                     nameLabel.frame = CGRectMake(5 + (50 * friendCount), 42, 30, 8);
                     [friendScrollView addSubview:nameLabel];
                     
-                    friendScrollHeight = 50;
-                    friendScrollView.frame = CGRectMake(15, 330, 254, friendScrollHeight);
                     friendScrollView.contentSize = CGSizeMake((50 * friendCount) + 40, 50);
                     
-                    [self friendsUpdateFrameBy:50];
+                    //[self friendsUpdateFrameBy:50];
                     
                     friendCount++;
                     
@@ -951,35 +961,39 @@
                     } else {
                         draggableBackground.dragView.friendsInterested.text = [NSString stringWithFormat:@"%d friends interested", friendCount];
                     }
-                    
+                        
+                
                 }
                 
-            }];
-            
-            
-            /*
-             NSDictionary *params = [NSDictionary dictionaryWithObjectsAndKeys:
-             @"false", @"url",
-             @"200", @"height",
-             @"normal", @"type",
-             @"200", @"width",
-             nil
-             ];
-             
-             [FBRequestConnection startWithGraphPath:@"/me/picture"
-             parameters:params
-             HTTPMethod:@"GET"
-             completionHandler:^(
-             FBRequestConnection *connection,
-             id result,
-             NSError *error
-             ) {
-             }];
-             */
-        }
-        
+                if (objects.count == 0) {
+                    NSLog(@"No new friends");
+                    
+                    [self noFriendsAddButton:friendScrollView];
+                
+                }
+            }
+        }];
     }];
+}
+     
+- (void)noFriendsAddButton:(UIScrollView *)friendScrollView {
+
+    friendScrollView.scrollEnabled = NO;
     
+    UIButton *noFriendsButton = [[UIButton alloc] initWithFrame:CGRectMake(35, 5, 184, 40)];
+    [noFriendsButton setTitle:@"Invite your friends" forState:UIControlStateNormal];
+    noFriendsButton.titleLabel.font = [UIFont fontWithName:@"OpenSans" size:15.0];
+    [noFriendsButton setTitleColor:[UIColor colorWithRed:41.0/255 green:181.0/255 blue:1.0 alpha:1.0] forState:UIControlStateNormal];
+    [noFriendsButton setTitleColor:[UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:1.0] forState:UIControlStateSelected];
+    noFriendsButton.layer.masksToBounds = YES;
+    noFriendsButton.layer.borderColor = [UIColor colorWithRed:41.0/255 green:181.0/255 blue:1.0 alpha:1.0].CGColor;
+    noFriendsButton.layer.borderWidth = 2.0;
+    noFriendsButton.layer.cornerRadius = 5.0;
+    
+    [noFriendsButton setReversesTitleShadowWhenHighlighted:YES];
+    [noFriendsButton addTarget:self action:@selector(shareAction) forControlEvents:UIControlEventTouchUpInside];
+    
+    [friendScrollView addSubview:noFriendsButton];
     
 }
 
@@ -1459,7 +1473,8 @@
     APActivityProvider *ActivityProvider = [[APActivityProvider alloc] init];
     ActivityProvider.APdragView = draggableBackground.dragView;
     
-    NSURL *myWebsite = [NSURL URLWithString:draggableBackground.dragView.URL]; //Make this custom when Liran makes unique pages
+    NSString *eventUrlString = [NSString stringWithFormat:@"http://www.happening.city/events/%@", draggableBackground.dragView.objectID];
+    NSURL *myWebsite = [NSURL URLWithString:eventUrlString];
     
     CustomCalendarActivity *addToCalendar = [[CustomCalendarActivity alloc]init];
     addToCalendar.draggableView = draggableBackground.dragView;

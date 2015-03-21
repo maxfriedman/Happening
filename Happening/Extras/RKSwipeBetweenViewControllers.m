@@ -32,10 +32,6 @@
     UIButton *middleButton;
     UIButton *rightButton;
     
-    UILabel *leftLabel;
-    UILabel *middleLabel;
-    UILabel *rightLabel;
-    
     BOOL leftButtonTapScrolling;
     BOOL middleButtonTapScrolling;
     BOOL rightButtonTapScrolling;
@@ -51,7 +47,7 @@
 @synthesize pageController;
 @synthesize navigationView;
 @synthesize buttonText;
-@synthesize pageScrollView;
+@synthesize pageScrollView, rightLabel, middleLabel, leftLabel;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -403,7 +399,7 @@
             
             rightLabel.alpha = 1 - abs((int)xFromCenter) / 320.0;
             
-           // NSLog(@"%f", rightLabel.alpha);
+            //NSLog(@"%f", rightLabel.alpha);
             
         }
         
@@ -471,7 +467,7 @@
         currentPageIndex = [self indexOfController:[pageViewController.viewControllers lastObject]];
         
         if (currentPageIndex == 1) {
-            NSLog(@"Ljnvedjknbfv");
+
             DragViewController *vc = viewControllerArray[1];
             vc.pageScrollView = pageScrollView;
         }
@@ -543,7 +539,7 @@
 }
 
 - (void)fadeLabels:(NSInteger)num {
-    
+
     CGFloat xFromCenter = self.view.frame.size.width-pageScrollView.contentOffset.x; //%%% positive for right swipe, negative for left
     
     NSInteger xCoor = X_BUFFER+selectionBar.frame.size.width*currentPageIndex-X_OFFSET;
@@ -567,7 +563,7 @@
     
     if ((num == 2) & (xCoor != 211)) {
         
-        //NSLog (@"Left label");
+        //NSLog (@"Right label");
         
         rightButtonTapScrolling = YES;
         

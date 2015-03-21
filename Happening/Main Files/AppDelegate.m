@@ -11,9 +11,10 @@
 #import "ChoosingLocation.h"
 #import "RKSwipeBetweenViewControllers.h"
 #import <ParseCrashReporting/ParseCrashReporting.h>
-
 #import "DragViewController.h"
 #import "MyEventsTVC.h"
+
+#import <AVFoundation/AVFoundation.h>
 
 @interface AppDelegate ()
 
@@ -44,12 +45,30 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
     
+    NSError *error;
+    BOOL success = [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryAmbient error:&error];
+    if (!success) {
+        //Handle error
+        NSLog(@"%@", [error localizedDescription]);
+    } else {
+        // Yay! It worked!
+    }
+    
     [Parse setApplicationId:@"olSntgsT5uY3ZZbJtnjNz8yvol4CxwmArTsbkCZa"
                   clientKey:@"xwmrITvs8UaFBNfBupzXcUa6HN3sU515xp1TsGxu"];
     //[PFFacebookUtils initializeFacebook];
     
     [PFAnalytics trackAppOpenedWithLaunchOptions:launchOptions];
     //[ParseCrashReporting enable];
+    
+    // Register for Push Notitications
+    UIUserNotificationType userNotificationTypes = (UIUserNotificationTypeAlert |
+                                                    UIUserNotificationTypeBadge |
+                                                    UIUserNotificationTypeSound);
+    UIUserNotificationSettings *settings = [UIUserNotificationSettings settingsForTypes:userNotificationTypes
+                                                                             categories:nil];
+    [application registerUserNotificationSettings:settings];
+    [application registerForRemoteNotifications];
     
     [FBLoginView class];
     
@@ -192,8 +211,8 @@
     if ([defaults boolForKey:@"hasLaunched"])
     {
         // app already launched
-        [defaults setBool:YES forKey:@"refreshData"];
-        [defaults synchronize];
+        //[defaults setBool:YES forKey:@"refreshData"];
+        //[defaults synchronize];
     }
 }
 
@@ -274,6 +293,18 @@
                                delegate:self
                       cancelButtonTitle:@"That's odd"
                       otherButtonTitles:nil] show];
+}
+
+- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
+    // Store the deviceToken in the current installation and save it to Parse.
+    PFInstallation *currentInstallation = [PFInstallation currentInstallation];
+    [currentInstallation setDeviceTokenFromData:deviceToken];
+    currentInstallation.channels = @[ @"global" ];
+    [currentInstallation saveInBackground];
+}
+
+- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo {
+    [PFPush handlePush:userInfo];
 }
 
 

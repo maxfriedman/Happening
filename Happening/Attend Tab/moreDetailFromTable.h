@@ -13,6 +13,7 @@
 #import <FacebookSDK/FacebookSDK.h>
 #import <EventKitUI/EventKitUI.h>
 #import <EventKit/EventKit.h>
+#import "AttendEvent.h"
 
 @interface moreDetailFromTable : UIViewController <UIScrollViewDelegate, MKMapViewDelegate, MKAnnotation, EKEventEditViewDelegate>
 
@@ -31,7 +32,7 @@
 
 @property (strong, nonatomic) IBOutlet UIImageView *locationImageView;
 
-@property (strong, nonatomic) IBOutlet UILabel *locationLabel;
+@property (strong, nonatomic) UILabel *locationLabel;
 
 @property (strong, nonatomic) IBOutlet UILabel *interestedLabel;
 @property (strong, nonatomic) IBOutlet UILabel *friendsInterestedLabel;
@@ -46,6 +47,8 @@
 @property (strong, nonatomic) IBOutlet UILabel *calDayOfWeekLabel;
 @property (strong, nonatomic) IBOutlet UILabel *calTimeLabel;
 
+
+@property (strong, nonatomic) AttendEvent *attendEventVC;
 
 
 @property (strong, nonatomic) UIButton *ticketsButton;

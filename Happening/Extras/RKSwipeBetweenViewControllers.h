@@ -164,6 +164,10 @@
 @property (nonatomic, strong)NSArray *buttonText;
 @property (nonatomic, strong)UIScrollView *pageScrollView;
 
+@property (nonatomic, strong) UILabel *leftLabel;
+@property (nonatomic, strong) UILabel *middleLabel;
+@property (nonatomic, strong) UILabel *rightLabel;
+
 - (void)scrolling:(BOOL)enabled;
 
 @end

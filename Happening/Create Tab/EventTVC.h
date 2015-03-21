@@ -14,6 +14,7 @@
 #import "AppDelegate.h"
 #import "CupertinoYankee.h"
 #import "ExtraInfoTVC.h"
+#import "ProfileTVC.h"
 
 @protocol EventTVCDelegate <NSObject>
 
@@ -63,5 +64,7 @@
 @property (strong, nonatomic) IBOutlet UITextView *descriptionTextView;
 
 @property (strong, nonatomic) IBOutlet UIButton *contactUsButton;
+
+@property (strong, nonatomic) ProfileTVC *profileVC;
 
 @end

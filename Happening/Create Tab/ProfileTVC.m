@@ -14,6 +14,7 @@
 #import <Parse/Parse.h>
 #import <FacebookSDK/FacebookSDK.h>
 #import "AppDelegate.h"
+#import "ProfileSettingsTVC.h"
 
 @interface ProfileTVC () <EventTVCDelegate>
 
@@ -41,7 +42,12 @@
     
     user = [PFUser currentUser];
     nameLabel.text = [NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]];
-    detailLabel.text = [NSString stringWithFormat:@"%@", user[@"city"]];
+    
+    if (user[@"city"] != nil) {
+        detailLabel.text = [NSString stringWithFormat:@"%@", user[@"city"]];
+    } else {
+        detailLabel.text = [NSString stringWithFormat:@""];
+    }
     
     FBProfilePictureView *profPicView = [[FBProfilePictureView alloc] initWithProfileID:user[@"FBObjectID"] pictureCropping:FBProfilePictureCroppingSquare];
     profPicView.layer.cornerRadius = 10;
@@ -307,13 +313,24 @@
         showMyEventVC *vc = (showMyEventVC *)([navController topViewController]);
         vc.eventID = cell.eventID;
         
+        vc.profileVC = self;
+        
     } else if ([segue.identifier isEqualToString:@"createNewEvent"]) {
         
         UINavigationController *navController = [segue destinationViewController];
         EventTVC *vc = (EventTVC *)([navController topViewController]);
         vc.delegate = self;
         
+        vc.profileVC = self;
+    
+    } else if ([segue.identifier isEqualToString:@"toProfileSettings"]) {
+        
+        UINavigationController *navController = [segue destinationViewController];
+        ProfileSettingsTVC *vc = (ProfileSettingsTVC *)([navController topViewController]);
+        
+        vc.profileVC = self;
     }
+    
 }
 
 - (void)setEnabledSidewaysScrolling:(BOOL)enabled {
@@ -322,6 +339,15 @@
     RKSwipeBetweenViewControllers *rk = appDelegate.rk;
     [rk scrolling:enabled];
     
+}
+
+- (void)showNavTitle {
+    
+    NSLog(@"show title");
+    
+    AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+    RKSwipeBetweenViewControllers *rk = appDelegate.rk;
+    rk.leftLabel.alpha = 1.0;
 }
 
 @end

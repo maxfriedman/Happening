@@ -440,6 +440,15 @@
     
 }
 
+- (void)showNavTitle {
+    
+    NSLog(@"show title");
+    
+    AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+    RKSwipeBetweenViewControllers *rk = appDelegate.rk;
+    rk.rightLabel.alpha = 1.0;
+}
+
 #pragma mark - Navigation
 
 // In a storyboard-based application, you will often want to do a little preparation before navigation
@@ -461,6 +470,8 @@
         vc.distanceText = cell.distance.text;
         vc.subtitleText = cell.subtitle.text;
         vc.locationText = cell.locLabel.text;
+        
+        vc.attendEventVC = self;
         
         vc.hidesBottomBarWhenPushed = YES;
         

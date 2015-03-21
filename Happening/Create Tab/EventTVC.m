@@ -272,7 +272,10 @@
     NSLog(@"Event creation cancelled :(");
     AppDelegate *appDelegate=(AppDelegate *)[UIApplication sharedApplication].delegate;
     appDelegate.item = nil;
-    [self dismissViewControllerAnimated:YES completion:nil];
+    [self dismissViewControllerAnimated:YES completion:^{
+        
+        [self.profileVC showNavTitle];
+    }];
     
 }
 
@@ -440,7 +443,11 @@
                 }
                 [delegate refreshMyEvents];
                 
-                [self dismissViewControllerAnimated:YES completion:nil]; // dismiss when event is saved
+                 // dismiss when event is saved
+                [self dismissViewControllerAnimated:YES completion:^{
+                    
+                    [self.profileVC showNavTitle];
+                }];
                 
             } else {
                 NSLog(@"ERROR CREATING EVENT: %@", error);
@@ -504,7 +511,11 @@ clickedButtonAtIndex:(NSInteger)buttonIndex{
                 }
                 [delegate refreshMyEvents];
                 
-                [self dismissViewControllerAnimated:YES completion:nil]; // dismiss when event is saved
+                // dismiss when event is saved
+                [self dismissViewControllerAnimated:YES completion:^{
+                    
+                    [self.profileVC showNavTitle];
+                }];
 
             } else {
                 NSLog(@"ERROR CREATING EVENT: %@", error);

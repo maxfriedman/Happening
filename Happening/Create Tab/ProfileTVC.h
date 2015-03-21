@@ -19,4 +19,6 @@
 
 @property CLLocationManager *locManager;
 
+-(void)showNavTitle;
+
 @end

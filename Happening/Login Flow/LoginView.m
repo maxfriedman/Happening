@@ -76,23 +76,6 @@
     [_fbLoginView setDelegate:self];
     _objectID = nil;
     
-/*
-    double delayInSeconds = 0.5;
-    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
-    dispatch_after(popTime, dispatch_get_main_queue(), ^{
-        NSLog(@"Delaying a second...");
-        _fbLoginView.alpha = 1;
-        _labelOne.alpha = 1;
-        //_labelTwo.alpha = 1;
-        _whyFB.alpha = 1;
-        cityPicker.alpha = 1;
-        self.inLabel.alpha = 1;
-        self.xButton.alpha = 1;
-        [activityView stopAnimating];
-        
-    });
-*/
-    
 }
 
 - (void)loginViewShowingLoggedInUser:(FBLoginView *)loginView {

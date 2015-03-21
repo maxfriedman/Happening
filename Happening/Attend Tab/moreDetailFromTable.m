@@ -76,7 +76,12 @@
     self.titleLabel.text = self.titleText;
     self.distanceLabel.text = self.distanceText;
     self.imageView.image = self.image;
+    
+    self.locationLabel = [[UILabel alloc] initWithFrame:CGRectMake(122, 232, 154, 21)];
+    self.locationLabel.textColor = [UIColor colorWithRed:70.0/255 green:70.0/255 blue:71.0/255 alpha:1.0];
+    self.locationLabel.font = [UIFont fontWithName:@"OpenSans-Semibold" size:14.0];
     self.locationLabel.text = self.locationText;
+    [cardView addSubview:self.locationLabel];
 
     self.subtitleLabel.text = self.subtitleText;
     UITapGestureRecognizer *tgr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(sendToMoreInfo)];
@@ -199,6 +204,20 @@
         [calDayOfWeekLabel addGestureRecognizer:gr4];
         UIGestureRecognizer *gr5 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(checkEventStoreAccessForCalendar)];
         [calTimeLabel addGestureRecognizer:gr5];
+        
+        // Make the location label always be 5 points to the right of either the time label or DOW label
+        [calTimeLabel sizeToFit];
+        [calDayOfWeekLabel sizeToFit];
+        
+        CGRect calTimeFrame = calTimeLabel.frame;
+        CGRect calDayOfWeekFrame = calDayOfWeekLabel.frame;
+        
+        if (calTimeFrame.size.width > calDayOfWeekFrame.size.width) {
+            self.locationLabel.frame = CGRectMake(calTimeFrame.origin.x + calTimeFrame.size.width + 5, 232, 310 - 30 - 5 - calTimeFrame.origin.x - calTimeFrame.size.width, 21);
+        } else {
+            self.locationLabel.frame = CGRectMake(calDayOfWeekFrame.origin.x + calDayOfWeekFrame.size.width + 5, 232, 310 - 30 - 5 - calDayOfWeekFrame.origin.x - calDayOfWeekFrame.size.width, 21);
+        }
+        
         
         
         PFGeoPoint *loc = object[@"GeoLoc"];
@@ -505,52 +524,49 @@
         
         [userQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
 
-                    
-                    if (!error) {
+            if (!error) {
                         
-                        for (PFObject *object in objects) {
+                for (PFObject *object in objects) {
                         
                     
-                            FBProfilePictureView *profPicView = [[FBProfilePictureView alloc] initWithProfileID:object[@"FBObjectID"] pictureCropping:FBProfilePictureCroppingSquare];
-                            profPicView.layer.cornerRadius = 20;
-                            profPicView.layer.masksToBounds = YES;
-                            profPicView.accessibilityIdentifier = object.objectId;
-                            profPicView.frame = CGRectMake(50 * friendCount, 0, 40, 40);
-                            profPicView.userInteractionEnabled = YES;
-                            [self.friendScrollView addSubview:profPicView];
+                    FBProfilePictureView *profPicView = [[FBProfilePictureView alloc] initWithProfileID:object[@"FBObjectID"] pictureCropping:FBProfilePictureCroppingSquare];
+                    profPicView.layer.cornerRadius = 20;
+                    profPicView.layer.masksToBounds = YES;
+                    profPicView.accessibilityIdentifier = object.objectId;
+                    profPicView.frame = CGRectMake(50 * friendCount, 0, 40, 40);
+                    profPicView.userInteractionEnabled = YES;
+                    [self.friendScrollView addSubview:profPicView];
                     
-                            UITapGestureRecognizer *gr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(showFriendProfile:)];
-                            [profPicView addGestureRecognizer:gr];
+                    UITapGestureRecognizer *gr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(showFriendProfile:)];
+                    [profPicView addGestureRecognizer:gr];
                             
-                            UILabel *nameLabel = [[UILabel alloc] init];
-                            nameLabel.font = [UIFont fontWithName:@"OpenSans" size:7];
-                            nameLabel.textColor = [UIColor colorWithRed:(70.0/255.0) green:(70.0/255.0) blue:(70.0/255.0) alpha:    1.0];
-                            nameLabel.textAlignment = NSTextAlignmentCenter;
-                            nameLabel.text = object[@"firstName"];
-                            nameLabel.frame = CGRectMake(5 + (50 * friendCount), 42, 30, 8);
-                            [self.friendScrollView addSubview:nameLabel];
+                    UILabel *nameLabel = [[UILabel alloc] init];
+                    nameLabel.font = [UIFont fontWithName:@"OpenSans" size:7];
+                    nameLabel.textColor = [UIColor colorWithRed:(70.0/255.0) green:(70.0/255.0) blue:(70.0/255.0) alpha:    1.0];
+                    nameLabel.textAlignment = NSTextAlignmentCenter;
+                    nameLabel.text = object[@"firstName"];
+                    nameLabel.frame = CGRectMake(5 + (50 * friendCount), 42, 30, 8);
+                    [self.friendScrollView addSubview:nameLabel];
                     
-                            self.friendScrollView.contentSize = CGSizeMake((50 * friendCount) + 40, self.friendScrollView.frame.size.height);
+                    self.friendScrollView.contentSize = CGSizeMake((50 * friendCount) + 40, self.friendScrollView.frame.size.height);
                     
-                            friendCount++;
+                    friendCount++;
                     
-                            if (friendCount == 1) {
-                                self.friendsInterestedLabel.text = [NSString stringWithFormat:@"%d friend interested", friendCount];
-                            } else {
-                                self.friendsInterestedLabel.text = [NSString stringWithFormat:@"%d friends interested", friendCount];
-                            }
-                            
-                        }
-                    
-                        if (objects.count == 0) {
-                            NSLog(@"No new friends");
-                            [self noFriendsAddButton];
-                        }
-                        
+                    if (friendCount == 1) {
+                        self.friendsInterestedLabel.text = [NSString stringWithFormat:@"%d friend interested", friendCount];
+                    } else {
+                        self.friendsInterestedLabel.text = [NSString stringWithFormat:@"%d friends interested", friendCount];
                     }
+                            
+                }
                     
+                if (objects.count == 0) {
+                    NSLog(@"No new friends");
+                    [self noFriendsAddButton];
+                }
+                        
+            }
             
-        
         }];
     }];
     
@@ -566,10 +582,16 @@
     [noFriendsButton setTitle:@"Invite your friends" forState:UIControlStateNormal];
     noFriendsButton.titleLabel.font = [UIFont fontWithName:@"OpenSans" size:15.0];
     [noFriendsButton setTitleColor:[UIColor colorWithRed:41.0/255 green:181.0/255 blue:1.0 alpha:1.0] forState:UIControlStateNormal];
+    [noFriendsButton setTitleColor:[UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:1.0] forState:UIControlStateSelected];
     noFriendsButton.layer.masksToBounds = YES;
     noFriendsButton.layer.borderColor = [UIColor colorWithRed:41.0/255 green:181.0/255 blue:1.0 alpha:1.0].CGColor;
     noFriendsButton.layer.borderWidth = 2.0;
     noFriendsButton.layer.cornerRadius = 5.0;
+    
+    noFriendsButton.tag = 99;
+    
+    [noFriendsButton setReversesTitleShadowWhenHighlighted:YES];
+    [noFriendsButton addTarget:self action:@selector(shareAction:) forControlEvents:UIControlEventTouchUpInside];
     
     [friendScrollView addSubview:noFriendsButton];
     
@@ -846,8 +868,12 @@
 
 - (IBAction)backButtonAction:(id)sender {
     
+    [self.attendEventVC showNavTitle];
+    
     [self dismissViewControllerAnimated:YES completion:^{
         
+        [self.attendEventVC showNavTitle];
+
     }];
     
 }
@@ -1034,15 +1060,39 @@
     APActivityProvider2 *ActivityProvider = [[APActivityProvider2 alloc] init];
     ActivityProvider.APdragView = dragView;
     
-    NSURL *myWebsite = [NSURL URLWithString:@"http://www.gethappeningapp.com/"]; //Make this custom when Liran makes unique pages
-    
-    CustomCalendarActivity *addToCalendar = [[CustomCalendarActivity alloc]init];
-    addToCalendar.draggableView = dragView;
+    NSString *eventUrlString = [NSString stringWithFormat:@"http://www.happening.city/events/%@", self.eventID];
+    NSURL *myWebsite = [NSURL URLWithString:eventUrlString];
     
     NSArray *itemsToShare = @[ActivityProvider, myWebsite];
     
-    UIActivityViewController *activityVC = [[UIActivityViewController alloc]initWithActivityItems:itemsToShare applicationActivities:[NSArray arrayWithObject:addToCalendar]];
+    UIActivityViewController *activityVC;
     
+    BOOL showCalendar = YES;
+    
+    if ([sender isKindOfClass:[UIButton class]]) {
+        
+        UIButton *shareButton = sender;
+        
+        if (shareButton.tag == 99) {
+            
+            showCalendar = NO;
+            
+        }
+        
+    }
+    
+    if (showCalendar) {
+        
+        CustomCalendarActivity *addToCalendar = [[CustomCalendarActivity alloc]init];
+        addToCalendar.draggableView = dragView;
+        //addToCalendar.myViewController = self;
+        
+        activityVC = [[UIActivityViewController alloc]initWithActivityItems:itemsToShare applicationActivities:[NSArray arrayWithObject:addToCalendar]];
+    } else {
+        
+        activityVC = [[UIActivityViewController alloc]initWithActivityItems:itemsToShare applicationActivities:nil];
+    }
+
     activityVC.excludedActivityTypes = @[UIActivityTypeAirDrop,
                                          UIActivityTypePrint,
                                          UIActivityTypeAssignToContact,
@@ -1131,7 +1181,7 @@
     PFObject *eventObject = [eventQuery getObjectWithId:APdragView.objectID];
     
     NSString *title = APdragView.title.text;
-    NSString *subtitle = APdragView.subtitle.text;
+    NSString *description = APdragView.subtitle.text;
     NSString* loc = APdragView.location.text;
     
     NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
@@ -1151,11 +1201,12 @@
     }
     
     NSString *shareText = [[NSString alloc]init];
-    if ([subtitle isEqualToString:@""]) {
-        shareText = [NSString stringWithFormat:@"Check out this awesome event: %@ at %@ on %@ %@", title, loc, dateString, eventTimeString];
-    } else {
-        shareText = [NSString stringWithFormat:@"Check out this awesome event: %@, %@ at %@ on %@ %@", title, subtitle, loc, dateString, eventTimeString];
-    }
+    //if ([description isEqualToString:@""] || description == nil) {
+    shareText = [NSString stringWithFormat:@"Check out this awesome event: %@ at %@ on %@ %@", title, loc, dateString, eventTimeString];
+    /*
+     } else {
+     shareText = [NSString stringWithFormat:@"Check out this awesome event: %@, %@ at %@ on %@ %@", title, description, loc, dateString, eventTimeString];
+     } */
     
     NSLog(@"%@", shareText);
     
@@ -1179,7 +1230,9 @@
     //if ( [activityType isEqualToString:@"it.albertopasca.myApp"] )
     //return @"OpenMyapp custom text";
     return nil;
+    
 }
+
 - (id) activityViewControllerPlaceholderItem:(UIActivityViewController *)activityViewController { return @"Testing"; }
 @end
 

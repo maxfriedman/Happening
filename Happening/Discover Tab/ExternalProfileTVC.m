@@ -48,7 +48,7 @@
         
         nameLabel.text = [NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]];
         detailLabel.text = [NSString stringWithFormat:@"%@", user[@"city"]];
-        nameEventsLabel.text = [NSString stringWithFormat:@"%@'s events", user[@"firstName"]];
+        nameEventsLabel.text = [NSString stringWithFormat:@"Events %@ has created", user[@"firstName"]];
             
             
         FBProfilePictureView *profPicView = [[FBProfilePictureView alloc] initWithProfileID:user[@"FBObjectID"] pictureCropping: FBProfilePictureCroppingSquare];

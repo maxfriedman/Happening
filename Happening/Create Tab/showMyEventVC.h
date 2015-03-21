@@ -11,6 +11,7 @@
 #import "DraggableView.h"
 #import "FlippedDVB.h"
 #import "UICountingLabel.h"
+#import "ProfileTVC.h"
 
 @interface showMyEventVC : UIViewController
 
@@ -25,5 +26,7 @@
 @property (strong, nonatomic) IBOutlet UICountingLabel *interestedLabel;
 
 @property (strong, nonatomic) IBOutlet UIButton *websiteButton;
+
+@property (strong, nonatomic)ProfileTVC *profileVC;
 
 @end

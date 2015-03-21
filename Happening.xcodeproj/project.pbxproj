@@ -63,6 +63,12 @@
 		50478F181A44DE6900161D01 /* TabBarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50478F131A44DE6900161D01 /* TabBarViewController.m */; };
 		50478F251A45049300161D01 /* MyEventTableCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50478F241A45049300161D01 /* MyEventTableCell.m */; };
 		50512F051AB389B600118FD9 /* UIButton+Extensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 50512F041AB389B600118FD9 /* UIButton+Extensions.m */; };
+		50512F111ABB51DB00118FD9 /* ProfileSettingsTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 50512F101ABB51DB00118FD9 /* ProfileSettingsTVC.m */; };
+		50512F171ABB6E9100118FD9 /* NotificationsTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 50512F161ABB6E9100118FD9 /* NotificationsTVC.m */; };
+		50512F1D1ABB714000118FD9 /* PrivacyTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 50512F1C1ABB714000118FD9 /* PrivacyTVC.m */; };
+		50512F251ABB719700118FD9 /* SVIndefiniteAnimatedView.m in Sources */ = {isa = PBXBuildFile; fileRef = 50512F201ABB719700118FD9 /* SVIndefiniteAnimatedView.m */; };
+		50512F261ABB719700118FD9 /* SVProgressHUD.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 50512F221ABB719700118FD9 /* SVProgressHUD.bundle */; };
+		50512F271ABB719700118FD9 /* SVProgressHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 50512F241ABB719700118FD9 /* SVProgressHUD.m */; };
 		50594CD01A2FAD1B00749B49 /* AddressBook.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50594CCF1A2FAD1B00749B49 /* AddressBook.framework */; };
 		505CDD571A65B5BA005876DC /* Accounts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 505CDD561A65B5BA005876DC /* Accounts.framework */; };
 		505CDD591A65B5BF005876DC /* Social.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 505CDD581A65B5BF005876DC /* Social.framework */; };
@@ -96,9 +102,6 @@
 		50965A641A76A6DB00EDF5FC /* dropdownSettingsView.m in Sources */ = {isa = PBXBuildFile; fileRef = 50965A631A76A6DB00EDF5FC /* dropdownSettingsView.m */; };
 		50A677691A58A57800E1E12A /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 50478F0F1A44DE6900161D01 /* Info.plist */; };
 		50A677761A59B67C00E1E12A /* RKDropdownAlert.m in Sources */ = {isa = PBXBuildFile; fileRef = 50A677751A59B67C00E1E12A /* RKDropdownAlert.m */; };
-		50AE93CB1A92557B00B4698D /* SVIndefiniteAnimatedView.m in Sources */ = {isa = PBXBuildFile; fileRef = 50AE93C61A92557B00B4698D /* SVIndefiniteAnimatedView.m */; };
-		50AE93CC1A92557B00B4698D /* SVProgressHUD.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 50AE93C81A92557B00B4698D /* SVProgressHUD.bundle */; };
-		50AE93CD1A92557B00B4698D /* SVProgressHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 50AE93CA1A92557B00B4698D /* SVProgressHUD.m */; };
 		50BF2CE31A75531B00160B5E /* movieLoginVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 50BF2CE21A75531B00160B5E /* movieLoginVC.m */; };
 		50BF2CE61A758D8300160B5E /* RKSwipeBetweenViewControllers.m in Sources */ = {isa = PBXBuildFile; fileRef = 50BF2CE51A758D8300160B5E /* RKSwipeBetweenViewControllers.m */; };
 		50C2938F1A83D37A00F9185C /* Happening Intro vid.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 50C2938E1A83D37A00F9185C /* Happening Intro vid.mp4 */; };
@@ -230,6 +233,18 @@
 		50478F241A45049300161D01 /* MyEventTableCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MyEventTableCell.m; path = "Happening/Create Tab/MyEventTableCell.m"; sourceTree = SOURCE_ROOT; };
 		50512F031AB389B600118FD9 /* UIButton+Extensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIButton+Extensions.h"; path = "Happening/Extras/UIButton+Extensions.h"; sourceTree = SOURCE_ROOT; };
 		50512F041AB389B600118FD9 /* UIButton+Extensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIButton+Extensions.m"; path = "Happening/Extras/UIButton+Extensions.m"; sourceTree = SOURCE_ROOT; };
+		50512F0F1ABB51DB00118FD9 /* ProfileSettingsTVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ProfileSettingsTVC.h; path = "Happening/Create Tab/ProfileSettingsTVC.h"; sourceTree = SOURCE_ROOT; };
+		50512F101ABB51DB00118FD9 /* ProfileSettingsTVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ProfileSettingsTVC.m; path = "Happening/Create Tab/ProfileSettingsTVC.m"; sourceTree = SOURCE_ROOT; };
+		50512F151ABB6E9100118FD9 /* NotificationsTVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NotificationsTVC.h; path = "Happening/Create Tab/NotificationsTVC.h"; sourceTree = SOURCE_ROOT; };
+		50512F161ABB6E9100118FD9 /* NotificationsTVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NotificationsTVC.m; path = "Happening/Create Tab/NotificationsTVC.m"; sourceTree = SOURCE_ROOT; };
+		50512F1B1ABB714000118FD9 /* PrivacyTVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PrivacyTVC.h; path = "Happening/Create Tab/PrivacyTVC.h"; sourceTree = SOURCE_ROOT; };
+		50512F1C1ABB714000118FD9 /* PrivacyTVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PrivacyTVC.m; path = "Happening/Create Tab/PrivacyTVC.m"; sourceTree = SOURCE_ROOT; };
+		50512F1F1ABB719700118FD9 /* SVIndefiniteAnimatedView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SVIndefiniteAnimatedView.h; sourceTree = "<group>"; };
+		50512F201ABB719700118FD9 /* SVIndefiniteAnimatedView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SVIndefiniteAnimatedView.m; sourceTree = "<group>"; };
+		50512F211ABB719700118FD9 /* SVProgressHUD-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SVProgressHUD-Prefix.pch"; sourceTree = "<group>"; };
+		50512F221ABB719700118FD9 /* SVProgressHUD.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = SVProgressHUD.bundle; sourceTree = "<group>"; };
+		50512F231ABB719700118FD9 /* SVProgressHUD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SVProgressHUD.h; sourceTree = "<group>"; };
+		50512F241ABB719700118FD9 /* SVProgressHUD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SVProgressHUD.m; sourceTree = "<group>"; };
 		50594CCF1A2FAD1B00749B49 /* AddressBook.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AddressBook.framework; path = System/Library/Frameworks/AddressBook.framework; sourceTree = SDKROOT; };
 		505CDD561A65B5BA005876DC /* Accounts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accounts.framework; path = System/Library/Frameworks/Accounts.framework; sourceTree = SDKROOT; };
 		505CDD581A65B5BF005876DC /* Social.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Social.framework; path = System/Library/Frameworks/Social.framework; sourceTree = SDKROOT; };
@@ -261,12 +276,6 @@
 		50965A631A76A6DB00EDF5FC /* dropdownSettingsView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = dropdownSettingsView.m; path = "Happening/Discover Tab/Settings/dropdownSettingsView.m"; sourceTree = SOURCE_ROOT; };
 		50A677741A59B67C00E1E12A /* RKDropdownAlert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RKDropdownAlert.h; path = Happening/Extras/RKDropdownAlert.h; sourceTree = SOURCE_ROOT; };
 		50A677751A59B67C00E1E12A /* RKDropdownAlert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RKDropdownAlert.m; path = Happening/Extras/RKDropdownAlert.m; sourceTree = SOURCE_ROOT; };
-		50AE93C51A92557B00B4698D /* SVIndefiniteAnimatedView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SVIndefiniteAnimatedView.h; sourceTree = "<group>"; };
-		50AE93C61A92557B00B4698D /* SVIndefiniteAnimatedView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SVIndefiniteAnimatedView.m; sourceTree = "<group>"; };
-		50AE93C71A92557B00B4698D /* SVProgressHUD-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SVProgressHUD-Prefix.pch"; sourceTree = "<group>"; };
-		50AE93C81A92557B00B4698D /* SVProgressHUD.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = SVProgressHUD.bundle; sourceTree = "<group>"; };
-		50AE93C91A92557B00B4698D /* SVProgressHUD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SVProgressHUD.h; sourceTree = "<group>"; };
-		50AE93CA1A92557B00B4698D /* SVProgressHUD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SVProgressHUD.m; sourceTree = "<group>"; };
 		50BF2CE11A75531B00160B5E /* movieLoginVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = movieLoginVC.h; path = "Happening/Login Flow/movieLoginVC.h"; sourceTree = SOURCE_ROOT; };
 		50BF2CE21A75531B00160B5E /* movieLoginVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = movieLoginVC.m; path = "Happening/Login Flow/movieLoginVC.m"; sourceTree = SOURCE_ROOT; };
 		50BF2CE41A758D8300160B5E /* RKSwipeBetweenViewControllers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RKSwipeBetweenViewControllers.h; path = Happening/Extras/RKSwipeBetweenViewControllers.h; sourceTree = SOURCE_ROOT; };
@@ -492,28 +501,11 @@
 		5041A1101A44ACF500C151B7 /* Create Tab */ = {
 			isa = PBXGroup;
 			children = (
-				507677D11A88761100B9F21D /* ProfileTVC.h */,
-				507677D21A88761100B9F21D /* ProfileTVC.m */,
-				50478EC41A44DD2400161D01 /* buttonOverride.h */,
-				50478EC51A44DD2400161D01 /* buttonOverride.m */,
-				50478EC81A44DD2400161D01 /* EventTVC.h */,
-				50478EC91A44DD2400161D01 /* EventTVC.m */,
-				50478ECA1A44DD2400161D01 /* ExtraInfoTVC.h */,
-				50478ECB1A44DD2400161D01 /* ExtraInfoTVC.m */,
-				50F7DEAB1A585021008B8C2B /* NewEventFrequencyTVC.h */,
-				50F7DEAC1A585021008B8C2B /* NewEventFrequencyTVC.m */,
-				50478ECC1A44DD2400161D01 /* LocationSearching.h */,
-				50478ECD1A44DD2400161D01 /* LocationSearching.m */,
-				50478ECE1A44DD2400161D01 /* MyEventsTVC.h */,
-				50478ECF1A44DD2400161D01 /* MyEventsTVC.m */,
-				50478ED01A44DD2400161D01 /* showMyEventVC.h */,
-				50478ED11A44DD2400161D01 /* showMyEventVC.m */,
-				50478F231A45049300161D01 /* MyEventTableCell.h */,
-				50478F241A45049300161D01 /* MyEventTableCell.m */,
-				50478EC61A44DD2400161D01 /* EditEventTVC.h */,
-				50478EC71A44DD2400161D01 /* EditEventTVC.m */,
-				509248F51A58819D002BE584 /* EditExtraInfoTVC.h */,
-				509248F61A58819D002BE584 /* EditExtraInfoTVC.m */,
+				50512F091ABB45B100118FD9 /* Settings */,
+				50512F0A1ABB45B700118FD9 /* Profile */,
+				50512F0B1ABB45E600118FD9 /* Create Event */,
+				50512F0C1ABB462000118FD9 /* Show Event */,
+				50512F0D1ABB464700118FD9 /* Edit Event */,
 			);
 			name = "Create Tab";
 			sourceTree = "<group>";
@@ -548,32 +540,11 @@
 			isa = PBXGroup;
 			children = (
 				5041A10D1A44AC5900C151B7 /* Custom Segues */,
-				50AE93C41A92557B00B4698D /* SVProgressHUD */,
+				50512F1E1ABB719700118FD9 /* SVProgressHUD */,
 				504068791A44BB1E00C2CA81 /* Open Sans */,
-				50BF2CE41A758D8300160B5E /* RKSwipeBetweenViewControllers.h */,
-				50BF2CE51A758D8300160B5E /* RKSwipeBetweenViewControllers.m */,
-				5031EBEA1A939489007E3523 /* webViewController.h */,
-				5031EBEB1A939489007E3523 /* webViewController.m */,
-				503ECF651A506815009D30F1 /* MFActivityIndicatorView.h */,
-				503ECF661A506815009D30F1 /* MFActivityIndicatorView.m */,
-				50478F031A44DE1F00161D01 /* MapViewController.h */,
-				50478F041A44DE1F00161D01 /* MapViewController.m */,
-				50478F051A44DE1F00161D01 /* CupertinoYankee.h */,
-				50478F061A44DE1F00161D01 /* CupertinoYankee.m */,
-				50478F071A44DE1F00161D01 /* SearchBar.h */,
-				50478F081A44DE1F00161D01 /* SearchBar.m */,
-				50F7DEA81A57B4B8008B8C2B /* UICountingLabel.h */,
-				50F7DEA91A57B4B8008B8C2B /* UICountingLabel.m */,
-				50A677741A59B67C00E1E12A /* RKDropdownAlert.h */,
-				50A677751A59B67C00E1E12A /* RKDropdownAlert.m */,
-				506DFD7E1A60A94600715079 /* UIImage+ImageEffects.h */,
-				506DFD7F1A60A94600715079 /* UIImage+ImageEffects.m */,
-				506DFD811A6113CF00715079 /* FXBlurView.h */,
-				506DFD821A6113CF00715079 /* FXBlurView.m */,
-				50478ED91A44DD6C00161D01 /* CustomCalendarActivity.h */,
-				50478EDA1A44DD6C00161D01 /* CustomCalendarActivity.m */,
-				50512F031AB389B600118FD9 /* UIButton+Extensions.h */,
-				50512F041AB389B600118FD9 /* UIButton+Extensions.m */,
+				50512F061ABB44F200118FD9 /* Navigation & Controllers */,
+				50512F071ABB453200118FD9 /* UI & Class Overrides */,
+				50512F081ABB459400118FD9 /* General */,
 			);
 			name = Extras;
 			sourceTree = "<group>";
@@ -591,6 +562,136 @@
 			);
 			name = "Main Files";
 			sourceTree = "<group>";
+		};
+		50512F061ABB44F200118FD9 /* Navigation & Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				50BF2CE41A758D8300160B5E /* RKSwipeBetweenViewControllers.h */,
+				50BF2CE51A758D8300160B5E /* RKSwipeBetweenViewControllers.m */,
+				5031EBEA1A939489007E3523 /* webViewController.h */,
+				5031EBEB1A939489007E3523 /* webViewController.m */,
+				50478F031A44DE1F00161D01 /* MapViewController.h */,
+				50478F041A44DE1F00161D01 /* MapViewController.m */,
+			);
+			name = "Navigation & Controllers";
+			sourceTree = "<group>";
+		};
+		50512F071ABB453200118FD9 /* UI & Class Overrides */ = {
+			isa = PBXGroup;
+			children = (
+				503ECF651A506815009D30F1 /* MFActivityIndicatorView.h */,
+				503ECF661A506815009D30F1 /* MFActivityIndicatorView.m */,
+				50478ED91A44DD6C00161D01 /* CustomCalendarActivity.h */,
+				50478EDA1A44DD6C00161D01 /* CustomCalendarActivity.m */,
+				50478F051A44DE1F00161D01 /* CupertinoYankee.h */,
+				50478F061A44DE1F00161D01 /* CupertinoYankee.m */,
+				50478EC41A44DD2400161D01 /* buttonOverride.h */,
+				50478EC51A44DD2400161D01 /* buttonOverride.m */,
+				50478F071A44DE1F00161D01 /* SearchBar.h */,
+				50478F081A44DE1F00161D01 /* SearchBar.m */,
+				50F7DEA81A57B4B8008B8C2B /* UICountingLabel.h */,
+				50F7DEA91A57B4B8008B8C2B /* UICountingLabel.m */,
+				506DFD7E1A60A94600715079 /* UIImage+ImageEffects.h */,
+				506DFD7F1A60A94600715079 /* UIImage+ImageEffects.m */,
+				50512F031AB389B600118FD9 /* UIButton+Extensions.h */,
+				50512F041AB389B600118FD9 /* UIButton+Extensions.m */,
+			);
+			name = "UI & Class Overrides";
+			sourceTree = "<group>";
+		};
+		50512F081ABB459400118FD9 /* General */ = {
+			isa = PBXGroup;
+			children = (
+				50A677741A59B67C00E1E12A /* RKDropdownAlert.h */,
+				50A677751A59B67C00E1E12A /* RKDropdownAlert.m */,
+				506DFD811A6113CF00715079 /* FXBlurView.h */,
+				506DFD821A6113CF00715079 /* FXBlurView.m */,
+			);
+			name = General;
+			sourceTree = "<group>";
+		};
+		50512F091ABB45B100118FD9 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				50512F0F1ABB51DB00118FD9 /* ProfileSettingsTVC.h */,
+				50512F101ABB51DB00118FD9 /* ProfileSettingsTVC.m */,
+				50512F151ABB6E9100118FD9 /* NotificationsTVC.h */,
+				50512F161ABB6E9100118FD9 /* NotificationsTVC.m */,
+				50512F1B1ABB714000118FD9 /* PrivacyTVC.h */,
+				50512F1C1ABB714000118FD9 /* PrivacyTVC.m */,
+			);
+			name = Settings;
+			sourceTree = "<group>";
+		};
+		50512F0A1ABB45B700118FD9 /* Profile */ = {
+			isa = PBXGroup;
+			children = (
+				507677D11A88761100B9F21D /* ProfileTVC.h */,
+				507677D21A88761100B9F21D /* ProfileTVC.m */,
+			);
+			name = Profile;
+			sourceTree = "<group>";
+		};
+		50512F0B1ABB45E600118FD9 /* Create Event */ = {
+			isa = PBXGroup;
+			children = (
+				50478EC81A44DD2400161D01 /* EventTVC.h */,
+				50478EC91A44DD2400161D01 /* EventTVC.m */,
+				50478ECA1A44DD2400161D01 /* ExtraInfoTVC.h */,
+				50478ECB1A44DD2400161D01 /* ExtraInfoTVC.m */,
+				50F7DEAB1A585021008B8C2B /* NewEventFrequencyTVC.h */,
+				50F7DEAC1A585021008B8C2B /* NewEventFrequencyTVC.m */,
+				50478ECC1A44DD2400161D01 /* LocationSearching.h */,
+				50478ECD1A44DD2400161D01 /* LocationSearching.m */,
+				50512F0E1ABB466700118FD9 /* Unused */,
+			);
+			name = "Create Event";
+			sourceTree = "<group>";
+		};
+		50512F0C1ABB462000118FD9 /* Show Event */ = {
+			isa = PBXGroup;
+			children = (
+				50478ED01A44DD2400161D01 /* showMyEventVC.h */,
+				50478ED11A44DD2400161D01 /* showMyEventVC.m */,
+				50478F231A45049300161D01 /* MyEventTableCell.h */,
+				50478F241A45049300161D01 /* MyEventTableCell.m */,
+			);
+			name = "Show Event";
+			sourceTree = "<group>";
+		};
+		50512F0D1ABB464700118FD9 /* Edit Event */ = {
+			isa = PBXGroup;
+			children = (
+				50478EC61A44DD2400161D01 /* EditEventTVC.h */,
+				50478EC71A44DD2400161D01 /* EditEventTVC.m */,
+				509248F51A58819D002BE584 /* EditExtraInfoTVC.h */,
+				509248F61A58819D002BE584 /* EditExtraInfoTVC.m */,
+			);
+			name = "Edit Event";
+			sourceTree = "<group>";
+		};
+		50512F0E1ABB466700118FD9 /* Unused */ = {
+			isa = PBXGroup;
+			children = (
+				50478ECE1A44DD2400161D01 /* MyEventsTVC.h */,
+				50478ECF1A44DD2400161D01 /* MyEventsTVC.m */,
+			);
+			name = Unused;
+			sourceTree = "<group>";
+		};
+		50512F1E1ABB719700118FD9 /* SVProgressHUD */ = {
+			isa = PBXGroup;
+			children = (
+				50512F1F1ABB719700118FD9 /* SVIndefiniteAnimatedView.h */,
+				50512F201ABB719700118FD9 /* SVIndefiniteAnimatedView.m */,
+				50512F211ABB719700118FD9 /* SVProgressHUD-Prefix.pch */,
+				50512F221ABB719700118FD9 /* SVProgressHUD.bundle */,
+				50512F231ABB719700118FD9 /* SVProgressHUD.h */,
+				50512F241ABB719700118FD9 /* SVProgressHUD.m */,
+			);
+			name = SVProgressHUD;
+			path = Happening/Extras/SVProgressHUD;
+			sourceTree = SOURCE_ROOT;
 		};
 		506961F81A8F11CD009CB5DB /* Draggables */ = {
 			isa = PBXGroup;
@@ -623,19 +724,6 @@
 			);
 			name = Other;
 			sourceTree = "<group>";
-		};
-		50AE93C41A92557B00B4698D /* SVProgressHUD */ = {
-			isa = PBXGroup;
-			children = (
-				50AE93C51A92557B00B4698D /* SVIndefiniteAnimatedView.h */,
-				50AE93C61A92557B00B4698D /* SVIndefiniteAnimatedView.m */,
-				50AE93C71A92557B00B4698D /* SVProgressHUD-Prefix.pch */,
-				50AE93C81A92557B00B4698D /* SVProgressHUD.bundle */,
-				50AE93C91A92557B00B4698D /* SVProgressHUD.h */,
-				50AE93CA1A92557B00B4698D /* SVProgressHUD.m */,
-			);
-			path = SVProgressHUD;
-			sourceTree = SOURCE_ROOT;
 		};
 /* End PBXGroup section */
 
@@ -734,7 +822,7 @@
 				50C2938F1A83D37A00F9185C /* Happening Intro vid.mp4 in Resources */,
 				506DC5451A46014300DD4591 /* OpenSans-Regular.ttf in Resources */,
 				506DC5461A46014300DD4591 /* OpenSans-Semibold.ttf in Resources */,
-				50AE93CC1A92557B00B4698D /* SVProgressHUD.bundle in Resources */,
+				50512F261ABB719700118FD9 /* SVProgressHUD.bundle in Resources */,
 				50A677691A58A57800E1E12A /* Info.plist in Resources */,
 				506DC5471A46014300DD4591 /* OpenSans-SemiboldItalic.ttf in Resources */,
 				5041A0F71A44AC1000C151B7 /* Images.xcassets in Resources */,
@@ -758,10 +846,13 @@
 			files = (
 				506961FC1A8F122C009CB5DB /* ExternalProfileTVC.m in Sources */,
 				507677D31A88761100B9F21D /* ProfileTVC.m in Sources */,
+				50512F251ABB719700118FD9 /* SVIndefiniteAnimatedView.m in Sources */,
 				509248F71A58819D002BE584 /* EditExtraInfoTVC.m in Sources */,
 				50478EEB1A44DD6C00161D01 /* FlippedDVB.m in Sources */,
 				50478ED71A44DD2400161D01 /* MyEventsTVC.m in Sources */,
-				50AE93CD1A92557B00B4698D /* SVProgressHUD.m in Sources */,
+				50512F171ABB6E9100118FD9 /* NotificationsTVC.m in Sources */,
+				50512F1D1ABB714000118FD9 /* PrivacyTVC.m in Sources */,
+				50512F271ABB719700118FD9 /* SVProgressHUD.m in Sources */,
 				50478EF31A44DD9800161D01 /* SettingsTVC.m in Sources */,
 				50F7DEAA1A57B4B8008B8C2B /* UICountingLabel.m in Sources */,
 				50478EC31A44DCAD00161D01 /* PageContentViewController.m in Sources */,
@@ -783,7 +874,6 @@
 				50BF2CE31A75531B00160B5E /* movieLoginVC.m in Sources */,
 				50478EE81A44DD6C00161D01 /* DraggableView.m in Sources */,
 				50478EAE1A44DB8D00161D01 /* SplashScreens.m in Sources */,
-				50AE93CB1A92557B00B4698D /* SVIndefiniteAnimatedView.m in Sources */,
 				50478ED21A44DD2400161D01 /* buttonOverride.m in Sources */,
 				506DFD831A6113CF00715079 /* FXBlurView.m in Sources */,
 				503ECF671A506815009D30F1 /* MFActivityIndicatorView.m in Sources */,
@@ -802,6 +892,7 @@
 				50478ED41A44DD2400161D01 /* EventTVC.m in Sources */,
 				50478F011A44DE0500161D01 /* AttendTableCell.m in Sources */,
 				50FA6B891A7ECC35009AA6A0 /* TutorialDragView.m in Sources */,
+				50512F111ABB51DB00118FD9 /* ProfileSettingsTVC.m in Sources */,
 				50478ED81A44DD2400161D01 /* showMyEventVC.m in Sources */,
 				50BF2CE61A758D8300160B5E /* RKSwipeBetweenViewControllers.m in Sources */,
 				50478EBC1A44DBCC00161D01 /* FirstTimeScreen.m in Sources */,
@@ -847,6 +938,7 @@
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -891,6 +983,7 @@
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -967,6 +1060,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SDKROOT)/Developer/Library/Frameworks",
 					"$(inherited)",
@@ -987,6 +1081,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SDKROOT)/Developer/Library/Frameworks",
