@@ -30,3 +30,10 @@
 @property (strong, nonatomic)ProfileTVC *profileVC;
 
 @end
+
+@interface APActivityProvider4 : UIActivityItemProvider <UIActivityItemSource>
+@property (nonatomic, strong)DraggableView *APdragView;
+@end
+
+@interface APActivityIcon4 : UIActivity
+@end

@@ -41,12 +41,16 @@
     dropdownView.layer.borderWidth = 1.0;
     dropdownView.layer.borderColor = [UIColor colorWithRed:172.0/255 green:172.0/255 blue:172.0/255 alpha:1.0].CGColor;
     
-    [locationField setTitle:[NSString stringWithFormat:@"        near %@", [defaults objectForKey:@"userLocTitle"]] forState:UIControlStateNormal];
+    [locationField setTitle:[NSString stringWithFormat:@"         Near %@", [defaults objectForKey:@"userLocTitle"]] forState:UIControlStateNormal];
+    
+    /*
     locationField.layer.masksToBounds = YES;
     locationField.layer.cornerRadius = 10.0;
     locationField.layer.borderColor = [UIColor whiteColor].CGColor;
     locationField.layer.borderWidth = 4.0;
-    
+    */
+     
+     
     sliderVal = [defaults integerForKey:@"sliderValue"];
     
     //appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
@@ -73,7 +77,7 @@
     
     selectionBar = [[UIView alloc]init];
 
-    selectionBar.backgroundColor = [UIColor cyanColor]; //%%% sbcolor
+    selectionBar.backgroundColor = [UIColor colorWithRed:0 green:183.0/255.0 blue:238.0/255.0 alpha:1.0]; //%%% sbcolor
     selectionBar.alpha = 0.8; //%%% sbalpha
 
     if ([defaults boolForKey:@"today"]) {
@@ -108,24 +112,29 @@
     [weekendButton addTarget:self action:@selector(timeButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
     
     
-    categoryArray = [[NSArray alloc] initWithObjects:@"Most popular", @"Best deals", @"Bars & Clubs", @"Food & Drink", @"Sports", @"Concerts & Shows", @"Free in the city", @"Charity & causes", @"Shopping", @"Film & Media", @"Meetups", nil];
+    categoryArray = [[NSArray alloc] initWithObjects:@"Most popular", @"Best deals", @"Bars & Clubs", @"Food & Drink", @"Sports & Fitness", @"Concerts & Shows", /*@"Free in the city",*/ @"Charity & Causes", @"Shopping", /*@"Film & Media",*/ @"Meetups", nil];
     
     defaultsArray = [[NSArray alloc] initWithObjects:@"nightlife", @"entertainment", @"music", @"dining", @"happyHour", @"sports", @"shopping", @"fundraiser", @"meetup", @"freebies", @"other", nil];
     
     
-    UIImage *popularImage = [UIImage imageNamed:@"interested_face"];
-    UIImage *dealsImage = [UIImage imageNamed:@"interested_face"];
-    UIImage *barsAndClubsImage = [UIImage imageNamed:@"interested_face"];
-    UIImage *foodAndDrinkImage = [UIImage imageNamed:@"interested_face"];
-    UIImage *sportsImage = [UIImage imageNamed:@"interested_face"];
-    UIImage *concertsAndShowsImage = [UIImage imageNamed:@"interested_face"];
-    UIImage *freeImage = [UIImage imageNamed:@"interested_face"];
-    UIImage *charityImage = [UIImage imageNamed:@"interested_face"];
-    UIImage *shoppingImage = [UIImage imageNamed:@"interested_face"];
-    UIImage *filmAndMediaImage = [UIImage imageNamed:@"interested_face"];
-    UIImage *meetupsImage = [UIImage imageNamed:@"interested_face"];
+    UIImage *popularImage = [UIImage imageNamed:@"popular"];
+    UIImage *dealsImage = [UIImage imageNamed:@"deals"];
+    UIImage *barsAndClubsImage = [UIImage imageNamed:@"club"];
+    UIImage *foodAndDrinkImage = [UIImage imageNamed:@"dining"];
+    UIImage *sportsImage = [UIImage imageNamed:@"sports"];
+    UIImage *concertsAndShowsImage = [UIImage imageNamed:@"entertain"];
+    //UIImage *freeImage = [UIImage imageNamed:@"fundraiser"];
+    UIImage *charityImage = [UIImage imageNamed:@"fundraiser"];
+    UIImage *shoppingImage = [UIImage imageNamed:@"shopping"];
+    //UIImage *filmAndMediaImage = [UIImage imageNamed:@"interested_face"];
+    UIImage *meetupsImage = [UIImage imageNamed:@"meetup"];
     
-    imageArray = [[NSArray alloc] initWithObjects:popularImage, dealsImage, barsAndClubsImage, foodAndDrinkImage, sportsImage, concertsAndShowsImage, freeImage, charityImage, shoppingImage, filmAndMediaImage, meetupsImage, nil];
+    imageArray = [[NSArray alloc] initWithObjects:popularImage, dealsImage, barsAndClubsImage, foodAndDrinkImage, sportsImage, concertsAndShowsImage, /*freeImage,*/ charityImage, shoppingImage, /*filmAndMediaImage,*/ meetupsImage, nil];
+    
+    /*
+    for (UIImage *im in imageArray) {
+        im.size = CGSizeMake(40, 40);
+    } */
     
     //"Nightlife",@"Sports",@"Music", @"Shopping", @"Freebies", @"Happy Hour", @"Dining", @"Entertainment", @"Fundraiser", @"Meetup", @"Other"
     
@@ -216,10 +225,14 @@
     
     UITableViewCell *cell = [categoryTableView dequeueReusableCellWithIdentifier:@"tag" forIndexPath:indexPath];
     
+    /*
+    if (indexPath.row == 0) {
+        cell.textLabel.font = [UIFont fontWithName:@"OpenSans" size:17.0];
+    } */
+    
     cell.textLabel.text = categoryArray[indexPath.row];
     cell.imageView.image = imageArray[indexPath.row];
     
-    NSNumber *rowNsNum = [NSNumber numberWithInteger:indexPath.row];
     if (indexPath.row == [defaults integerForKey:@"categoryIndex"] )
     {
         cell.accessoryType = UITableViewCellAccessoryCheckmark;
@@ -343,7 +356,7 @@
             
             break;
         case 4: // Sports
-            NSLog(@"Selected Sports");
+            NSLog(@"Selected Sports & Fitness");
             
             [defaults setValue:@"Sports" forKey:@"categoryName"];
             [defaults setBool:YES forKey:@"sports"];
@@ -357,6 +370,7 @@
             [defaults setBool:YES forKey:@"music"];
             
             break;
+            /*
         case 6: // Free in the City
             NSLog(@"Selected Free in the City");
             
@@ -364,20 +378,22 @@
             [defaults setBool:YES forKey:@"freebies"];
             
             break;
-        case 7: // Charity & Causes
+             */
+        case 6: // Charity & Causes
             NSLog(@"Selected Charity & Causes");
             
             [defaults setValue:@"Charity & Causes" forKey:@"categoryName"];
             [defaults setBool:YES forKey:@"fundraiser"];
             
             break;
-        case 8: // Shopping
+        case 7: // Shopping
             NSLog(@"Selected Shopping");
             
             [defaults setValue:@"Shopping" forKey:@"categoryName"];
             [defaults setBool:YES forKey:@"shopping"];
             
             break;
+            /*
         case 9: // Film & Media
             NSLog(@"Selected Film & Media");
             
@@ -385,10 +401,11 @@
             [defaults setBool:YES forKey:@"entertainment"];
             
             break;
-        case 10: // Professional
-            NSLog(@"Selected Professional");
+             */
+        case 8: // Professional
+            NSLog(@"Selected Meetups");
             
-            [defaults setValue:@"Professional" forKey:@"categoryName"];
+            [defaults setValue:@"Meetups" forKey:@"categoryName"];
             [defaults setBool:YES forKey:@"meetup"];
             
             break;
@@ -443,9 +460,11 @@
 
 -(void)refreshSettings {
     
-    [locationField setTitle:[NSString stringWithFormat:@"        near %@", [defaults objectForKey:@"userLocTitle"]] forState:UIControlStateNormal];
+    [locationField setTitle:[NSString stringWithFormat:@"         Near %@", [defaults objectForKey:@"userLocTitle"]] forState:UIControlStateNormal];
     categoryChanged = YES;
-    [delegate dropdownPressedFromTut:NO];
+    
+    if (![defaults boolForKey:@"hasLaunched"])
+        [delegate dropdownPressedFromTut:NO];
     
 }
 
@@ -453,17 +472,21 @@
 - (BOOL)didPreferencesChange {
     
     // Save user preferences if values were changed
-    
+    NSLog(@"Refresh settings");
+
     //NSLog(@"%ld ----------- %ld", (long)[defaults integerForKey:@"sliderValue"], (long)sliderVal);
     
     if ([defaults integerForKey:@"sliderValue"] != sliderVal || /*![[defaults objectForKey:@"userLocTitle"] isEqualToString:userLocationTitle] ||*/ categoryChanged) {
-        
+        NSLog(@"Settings changed");
+
         categoryChanged = NO;
         [defaults setInteger:sliderVal forKey:@"sliderValue"];
         [defaults synchronize];
         
         return YES;
+        
     } else {
+        
         NSLog(@"No preferences were changed.");
         return NO;
     }

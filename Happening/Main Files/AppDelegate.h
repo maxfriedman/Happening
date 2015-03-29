@@ -11,7 +11,8 @@
 #import <MapKit/MapKit.h>
 #import <AddressBook/AddressBook.h>
 #import <Parse/Parse.h>
-#import <FacebookSDK/FacebookSDK.h>
+#import <FBSDKCoreKit/FBSDKCoreKit.h>
+#import <FBSDKLoginKit/FBSDKLoginKit.h>
 #import "RKSwipeBetweenViewControllers.h"
 
 

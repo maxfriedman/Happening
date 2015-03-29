@@ -12,7 +12,7 @@
 
 @interface LoginView ()
 
-@property (strong, nonatomic) IBOutlet FBLoginView *fbLoginView;
+@property (strong, nonatomic) IBOutlet FBSDKLoginButton *fbLoginView;
 @property (strong, nonatomic) NSString *objectID;
 @property (strong, nonatomic) IBOutlet UILabel *labelOne;
 //@property (strong, nonatomic) IBOutlet UILabel *labelTwo;
@@ -69,7 +69,7 @@
     
 }
 
-
+/*
 - (void)viewDidAppear:(BOOL)animated {
     
     [_fbLoginView setReadPermissions:@[@"public_profile", @"email", @"user_friends", @"user_events", @"user_about_me", @"rsvp_event", @"user_location"]];
@@ -138,13 +138,7 @@
             parseUser[@"link"] = [result objectForKey:@"link"];
             
             parseUser[@"FBObjectID"] = [result objectForKey:@"id"];
-            
-            /*
-             PFACL *groupACL = [PFACL ACL];
-             [groupACL setWriteAccess:YES forUserId:parseUser.objectId];
-             [groupACL setReadAccess:YES forUserId:parseUser.objectId];
-             parseUser.ACL = groupACL;
-             */
+
             
             // Default radius
             NSNumber *fifty = [NSNumber numberWithInt:50];

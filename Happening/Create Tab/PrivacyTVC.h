@@ -10,4 +10,6 @@
 
 @interface PrivacyTVC : UITableViewController
 
+@property (strong, nonatomic) IBOutlet UISwitch *socialSwitch;
+
 @end

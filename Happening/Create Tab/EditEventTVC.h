@@ -28,8 +28,6 @@
 
 @property (strong, nonatomic) IBOutlet UITextField *titleField;
 
-@property (strong, nonatomic) IBOutlet UITextField *subtitleField;
-
 @property (strong, nonatomic) IBOutlet UITextField *locationField;
 
 @property (strong, nonatomic) PFObject *Event;
@@ -39,6 +37,8 @@
 @property (strong, nonatomic) IBOutlet UIDatePicker *endTimePicker;
 
 @property (strong, nonatomic) IBOutlet UIPickerView *hashtagPicker;
+
+@property (strong, nonatomic) IBOutlet UITextView *descriptionField;
 
 @property (strong, nonatomic) NSArray *hashtagData;
 

@@ -12,6 +12,7 @@
 #import "dropdownSettingsView.h"
 #import <EventKit/EventKit.h>
 #import <EventKitUI/EventKitUI.h>
+#import <FBSDKCoreKit/FBSDKCoreKit.h>
 
 @protocol DragViewControllerDelegate <NSObject>
 
@@ -34,7 +35,7 @@
 - (void)dropdownPressedFromTut:(BOOL)var;
 - (void)tutorialCardTapped:(UIView *)view ;
 - (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event;
-- (void)shareAction;
+- (void)shareAction:(id)sender;
 - (void)showCreatedByProfile;
 - (void)showMoreDetail;
 - (void)showEditEventVCWithEvent:(EKEvent *)event eventStore:(EKEventStore *)es;

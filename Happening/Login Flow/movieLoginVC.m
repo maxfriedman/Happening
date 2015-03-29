@@ -7,6 +7,9 @@
 //
 
 #import "movieLoginVC.h"
+#import "RKSwipeBetweenViewControllers.h"
+
+#define IS_WIDESCREEN ( [ [ UIScreen mainScreen ] bounds ].size.height >= 568 )
 
 @interface movieLoginVC ()
 
@@ -18,45 +21,41 @@
     PFUser *parseUser;
     UIActivityIndicatorView *activityView;
     
+    UIImageView *imv;
+    
 }
+
+/*
+- (void)viewWillAppear:(BOOL)animated {
+        
+    if ([FBSDKAccessToken currentAccessToken]) {
+     
+        [self performSelector:@selector(yourNewFunction) withObject:nil afterDelay:0.0];
+    }
+    
+}
+*/
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-    NSString *stringPath = [[NSBundle mainBundle] pathForResource:@"Happening Intro vid" ofType:@"mp4"];
-    NSURL *url = [NSURL fileURLWithPath:stringPath];
+    self.fbButton.alpha = 0;
+    self.questionButton.alpha = 0;
     
-    player = [[MPMoviePlayerController alloc] initWithContentURL:url];  //[NSURL fileURLWithPath:url]];
-    player.view.frame = self.view.frame; //CGRectMake(184, 200, 400, 300);
-    [self.view addSubview:player.view];
-    [self.view sendSubviewToBack:player.view];
+    imv = [[UIImageView alloc] initWithFrame:self.view.frame];
     
-    // Configure the movie player controller
-    player.controlStyle = MPMovieControlStyleNone;
-    player.repeatMode = MPMovieRepeatModeOne;
-    player.scalingMode = MPMovieScalingModeAspectFill;
-    [player prepareToPlay];
+    if (IS_WIDESCREEN) {
+        
+        imv.image = [UIImage imageNamed:@"postLaunchBig"];
+        
+    } else {
+        
+        imv.image = [UIImage imageNamed:@"postLaunchSmall"];
+    }
     
-    parseUser = [PFUser user];
-    // default city and location
-    parseUser[@"city"] = @"Washington, DC";
-    PFGeoPoint *geoPoint = [PFGeoPoint geoPointWithLatitude:38.907192 longitude:-77.036871];
-    parseUser[@"userLoc"] = geoPoint;
-    
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    [defaults setObject:@"Washington, DC" forKey:@"userLocTitle"];
-    [defaults setObject:@"" forKey:@"userLocSubtitle"];
-    [defaults synchronize];
-    
-    
-    activityView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
-    activityView.center = CGPointMake(self.view.frame.size.width / 2, (self.view.frame.size.height / 2));
-    [self.view addSubview:activityView];
-    
-    
-    [_fbLoginView setReadPermissions:@[@"public_profile", @"email", @"user_friends", @"user_events", @"user_about_me", @"rsvp_event", @"user_location"]];
-    [_fbLoginView setDelegate:self];
+    [self.view addSubview:imv];
+
     
 }
 
@@ -64,31 +63,191 @@
     
     [super viewDidAppear:animated];
     
-    [player play];
-    
+    if ([FBSDKAccessToken currentAccessToken]) {
+
+        
+        [self performSegueWithIdentifier:@"toMain" sender:self];
+    } else {
+        
+        NSString *stringPath = [[NSBundle mainBundle] pathForResource:@"Happening Intro vid" ofType:@"mp4"];
+        NSURL *url = [NSURL fileURLWithPath:stringPath];
+        
+        player = [[MPMoviePlayerController alloc] initWithContentURL:url];  //[NSURL fileURLWithPath:url]];
+        player.view.frame = self.view.frame; //CGRectMake(184, 200, 400, 300);
+        
+        //[imv removeFromSuperview];
+        
+        [self.view addSubview:player.view];
+        [self.view sendSubviewToBack:player.view];
+        
+        // Configure the movie player controller
+        player.controlStyle = MPMovieControlStyleNone;
+        player.repeatMode = MPMovieRepeatModeOne;
+        player.scalingMode = MPMovieScalingModeAspectFill;
+        [player prepareToPlay];
+        
+        parseUser = [PFUser user];
+        
+        activityView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+        activityView.center = CGPointMake(self.view.frame.size.width / 2, (self.view.frame.size.height / 2));
+        
+        [self.view insertSubview:player.view belowSubview:imv];
+        
+        [UIView animateWithDuration:0.5 animations:^{
+            imv.alpha = 0.1;
+            self.fbButton.alpha = 1;
+            self.questionButton.alpha = 1;
+        } completion:^(BOOL finished) {
+            //code
+            [self.view bringSubviewToFront:self.fbButton];
+            [self.view bringSubviewToFront:self.questionButton];
+        }];
+        
+        [_fbLoginView setReadPermissions:@[@"public_profile", @"email", @"user_friends", @"user_location"]];
+        [_fbLoginView setDelegate:self];
+        
+        [player play];
+        
+    }
 }
 
-- (IBAction)fbButton:(id)sender {
-   /*
-    NSArray *permissions =
-    [NSArray arrayWithObjects:@"email", @"user_birthday", nil];
-    
-    [FBSession openActiveSessionWithReadPermissions:permissions
-                                       allowLoginUI:YES
-                                  completionHandler:^(FBSession *session, FBSessionState status, NSError *error) {
-                                      /* handle success + failure in block */
-                                 // }];
+- (void)yourNewFunction
+{
+    /*
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];    
+    RKSwipeBetweenViewControllers *rk = [storyboard instantiateViewControllerWithIdentifier:@"rk"];
+    [self presentViewController:rk animated:NO completion:nil];
+     */
+}
+
+- (IBAction)fbButtonAction:(id)sender {
+
     self.fbButton.alpha = 0.8;
     self.fbButton.userInteractionEnabled = NO;
     [activityView startAnimating];
     
-    FBSessionStateHandler completionHandler = ^(FBSession *session, FBSessionState status, NSError *error) {
-        /* handle success + failure in block */
-        //[self sessionStateChanged:session state:status error:error];
+    FBSDKLoginManager *loginManager = [[FBSDKLoginManager alloc] init];
+    loginManager.loginBehavior = FBSDKLoginBehaviorSystemAccount;
+    [loginManager logInWithReadPermissions:self.fbLoginView.readPermissions handler:^(FBSDKLoginManagerLoginResult *result, NSError *error) {
+        
+        NSLog(@"result:%@", result);
+        __block NSSet *grantedPermissions = result.grantedPermissions;
+        
+        if (error) {
+            // Process error
+            NSLog(@"error");
+            self.fbButton.alpha = 1.0;
+            self.fbButton.userInteractionEnabled = YES;
+            // An error occurred, we need to handle the error
+            // See: https://developers.facebook.com/docs/ios/errors
+        
+        } else if (result.isCancelled) {
+            
+            NSLog(@"fb login cancelled");
+            self.fbButton.alpha = 1.0;
+            self.fbButton.userInteractionEnabled = YES;
+            
+        } else { //success ?
+            
+            [[[FBSDKGraphRequest alloc] initWithGraphPath:@"me" parameters:nil]
+             startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
+                 if (!error) {
+                     NSLog(@"fetched user:%@", result);
+
+                     NSDictionary *user = result;
+                     
+                     if ([grantedPermissions containsObject:@"email"]) {
+                
+                         parseUser.username = [user objectForKey:@"email"];
+                         parseUser.email = [user objectForKey:@"email"];
+
+                     } else {
+                         NSLog(@"User disabled email permissions");
+                         parseUser.username = [user objectForKey:@"link"];
+                     }
+                     parseUser.password = [user objectForKey:@"link"];
+            
+            
+                     parseUser[@"FBObjectID"] = [user objectForKey:@"id"];
+                     parseUser[@"link"] = [user objectForKey:@"link"];
+            
+            
+                     if ([grantedPermissions containsObject:@"first_name"])
+                         parseUser[@"firstName"] = [user objectForKey:@"first_name"];
+                     
+                     if ([grantedPermissions containsObject:@"last_name"])
+                         parseUser[@"lastName"] = [user objectForKey:@"last_name"];
+            
+                     if ([grantedPermissions containsObject:@"gender"])
+                         parseUser[@"gender"] = [user objectForKey:@"gender"];
+            
+                     if ([grantedPermissions containsObject:@"bio"])
+                         parseUser[@"bio"] = [user objectForKey:@"bio"];
+            
+                     if ([grantedPermissions containsObject:@"birthday"])
+                         parseUser[@"birthday"] = [user objectForKey:@"birthday"];
+            
+                     if ([grantedPermissions containsObject:@"location"]) {
+                         NSDictionary *locationDict = [user objectForKey:@"location"];
+                
+                         if ([locationDict objectForKey:@"name"] != nil)
+                             parseUser[@"fbLocationName"] = [locationDict objectForKey:@"name"];
+            
+                     }
+            
+                     // Defaults
+                     parseUser[@"radius"] = @50;
+                     parseUser[@"city"] = @"";
+                     //parseUser[@"userLoc"] = [PFGeoPoint geoPointWithLatitude:38.907192 longitude:-77.036871];
+            
+                     [parseUser signUpInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+                         if (!error) {
+                             NSLog(@"New user successfully signed up.");
+                    
+                    // Hooray! Let them use the app now.
+                    NSLog(@"New user: %@", parseUser.username);
+                    
+                    if (parseUser) {
+                        
+                        //self.fbButton.alpha = 1.0;
+                        //self.fbButton.userInteractionEnabled = YES;
+                        [activityView stopAnimating];
+                        NSLog(@"2");
+                        [self performSegueWithIdentifier:@"toMain" sender:self];
+                    }
+                } else {
+                    
+                    NSLog(@"User exists.");
+                    
+                    if (parseUser) {
+                        
+                        [PFUser logInWithUsernameInBackground:parseUser.username password:parseUser.password
+                                                        block:^(PFUser *user, NSError *error) {
+                                                            if (user) {
+                                                                // Do stuff after successful login.
+                                                                [activityView stopAnimating];
+                                                                [self performSegueWithIdentifier:@"toMain" sender:self];
+                                                            } else {
+                                                                // The login failed. Check error to see why.
+                                                                self.fbButton.alpha = 1.0;
+                                                                self.fbButton.userInteractionEnabled = YES;
+                                                                [activityView stopAnimating];
+                                                                NSLog(@"%@", error);
+                                                                
+                                                            }
+                                                       }];
+                    }
+                }
+            }];
+        }
+    }];
+        }
+        }];
+        
+    
+    /*
         
         PFUser *currentUser = [PFUser currentUser];
-        
-        NSLog(@"CU1: %@", currentUser.username);
         
         PFQuery *query = [PFUser query];
         
@@ -209,19 +368,7 @@
         
     };
     
-    /*
-    if ([FBSession activeSession].state == FBSessionStateCreatedTokenLoaded) {
-        // we have a cached token, so open the session
-        [[FBSession activeSession] openWithBehavior:FBSessionLoginBehaviorUseSystemAccountIfPresent
-                                  completionHandler:completionHandler];
-    } else { */
-        //[self clearAllUserInfo];
-        // create a new facebook session
-        FBSession *fbSession = [[FBSession alloc] initWithPermissions:@[@"public_profile", @"email", @"user_friends", @"user_events", @"user_about_me",/* @"rsvp_event",*/ @"user_birthday", @"user_location"]];
-        [FBSession setActiveSession:fbSession];
-        [fbSession openWithBehavior:FBSessionLoginBehaviorUseSystemAccountIfPresent
-                  completionHandler:completionHandler];
-    //}
+     */
     
 }
 
@@ -330,6 +477,11 @@
 }
  */
 
+/*
+-(void)loginButton:(FBSDKLoginButton *)loginButton didCompleteWithResult:(FBSDKLoginManagerLoginResult *)result error:(NSError *)error {
+    
+}
+
 - (void)loginView:(FBLoginView *)loginView handleError:(NSError *)error {
     NSString *alertMessage, *alertTitle;
     
@@ -371,7 +523,7 @@
                           otherButtonTitles:nil] show];
     }
 }
-
+*/
 
 /*
 #pragma mark - Navigation

@@ -87,6 +87,7 @@
     UITapGestureRecognizer *tgr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(sendToMoreInfo)];
     [self.subtitleLabel addGestureRecognizer:tgr];
     
+    
     /*
     [self.imageView addSubview:self.titleLabel];
     [self.imageView addSubview:self.timeLabel];
@@ -297,14 +298,14 @@
                 
                 //ticketsButton = [[UIButton alloc] initWithFrame:CGRectMake(79, 500, 126, 20)];
                 [ticketsButton setImage:[UIImage imageNamed:@"buy tickets"] forState:UIControlStateNormal];
-                [ticketsButton setImage:[UIImage imageNamed:@"buy tickets pressed"] forState:UIControlStateSelected];
+                [ticketsButton setImage:[UIImage imageNamed:@"buy tickets pressed"] forState:UIControlStateHighlighted];
                 
                 //[self ticketsUpdateFrameBy:20];
             } else {
                 
                 //ticketsButton = [[UIButton alloc] initWithFrame:CGRectMake(79, 500, 126, 20)];
                 [ticketsButton setImage:[UIImage imageNamed:@"buy tickets"] forState:UIControlStateNormal];
-                [ticketsButton setImage:[UIImage imageNamed:@"buy tickets pressed"] forState:UIControlStateSelected];
+                [ticketsButton setImage:[UIImage imageNamed:@"buy tickets pressed"] forState:UIControlStateHighlighted];
                 
                 //[self ticketsUpdateFrameBy:20];
             }
@@ -336,7 +337,7 @@
             }
             NSLog(@"%@", uberButton.constraints);
             [uberButton setImage:[UIImage imageNamed:@"call uber"] forState:UIControlStateNormal];
-            [uberButton setImage:[UIImage imageNamed: @"call uber pressed"] forState:UIControlStateSelected];
+            [uberButton setImage:[UIImage imageNamed: @"call uber pressed"] forState:UIControlStateHighlighted];
             [uberButton addTarget:self action:@selector(grabAnUberButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
             uberButton.tag = 3;
             
@@ -473,104 +474,111 @@
     
     NSLog(@"Loading FB Friends");
     
-    if (!FBSession.activeSession.isOpen) {
+    if ([FBSDKAccessToken currentAccessToken]) {
+        
+        
         // if the session is closed, then we open it here, and establish a handler for state changes
-        [FBSession openActiveSessionWithReadPermissions:@[@"public_profile", @"user_friends"]
-                                           allowLoginUI:NO
-                                      completionHandler:^(FBSession *session,
-                                                          FBSessionState state,
-                                                          NSError *error) {
-                                          if (error) {
-                                              UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Facebook Error"
-                                                                                                  message:error.localizedDescription
-                                                                                                 delegate:nil
-                                                                                        cancelButtonTitle:@"That's odd"
-                                                                                        otherButtonTitles:nil];
-                                              [alertView show];
-                                          } else if (session.isOpen) {
-                                              NSLog(@"Session open, recurse");
-
-                                              [self loadFBFriends];
-                                          } else {
-                                              NSLog(@"Made it");
-                                          }
-                                      }];
-    }
-    
-    NSLog(@"%@", self.eventID);
-    
-    FBRequest* friendsRequest = [FBRequest requestForMyFriends];
-    [friendsRequest startWithCompletionHandler: ^(FBRequestConnection *connection,
-                                                  NSDictionary* result,
-                                                  NSError *error) {
-        NSArray* friends = [result objectForKey:@"data"];
-        NSLog(@"Found: %lu friends", (unsigned long)friends.count);
+        /*
+         [FBSession openActiveSessionWithReadPermissions:@[@"public_profile", @"user_friends"]
+         allowLoginUI:NO
+         completionHandler:^(FBSession *session,
+         FBSessionState state,
+         NSError *error) {
+         if (error) {
+         UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Facebook Error"
+         message:error.localizedDescription
+         delegate:nil
+         cancelButtonTitle:@"That's odd"
+         otherButtonTitles:nil];
+         [alertView show];
+         } else if (session.isOpen) {
+         NSLog(@"Session open, recurse");
+         
+         [self loadFBFriends:friendScrollView];
+         } else {
+         NSLog(@"Made it");
+         }
+         }];
+         }
+         */
         
-        __block int friendCount = 0;
-        
-        NSMutableArray *friendObjectIDs = [[NSMutableArray alloc] init];
-        for (int i = 0; i < friends.count; i ++) {
-            NSDictionary<FBGraphUser>* friend = friends[i];
-            [friendObjectIDs addObject:friend.objectID];
-        }
-        
-        PFQuery *friendQuery = [PFQuery queryWithClassName:@"Swipes"];
-        [friendQuery whereKey:@"FBObjectID" containedIn:friendObjectIDs];
-        [friendQuery whereKey:@"EventID" equalTo:self.eventID];
-        [friendQuery whereKey:@"swipedRight" equalTo:@YES];
-        
-        PFQuery *userQuery = [PFUser query];
-        [userQuery whereKey:@"objectId" matchesKey:@"UserID" inQuery:friendQuery];
-        
-        [userQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-
-            if (!error) {
-                        
-                for (PFObject *object in objects) {
-                        
-                    
-                    FBProfilePictureView *profPicView = [[FBProfilePictureView alloc] initWithProfileID:object[@"FBObjectID"] pictureCropping:FBProfilePictureCroppingSquare];
-                    profPicView.layer.cornerRadius = 20;
-                    profPicView.layer.masksToBounds = YES;
-                    profPicView.accessibilityIdentifier = object.objectId;
-                    profPicView.frame = CGRectMake(50 * friendCount, 0, 40, 40);
-                    profPicView.userInteractionEnabled = YES;
-                    [self.friendScrollView addSubview:profPicView];
-                    
-                    UITapGestureRecognizer *gr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(showFriendProfile:)];
-                    [profPicView addGestureRecognizer:gr];
-                            
-                    UILabel *nameLabel = [[UILabel alloc] init];
-                    nameLabel.font = [UIFont fontWithName:@"OpenSans" size:7];
-                    nameLabel.textColor = [UIColor colorWithRed:(70.0/255.0) green:(70.0/255.0) blue:(70.0/255.0) alpha:    1.0];
-                    nameLabel.textAlignment = NSTextAlignmentCenter;
-                    nameLabel.text = object[@"firstName"];
-                    nameLabel.frame = CGRectMake(5 + (50 * friendCount), 42, 30, 8);
-                    [self.friendScrollView addSubview:nameLabel];
-                    
-                    self.friendScrollView.contentSize = CGSizeMake((50 * friendCount) + 40, self.friendScrollView.frame.size.height);
-                    
-                    friendCount++;
-                    
-                    if (friendCount == 1) {
-                        self.friendsInterestedLabel.text = [NSString stringWithFormat:@"%d friend interested", friendCount];
-                    } else {
-                        self.friendsInterestedLabel.text = [NSString stringWithFormat:@"%d friends interested", friendCount];
-                    }
-                            
-                }
-                    
-                if (objects.count == 0) {
-                    NSLog(@"No new friends");
-                    [self noFriendsAddButton];
-                }
-                        
+        [[[FBSDKGraphRequest alloc] initWithGraphPath:@"/me/friends" parameters:nil] startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
+            //code
+            
+            NSArray* friends = [result objectForKey:@"data"];
+            NSLog(@"Found: %lu friends", (unsigned long)friends.count);
+            
+            __block int friendCount = 0;
+            
+            NSMutableArray *friendObjectIDs = [[NSMutableArray alloc] init];
+            for (int i = 0; i < friends.count; i ++) {
+                NSDictionary *friend = friends[i];
+                [friendObjectIDs addObject:[friend objectForKey:@"id"]];
             }
             
+            PFQuery *friendQuery = [PFQuery queryWithClassName:@"Swipes"];
+            [friendQuery whereKey:@"FBObjectID" containedIn:friendObjectIDs];
+            [friendQuery whereKey:@"EventID" equalTo:self.eventID];
+            [friendQuery whereKey:@"swipedRight" equalTo:@YES];
+            
+            PFQuery *userQuery = [PFUser query];
+            [userQuery whereKey:@"objectId" matchesKey:@"UserID" inQuery:friendQuery];
+            
+            [userQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+                
+                NSLog(@"%lu friends interested", (unsigned long)objects.count);
+                
+                if (!error) {
+                    
+                    for (PFObject *object in objects) {
+                        
+                        FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(50 * friendCount, 0, 40, 40)]; // initWithProfileID:user[@"FBObjectID"] pictureCropping:FBSDKProfilePictureModeSquare];
+                        profPicView.profileID = object[@"FBObjectID"];
+                        profPicView.pictureMode = FBSDKProfilePictureModeSquare;
+                        
+                        profPicView.layer.cornerRadius = 20;
+                        profPicView.layer.masksToBounds = YES;
+                        profPicView.accessibilityIdentifier = object.objectId;
+                        profPicView.userInteractionEnabled = YES;
+                        [self.friendScrollView addSubview:profPicView];
+                        
+                        UITapGestureRecognizer *gr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(showFriendProfile:)];
+                        [profPicView addGestureRecognizer:gr];
+                        
+                        UILabel *nameLabel = [[UILabel alloc] init];
+                        nameLabel.font = [UIFont fontWithName:@"OpenSans" size:7];
+                        nameLabel.textColor = [UIColor colorWithRed:(70.0/255.0) green:(70.0/255.0) blue:(70.0/255.0) alpha:    1.0];
+                        nameLabel.textAlignment = NSTextAlignmentCenter;
+                        nameLabel.text = object[@"firstName"];
+                        nameLabel.frame = CGRectMake(5 + (50 * friendCount), 42, 30, 8);
+                        [self.friendScrollView addSubview:nameLabel];
+                        
+                        self.friendScrollView.contentSize = CGSizeMake((50 * friendCount) + 40, self.friendScrollView.frame.size.height);
+                        
+                        friendCount++;
+                        
+                        if (friendCount == 1) {
+                            self.friendsInterestedLabel.text = [NSString stringWithFormat:@"%d friend interested", friendCount];
+                        } else {
+                            self.friendsInterestedLabel.text = [NSString stringWithFormat:@"%d friends interested", friendCount];
+                        }
+                        
+                    }
+                    
+                    if (objects.count == 0) {
+                        NSLog(@"No new friends");
+                        [self noFriendsAddButton];
+                    }
+                }
+                
+            }];
+            
         }];
-    }];
-    
-    
+        
+    } else {
+        
+        NSLog(@"no token......");
+    }
     
 }
 
@@ -582,7 +590,7 @@
     [noFriendsButton setTitle:@"Invite your friends" forState:UIControlStateNormal];
     noFriendsButton.titleLabel.font = [UIFont fontWithName:@"OpenSans" size:15.0];
     [noFriendsButton setTitleColor:[UIColor colorWithRed:41.0/255 green:181.0/255 blue:1.0 alpha:1.0] forState:UIControlStateNormal];
-    [noFriendsButton setTitleColor:[UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:1.0] forState:UIControlStateSelected];
+    [noFriendsButton setTitleColor:[UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:1.0] forState:UIControlStateHighlighted];
     noFriendsButton.layer.masksToBounds = YES;
     noFriendsButton.layer.borderColor = [UIColor colorWithRed:41.0/255 green:181.0/255 blue:1.0 alpha:1.0].CGColor;
     noFriendsButton.layer.borderWidth = 2.0;
@@ -879,13 +887,17 @@
 }
 
 -(void)showCreatedByProfile {
+    /*
     [self performSegueWithIdentifier:@"showProf" sender:self];
+     */
 }
 
 -(void)showFriendProfile:(UITapGestureRecognizer *)gr {
+    /*
     UIView *view = gr.view;
     friendObjectID = view.accessibilityIdentifier;
     [self performSegueWithIdentifier:@"showFriendProf" sender:self];
+     */
 }
 
 -(void)sendToMoreInfo {

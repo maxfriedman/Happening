@@ -12,6 +12,7 @@
 #import "MyEventsTVC.h"
 #import "AttendEvent.h"
 #import "UIButton+Extensions.h"
+#import "AppDelegate.h"
 
 //%%% customizeable button attributes
 #define X_BUFFER 0 //%%% the number of pixels on either side of the segment
@@ -27,15 +28,17 @@
 
 @interface RKSwipeBetweenViewControllers () {
     
-    NSInteger currentPageIndex;
     UIButton *leftButton;
     UIButton *middleButton;
+    UIButton *middleButton2;
     UIButton *rightButton;
     
     BOOL leftButtonTapScrolling;
     BOOL middleButtonTapScrolling;
     BOOL rightButtonTapScrolling;
     BOOL longScroll;
+    
+    DragViewController *dvc;
 }
 
 @end
@@ -47,7 +50,7 @@
 @synthesize pageController;
 @synthesize navigationView;
 @synthesize buttonText;
-@synthesize pageScrollView, rightLabel, middleLabel, leftLabel;
+@synthesize pageScrollView, rightLabel, middleLabel, leftLabel, currentPageIndex, middleButton;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -73,6 +76,9 @@
     [self.navigationBar.layer insertSublayer:gradient atIndex:0];
     */
     
+    [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"refreshData"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+    
     self.navigationBar.barTintColor = [UIColor clearColor]; //%%% bartint
     [self.navigationBar setBackgroundImage:[UIImage imageNamed:@"navBar"] forBarMetrics:UIBarMetricsDefault];
     self.navigationBar.translucent = NO;
@@ -80,13 +86,15 @@
     
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
     DragViewController *vc = [storyboard instantiateViewControllerWithIdentifier:@"Discover"];
+    
+    dvc = vc;
+    
     MyEventsTVC *mtvc = [storyboard instantiateViewControllerWithIdentifier:@"Create"];
     AttendEvent *atvc = [storyboard instantiateViewControllerWithIdentifier:@"Attend"];
 
     [viewControllerArray addObjectsFromArray:@[mtvc,vc,atvc]];
     
-    currentPageIndex = 1;
-   // [self updateCurrentPageIndex:1];
+    [self updateCurrentPageIndex:1];
     
     leftLabel = [[UILabel alloc]initWithFrame:CGRectMake(30, Y_BUFFER, 50, 20)];
     leftLabel.text = @"Profile";
@@ -97,6 +105,14 @@
     rightLabel.text = @"Events";
     rightLabel.font = [UIFont fontWithName:@"OpenSans-Bold" size:14.0];
     rightLabel.textColor = [UIColor whiteColor];
+    
+    AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+    appDelegate.rk = self;
+    
+    //NSLog(@"===========> %d", [[NSUserDefaults standardUserDefaults] boolForKey:@"hasLaunched"]);
+
+    
+    //[vc refreshData];
     
 }
 
@@ -144,35 +160,44 @@
      //NSInteger width = (self.navigationView.frame.size.width-(2*X_BUFFER))/3;
     NSInteger width = 304/3;
      leftButton = [[UIButton alloc]initWithFrame:CGRectMake(0, Y_BUFFER, 25, 30)];
-     middleButton = [[UIButton alloc]initWithFrame:CGRectMake(X_BUFFER+width, Y_BUFFER, width, HEIGHT)];
+     middleButton = [[UIButton alloc]initWithFrame:CGRectMake(X_BUFFER+width-15, Y_BUFFER + 5, width + 30, 21.5)];
+     middleButton2 = [[UIButton alloc]initWithFrame:CGRectMake(width*3/2 - 15, Y_BUFFER, 30, 30)];
      rightButton = [[UIButton alloc]initWithFrame:CGRectMake(75+2*width, Y_BUFFER, 24, HEIGHT)];
      
      [navigationView addSubview:leftButton];
      [navigationView addSubview:middleButton];
+     [navigationView addSubview:middleButton2];
      [navigationView addSubview:rightButton];
+    
+     middleButton2.alpha = 0;
      
      leftButton.tag = 0;
      middleButton.tag = 1;
+     middleButton2.tag = 1;
      rightButton.tag = 2;
      
      leftButton.backgroundColor = [UIColor clearColor]; //[UIColor colorWithRed:41.0/255 green:181.0/255 blue:1.0 alpha:1.0];;
      middleButton.backgroundColor = [UIColor clearColor]; //[UIColor colorWithRed:41.0/255 green:181.0/255 blue:1.0 alpha:1.0];;
      rightButton.backgroundColor = [UIColor clearColor]; //[UIColor colorWithRed:41.0/255 green:181.0/255 blue:1.0 alpha:1.0];;
+     middleButton2.backgroundColor = [UIColor clearColor];
      
      [leftButton addTarget:self action:@selector(tapSegmentButtonAction:) forControlEvents:UIControlEventTouchUpInside];
-     [middleButton addTarget:self action:@selector(tapSegmentButtonAction:) forControlEvents:UIControlEventTouchUpInside];
+     //[middleButton addTarget:self action:@selector(tapSegmentButtonAction:) forControlEvents:UIControlEventTouchUpInside];
+     [middleButton2 addTarget:self action:@selector(tapSegmentButtonAction:) forControlEvents:UIControlEventTouchUpInside];
      [rightButton addTarget:self action:@selector(tapSegmentButtonAction:) forControlEvents:UIControlEventTouchUpInside];
     
     [leftButton addTarget:self action:@selector(leftButtonTapped) forControlEvents:UIControlEventTouchUpInside];
-    [middleButton addTarget:self action:@selector(middleButtonTapped) forControlEvents:UIControlEventTouchUpInside];
+    [middleButton addTarget:self action:@selector(refreshButtonTapped) forControlEvents:UIControlEventTouchUpInside];
+    [middleButton2 addTarget:self action:@selector(middleButtonTapped) forControlEvents:UIControlEventTouchUpInside];
     [rightButton addTarget:self action:@selector(rightButtonTapped) forControlEvents:UIControlEventTouchUpInside];
     
      //[leftButton setTitle:@"Create" forState:UIControlStateNormal];
-     [middleButton setTitle:@"Happening" forState:UIControlStateNormal];
+     //[middleButton setTitle:@"Happening" forState:UIControlStateNormal];
      //[rightButton setTitle:@"Attend" forState:UIControlStateNormal];
     
     [leftButton setImage:[UIImage imageNamed:@"profile_white"] forState:UIControlStateNormal];
-    //[middleButton setImage:[UIImage imageNamed:@"discover"] forState:UIControlStateNormal];
+    [middleButton setImage:[UIImage imageNamed:@"happening text logo"] forState:UIControlStateNormal];
+    [middleButton2 setImage:[UIImage imageNamed:@"happening logo"] forState:UIControlStateNormal];
     [rightButton setImage:[UIImage imageNamed:@"attend_white"] forState:UIControlStateNormal];
 
     //[leftButton setFrame: CGRectMake(leftButton.frame.origin.x, leftButton.frame.origin.y, 60, 30)];
@@ -182,6 +207,7 @@
     
     [leftButton setHitTestEdgeInsets:UIEdgeInsetsMake(-10, -10, -10, -30)];
     [rightButton setHitTestEdgeInsets:UIEdgeInsetsMake(-10, -30, -10, -10)];
+    [middleButton2 setHitTestEdgeInsets:UIEdgeInsetsMake(-10, -10, -10, -10)];
     
     leftLabel.alpha = 0;
     rightLabel.alpha = 0;
@@ -337,7 +363,10 @@
 //in reference to the array of view controllers you gave
 -(void)updateCurrentPageIndex:(int)newIndex
 {
+    //NSLog(@"1. current page index: %lu", currentPageIndex);
     currentPageIndex = newIndex;
+    //NSLog(@"2. current page index: %lu", currentPageIndex);
+
 }
 
 //%%% method is called when any of the pages moves.
@@ -353,7 +382,7 @@
     
     selectionBar.frame = CGRectMake(xCoor-xFromCenter/[viewControllerArray count], selectionBar.frame.origin.y, selectionBar.frame.size.width, selectionBar.frame.size.height);
     
-    //NSLog(@"%f", xFromCenter);
+    NSLog(@"%f", xFromCenter);
     
     if (leftButtonTapScrolling) {
         [self fadeLabels:0];
@@ -367,25 +396,34 @@
         
         if (abs((int)xFromCenter) >= 0) {
         
-            //NSLog (@"Left label");
+            NSLog (@"Left label");
             
             leftLabel.alpha = 1 - abs((int)xFromCenter) / 320.0;
         
+            middleButton2.alpha = 1 - abs((int)xFromCenter) / 320.0;
+            middleButton.alpha = abs((int)xFromCenter) / 320.0;
+            
             //NSLog(@"%f", leftLabel.alpha);
             
         }
         
     } else if (xCoor == 104) {
         
-        //NSLog (@"Middle Label");
+        NSLog (@"Middle Label");
         
         if (xFromCenter > 0) {
             
             leftLabel.alpha = abs((int)xFromCenter) / 320.0;
             
+            middleButton2.alpha = abs((int)xFromCenter) / 320.0;
+            middleButton.alpha = 1 - abs((int)xFromCenter) / 320.0;
+            
         } else {
             
             rightLabel.alpha = abs((int)xFromCenter) / 320.0;
+            
+            middleButton2.alpha = abs((int)xFromCenter) / 320.0;
+            middleButton.alpha = 1 -abs((int)xFromCenter) / 320.0;
             
         }
         
@@ -393,11 +431,14 @@
         
     } else if (xCoor == 211) {
      
-        //NSLog (@"Right Label");
+        NSLog (@"Right Label");
         
         if (abs((int)xFromCenter) >= 0) {
             
             rightLabel.alpha = 1 - abs((int)xFromCenter) / 320.0;
+            
+            middleButton2.alpha = 1 - abs((int)xFromCenter) / 320.0;
+            middleButton.alpha = abs((int)xFromCenter) / 320.0;
             
             //NSLog(@"%f", rightLabel.alpha);
             
@@ -508,6 +549,8 @@
 
 - (void)middleButtonTapped {
     
+    NSLog(@"middle button tapped");
+    
     CGFloat xFromCenter = self.view.frame.size.width-pageScrollView.contentOffset.x; //%%% positive for right swipe, negative for left
     
     NSInteger xCoor = X_BUFFER+selectionBar.frame.size.width*currentPageIndex-X_OFFSET;
@@ -519,7 +562,7 @@
                 
         middleButtonTapScrolling = YES;
         
-        middleLabel.alpha = abs((int)xFromCenter) / 320.0;
+        //middleButton2.alpha = abs((int)xFromCenter) / 320.0;
         
     } else {
         middleButtonTapScrolling = NO;
@@ -575,6 +618,16 @@
     }
 
 
+}
+
+-(void)refreshButtonTapped {
+    
+    if (!dvc.frontViewIsVisible) {
+        
+        [dvc flipCurrentView];
+    }
+    
+    [dvc refreshData];
 }
 
 @end

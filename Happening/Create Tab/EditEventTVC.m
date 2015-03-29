@@ -10,7 +10,7 @@
 #import "MFActivityIndicatorView.h"
 #import "RKDropdownAlert.h"
 
-@interface EditEventTVC ()
+@interface EditEventTVC () <UITextViewDelegate>
 
 @property (assign) NSInteger datePickerHeight;
 @property (assign) NSInteger endTimePickerHeight;
@@ -38,6 +38,9 @@
     NSString *urlString;
     NSString *descriptionString;
     NSString *emailString;
+    
+    BOOL ticks;
+    BOOL isFree;
 }
 
 @synthesize imageView, button;
@@ -45,7 +48,7 @@
 
 @synthesize Event;
 
-@synthesize titleField, subtitleField, locationField;
+@synthesize titleField, locationField;
 
 @synthesize datePicker, endTimePicker;
 
@@ -94,8 +97,8 @@
     self.navigationItem.title = [NSString stringWithFormat:@"%@", Event[@"Title"]];
     
     titleField.text = Event[@"Title"];
-    subtitleField.text = Event[@"Description"];
     locationField.text = Event[@"Location"];
+    self.descriptionField.text = Event[@"Description"];
     
     dateFormatter = [[NSDateFormatter alloc]init];
     [dateFormatter setDateFormat:@"EEE, MMM d    h:mm a"];
@@ -179,6 +182,8 @@
         urlString = Event[@"URL"];
         descriptionString = Event[@"Description"];
         emailString = Event[@"ContactEmail"];
+        ticks = Event[@"isTicketedEvent"];
+        isFree = Event[@"isFreeEvent"];
         
     }];
     
@@ -278,6 +283,8 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
+    if (indexPath.section == 0 && indexPath.row == 1)
+        return 103;
     if (indexPath.section == 2 && indexPath.row == 1)
         return self.datePickerHeight;
     else if (indexPath.section == 2 && indexPath.row == 3)
@@ -329,14 +336,39 @@
     Event[@"CreatedByName"] = @"";
 }
 
-- (IBAction)subtitleTextInput:(UITextField *)sender {
-
-    Event[@"Description"] = self.subtitleField.text;
-}
-
 - (IBAction)locationTextInput:(UITextField *)sender {
 
     Event[@"Location"] = self.locationField.text;
+}
+
+- (void)textViewDidBeginEditing:(UITextView *)textView {
+    
+    if ([textView.text isEqualToString:@"Description"]) {
+        textView.text = @"";
+    }
+    textView.textColor = [UIColor blackColor];
+    textView.font = [UIFont systemFontOfSize:14.0];
+    
+}
+
+- (void)textViewDidEndEditing:(UITextView *)textView {
+    
+    //UITableViewCell *currentCell = [self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:0]];
+    
+    if ([textView.text isEqualToString:@""]) {
+        
+        textView.text = @"Description";
+        textView.textColor = [UIColor lightGrayColor];
+        textView.font = [UIFont systemFontOfSize:17.0];
+        //currentCell.accessoryType = UITableViewCellAccessoryNone;
+        
+    } else {
+        //passedEvent[@"Description"] = textView.text;
+        Event[@"Description"] = textView.text;
+        //currentCell.accessoryType = UITableViewCellAccessoryCheckmark;
+    }
+    
+    
 }
 
 - (IBAction)doneButton:(UIBarButtonItem *)sender {
@@ -369,31 +401,9 @@
             break;
         }
         
-        //%%%%%
-        if (self.titleField.text.length > 24 && self.subtitleField.text.length > 31 && self.locationField.text.length > 30)
-        {
-            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Warning" message:@"You may want to shorten the length of the title, subtitle and location name fields, as they could be cut off upon display (i.e. \"Event locatio...\")" delegate:self cancelButtonTitle:@"Edit" otherButtonTitles:@"Continue", nil];
-            [alert show];
-            break;
-        }
-        
-        if (self.titleField.text.length > 24 && self.subtitleField.text.length > 31)
-        {
-            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Warning" message:@"You may want to shorten the length of the title and subtitle fields, as they could be cut off upon display (i.e. \"Check out this eve...\")" delegate:self cancelButtonTitle:@"Edit" otherButtonTitles:@"Continue", nil];
-            [alert show];
-            break;
-        }
-        
         if (self.titleField.text.length > 24 && self.locationField.text.length > 30)
         {
             UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Warning" message:@"You may want to shorten the length of the title and location name fields, as they could be cut off upon display (i.e. \"Event locati...\")" delegate:self cancelButtonTitle:@"Edit" otherButtonTitles:@"Continue", nil];
-            [alert show];
-            break;
-        }
-        
-        if (self.subtitleField.text.length > 31 && self.locationField.text.length > 30)
-        {
-            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Warning" message:@"You may want to shorten the length of the subtitle and location name fields, as they could be cut off upon display (i.e. \"Event locatio...\")" delegate:self cancelButtonTitle:@"Edit" otherButtonTitles:@"Continue", nil];
             [alert show];
             break;
         }
@@ -660,13 +670,12 @@ clickedButtonAtIndex:(NSInteger)buttonIndex{
     [self dismissViewControllerAnimated:YES completion:NULL];
 }
 
--(void)setUrl:(NSString *)url description:(NSString *)desc email:(NSString *)email {
-    
-    NSLog(@"URL: %@ \n DESC: %@  \n  EMAIL: %@", url, desc, email);
+-(void)setUrl:(NSString *)url tickets:(BOOL)tickets free:(BOOL)free email:(NSString *)email {
     
     urlString = url;
-    descriptionString = desc;
     emailString = email;
+    ticks = tickets;
+    isFree = free;
     
 }
 
@@ -678,8 +687,9 @@ clickedButtonAtIndex:(NSInteger)buttonIndex{
         
         vc.delegate = self;
         vc.urlString = urlString;
-        vc.descString = descriptionString;
         vc.emailString = emailString;
+        vc.ticketsBOOL = ticks;
+        vc.freeBOOL = isFree;
         
          /*
         vc.createdByNameString = createdByNameString;

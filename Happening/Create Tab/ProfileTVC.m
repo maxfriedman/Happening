@@ -12,7 +12,7 @@
 #import "showMyEventVC.h"
 #import "EventTVC.h"
 #import <Parse/Parse.h>
-#import <FacebookSDK/FacebookSDK.h>
+#import <FBSDKCoreKit/FBSDKCoreKit.h>
 #import "AppDelegate.h"
 #import "ProfileSettingsTVC.h"
 
@@ -31,6 +31,9 @@
     
     PFUser *user;
     NSArray *eventsArray;
+    UIView *noEventsView;
+    
+    BOOL showUpcomingEvents;
 }
 
 //@synthesize locManager, refreshControl;
@@ -49,12 +52,14 @@
         detailLabel.text = [NSString stringWithFormat:@""];
     }
     
-    FBProfilePictureView *profPicView = [[FBProfilePictureView alloc] initWithProfileID:user[@"FBObjectID"] pictureCropping:FBProfilePictureCroppingSquare];
+    FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(120, 24, 80, 80)]; // initWithProfileID:user[@"FBObjectID"] pictureCropping:FBSDKProfilePictureModeSquare];
+    profPicView.profileID = user[@"FBObjectID"];
+    profPicView.pictureMode = FBSDKProfilePictureModeSquare;
     profPicView.layer.cornerRadius = 10;
     profPicView.layer.masksToBounds = YES;
     profPicView.layer.borderColor = [UIColor colorWithRed:232.0/255 green:232.0/255 blue:232.0/255 alpha:1.0].CGColor;
     profPicView.layer.borderWidth = 3.0;
-    profPicView.frame = CGRectMake(120, 24, 80, 80);
+    //profPicView.frame = CGRectMake(120, 24, 80, 80);
     [self.view addSubview:profPicView];
     
     profilePicImageView.layer.cornerRadius = 10;
@@ -62,6 +67,47 @@
     profilePicImageView.layer.borderColor =  [UIColor colorWithRed:232.0/255 green:232.0/255 blue:232.0/255 alpha:1.0].CGColor;
     profilePicImageView.layer.borderWidth = 3.0;
     
+    noEventsView = [[UIView alloc] initWithFrame: CGRectMake(0, 350, self.view.frame.size.width, 200)];
+    [self.view addSubview:noEventsView];
+    
+    if (![[NSUserDefaults standardUserDefaults] boolForKey:@"hasCreatedEvent"]) {
+        
+        UILabel *topTextLabel = [[UILabel alloc] init];
+        topTextLabel.text = @"You haven't created";
+        topTextLabel.font = [UIFont fontWithName:@"OpenSans" size:18.0];
+        topTextLabel.textColor = [UIColor colorWithRed:153.0/255 green:154.0/255 blue:155.0/255 alpha:1.0];
+        [topTextLabel sizeToFit];
+        topTextLabel.center = CGPointMake(self.view.center.x, 10);
+        topTextLabel.tag = 9;
+        [noEventsView addSubview:topTextLabel];
+        
+        
+        UILabel *bottomTextLabel = [[UILabel alloc] init];
+        bottomTextLabel.text = @"any events yet.";
+        bottomTextLabel.font = [UIFont fontWithName:@"OpenSans" size:18.0];
+        bottomTextLabel.textColor = [UIColor colorWithRed:153.0/255 green:154.0/255 blue:155.0/255 alpha:1.0];
+        [bottomTextLabel sizeToFit];
+        bottomTextLabel.center = CGPointMake(self.view.center.x, 30);
+        bottomTextLabel.tag = 9;
+        [noEventsView addSubview:bottomTextLabel];
+        
+        
+        UIButton *createEventButton = [[UIButton alloc] initWithFrame:CGRectMake(101.5, 55, 117, 40)];
+        [createEventButton setImage:[UIImage imageNamed:@"createButton"] forState:UIControlStateNormal];
+        [createEventButton setImage:[UIImage imageNamed:@"create pressed"] forState:UIControlStateHighlighted];
+        [createEventButton addTarget:self action:@selector(createEventButtonTapped) forControlEvents:UIControlEventTouchUpInside];
+        createEventButton.tag = 9;
+        [noEventsView addSubview:createEventButton];
+        
+    }
+    
+    
+    self.sectionDateFormatter = [[NSDateFormatter alloc] init];
+    [self.sectionDateFormatter setDateFormat:@"EEEE, MMMM d"];
+    
+    self.cellDateFormatter = [[NSDateFormatter alloc] init];
+    [self.cellDateFormatter setDateStyle:NSDateFormatterNoStyle];
+    [self.cellDateFormatter setTimeStyle:NSDateFormatterShortStyle];
     
 }
 
@@ -72,26 +118,110 @@
 
 -(void)viewWillAppear:(BOOL)animated {
     
-    //[self.tableView reloadData];
-    
     [self setEnabledSidewaysScrolling:YES];
+    showUpcomingEvents = YES;
+    [self loadUpcomingEvents];
+    
+}
+
+- (void)loadUpcomingEvents {
+    
+    NSLog(@"Loading upcoming events...");
     
     // Instantiate event dictionary--- this is where all event info is stored
     self.sections = [NSMutableDictionary dictionary];
-    
     
     PFQuery *eventQuery = [PFQuery queryWithClassName:@"Event"];
     [eventQuery whereKey:@"CreatedBy" equalTo:user.objectId];
     
     // Works for now, but doesn't allow for events to be shown from the past
-    [eventQuery whereKey:@"Date" greaterThan:[NSDate dateWithTimeIntervalSinceNow:-2592000]]; //30 days
+    [eventQuery whereKey:@"EndTime" greaterThan:[NSDate dateWithTimeIntervalSinceNow:0]];
     [eventQuery orderByAscending:@"Date"];
     
     [eventQuery findObjectsInBackgroundWithBlock:^(NSArray *array, NSError *error) {
         
         eventsArray = array;
         
-        [self.tableView reloadData];
+        if (eventsArray.count == 0 && [[NSUserDefaults standardUserDefaults] boolForKey:@"hasCreatedEvent"]) {
+            
+            for (UIView *view in noEventsView.subviews) {
+                
+                if (view.tag == 9) [view removeFromSuperview];
+                
+            }
+            
+            [self.view addSubview:noEventsView];
+            
+            UILabel *topTextLabel = [[UILabel alloc] init];
+            topTextLabel.text = @"You have no upcoming events.";
+            topTextLabel.font = [UIFont fontWithName:@"OpenSans" size:17.0];
+            topTextLabel.textColor = [UIColor colorWithRed:153.0/255 green:154.0/255 blue:155.0/255 alpha:1.0];
+            [topTextLabel sizeToFit];
+            topTextLabel.center = CGPointMake(self.view.center.x, 40);
+            topTextLabel.tag = 9;
+            [noEventsView addSubview:topTextLabel];
+            
+            [self.tableView reloadData];
+            
+        } else if (eventsArray > 0) {
+            
+            [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"hasCreatedEvent"];
+            [[NSUserDefaults standardUserDefaults] synchronize];
+            [noEventsView removeFromSuperview];
+            [self.tableView reloadData];
+        }
+        
+    }];
+    
+}
+
+- (void)loadPastEvents {
+    
+    NSLog(@"Loading past events...");
+    
+    // Instantiate event dictionary--- this is where all event info is stored
+    self.sections = [NSMutableDictionary dictionary];
+    
+    PFQuery *eventQuery = [PFQuery queryWithClassName:@"Event"];
+    [eventQuery whereKey:@"CreatedBy" equalTo:user.objectId];
+    
+    // Works for now, but doesn't allow for events to be shown from the past
+    [eventQuery whereKey:@"EndTime" lessThan:[NSDate dateWithTimeIntervalSinceNow:0]];
+    [eventQuery orderByAscending:@"Date"];
+    
+    [eventQuery findObjectsInBackgroundWithBlock:^(NSArray *array, NSError *error) {
+        
+        eventsArray = array;
+            
+        if (eventsArray.count == 0 && [[NSUserDefaults standardUserDefaults] boolForKey:@"hasCreatedEvent"]) {
+            
+            for (UIView *view in noEventsView.subviews) {
+                
+                if (view.tag == 9) [view removeFromSuperview];
+                
+            }
+            
+            [self.view addSubview:noEventsView];
+            
+            UILabel *topTextLabel = [[UILabel alloc] init];
+            topTextLabel.text = @"You have no past events.";
+            topTextLabel.font = [UIFont fontWithName:@"OpenSans" size:17.0];
+            topTextLabel.textColor = [UIColor colorWithRed:153.0/255 green:154.0/255 blue:155.0/255 alpha:1.0];
+            [topTextLabel sizeToFit];
+            topTextLabel.center = CGPointMake(self.view.center.x, 40);
+            topTextLabel.tag = 9;
+            [noEventsView addSubview:topTextLabel];
+            
+            [self.tableView reloadData];
+            
+        } else if (eventsArray > 0) {
+                        
+            [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"hasCreatedEvent"];
+            [[NSUserDefaults standardUserDefaults] synchronize];
+            [noEventsView removeFromSuperview];
+            [self.tableView reloadData];
+        }
+        
     }];
     
     self.sectionDateFormatter = [[NSDateFormatter alloc] init];
@@ -100,6 +230,21 @@
     self.cellDateFormatter = [[NSDateFormatter alloc] init];
     [self.cellDateFormatter setDateStyle:NSDateFormatterNoStyle];
     [self.cellDateFormatter setTimeStyle:NSDateFormatterShortStyle];
+    
+}
+
+- (IBAction)segControl:(UISegmentedControl *)sender {
+    
+    if (sender.selectedSegmentIndex == 0) { // Upcoming events
+        
+        [self loadUpcomingEvents];
+        
+    } else { // Past Events
+        
+        [self loadPastEvents];
+        
+    }
+    
 }
 
 #pragma mark - Table view data source
@@ -278,6 +423,12 @@
 }
 
 
+- (void)refreshMyEvents {
+    
+    NSLog(@"refreshing events....");
+    [self.myEventsTableView reloadData];
+}
+
 
 
 - (NSDate *)dateAtBeginningOfDayForDate:(NSDate *)inputDate
@@ -300,6 +451,11 @@
     return beginningOfDay;
 }
 
+- (void)createEventButtonTapped {
+    
+    [self performSegueWithIdentifier:@"createNewEvent" sender:self];
+    
+}
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     // Get the new view controller using [segue destinationViewController].

@@ -8,10 +8,9 @@
 
 #import "DragViewController.h"
 #import <Parse/Parse.h>
-#import <ParseFacebookUtils/PFFacebookUtils.h>
-#import <FacebookSDK/FacebookSDK.h>
+#import <FBSDKCoreKit/FBSDKCoreKit.h>
 
-@interface LoginView : UIViewController <FBLoginViewDelegate, UIPickerViewDelegate, UIPickerViewDataSource, UINavigationControllerDelegate>
+@interface LoginView : UIViewController <FBSDKLoginButtonDelegate, UIPickerViewDelegate, UIPickerViewDataSource, UINavigationControllerDelegate>
 
 @property (strong,nonatomic) UIActivityIndicatorView *activityView;
 

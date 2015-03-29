@@ -72,6 +72,7 @@
 @property (nonatomic, strong)UIVisualEffectView *blurEffectView;
 
 @property (nonatomic, strong)UIButton *shareButton;
+@property (nonatomic, strong)UIButton *moreButton;
 
 @property (nonatomic, strong)UIView *cardView;
 

@@ -8,14 +8,16 @@
 
 #import <UIKit/UIKit.h>
 #import <MediaPlayer/MediaPlayer.h>
-#import <FacebookSDK/FacebookSDK.h>
+#import <FBSDKLoginKit/FBSDKLoginKit.h>
+#import <FBSDKCoreKit/FBSDKCoreKit.h>
 #import <Parse/Parse.h>
 
-@interface movieLoginVC : UIViewController <FBLoginViewDelegate>
+@interface movieLoginVC : UIViewController <FBSDKLoginButtonDelegate, FBSDKGraphRequestConnectionDelegate>
 
-@property (strong, nonatomic) IBOutlet FBLoginView *fbLoginView;
+@property (weak, nonatomic) IBOutlet FBSDKLoginButton *fbLoginView;
 
 @property (strong, nonatomic) IBOutlet UIButton *fbButton;
+@property (strong, nonatomic) IBOutlet UIButton *questionButton;
 
 
 @end

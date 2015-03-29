@@ -10,7 +10,7 @@
 #import <Parse/Parse.h>
 #import <MapKit/MapKit.h>
 #import "CupertinoYankee.h"
-#import <FacebookSDK/FacebookSDK.h>
+#import <FBSDKCoreKit/FBSDKCoreKit.h>
 #import <EventKitUI/EventKitUI.h>
 #import <EventKit/EventKit.h>
 #import "AttendEvent.h"

@@ -14,8 +14,10 @@
     PFUser *user;
     int repeats;
     NSString *url;
-    NSString *description;
     NSString *email;
+    
+    BOOL tickets;
+    BOOL free;
     
 }
 
@@ -23,7 +25,7 @@
 
 @implementation ExtraInfoTVC
 
-@synthesize passedEvent, urlField, descriptionScrollField, nameField, emailField, delegate, frequency, urlString, descriptionString, emailString, createdByNameString, repeatsInt;
+@synthesize passedEvent, urlField, nameField, emailField, delegate, frequency, urlString, emailString, createdByNameString, repeatsInt, ticketsSwitch, freeSwitch, freeBOOL, ticketBOOL;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -33,16 +35,15 @@
     self.navigationController.navigationBar.translucent = NO;
     
     url = urlString;
-    description = descriptionString;
     email = emailString;
     repeats = repeatsInt;
+    free = freeBOOL;
+    tickets = ticketBOOL;
     
-    if (![description isEqualToString:@""]) {
-        descriptionScrollField.textColor = [UIColor blackColor];
-        descriptionScrollField.font = [UIFont systemFontOfSize:14.0];
-        descriptionScrollField.text = description;
-    }
-    if (![url isEqualToString:@"www.gethappeningapp.com"]) {
+    ticketsSwitch.on = tickets;
+    freeSwitch.on = freeBOOL;
+
+    if (![url isEqualToString:@""]) {
         urlField.text = url;
     }
     
@@ -52,7 +53,7 @@
         emailField.text = email;
     }
     
-    [delegate eventRepeats:repeats url:url description:description email:email frequency:frequency];
+    [delegate eventRepeats:repeats tickets:tickets free:free url:url email:email frequency:frequency];
     
 }
 
@@ -65,11 +66,8 @@
         UITableViewCell *emailCell = [self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:1]];
         emailCell.accessoryType = UITableViewCellAccessoryCheckmark;
     }
-    if (![description isEqualToString:@""]) {
-        UITableViewCell *descCell = [self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:0]];
-        descCell.accessoryType = UITableViewCellAccessoryCheckmark;
-    }
-    if (![url isEqualToString:@"www.gethappeningapp.com"]) {
+
+    if (![url isEqualToString:@""]) {
         UITableViewCell *urlCell = [self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]];
         urlCell.accessoryType = UITableViewCellAccessoryCheckmark;
     }
@@ -87,7 +85,7 @@
 
 - (IBAction)urlField:(id)sender {
     
-    UITableViewCell *currentCell = [self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]];
+    UITableViewCell *currentCell = [self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:2 inSection:0]];
     
     NSURL *candidateURL = [NSURL URLWithString:urlField.text];
     // WARNING > "test" is an URL according to RFCs, being just a path
@@ -101,7 +99,7 @@
         currentCell.accessoryType =UITableViewCellAccessoryCheckmark;
         
         url = urlField.text;
-        [delegate eventRepeats:repeats url:url description:description email:email frequency:frequency];
+        [delegate eventRepeats:repeats tickets:tickets free:free url:url email:email frequency:frequency];
         
     } else {
         UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Not a valid web address" message:@"" delegate:self cancelButtonTitle:@"Roger that" otherButtonTitles:nil, nil];
@@ -110,7 +108,7 @@
         currentCell.accessoryType = UITableViewCellAccessoryNone;
         
         url = @"";
-        [delegate eventRepeats:repeats url:url description:description email:email frequency:frequency];
+        [delegate eventRepeats:repeats tickets:tickets free:free url:url email:email frequency:frequency];
     }
 }
 
@@ -125,56 +123,37 @@
         currentCell.accessoryType =UITableViewCellAccessoryCheckmark;
         
         email = emailField.text;
-        [delegate eventRepeats:repeats url:url description:description email:email frequency:frequency];
+        [delegate eventRepeats:repeats tickets:tickets free:free url:url email:email frequency:frequency];
         
     } else {
-        UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Not a valid email address" message:@"" delegate:self cancelButtonTitle:@">.<" otherButtonTitles:nil, nil];
+        UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Not a valid email address" message:@"" delegate:self cancelButtonTitle:@"Roger that" otherButtonTitles:nil, nil];
         [alert show];
         
         currentCell.accessoryType = UITableViewCellAccessoryNone;
         
         email = @"";
-        [delegate eventRepeats:repeats url:url description:description email:email frequency:frequency];
+        [delegate eventRepeats:repeats tickets:tickets free:free url:url email:email frequency:frequency];
     }
     
 }
 
+- (IBAction)ticketSwitchPressed:(id)sender {
+    
+    tickets = ticketsSwitch.on;
+    //passedEvent[@"isTicketedEvent"] = @(tickets);
+    [delegate eventRepeats:repeats tickets:tickets free:free url:url email:email frequency:frequency];
+}
+- (IBAction)freeSwitchPressed:(id)sender {
+    
+    free = freeSwitch.on;
+    //passedEvent[@"isFreeEvent"] = @(free);
+    [delegate eventRepeats:repeats tickets:tickets free:free url:url email:email frequency:frequency];
+}
 
 - (IBAction)clearAccessory:(id)sender {
     
     UITableViewCell *currentCell = [self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]];
     currentCell.accessoryType =UITableViewCellAccessoryNone;
-}
-
-- (void)textViewDidBeginEditing:(UITextView *)textView {
-    
-    if ([textView.text isEqualToString:@"Description"]) {
-        textView.text = @"";
-    }
-    textView.textColor = [UIColor blackColor];
-    textView.font = [UIFont systemFontOfSize:14.0];
-    
-}
-
-- (void)textViewDidEndEditing:(UITextView *)textView {
-    
-    UITableViewCell *currentCell = [self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:0]];
-    
-    if ([textView.text isEqualToString:@""]) {
-        
-        textView.text = @"Description";
-        textView.textColor = [UIColor lightGrayColor];
-        textView.font = [UIFont systemFontOfSize:17.0];
-        currentCell.accessoryType = UITableViewCellAccessoryNone;
-        
-    } else {
-        //passedEvent[@"Description"] = textView.text;
-        description = textView.text;
-        [delegate eventRepeats:repeats url:url description:description email:email frequency:frequency];
-        currentCell.accessoryType = UITableViewCellAccessoryCheckmark;
-    }
-    
-    
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
@@ -241,7 +220,7 @@
         
     }
         
-        [delegate eventRepeats:repeats url:url description:description email:email frequency:frequency];
+        [delegate eventRepeats:repeats tickets:tickets free:free url:url email:email frequency:frequency];
     }
     
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
@@ -251,7 +230,7 @@
 -(void)passFrequencyData:(int)freq {
     
     frequency = freq;
-    [delegate eventRepeats:repeats url:url description:description email:email frequency:frequency];
+    [delegate eventRepeats:repeats tickets:tickets free:free url:url email:email frequency:frequency];
 }
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {

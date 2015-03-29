@@ -60,6 +60,8 @@
     _fbLoginView.alpha = 0;
 }
 */
+
+/*
 - (void)loginViewShowingLoggedInUser:(FBLoginView *)loginView {
     
     [activityView startAnimating];
@@ -70,6 +72,7 @@
     self.xButton.alpha = 0;
     _fbLoginView.alpha = 0;
 }
+ */
 
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -117,7 +120,7 @@
     
 }
 
-
+/*
 - (void)loginViewFetchedUserInfo:(FBLoginView *)loginView
                             user:(id<FBGraphUser>)user {
     
@@ -164,13 +167,6 @@
             parseUser[@"link"] = [result objectForKey:@"link"];
             
             parseUser[@"FBObjectID"] = [result objectForKey:@"id"];
-            
-            /*
-             PFACL *groupACL = [PFACL ACL];
-             [groupACL setWriteAccess:YES forUserId:parseUser.objectId];
-             [groupACL setReadAccess:YES forUserId:parseUser.objectId];
-             parseUser.ACL = groupACL;
-             */
             
             // Default radius
             NSNumber *fifty = [NSNumber numberWithInt:50];
@@ -242,6 +238,7 @@
     
 }
 
+
 - (void)loginView:(FBLoginView *)loginView handleError:(NSError *)error {
     NSString *alertMessage, *alertTitle;
     
@@ -283,6 +280,9 @@
                           otherButtonTitles:nil] show];
     }
 }
+ 
+*/
+
 
 - (NSInteger)numberOfComponentsInPickerView:(UIPickerView *)pickerView {
     

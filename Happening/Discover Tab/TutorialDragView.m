@@ -57,6 +57,8 @@
     UIButton *continueButton;
     UILabel *sliderLabel;
     
+    UIImageView *cardBackground;
+    
 }
 
 //this makes it so only two cards are loaded at a time to
@@ -93,14 +95,18 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         self.swipeDownMargin = SWIPE_DOWN_MARGIN;
         
         self.allowCardExpand = NO;
+        self.allowCardSwipe = YES;
         
+        cardBackground = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"cardBackground"]];
+        cardBackground.frame = CGRectMake(7, 308, 270, cardBackground.image.size.height - 5);
+        [self addSubview:cardBackground];
         
         // %%%%   LOAD TUTORIAL IMAGES   %%%%%%
         
-        UIImageView *swipeRightImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"interested_face"]];
-        UIImageView *swipeLeftImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"interested_face"]];
-        UIImageView *swipeDownImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"interested_face"]];
-        UIImageView *tapToExpandImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"interested_face"]];
+        UIImageView *swipeRightImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"SwipeRight"]];
+        UIImageView *swipeLeftImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"SwipeLeft"]];
+        UIImageView *swipeDownImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"SwipeDown"]];
+        UIImageView *tapToExpandImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"dotted arrow"]];
         //UIImageView *currentLocImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"interested_face"]];
         //UIView *cityAndRadiusView = [[UIView alloc] init];
         
@@ -136,60 +142,134 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     
     UIView *tutorialView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, CARD_WIDTH, CARD_HEIGHT)];
 
-    [tutorialView addSubview:[imageArray objectAtIndex:index]];
-    tutorialView.backgroundColor = [UIColor groupTableViewBackgroundColor];
+    //[tutorialView addSubview:[imageArray objectAtIndex:index]];
+    tutorialView.layer.masksToBounds = YES;
+    tutorialView.backgroundColor = [UIColor whiteColor];
     tutorialView.layer.borderColor = [UIColor lightGrayColor].CGColor;
-    tutorialView.layer.borderWidth = 3.0;
-    tutorialView.layer.shadowOpacity = 0.2;
-    tutorialView.layer.shadowOffset = CGSizeMake(1, 1);
+    tutorialView.layer.cornerRadius = 10.0;
+    tutorialView.layer.borderWidth = 1.0;
+    //tutorialView.layer.shadowOpacity = 0.2;
+    //tutorialView.layer.shadowOffset = CGSizeMake(1, 1);
     
     OverlayView *overlayView = [[OverlayView alloc]initWithFrame:CGRectMake(0, 0, CARD_WIDTH, 70)];
     overlayView.alpha = 0;
     overlayView.tag = 99;
-    [tutorialView addSubview:overlayView];
+    //[tutorialView addSubview:overlayView];
     
     self.panGestureRecognizer = [[UIPanGestureRecognizer alloc]initWithTarget:self action:@selector(beingDragged:)];
     [tutorialView addGestureRecognizer:self.panGestureRecognizer];
     
     tutorialView.tag = index;
     
+    UIColor *color = [UIColor colorWithRed:77.0/255.0 green:78.0/255.0 blue:77.0/255.0 alpha:1.0];
+
     if (index == 0) {
         
-        UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 50, CARD_WIDTH, 50)];
-        [label setText:@"Swipe right to save an event"];
-        [label setTextColor:[UIColor blackColor]];
+        UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 40, CARD_WIDTH, 100)];
+        [label setText:@"Swipe right to"];
+        [label setFont:[UIFont fontWithName:@"OpenSans-Bold" size:26.0]];
+        [label setTextColor:color];
         [label setTextAlignment:NSTextAlignmentCenter];
-        label.numberOfLines = 0;
         [tutorialView addSubview:label];
+        
+        UILabel *label2 = [[UILabel alloc] initWithFrame:CGRectMake(0, 70, CARD_WIDTH, 100)];
+        [label2 setText:@"save an event"];
+        [label2 setFont:[UIFont fontWithName:@"OpenSans-Bold" size:26.0]];
+        [label2 setTextColor:color];
+        [label2 setTextAlignment:NSTextAlignmentCenter];
+        [tutorialView addSubview:label2];
+        
+        UIImageView *imv = [[UIImageView alloc] init]; //WithFrame:CGRectMake(30, 200, 224, 55.6)];
+        imv = imageArray[index];
+        imv.frame = CGRectMake(30, 190, 224, 55.6);
+        [tutorialView addSubview:imv];
         
     } else if (index == 1) {
         
-        UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(15, 50, CARD_WIDTH - 30, 50)];
-        [label setText:@"Swipe left if you're not interested in an event"];
-        [label setTextColor:[UIColor blackColor]];
+        UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 40, CARD_WIDTH, 100)];
+        [label setText:@"Swipe left if"];
+        [label setFont:[UIFont fontWithName:@"OpenSans-Bold" size:24.0]];
+        [label setTextColor:color];
         [label setTextAlignment:NSTextAlignmentCenter];
-        label.numberOfLines = 0;
         [tutorialView addSubview:label];
+        
+        UILabel *label2 = [[UILabel alloc] initWithFrame:CGRectMake(0, 70, CARD_WIDTH, 100)];
+        [label2 setText:@"you're not interested"];
+        [label2 setFont:[UIFont fontWithName:@"OpenSans-Bold" size:24.0]];
+        [label2 setTextColor:color];
+        [label2 setTextAlignment:NSTextAlignmentCenter];
+        [tutorialView addSubview:label2];
+        
+        UIImageView *imv = [[UIImageView alloc] init]; //WithFrame:CGRectMake(30, 200, 224, 55.6)];
+        imv = imageArray[index];
+        imv.frame = CGRectMake(30, 190, 224, 55.6);
+        [tutorialView addSubview:imv];
         
     } else if (index == 2) {
         
-        UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(15, 50, CARD_WIDTH - 30, 50)];
-        [label setText:@"Swipe down to add an event to your calendar"];
-        [label setTextColor:[UIColor blackColor]];
+        UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 10, CARD_WIDTH, 100)];
+        [label setText:@"Swipe down to"];
+        [label setFont:[UIFont fontWithName:@"OpenSans-Bold" size:26.0]];
+        [label setTextColor:color];
         [label setTextAlignment:NSTextAlignmentCenter];
-        label.numberOfLines = 0;
         [tutorialView addSubview:label];
+        
+        UILabel *label2 = [[UILabel alloc] initWithFrame:CGRectMake(0, 40, CARD_WIDTH, 100)];
+        [label2 setText:@"save an event"];
+        [label2 setFont:[UIFont fontWithName:@"OpenSans-Bold" size:26.0]];
+        [label2 setTextColor:color];
+        [label2 setTextAlignment:NSTextAlignmentCenter];
+        [tutorialView addSubview:label2];
+        
+        UILabel *label3 = [[UILabel alloc] initWithFrame:CGRectMake(0, 70, CARD_WIDTH, 100)];
+        [label3 setText:@"to your calendar"];
+        [label3 setFont:[UIFont fontWithName:@"OpenSans-Bold" size:26.0]];
+        [label3 setTextColor:color];
+        [label3 setTextAlignment:NSTextAlignmentCenter];
+        [tutorialView addSubview:label3];
+        
+        UIImageView *imv = [[UIImageView alloc] init]; //WithFrame:CGRectMake(30, 170, 46.6, 90)];
+        imv = imageArray[index];
+        imv.frame = CGRectMake(118.7, 190, 46.6, 90);
+        [tutorialView addSubview:imv];
         
     } else if (index == 3) {
         
-        UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(15, 50, CARD_WIDTH - 30, 50)];
-        [label setText:@"Tap the card to see more information"];
-        [label setTextColor:[UIColor blackColor]];
+        UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 40, CARD_WIDTH, 100)];
+        [label setText:@"Tap to see"];
+        [label setFont:[UIFont fontWithName:@"OpenSans-Bold" size:23.0]];
+        [label setTextColor:color];
         [label setTextAlignment:NSTextAlignmentCenter];
-        label.numberOfLines = 0;
         [tutorialView addSubview:label];
+        label.tag = 9;
         
-        self.allowCardSwipe = NO;
+        UILabel *label2 = [[UILabel alloc] initWithFrame:CGRectMake(0, 70, CARD_WIDTH, 100)];
+        [label2 setText:@"more information"];
+        [label2 setFont:[UIFont fontWithName:@"OpenSans-Bold" size:23.0]];
+        [label2 setTextColor:color];
+        [label2 setTextAlignment:NSTextAlignmentCenter];
+        [tutorialView addSubview:label2];
+        label2.tag = 9;
+        
+        UIImageView *imv = [[UIImageView alloc] initWithFrame:CGRectMake(121.5, 160, 40, 40)];
+        imv.image = [UIImage imageNamed:@"click"];
+        [tutorialView addSubview:imv];
+        imv.tag = 9;
+        
+        UIImageView *imv2 = [[UIImageView alloc] init]; //WithFrame:CGRectMake(30, 170, 46.6, 90)];
+        imv2 = imageArray[index];
+        imv2.frame = CGRectMake(110.5, 210, 63, 370);
+        [tutorialView addSubview:imv2];
+        imv2.tag = 9;
+        
+        UILabel *label3 = [[UILabel alloc] initWithFrame:CGRectMake(0, 565, CARD_WIDTH, 50)];
+        [label3 setText:@"Hey there! Tap to go back."];
+        [label3 setFont:[UIFont fontWithName:@"OpenSans-Bold" size:19.0]];
+        [label3 setTextColor:color];
+        [label3 setTextAlignment:NSTextAlignmentCenter];
+        [tutorialView addSubview:label3];
+        label3.tag = 9;
+        
         self.allowCardExpand = YES;
         self.cardExpanded = NO;
         
@@ -364,6 +444,67 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 }
 */
 
+-(void)tapButtons {
+    
+    self.allowCardExpand = NO;
+    self.allowCardSwipe = NO;
+    
+    for (UIView *view in dragView.subviews) {
+        
+        if (view.tag == 9) {
+            [view removeFromSuperview];
+        }
+        
+    }
+    
+    UIColor *color = [UIColor colorWithRed:77.0/255.0 green:78.0/255.0 blue:77.0/255.0 alpha:1.0];
+    
+    UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, -5, CARD_WIDTH, 100)];
+    [label setText:@"Nice!"];
+    [label setFont:[UIFont fontWithName:@"OpenSans-Bold" size:25.0]];
+    [label setTextColor:color];
+    [label setTextAlignment:NSTextAlignmentCenter];
+    [dragView addSubview:label];
+    
+    UILabel *label2 = [[UILabel alloc] initWithFrame:CGRectMake(0, 40, CARD_WIDTH, 100)];
+    [label2 setText:@"You can also tap these buttons"];
+    [label2 setFont:[UIFont fontWithName:@"OpenSans-Bold" size:16.0]];
+    [label2 setTextColor:color];
+    [label2 setTextAlignment:NSTextAlignmentCenter];
+    [dragView addSubview:label2];
+    
+    UILabel *label3 = [[UILabel alloc] initWithFrame:CGRectMake(0, 70, CARD_WIDTH, 100)];
+    [label3 setText:@"to swipe a card right or left"];
+    [label3 setFont:[UIFont fontWithName:@"OpenSans-Bold" size:16.0]];
+    [label3 setTextColor:color];
+    [label3 setTextAlignment:NSTextAlignmentCenter];
+    [dragView addSubview:label3];
+    
+    UIImageView *imv = [[UIImageView alloc] init]; //WithFrame:CGRectMake(30, 200, 224, 55.6)];
+    imv.image = [UIImage imageNamed:@"sideboth"];
+    imv.frame = CGRectMake(25, 180, 234, 100);
+    [dragView addSubview:imv];
+    
+    [self showButtons];
+}
+
+-(void)showButtons {
+    
+    [self.myViewController.xButton addTarget:self action:@selector(leftClickAction) forControlEvents:UIControlEventTouchUpInside];
+    [self.myViewController.checkButton addTarget:self action:@selector(rightClickAction) forControlEvents:UIControlEventTouchUpInside];
+
+    
+    [UIView animateWithDuration:0.7 animations:^{
+        
+        self.myViewController.xButton.center = CGPointMake(21.75, self.myViewController.xButton.center.y);
+        self.myViewController.checkButton.center = CGPointMake(302.25, self.myViewController.checkButton.center.y);
+        
+    } completion:^(BOOL finished) {
+        //code
+    }];
+}
+
+
 //%%% loads all the cards and puts the first x in the "loaded cards" array
 -(void)loadCards
 {
@@ -429,6 +570,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 
     if (dragView.tag == 3 || dragView.tag == 5) {
         [self setEnabledSidewaysScrolling:NO];
+        [cardBackground removeFromSuperview];
     } else {
         [self setEnabledSidewaysScrolling:YES];
     }
@@ -453,10 +595,66 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     
     if (dragView.tag == 3 || dragView.tag == 5) {
         [self setEnabledSidewaysScrolling:NO];
+        [cardBackground removeFromSuperview];
     } else {
         [self setEnabledSidewaysScrolling:YES];
     }
     
+}
+
+-(void)rightClickAction
+{
+    
+    //self.superview.superview.superview.userInteractionEnabled = NO; // BE CAREFUL... disables UI during button click
+    [self setEnabledSidewaysScrolling:NO];
+    
+    CGPoint finishPoint = CGPointMake(900, self.center.y);
+    [UIView animateWithDuration:0.5 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+        dragView.center = finishPoint;
+        dragView.transform = CGAffineTransformMakeRotation(1);
+    }completion:^(BOOL complete){
+
+        [self setEnabledSidewaysScrolling:YES];
+        [self removeFromSuperview];
+        
+        //if (dragView.tag == 50 || dragView.tag == 3) {
+            NSLog(@"Last card swiped");
+            [self.myViewController dropdownPressedFromTut:YES];
+            [self.myViewController dropdownPressed];
+        //}
+    }];
+    
+    
+    [self cardSwipedRight:self fromFlippedView:NO];
+    
+    NSLog(@"YES");
+}
+
+-(void)leftClickAction
+{
+    
+    //self.superview.superview.superview.userInteractionEnabled = NO; // BE CAREFUL... disables UI during button click
+    [self setEnabledSidewaysScrolling:NO];
+    
+    CGPoint finishPoint = CGPointMake(-600, self.center.y);
+    [UIView animateWithDuration:0.5 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+        dragView.center = finishPoint;
+        dragView.transform = CGAffineTransformMakeRotation(-1);
+    }completion:^(BOOL complete){
+
+        [self setEnabledSidewaysScrolling:YES];
+        [self removeFromSuperview];
+        
+        //if (dragView.tag == 50 || dragView.tag == 3) {
+            NSLog(@"Last card swiped");
+            [self.myViewController dropdownPressedFromTut:YES];
+            [self.myViewController dropdownPressed];
+        //}
+    }];
+    
+    [self cardSwipedLeft:self fromFlippedView:NO];
+    
+    NSLog(@"NO");
 }
 
 -(void)cardExpanded:(BOOL)b
@@ -563,7 +761,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     }
     
     // View does not move
-    if ( !( (view.tag == 3) || (view.tag == 5) ) ) {
+    if ( !( (view.tag == 3) || (view.tag == 5) ) && self.allowCardSwipe ) {
     
     //%%% checks what state the gesture is in. (are you just starting, letting go, or in the middle of a swipe?)
     switch (gestureRecognizer.state) {

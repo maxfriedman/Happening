@@ -11,7 +11,7 @@
 #import "AppDelegate.h"
 #import "moreDetailFromTable.h"
 #import "UIImage+ImageEffects.h"
-#import "FXBlurView.h"
+//#import "FXBlurView.h"
 
 @interface AttendEvent ()
 
@@ -27,6 +27,7 @@
 @implementation AttendEvent {
     NSInteger count;
     NSArray *eventsArray;
+    UIView *noEventsView;
 }
 
 @synthesize locManager, refreshControl;
@@ -94,7 +95,18 @@
         NSArray *unsortedDays = [self.sections allKeys];
         self.sortedDays = [unsortedDays sortedArrayUsingSelector:@selector(compare:)];
         
+        if (eventsArray.count == 0) {
+            
+            [noEventsView removeFromSuperview];
+            [self noEvents];
+            
+        } else {
+            
+            [noEventsView removeFromSuperview];
+        }
+        
         [self.tableView reloadData];
+        
     }];
     
     self.sectionDateFormatter = [[NSDateFormatter alloc] init];
@@ -143,8 +155,11 @@
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    AttendTableCell *cell = [tableView dequeueReusableCellWithIdentifier:@"tag" forIndexPath:indexPath];
+    AttendTableCell *cell = (AttendTableCell *)[tableView dequeueReusableCellWithIdentifier:@"tag" forIndexPath:indexPath];
 
+    //NSLog(@"%@", self.view.subviews);
+    [noEventsView removeFromSuperview];
+    
     [cell setupCell];
     
     NSDate *dateRepresentingThisDay = [self.sortedDays objectAtIndex:indexPath.section];
@@ -200,7 +215,7 @@
                                    //[NSNumber numberWithFloat:0.3],
                                    //[NSNumber numberWithFloat:0.4], nil];
             
-                cell.eventImageView.layer.mask = l;
+                //cell.eventImageView.layer.mask = l;
                 //cell.blurView.dynamic = NO;
                 
                 //blurView.layer.mask = l;
@@ -253,6 +268,8 @@
     [header.textLabel setTextColor:[UIColor darkTextColor]];
     [header.textLabel setFont:[UIFont fontWithName:@"OpenSans-Semibold" size:14]];
     
+    NSLog(@"%@", header.constraints);
+    
     // For some reason the the sub label was being added to every header---> this removes it.
     for (UIView *view in header.contentView.subviews) {
         
@@ -263,7 +280,7 @@
 
     
     if ([header.textLabel.text isEqualToString:@"TODAY"]) {
-        UILabel *subDateLabel = [[UILabel alloc] initWithFrame:CGRectMake(65, 16, 100, 20)];
+        UILabel *subDateLabel = [[UILabel alloc] initWithFrame:CGRectMake(67, 16, 100, 20)];
         subDateLabel.textColor = [UIColor darkTextColor];
         subDateLabel.font = [UIFont fontWithName:@"OpenSans" size:9];
         subDateLabel.tag = 99;
@@ -277,7 +294,7 @@
         
     }  else if ([header.textLabel.text isEqualToString:@"TOMORROW"] && section == 0) {
 
-        UILabel *subDateLabel = [[UILabel alloc] initWithFrame:CGRectMake(105, 16, 100, 20)];
+        UILabel *subDateLabel = [[UILabel alloc] initWithFrame:CGRectMake(107, 16, 100, 20)];
         subDateLabel.textColor = [UIColor darkTextColor];
         subDateLabel.font = [UIFont fontWithName:@"OpenSans" size:9];
         subDateLabel.tag = 99;
@@ -291,7 +308,7 @@
         
     } else if ([header.textLabel.text isEqualToString:@"TOMORROW"] && section == 1) {
         
-        UILabel *subDateLabel = [[UILabel alloc] initWithFrame:CGRectMake(105, 0, 100, 17)];
+        UILabel *subDateLabel = [[UILabel alloc] initWithFrame:CGRectMake(107, 0, 100, 17)];
         subDateLabel.textColor = [UIColor darkTextColor];
         subDateLabel.font = [UIFont fontWithName:@"OpenSans" size:9];
         subDateLabel.tag = 99;
@@ -447,6 +464,62 @@
     AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
     RKSwipeBetweenViewControllers *rk = appDelegate.rk;
     rk.rightLabel.alpha = 1.0;
+}
+
+- (void)noEvents {
+        
+    noEventsView = [[UIView alloc] initWithFrame: CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height)];
+    //noEventsView.backgroundColor = [UIColor redColor];
+        
+    [self.view addSubview:noEventsView];
+    
+    UILabel *topTextLabel = [[UILabel alloc] init];
+    topTextLabel.text = @"Uh oh!";
+    topTextLabel.font = [UIFont fontWithName:@"OpenSans" size:18.0];
+    topTextLabel.textColor = [UIColor colorWithRed:153.0/255 green:154.0/255 blue:155.0/255 alpha:1.0];
+    [topTextLabel sizeToFit];
+    topTextLabel.center = CGPointMake(self.view.center.x, 75);
+    [noEventsView addSubview:topTextLabel];
+    
+    
+    UILabel *bottomTextLabel = [[UILabel alloc] init];
+    bottomTextLabel.text = @"You haven't saved any events.";
+    bottomTextLabel.font = [UIFont fontWithName:@"OpenSans" size:18.0];
+    bottomTextLabel.textColor = [UIColor colorWithRed:153.0/255 green:154.0/255 blue:155.0/255 alpha:1.0];
+    [bottomTextLabel sizeToFit];
+    bottomTextLabel.center = CGPointMake(self.view.center.x, 100);
+    [noEventsView addSubview:bottomTextLabel];
+    
+    
+    UIButton *createEventButton = [[UIButton alloc] initWithFrame:CGRectMake(95.2, 130, 129.6, 40)];
+    [createEventButton setImage:[UIImage imageNamed:@"discoverButton"] forState:UIControlStateNormal];
+    [createEventButton setImage:[UIImage imageNamed:@"discover pressed"] forState:UIControlStateHighlighted];
+    [createEventButton addTarget:self action:@selector(discoverButtonTapped) forControlEvents:UIControlEventTouchUpInside];
+    [noEventsView addSubview:createEventButton];
+    
+    
+    UIImageView *imv = [[UIImageView alloc] initWithFrame:CGRectMake(135, 200, 200, 200)];
+    imv.center = CGPointMake(self.view.center.x, 310);
+    imv.image = [UIImage imageNamed:@"right swipe"];
+    [noEventsView addSubview:imv];
+        
+    UILabel *lastLabel = [[UILabel alloc] init];
+    lastLabel.text = @"Swipe right to save an event";
+    lastLabel.font = [UIFont fontWithName:@"OpenSans-Light" size:14.0];
+    lastLabel.textColor = [UIColor colorWithRed:153.0/255 green:154.0/255 blue:155.0/255 alpha:1.0];
+    [lastLabel sizeToFit];
+    lastLabel.center = CGPointMake(self.view.center.x, 455);
+    [noEventsView addSubview:lastLabel];
+    
+}
+
+- (void)discoverButtonTapped {
+    
+    AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+    RKSwipeBetweenViewControllers *rk = appDelegate.rk;
+    [rk tapSegmentButtonAction:rk.middleButton];
+    [rk middleButtonTapped];
+    
 }
 
 #pragma mark - Navigation

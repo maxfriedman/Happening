@@ -45,11 +45,13 @@
     
     
     [blurView setUpdateInterval:0.1];
-    blurView.blurRadius = 14;
+    blurView.blurRadius = 30; //14
+    blurView.tintColor = [UIColor blackColor];
     //blurView.dynamic = NO;
     [self.eventImageView addSubview:blurView];
     
-    
+    self.eventImageView.layer.borderColor = [UIColor groupTableViewBackgroundColor].CGColor;
+    self.eventImageView.layer.borderWidth = 2.0;
     
     //self.eventImageView.layer.mask = l;
     //blurEffectView.layer.mask = l;

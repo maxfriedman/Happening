@@ -13,6 +13,7 @@
 #import <ParseCrashReporting/ParseCrashReporting.h>
 #import "DragViewController.h"
 #import "MyEventsTVC.h"
+#import "movieLoginVC.h"
 
 #import <AVFoundation/AVFoundation.h>
 
@@ -37,7 +38,12 @@
             NSLog(@"Horizontal Accuracy:%f", newLocation.horizontalAccuracy);
             
             //Optional: turn off location services once we've gotten a good location
-            //[manager stopUpdatingLocation];
+            
+            PFUser *user = [PFUser currentUser];
+            PFGeoPoint *loc = [PFGeoPoint geoPointWithLocation:manager.location];
+            user[@"userLoc"] = loc;
+            
+            [manager stopUpdatingLocation];
         }
 }
 
@@ -56,7 +62,6 @@
     
     [Parse setApplicationId:@"olSntgsT5uY3ZZbJtnjNz8yvol4CxwmArTsbkCZa"
                   clientKey:@"xwmrITvs8UaFBNfBupzXcUa6HN3sU515xp1TsGxu"];
-    //[PFFacebookUtils initializeFacebook];
     
     [PFAnalytics trackAppOpenedWithLaunchOptions:launchOptions];
     //[ParseCrashReporting enable];
@@ -70,7 +75,24 @@
     [application registerUserNotificationSettings:settings];
     [application registerForRemoteNotifications];
     
-    [FBLoginView class];
+    [FBSDKLoginButton class];
+    
+    
+    if ([FBSDKAccessToken currentAccessToken]) {
+        // User is logged in, do work such as go to next view controller.
+        NSLog(@"User is already logged in!");
+        UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+        rk = [storyboard instantiateViewControllerWithIdentifier:@"rk"];
+        self.window.rootViewController = rk;
+        
+    } else {
+        
+        NSLog(@"User is not logged in!");
+        UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+        movieLoginVC *vc = [storyboard instantiateViewControllerWithIdentifier:@"movieLogin"];
+        self.window.rootViewController = vc;
+    }
+    
     
     if(self.locationManager==nil){
         _locationManager=[[CLLocationManager alloc] init];
@@ -84,39 +106,48 @@
     if([CLLocationManager locationServicesEnabled]){
         [self.locationManager startUpdatingLocation];
     }
-    
-    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
-    TabBarViewController *tabBar = [storyboard instantiateViewControllerWithIdentifier:@"TabBar"];
-    //ChoosingLocation *choosingLoc = [storyboard instantiateViewControllerWithIdentifier:@"ChoosingLoc"];
+
     
     PFUser *currentUser = [PFUser currentUser];
-    NSLog(@"current user: %@", currentUser);
+    //NSLog(@"current user: %@", currentUser);
     
     // Tells the ViewController.m to refresh the cards in DraggableViewBackground
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    [defaults setBool:YES forKey:@"refreshData"];
     
-    
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"hasLaunched"])
+    if ([defaults boolForKey:@"hasLaunched"])
     {
         // app already launched
-        [defaults setBool:YES forKey:@"refreshData"];
+        // [defaults setBool:YES forKey:@"refreshData"];
     }
     else
     {
         NSLog(@"First launch ever!");
+        
+        // THIS IS CRUCIAL TO MAKE CHANGES DOWN THE ROAD
+        [defaults setFloat:1.0 forKey:@"version"];
+        ///////////////////////////////////////////////
+        
         [defaults setBool:NO forKey:@"refreshData"];
         
         [defaults setBool:NO forKey:@"hasLaunched"];
+        
+        [defaults setBool:NO forKey:@"hasSwipedRight"];
+        
+        [defaults setBool:NO forKey:@"hasCreatedEvent"];
         
         [defaults setBool:YES forKey:@"socialMode"];
         
         [defaults setInteger:0 forKey:@"categoryIndex"];
         [defaults setValue:@"Most Popular" forKey:@"categoryName"];
         
-        [defaults setBool:@"YES" forKey:@"today"];
-        [defaults setBool:@"NO" forKey:@"tomorrow"];
-        [defaults setBool:@"NO" forKey:@"thisWeekend"];
+        [defaults setObject:@"" forKey:@"userLocTitle"];
+        [defaults setObject:@"" forKey:@"userLocSubtitle"];
+        
+        [defaults setBool:YES forKey:@"today"];
+        [defaults setBool:NO forKey:@"tomorrow"];
+        [defaults setBool:NO forKey:@"thisWeekend"];
+        
+        [defaults setInteger:50 forKey:@"sliderValue"];
         
         [defaults setBool:YES forKey:@"mostPopular"];
         [defaults setBool:NO forKey:@"bestDeals"];
@@ -134,11 +165,17 @@
         [defaults setBool:YES forKey:@"other"];
         
         [defaults setBool:NO forKey:@"noMoreEvents"];
+        [defaults setBool:YES forKey:@"today"];
+
         
         [defaults synchronize];
         // This is the first launch ever
     }
     
+    
+    //NSLog(@"%@", [NSUserDefaults standardUserDefaults].dictionaryRepresentation);
+    
+    /*
     if (FBSession.activeSession.state == FBSessionStateCreatedTokenLoaded && currentUser) {
         NSLog(@"Found a cached session");
         // If there's one, just open the session silently, without showing the user the login UI
@@ -153,8 +190,6 @@
         //self.window.rootViewController = tabBar;
         
         
-        rk = [storyboard instantiateViewControllerWithIdentifier:@"rk"];
-        
         self.window.rootViewController = rk;
         
         
@@ -164,27 +199,19 @@
         //[loginButton setTitle:@"Log in with Facebook" forState:UIControlStateNormal];
     }
     
+     */
+     
     //self.window.rootViewController = [storyboard instantiateViewControllerWithIdentifier:@"ChoosingLocation"];
     
-    return YES;
+    return [[FBSDKApplicationDelegate sharedInstance] application:application
+                                    didFinishLaunchingWithOptions:launchOptions];
 }
 
-- (BOOL)application:(UIApplication *)application
-            openURL:(NSURL *)url
-  sourceApplication:(NSString *)sourceApplication
-         annotation:(id)annotation {
-    
-    // Call FBAppCall's handleOpenURL:sourceApplication to handle Facebook app responses
-    self.wasHandled = [FBAppCall handleOpenURL:url sourceApplication:sourceApplication];
-    
-    // You can add your app-specific url handling code here if needed
-    /*
-    if (self.wasHandled) {
-        NSLog(@"WasHandled = true!");
-    } else
-        NSLog(@"WasHandled = FALSE");
-    */
-    return self.wasHandled;
+- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
+    return [[FBSDKApplicationDelegate sharedInstance] application:application
+                                                          openURL:url
+                                                sourceApplication:sourceApplication
+                                                       annotation:annotation];
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {
@@ -205,11 +232,12 @@
     // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
     //[FBAppCall handleDidBecomeActiveWithSession:[PFFacebookUtils session]];
     
-    [FBAppCall handleDidBecomeActive];
+    [FBSDKAppEvents activateApp];
     
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     if ([defaults boolForKey:@"hasLaunched"])
     {
+        NSLog(@"not first launch");
         // app already launched
         //[defaults setBool:YES forKey:@"refreshData"];
         //[defaults synchronize];
@@ -220,6 +248,7 @@
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
 }
 
+/*
 // This method will handle ALL the session state changes in the app
 - (void)sessionStateChanged:(FBSession *)session state:(FBSessionState) state error:(NSError *)error
 {
@@ -277,13 +306,7 @@
         //[self userLoggedOut];
     }
 }
-
-- (void)userLoggedIn
-{
-    // Set the button title as "Log out"
-    
-    
-}
+ */
 
 // Show an alert message
 - (void)showMessage:(NSString *)text withTitle:(NSString *)title

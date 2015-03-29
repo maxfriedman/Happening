@@ -7,12 +7,12 @@
 //
 
 #import <UIKit/UIKit.h>
-#import <FacebookSDK/FacebookSDK.h>
+#import <FBSDKLoginKit/FBSDKLoginKit.h>
 #import "AppDelegate.h"
 
-@interface LogInExistingUser : UIViewController <UINavigationControllerDelegate, FBLoginViewDelegate, UIPickerViewDelegate, UIPickerViewDataSource>
+@interface LogInExistingUser : UIViewController <UINavigationControllerDelegate, FBSDKGraphRequestConnectionDelegate, FBSDKLoginButtonDelegate, UIPickerViewDelegate, UIPickerViewDataSource>
 
-@property (strong, nonatomic) IBOutlet FBLoginView *fbLoginView;
+@property (strong, nonatomic) IBOutlet FBSDKLoginButton *fbLoginView;
 
 @property (strong,nonatomic) UIActivityIndicatorView *activityView;
 

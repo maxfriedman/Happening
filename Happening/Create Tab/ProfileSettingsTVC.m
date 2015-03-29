@@ -10,7 +10,9 @@
 #import <MessageUI/MessageUI.h>
 #import <Parse/Parse.h>
 #import "RKDropdownAlert.h"
-#import <FacebookSDK/FacebookSDK.h>
+#import <FBSDKCoreKit/FBSDKCoreKit.h>
+#import <FBSDKShareKit/FBSDKShareKit.h>
+#import "webViewController.h"
 
 @interface ProfileSettingsTVC () <MFMailComposeViewControllerDelegate>
 
@@ -27,14 +29,13 @@
     [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"navBar"] forBarMetrics:UIBarMetricsDefault];
     self.navigationController.navigationBar.translucent = NO;
 
-    
-    FBLikeControl *like = [[FBLikeControl alloc] init];
-    like.frame = CGRectMake(15, bottomView.center.y, like.frame.size.width, like.frame.size.height);
-    
-    //like.likeControlAuxiliaryPosition = FBLikeControlAuxiliaryPositionBottom;
-    
-    like.objectID = @"https://www.facebook.com/happeningllc/";
-    [bottomView addSubview:like];
+    FBSDKLikeControl *likeButton = [[FBSDKLikeControl alloc] init];
+    likeButton.frame = CGRectMake(15, bottomView.center.y - 10, likeButton.frame.size.width, likeButton.frame.size.height);
+    likeButton.objectID = @"https://www.facebook.com/happeningllc/";
+    [bottomView addSubview:likeButton];
+
+    //likeButton.likeControlAuxiliaryPosition = FBLikeControlAuxiliaryPositionBottom;
+
     
     
 }
@@ -122,6 +123,9 @@
 
 - (void)shareAction {
     
+    UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:1]];
+    cell.selected = NO;
+    
     ProfActivityProvider *ActivityProvider = [[ProfActivityProvider alloc] init];
     
     NSURL *myWebsite = [NSURL URLWithString:@"http://www.happening.city"]; //Make this custom when Liran makes unique pages
@@ -177,7 +181,8 @@
 
 - (void)appStoreAction {
     
-    
+    UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:2 inSection:1]];
+    cell.selected = NO;
     
 }
 
@@ -240,15 +245,25 @@
 }
 */
 
-/*
+
 #pragma mark - Navigation
 
 // In a storyboard-based application, you will often want to do a little preparation before navigation
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     // Get the new view controller using [segue destinationViewController].
     // Pass the selected object to the new view controller.
+    
+    if ([segue.identifier isEqualToString:@"toTerms"]) {
+        
+        webViewController *vc = (webViewController *)[segue.destinationViewController topViewController];
+        vc.urlString = @"http://www.happening.city/terms";
+        vc.titleString = @"Terms of Service";
+        vc.shouldHideToolbar = YES;
+        
+    }
+    
 }
-*/
+
 
 @end
 

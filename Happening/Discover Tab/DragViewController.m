@@ -22,6 +22,7 @@
 #import "webViewController.h"
 #import "SettingsChoosingLoc.h"
 #import "moreDetailFromCard.h"
+#import "Reachability.h"
 
 
 @interface DragViewController () <ChoosingLocationDelegate, dropdownSettingsViewDelegate>
@@ -56,6 +57,12 @@
     UIButton *uberButton;
     UIButton *ticketsButton;
     
+    CGFloat extraDescHeight;
+    
+    BOOL refreshingData;
+    
+    BOOL isReachable;
+    
 }
 
 @synthesize shareButton, draggableBackground, flippedDVB, xButton, checkButton, delegate, scrollView, mySensitiveRect, cardView, settingsView;
@@ -79,6 +86,8 @@
     [settingsView.dropdownButton addTarget:self action:@selector(dropdownPressed) forControlEvents:UIControlEventTouchUpInside];
     dropdownExpanded = NO;
     
+    isReachable = YES;
+    
     /*
     BOOL hasLaunched = [defaults boolForKey:@"hasLaunched"];
     if (!hasLaunched) {
@@ -90,11 +99,13 @@
     [scrollView setDelaysContentTouches:NO];
     [scrollView setBouncesZoom:YES];
     
-    xButton = [[UIButton alloc]initWithFrame:CGRectMake(-100.5, 359, 244.5, 79)]; //413
+    xButton = [[UIButton alloc]initWithFrame:CGRectMake(-100.5, 359, 244.5, 79)]; //413... CGRectMake(-100.5, 359, 244.5, 79)
+    xButton.center = CGPointMake(-1000, xButton.center.y);
     [xButton setImage:[UIImage imageNamed:@"NotInterestedButton"] forState:UIControlStateNormal];
     [xButton addTarget:self action:@selector(swipeLeftDVC) forControlEvents:UIControlEventTouchUpInside];
     
-    checkButton = [[UIButton alloc]initWithFrame:CGRectMake(177, 361, 244.5, 79)];  //415
+    checkButton = [[UIButton alloc]initWithFrame:CGRectMake(177, 361, 244.5, 79)];  //415... CGRectMake(177, 361, 244.5, 79)
+    checkButton.center = CGPointMake(1300, checkButton.center.y);
     [checkButton setImage:[UIImage imageNamed:@"InterestedButton"] forState:UIControlStateNormal];
     [checkButton addTarget:self action:@selector(swipeRightDVC) forControlEvents:UIControlEventTouchUpInside];
     
@@ -138,7 +149,7 @@
     if (![defaults boolForKey:@"hasLaunched"]) {
         
         if (showTut) {
-            tutorialScreens = [[TutorialDragView alloc] initWithFrame:CGRectMake(18, 18, 284, 310)];
+            tutorialScreens = [[TutorialDragView alloc] initWithFrame:CGRectMake(18, 18 + 11, 284, 310)];
             tutorialScreens.myViewController = self;
             [scrollView addSubview:tutorialScreens];
     
@@ -149,21 +160,15 @@
             settingsView.userInteractionEnabled = NO;
             tutIsShown = YES;
             showTut =! showTut;
+            
         }
 
     }
     else if ([defaults boolForKey:@"refreshData"]) {
-        
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            // time-consuming task
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [SVProgressHUD showWithMaskType:SVProgressHUDMaskTypeGradient];
-                [SVProgressHUD setFont:[UIFont fontWithName:@"OpenSans" size:15.0]];
-                [SVProgressHUD setStatus:@"Loading Happenings"];
-            });
-        });
-        
+                
+        tutIsShown = NO;
         [self refreshData];
+        
     }
 }
 
@@ -179,71 +184,106 @@
 
 -(void)refreshData {
     
-    NSLog(@"Refreshing data...");
+    // Double-check :)
     
-    [tutorialScreens removeFromSuperview];
+    AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+    RKSwipeBetweenViewControllers *rk = appDelegate.rk;
     
-    if (self.frontViewIsVisible == NO) {
-        [self flipCurrentView]; // Makes blur view look weird and messes with seg control when flipping
-        [draggableBackground removeFromSuperview];
+    //UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+    //rk = [storyboard instantiateViewControllerWithIdentifier:@"rk"];
+    
+    NSLog(@"===> %d, %lu", [[NSUserDefaults standardUserDefaults] boolForKey:@"hasLaunched"], rk.currentPageIndex);
+    
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"hasLaunched"] && rk.currentPageIndex == 1 /* && isReachable */) {
+        
+        xButton.center = CGPointMake(-1000, xButton.center.y);
+        checkButton.center = CGPointMake(1300, checkButton.center.y);
+    
+        NSLog(@"Refreshing data...");
+    
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            // time-consuming task
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [SVProgressHUD showWithMaskType:SVProgressHUDMaskTypeGradient];
+                [SVProgressHUD setFont:[UIFont fontWithName:@"OpenSans" size:15.0]];
+                [SVProgressHUD setStatus:@"Loading Happenings"];
+            });
+        });
+        
+        [tutorialScreens removeFromSuperview];
+    
+        if (self.frontViewIsVisible == NO) {
+            [self flipCurrentView]; // Makes blur view look weird and messes with seg control when flipping
+            [draggableBackground removeFromSuperview];
 
         
-    } else {
-        //cardView = self.view.subviews[2]; //Card view is 3rd in hierarchy after sending button views to the back
+        } else {
+            //cardView = self.view.subviews[2]; //Card view is 3rd in hierarchy after sending button views to the back
         
-        /*
-         for (id viewToRemove in [cardView subviews]){
-         [viewToRemove removeFromSuperview];
-         } */
-        [draggableBackground removeFromSuperview];
-        //[scrollView bringSubviewToFront:cardView];
+            /*
+             for (id viewToRemove in [cardView subviews]){
+             [viewToRemove removeFromSuperview];
+             } */
         
-        //cardView.userInteractionEnabled = YES;
-        //UITapGestureRecognizer *tapGestureRecognizer =
-        //[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(cardTap)];
-        //[cardView addGestureRecognizer:tapGestureRecognizer];
+            [draggableBackground removeFromSuperview];
         
+            [UIView animateWithDuration:1.0 animations:^{
+            
+                xButton.center = CGPointMake(21.75, xButton.center.y);
+                checkButton.center = CGPointMake(302.25, checkButton.center.y);
+                
+            } completion:^(BOOL finished) {
+                //code
+            }];
+        
+        }
+        self.frontViewIsVisible = YES;
+        self.userSwipedFromFlippedView = NO;
+    
+        // Removes the previous content!!!!!! (when view was burned in behind the cards)
+        //NSLog(@"%lu", (unsigned long)[self.view.subviews count] );
+    
+        UIActivityIndicatorView *activityView=[[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+        activityView.center=self.view.center;
+        [activityView startAnimating];
+        //[self.view addSubview:activityView];
+    
+    
+        draggableBackground = [[DraggableViewBackground alloc]initWithFrame:CGRectMake(18, 18 + 11, 284, 310)];
+    
+        [scrollView addSubview:draggableBackground];
+        [scrollView bringSubviewToFront:draggableBackground];
+    
+    
+        draggableBackground.myViewController = self;
+        //[cardView addSubview:draggableBackground];
+    
+        UITapGestureRecognizer *singleFingerTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap:)];
+        singleFingerTap.cancelsTouchesInView = YES;
+        [draggableBackground addGestureRecognizer:singleFingerTap];
+    
+        //[self.view addSubview:flippedDVB];
+    
+        [activityView stopAnimating];
+        [activityView removeFromSuperview];
+    
+        [defaults setBool:NO forKey:@"refreshData"];
+        [defaults synchronize];
+    
+        delegate = draggableBackground;
+    
+        self.mySensitiveRect = CGRectMake(0, 0, 0, 0);
+        UITapGestureRecognizer *gr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleGesture:)];
+        //[scrollView addGestureRecognizer:gr];
+    
+        //NSLog(@"card view subviews: %@", cardView.subviews);
+        
+    } else if (!isReachable && [defaults boolForKey:@"hasLaunched"] && rk.currentPageIndex == 1) {
+        
+        //[RKDropdownAlert title:@"Something went wrong :(" message:@"Please check your internet connection\nand try again" backgroundColor:[UIColor redColor] textColor:[UIColor whiteColor]];
     }
-    self.frontViewIsVisible = YES;
-    self.userSwipedFromFlippedView = NO;
     
-    // Removes the previous content!!!!!! (when view was burned in behind the cards)
-    //NSLog(@"%lu", (unsigned long)[self.view.subviews count] );
-    
-    UIActivityIndicatorView *activityView=[[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-    activityView.center=self.view.center;
-    [activityView startAnimating];
-    //[self.view addSubview:activityView];
-    
-    
-    draggableBackground = [[DraggableViewBackground alloc]initWithFrame:CGRectMake(18, 18, 284, 310)];
-    
-    [scrollView addSubview:draggableBackground];
-    [scrollView bringSubviewToFront:draggableBackground];
-    
-    
-    draggableBackground.myViewController = self;
-    //[cardView addSubview:draggableBackground];
-    
-    UITapGestureRecognizer *singleFingerTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap:)];
-    singleFingerTap.cancelsTouchesInView = YES;
-    [draggableBackground addGestureRecognizer:singleFingerTap];
-    
-    //[self.view addSubview:flippedDVB];
-    
-    [activityView stopAnimating];
-    [activityView removeFromSuperview];
-    
-    [defaults setBool:NO forKey:@"refreshData"];
-    [defaults synchronize];
-    
-    delegate = draggableBackground;
-    
-    self.mySensitiveRect = CGRectMake(0, 0, 0, 0);
-    UITapGestureRecognizer *gr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleGesture:)];
-    //[scrollView addGestureRecognizer:gr];
-    
-    //NSLog(@"card view subviews: %@", cardView.subviews);
+    //refreshingData = NO;
     
 }
 
@@ -293,7 +333,7 @@
 
 - (void)flipCurrentView {
     
-    scrollView.delaysContentTouches = NO;
+    //scrollView.delaysContentTouches = NO;
     
     CGRect titleFrame = draggableBackground.dragView.title.frame;
     CGRect timeFrame = draggableBackground.dragView.date.frame;
@@ -305,11 +345,15 @@
     
     if (self.frontViewIsVisible == YES) {
         
+        extraDescHeight = [self moreButtonUpdateFrame];
+        
         [self addSubviewsToCard:draggableBackground.dragView];
         
         [self setEnabledSidewaysScrolling:NO];
         
-        scrollView.contentSize = CGSizeMake(320, 588);
+        
+        NSLog(@"EXTRA DESC HEIGHT ==== %f", extraDescHeight);
+        
         scrollView.scrollEnabled = YES;
         
         [UIView animateWithDuration:0.5 animations:^{
@@ -320,6 +364,7 @@
                 }
             }
             
+            /*
             CAGradientLayer *l = [CAGradientLayer layer];
             
             l.frame = draggableBackground.dragView.eventImage.bounds;
@@ -333,17 +378,18 @@
             view.backgroundColor = [UIColor whiteColor];
             view.layer.mask = l;
             view.tag = 99;
-            
+            */
+             
             draggableBackground.dragView.eventImage.layer.borderWidth = 0.0;
             
             //draggableBackground.dragView.eventImage.maskView.layer.mask = l;
             
-            NSLog(@"%@", draggableBackground.dragView.eventImage.layer.sublayers);
+            //NSLog(@"%@", draggableBackground.dragView.eventImage.layer.sublayers);
             
              //cardView.frame = CGRectMake(cardView.frame.origin.x, cardView.frame.origin.y, cardView.frame.size.width, 320 + 300);
-            draggableBackground.frame = CGRectMake(draggableBackground.frame.origin.x, draggableBackground.frame.origin.y, draggableBackground.frame.size.width, 320 + 235);
-            draggableBackground.dragView.frame = CGRectMake(draggableBackground.dragView.frame.origin.x, draggableBackground.dragView.frame.origin.y, draggableBackground.dragView.frame.size.width, 320 + 235);
-            draggableBackground.dragView.cardView.frame = CGRectMake(draggableBackground.dragView.cardView.frame.origin.x, draggableBackground.dragView.cardView.frame.origin.y, draggableBackground.dragView.cardView.frame.size.width, 320 + 235);
+            draggableBackground.frame = CGRectMake(draggableBackground.frame.origin.x, draggableBackground.frame.origin.y, draggableBackground.frame.size.width, 320 + 235 + extraDescHeight);
+            draggableBackground.dragView.frame = CGRectMake(draggableBackground.dragView.frame.origin.x, draggableBackground.dragView.frame.origin.y, draggableBackground.dragView.frame.size.width, 320 + 235 + extraDescHeight);
+            draggableBackground.dragView.cardView.frame = CGRectMake(draggableBackground.dragView.cardView.frame.origin.x, draggableBackground.dragView.cardView.frame.origin.y, draggableBackground.dragView.cardView.frame.size.width, 320 + 235 + extraDescHeight);
             
             CGRect frame = self.tabBarController.tabBar.frame;
             CGFloat offsetY = frame.origin.y;
@@ -393,10 +439,19 @@
                 draggableBackground.dragView.location.frame = CGRectMake(calDayOfWeekFrame.origin.x + calDayOfWeekFrame.size.width + 5, 232, 310 - 30 - 5 - calDayOfWeekFrame.origin.x - calDayOfWeekFrame.size.width, 21);
             }
             
-            draggableBackground.dragView.subtitle.frame = CGRectMake(subtitleFrame.origin.x, subtitleFrame.origin.y + 37, subtitleFrame.size.width, subtitleFrame.size.height);
             
-            draggableBackground.dragView.swipesRight.center = CGPointMake(draggableBackground.dragView.swipesRight.center.x, draggableBackground.dragView.swipesRight.center.y + 10);
-            draggableBackground.dragView.userImage.center = CGPointMake(draggableBackground.dragView.userImage.center.x, draggableBackground.dragView.userImage.center.y + 10);
+            //NSLog(@"=========== %f", draggableBackground.dragView.subtitle.frame.size.height); ===> 33
+            
+            if (extraDescHeight > 85) {
+                draggableBackground.dragView.subtitle.frame = CGRectMake(subtitleFrame.origin.x, subtitleFrame.origin.y + 37, 254, subtitleFrame.size.height + 66); //6 lines
+                draggableBackground.dragView.moreButton.alpha = 1;
+
+            } else {
+                draggableBackground.dragView.subtitle.frame = CGRectMake(subtitleFrame.origin.x, subtitleFrame.origin.y + 37, 254, subtitleFrame.size.height + extraDescHeight);
+            }
+            
+            draggableBackground.dragView.swipesRight.center = CGPointMake(draggableBackground.dragView.swipesRight.center.x, draggableBackground.dragView.swipesRight.center.y + 10 + extraDescHeight);
+            draggableBackground.dragView.userImage.center = CGPointMake(draggableBackground.dragView.userImage.center.x, draggableBackground.dragView.userImage.center.y + 10 + extraDescHeight);
             
             UIColor *blueColor = [UIColor colorWithRed:(128.0/255.0) green:(208.0/255.0) blue:(244.0/255.0) alpha:1.0];
             UIColor *grayColor = [UIColor colorWithRed:(70.0/255.0) green:(70.0/255.0) blue:(70.0/255.0) alpha:1.0];
@@ -422,6 +477,9 @@
             
             draggableBackground.dragView.transpBackground.alpha = 0;
             
+            //draggableBackground.dragView.subtitle.frame = CGRectMake(<#CGFloat x#>, <#CGFloat y#>, <#CGFloat width#>, <#CGFloat height#>)
+            
+            
         } completion:^(BOOL finished) {
             
             draggableBackground.dragView.cardView.layer.masksToBounds = NO;
@@ -445,12 +503,15 @@
     
     } else {
         
+        settingsView.alpha = 0;
+        
         draggableBackground.dragView.cardView.layer.masksToBounds = YES;
         
         [self setEnabledSidewaysScrolling:YES];
         
         [scrollView setContentOffset:CGPointMake(0, 0) animated:YES];
         scrollView.scrollEnabled = NO;
+        
         
         [UIView animateWithDuration:0.5 animations:^{
             
@@ -459,6 +520,8 @@
                     view.alpha = 1;
                 }
             }
+            
+            settingsView.alpha = 1;;
             
             //cardView.frame = CGRectMake(cardView.frame.origin.x, cardView.frame.origin.y, cardView.frame.size.width, 310);
             draggableBackground.frame = CGRectMake(draggableBackground.frame.origin.x, draggableBackground.frame.origin.y, draggableBackground.frame.size.width, 310);
@@ -506,7 +569,9 @@
             
             draggableBackground.dragView.location.frame = CGRectMake(15, 150, 254, 100);
             
-            draggableBackground.dragView.subtitle.frame = CGRectMake(subtitleFrame.origin.x, subtitleFrame.origin.y - 37, subtitleFrame.size.width, subtitleFrame.size.height);
+            draggableBackground.dragView.subtitle.frame = CGRectMake(subtitleFrame.origin.x, subtitleFrame.origin.y - 37, 254, 33);
+            draggableBackground.dragView.moreButton.alpha = 0;
+
             
             draggableBackground.dragView.createdBy.frame = CGRectMake(draggableBackground.dragView.createdBy.frame.origin.x, draggableBackground.dragView.createdBy.frame.origin.y + 76, 160, draggableBackground.dragView.createdBy.frame.size.height);
             
@@ -515,8 +580,8 @@
             }
             
             
-            draggableBackground.dragView.swipesRight.center = CGPointMake(draggableBackground.dragView.swipesRight.center.x, draggableBackground.dragView.swipesRight.center.y - 10);
-            draggableBackground.dragView.userImage.center = CGPointMake(draggableBackground.dragView.userImage.center.x, draggableBackground.dragView.userImage.center.y - 10);
+            draggableBackground.dragView.swipesRight.frame = CGRectMake(204, 240, 65, 100);
+            draggableBackground.dragView.userImage.frame = CGRectMake(183, 282, 18, 18);
             
             [UIView transitionWithView:draggableBackground.dragView.date duration:0.5 options:UIViewAnimationOptionTransitionCrossDissolve animations:^{
                 
@@ -643,6 +708,36 @@
 */
 }
 
+-(CGFloat) moreButtonUpdateFrame {
+    
+    draggableBackground.dragView.subtitle.numberOfLines = 0;
+
+    // Each line = approx 16.5
+    CGFloat lineSizeTotal = 33;
+    
+    CGSize maxSize = CGSizeMake (draggableBackground.dragView.subtitle.frame.size.width, 2000);  // a really tall frame
+    
+    // this will give you the actual size of your string
+    CGSize actualSize = [draggableBackground.dragView.subtitle.text sizeWithFont:draggableBackground.dragView.subtitle.font constrainedToSize:maxSize lineBreakMode:NSLineBreakByTruncatingTail];
+    
+    if (actualSize.height > 99) // > 6 lines
+    {
+        // show your more button
+        NSLog(@"Show \"more\" button");
+        lineSizeTotal = 120;
+        
+    } else if (actualSize.height > 33){
+        
+        NSLog(@"Don't show \"more\" button");
+        lineSizeTotal = actualSize.height + 2;
+    }
+    
+    //NSLog(@"linesize ==== %f", lineSizeTotal);
+    
+    return lineSizeTotal - 33;
+    
+}
+
 -(BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event
 {
     NSLog(@"made it JSKDNLSJDNVLSJN");
@@ -655,7 +750,9 @@
 
 - (void)addSubviewsToCard:(DraggableView *)card {
     
-    scrollView.delaysContentTouches = NO;
+    scrollView.contentSize = CGSizeMake(320, 588 + extraDescHeight);
+    
+    //scrollView.delaysContentTouches = NO;
     
     draggableBackground.dragView.cardView.userInteractionEnabled = YES;
     //draggableBackground.dragView.cardView.frame = CGRectMake(0, 0, cardView.frame.size.width, 620);
@@ -663,7 +760,7 @@
     
     NSLog(@"expand card");
         
-    card.friendsInterested = [[UILabel alloc]initWithFrame:CGRectMake(170, 265, 99, 100)];
+    card.friendsInterested = [[UILabel alloc]initWithFrame:CGRectMake(170, 265 + extraDescHeight, 99, 100)];
     card.friendsInterested.text = @"0 friends interested";
     [card.friendsInterested setTextAlignment:NSTextAlignmentRight];
     card.friendsInterested.textColor = [UIColor colorWithHue:0 saturation:0 brightness:.64 alpha:1.0];
@@ -671,18 +768,21 @@
     card.friendsInterested.minimumScaleFactor = 0.75;
     card.friendsInterested.adjustsFontSizeToFitWidth = YES;
     card.friendsInterested.tag = 3;
+    [card.cardView addSubview:card.friendsInterested];
     
     UIImageView *friendImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"friends"]];
-    friendImageView.frame = CGRectMake(148, 306, 18, 18);
+    friendImageView.frame = CGRectMake(148, 306 + extraDescHeight, 18, 18);
     friendImageView.tag = 3;
+    [card.cardView addSubview:friendImageView];
+
     
-    UIScrollView *friendScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(15, 330, 254, 50)];
+    UIScrollView *friendScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(15, 330 + extraDescHeight, 254, 50)];
     friendScrollView.scrollEnabled = YES;
     [card.cardView addSubview:friendScrollView];
     [self loadFBFriends:friendScrollView];
     friendScrollView.tag = 3;
     
-    mapView = [[MKMapView alloc] initWithFrame:CGRectMake(15, 390, 254, 133)];
+    mapView = [[MKMapView alloc] initWithFrame:CGRectMake(15, 390 + extraDescHeight, 254, 133)];
     [card.cardView addSubview:mapView];
     mapView.tag = 3;
     
@@ -762,7 +862,7 @@
             
             NSLog(@"ticket link::: %@", ticketLink);
             
-            ticketsButton = [[UIButton alloc] initWithFrame:CGRectMake(79, 540, 126, 20)];
+            ticketsButton = [[UIButton alloc] initWithFrame:CGRectMake(79, 540 + extraDescHeight, 126, 20)];
             ticketsButton.enabled = YES;
             ticketsButton.userInteractionEnabled = YES;
             ticketsButton.tag = 3;
@@ -771,7 +871,7 @@
     
                 //ticketsButton = [[UIButton alloc] initWithFrame:CGRectMake(79, 500, 126, 20)];
                 [ticketsButton setImage:[UIImage imageNamed:@"buy tickets"] forState:UIControlStateNormal];
-                [ticketsButton setImage:[UIImage imageNamed:@"buy tickets pressed"] forState:UIControlStateSelected];
+                [ticketsButton setImage:[UIImage imageNamed:@"buy tickets pressed"] forState:UIControlStateHighlighted];
     
                 //[self ticketsUpdateFrameBy:20];
                 [card.cardView addSubview:ticketsButton];
@@ -780,7 +880,7 @@
                 
                 //ticketsButton = [[UIButton alloc] initWithFrame:CGRectMake(79, 500, 126, 20)];
                 [ticketsButton setImage:[UIImage imageNamed:@"buy tickets"] forState:UIControlStateNormal];
-                [ticketsButton setImage:[UIImage imageNamed:@"buy tickets pressed"] forState:UIControlStateSelected];
+                [ticketsButton setImage:[UIImage imageNamed:@"buy tickets pressed"] forState:UIControlStateHighlighted];
 
                 //[self ticketsUpdateFrameBy:20];
                 [card.cardView addSubview:ticketsButton];
@@ -803,16 +903,16 @@
             // adding "height" variable allows flexibility if there is no tickets button
             if (height == 20) {
                 
-                uberButton = [[UIButton alloc] initWithFrame:CGRectMake(86.5, 540, 111, 20)];
+                uberButton = [[UIButton alloc] initWithFrame:CGRectMake(86.5, 540 + extraDescHeight, 111, 20)];
             
             } else {
                 
-                uberButton = [[UIButton alloc] initWithFrame:CGRectMake(86.5, 528 + height, 111, 20)];
+                uberButton = [[UIButton alloc] initWithFrame:CGRectMake(86.5, 528 + height + extraDescHeight, 111, 20)];
 
             }
             
             [uberButton setImage:[UIImage imageNamed:@"call uber"] forState:UIControlStateNormal];
-            [uberButton setImage:[UIImage imageNamed: @"call uber pressed"] forState:UIControlStateSelected];
+            [uberButton setImage:[UIImage imageNamed: @"call uber pressed"] forState:UIControlStateHighlighted];
             [uberButton addTarget:self action:@selector(grabAnUberButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
             uberButton.tag = 3;
     
@@ -823,8 +923,6 @@
         
         [self ticketsAndUberUpdateFrameBy:height + 8];
         
-        [card.cardView addSubview:card.friendsInterested];
-        [card.cardView addSubview:friendImageView];
         [card.cardView addSubview:friendScrollView];
         [card.cardView bringSubviewToFront:mapView];
     
@@ -860,8 +958,11 @@
     
     NSLog(@"Loading FB Friends");
     
-    if (!FBSession.activeSession.isOpen) {
+    if ([FBSDKAccessToken currentAccessToken]) {
+     
+        
         // if the session is closed, then we open it here, and establish a handler for state changes
+        /*
         [FBSession openActiveSessionWithReadPermissions:@[@"public_profile", @"user_friends"]
                                            allowLoginUI:NO
                                       completionHandler:^(FBSession *session,
@@ -883,11 +984,11 @@
                                           }
                                       }];
     }
+         */
     
-    FBRequest* friendsRequest = [FBRequest requestForMyFriends];
-    [friendsRequest startWithCompletionHandler: ^(FBRequestConnection *connection,
-                                                  NSDictionary* result,
-                                                  NSError *error) {
+    [[[FBSDKGraphRequest alloc] initWithGraphPath:@"/me/friends" parameters:nil] startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
+        //code
+                
         NSArray* friends = [result objectForKey:@"data"];
         NSLog(@"Found: %lu friends", (unsigned long)friends.count);
         
@@ -895,8 +996,8 @@
         
         NSMutableArray *friendObjectIDs = [[NSMutableArray alloc] init];
         for (int i = 0; i < friends.count; i ++) {
-            NSDictionary<FBGraphUser>* friend = friends[i];
-            [friendObjectIDs addObject:friend.objectID];
+            NSDictionary *friend = friends[i];
+            [friendObjectIDs addObject:[friend objectForKey:@"id"]];
         }
         
         PFQuery *friendQuery = [PFQuery queryWithClassName:@"Swipes"];
@@ -908,33 +1009,19 @@
         [userQuery whereKey:@"objectId" matchesKey:@"UserID" inQuery:friendQuery];
         
         [userQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-        
+            
+            NSLog(@"%lu friends interested", (unsigned long)objects.count);
+            
             if (!error) {
                 
-                    /*
-                    NSString *path = [NSString stringWithFormat:@"http://graph.facebook.com/%@/picture?type=square", friend.objectID];
-                    
-                    NSURL *url = [NSURL URLWithString:path];
-                    NSData *data = [NSData dataWithContentsOfURL:url];
-                    UIImage *img = [[UIImage alloc] initWithData:data];
-                    
-                    //CGSize size = img.size;
-                    
-                    NSLog(@"IMAGE %@", img);
-                    
-                    UIImageView *profPicImageView = [[UIImageView alloc] initWithImage:img];
-                    profPicImageView.layer.cornerRadius = 20;
-                    profPicImageView.layer.masksToBounds = YES;
-                    profPicImageView.frame = CGRectMake(50 * friendCount, 0, 40, 40);
-                    [friendScrollView addSubview:profPicImageView];
-                     */
-                
                 for (PFObject *object in objects) {
-
-                    FBProfilePictureView *profPicView = [[FBProfilePictureView alloc] initWithProfileID:object[@"FBObjectID"] pictureCropping:FBProfilePictureCroppingSquare];
+                    
+                    FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(50 * friendCount, 0, 40, 40)]; // initWithProfileID:user[@"FBObjectID"] pictureCropping:FBSDKProfilePictureModeSquare];
+                    profPicView.profileID = object[@"FBObjectID"];
+                    profPicView.pictureMode = FBSDKProfilePictureModeSquare;
+                    
                     profPicView.layer.cornerRadius = 20;
                     profPicView.layer.masksToBounds = YES;
-                    profPicView.frame = CGRectMake(50 * friendCount, 0, 40, 40);
                     profPicView.accessibilityIdentifier = object[@"UserID"];
                     profPicView.userInteractionEnabled = YES;
                     [friendScrollView addSubview:profPicView];
@@ -961,19 +1048,27 @@
                     } else {
                         draggableBackground.dragView.friendsInterested.text = [NSString stringWithFormat:@"%d friends interested", friendCount];
                     }
-                        
-                
+                    
+                    
                 }
                 
                 if (objects.count == 0) {
                     NSLog(@"No new friends");
                     
                     [self noFriendsAddButton:friendScrollView];
-                
+                    
                 }
             }
+        
         }];
+        
     }];
+        
+    } else {
+        
+        NSLog(@"no token......");
+    }
+    
 }
      
 - (void)noFriendsAddButton:(UIScrollView *)friendScrollView {
@@ -984,14 +1079,16 @@
     [noFriendsButton setTitle:@"Invite your friends" forState:UIControlStateNormal];
     noFriendsButton.titleLabel.font = [UIFont fontWithName:@"OpenSans" size:15.0];
     [noFriendsButton setTitleColor:[UIColor colorWithRed:41.0/255 green:181.0/255 blue:1.0 alpha:1.0] forState:UIControlStateNormal];
-    [noFriendsButton setTitleColor:[UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:1.0] forState:UIControlStateSelected];
+    [noFriendsButton setTitleColor:[UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:1.0] forState:UIControlStateHighlighted];
     noFriendsButton.layer.masksToBounds = YES;
     noFriendsButton.layer.borderColor = [UIColor colorWithRed:41.0/255 green:181.0/255 blue:1.0 alpha:1.0].CGColor;
     noFriendsButton.layer.borderWidth = 2.0;
     noFriendsButton.layer.cornerRadius = 5.0;
     
     [noFriendsButton setReversesTitleShadowWhenHighlighted:YES];
-    [noFriendsButton addTarget:self action:@selector(shareAction) forControlEvents:UIControlEventTouchUpInside];
+    [noFriendsButton addTarget:self action:@selector(shareAction:) forControlEvents:UIControlEventTouchUpInside];
+    
+    noFriendsButton.tag = 99; // so we don't show calendar on sharesheet
     
     [friendScrollView addSubview:noFriendsButton];
     
@@ -1199,7 +1296,7 @@
         annotationView.canShowCallout = YES;
         annotationView.image = [UIImage imageNamed:@"Annotation"];
         annotationView.centerOffset = CGPointMake(0, -18);
-        annotationView.rightCalloutAccessoryView = [UIButton buttonWithType:UIButtonTypeDetailDisclosure];
+        //annotationView.rightCalloutAccessoryView = [UIButton buttonWithType:UIButtonTypeDetailDisclosure];
         
         return annotationView;
     }
@@ -1419,10 +1516,12 @@
             [settingsView.cogImageView.layer addAnimation:rotation forKey:@"Spin"];
         
             [UIView animateWithDuration:0.5 animations:^{
-                settingsView.frame = CGRectMake(0, 0, self.view.frame.size.width, 35);
+                settingsView.frame = CGRectMake(0, 0, self.view.frame.size.width, 45);
             
+
                 if ([settingsView didPreferencesChange]) {
-                
+                    //NSLog(@"CPI +++ %lu", rk.currentPageIndex);
+
                     [self refreshData];
                 }
             
@@ -1434,13 +1533,27 @@
 }
 
 -(void)dropdownPressedFromTut:(BOOL)var {
-    
+
     tutIsShown = var;
     //[self dropdownPressed];
     [defaults setBool:!var forKey:@"hasLaunched"];
     [defaults synchronize];
     
     settingsView.userInteractionEnabled = YES;
+    
+    if (!var) {
+        dropdownExpanded = YES;
+        [self dropdownPressed];
+        
+        AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+        RKSwipeBetweenViewControllers *rk = appDelegate.rk;
+        [rk updateCurrentPageIndex:1];
+        
+        NSLog(@"CPI +++ %lu", rk.currentPageIndex);
+        //[self refreshData];
+    }
+    
+    
 }
 
 - (void)setEnabledSidewaysScrolling:(BOOL)enabled {
@@ -1468,21 +1581,43 @@
         [flippedDVB removeFromSuperview];
 }
 
-- (void)shareAction {
+- (void)shareAction:(id)sender {
     
     APActivityProvider *ActivityProvider = [[APActivityProvider alloc] init];
     ActivityProvider.APdragView = draggableBackground.dragView;
     
-    NSString *eventUrlString = [NSString stringWithFormat:@"http://www.happening.city/events/%@", draggableBackground.dragView.objectID];
+    NSString *eventUrlString = [NSString stringWithFormat:@"http://www.happening.city/events/%@", self.eventID];
     NSURL *myWebsite = [NSURL URLWithString:eventUrlString];
-    
-    CustomCalendarActivity *addToCalendar = [[CustomCalendarActivity alloc]init];
-    addToCalendar.draggableView = draggableBackground.dragView;
-    addToCalendar.myViewController = self;
     
     NSArray *itemsToShare = @[ActivityProvider, myWebsite];
     
-    UIActivityViewController *activityVC = [[UIActivityViewController alloc]initWithActivityItems:itemsToShare applicationActivities:[NSArray arrayWithObject:addToCalendar]];
+    UIActivityViewController *activityVC;
+    
+    BOOL showCalendar = YES;
+    
+    if ([sender isKindOfClass:[UIButton class]]) {
+        
+        UIButton *sharingButton = sender;
+        
+        if (sharingButton.tag == 99) {
+            
+            showCalendar = NO;
+            
+        }
+        
+    }
+    
+    if (showCalendar) {
+        
+        CustomCalendarActivity *addToCalendar = [[CustomCalendarActivity alloc]init];
+        addToCalendar.draggableView = draggableBackground.dragView;
+        addToCalendar.myViewController = self;
+        
+        activityVC = [[UIActivityViewController alloc]initWithActivityItems:itemsToShare applicationActivities:[NSArray arrayWithObject:addToCalendar]];
+    } else {
+        
+        activityVC = [[UIActivityViewController alloc]initWithActivityItems:itemsToShare applicationActivities:nil];
+    }
 
     activityVC.excludedActivityTypes = @[UIActivityTypeAirDrop,
                                          UIActivityTypePrint,
@@ -1538,13 +1673,17 @@
 }
 
 -(void)showCreatedByProfile {
+    /*
     [self performSegueWithIdentifier:@"showProfile" sender:self];
+     */
 }
 
 -(void)showFriendProfile:(UITapGestureRecognizer *)gr {
+    /*
     UIView *view = gr.view;
     friendObjectID = view.accessibilityIdentifier;
     [self performSegueWithIdentifier:@"showFriendProfile" sender:self];
+     */
 }
 
 -(void)showMoreDetail {
@@ -1588,10 +1727,10 @@
     
     //TutorialDragView *view = gr.view;
     
-    scrollView.delaysContentTouches = NO;
+    //scrollView.delaysContentTouches = NO;
     tutorialScreens.dragView.userInteractionEnabled = YES;
     
-    if ((tutorialScreens.dragView.tag == 3) || (tutorialScreens.dragView.tag == 50)) {
+    if (((tutorialScreens.dragView.tag == 3) || (tutorialScreens.dragView.tag == 50)) && tutorialScreens.allowCardExpand) {
     
     if (!tutorialScreens.cardExpanded) {
         
@@ -1625,7 +1764,8 @@
         NSLog(@"contract tut card");
         
         tutorialScreens.dragView.layer.masksToBounds = YES;
-        tutorialScreens.allowCardSwipe = YES;
+        //tutorialScreens.allowCardSwipe = YES;
+        tutorialScreens.allowCardExpand = NO;
         tutorialScreens.dragView.tag = 50;
         
         [scrollView setContentOffset:CGPointMake(0, 0) animated:YES];
@@ -1645,6 +1785,8 @@
                 pgr.enabled = YES;
             }
             
+            [tutorialScreens tapButtons];
+            
         }];
         
     
@@ -1652,10 +1794,54 @@
         
         tutorialScreens.cardExpanded =! tutorialScreens.cardExpanded;
     }
-
-    
 }
 
+/*
+- (void)reachabilityChanged:(NSNotification *)note
+{
+    
+    NSLog(@"Reachability changed");
+    
+    Reachability *reach = [note object];
+    isReachable = reach.isReachable;
+    
+    if (![reach isReachable]) {
+    
+        [RKDropdownAlert title:@"Something went wrong :(" message:@"It appears you are not connected to the internet..." backgroundColor:[UIColor redColor] textColor:[UIColor whiteColor]];
+        
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            // time-consuming task
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [SVProgressHUD showErrorWithStatus:@"Houston, we have a problem." maskType:SVProgressHUDMaskTypeGradient];
+            });
+        });
+        
+        [UIView animateWithDuration:0.4 animations:^{
+            
+            draggableBackground.alpha = 0;
+            
+            xButton.center = CGPointMake(-1000, xButton.center.y);
+            checkButton.center = CGPointMake(1300, checkButton.center.y);
+            
+            UIButton *refreshButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 200, 60)];
+            refreshButton.center = self.view.center;
+            [refreshButton setTitle:@"Refresh Happenings" forState:UIControlStateNormal];
+            [refreshButton setTitleColor:[UIColor cyanColor] forState:UIControlStateNormal];
+            [refreshButton addTarget:self action:@selector(refreshData) forControlEvents:UIControlEventTouchUpInside];
+            //[self.view addSubview:refreshButton];
+            
+        } completion:^(BOOL finished) {
+            //code
+        }];
+        
+    } else {
+        
+        //[self refreshData];
+    }
+
+}
+*/
+ 
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     
@@ -1759,7 +1945,6 @@
     PFObject *eventObject = [eventQuery getObjectWithId:APdragView.objectID];
 
     NSString *title = APdragView.title.text;
-    NSString *description = APdragView.subtitle.text;
     NSString* loc = APdragView.location.text;
     
     NSDateFormatter *formatter = [[NSDateFormatter alloc] init];

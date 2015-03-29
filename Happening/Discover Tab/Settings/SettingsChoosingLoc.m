@@ -148,19 +148,32 @@
         if (indexPath.row == 0) {
         
             cell.textLabel.text = @"Current Location";
-            cell.imageView.image = [UIImage imageNamed:@"Annotation"];
+            UIImage *im = [UIImage imageNamed:@"map pin"];
+            //im.size = CGSizeMake(40, 40);
+            cell.imageView.contentMode = UIViewContentModeCenter;
+            //cell.imageView.contentMode = UIViewContentModeScaleAspectFit;
+            cell.imageView.frame = CGRectMake(10, 10, cell.imageView.frame.size.width - 20, cell.imageView.frame.size.height - 20);
+            cell.imageView.image = im;
             
         } else if (indexPath.row == 1) {
         
             cell.textLabel.text = @"Washington, DC";
-            cell.imageView.image = [UIImage imageNamed:@"interested_face"];
+            cell.imageView.image = [UIImage imageNamed:@"cities icon dc"];
             
         } else if (indexPath.row == 2) {
         
             cell.textLabel.text = @"Boston, MA";
-            cell.imageView.image = [UIImage imageNamed:@"interested_face"];
+            cell.imageView.image = [UIImage imageNamed:@"cities icon boston"];
         }
 
+        CGSize itemSize = CGSizeMake(40, 40);
+        UIGraphicsBeginImageContextWithOptions(itemSize, NO, UIScreen.mainScreen.scale);
+        CGRect imageRect = CGRectMake(0.0, 0.0, itemSize.width, itemSize.height);
+        [cell.imageView.image drawInRect:imageRect];
+        cell.imageView.image = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+        
+        
         return cell;
     }
     
@@ -280,19 +293,23 @@
         
     } else if(self.locManager==nil){
         
+        choseCurrentLoc = YES;
         locManager = [[CLLocationManager alloc] init];
         locManager.delegate=self;
         [locManager requestWhenInUseAuthorization];
         locManager.desiredAccuracy=kCLLocationAccuracyBest;
         locManager.distanceFilter=50;
-        choseCurrentLoc = YES;
         [locManager startUpdatingLocation];
         
     } else {
         
         NSLog(@"User already enabled current loc and location services are on");
-        locManager.delegate = self;
         choseCurrentLoc = YES;
+        locManager = [[CLLocationManager alloc] init];
+        locManager.delegate = self;
+        [locManager requestWhenInUseAuthorization];
+        locManager.desiredAccuracy=kCLLocationAccuracyBest;
+        locManager.distanceFilter=50;
         [locManager startUpdatingLocation];
         [delegate refreshSettings];
         //[self dismissViewControllerAnimated:YES completion:nil];
@@ -338,9 +355,22 @@
         [defaults setObject:@"" forKey:@"userLocSubtitle"];
         [defaults synchronize];
         
+        [delegate refreshSettings];
+        
         [self dismissViewControllerAnimated:YES completion:nil];
 
     }
+    
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    if (indexPath.row == 0 || indexPath.row == 1 || indexPath.row == 2) {
+        
+        return 54;
+    }
+    
+    return 44;
     
 }
 
@@ -352,8 +382,9 @@
      locationSearching.delegate = self;
      */
     
-    if (!self.fromTut) {
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"hasLaunched"]) {
         [self dismissViewControllerAnimated:YES completion:nil];
+        
     
     } else {
         [RKDropdownAlert title:@"Hey there" message:@"Please choose a location before continuing" backgroundColor:[UIColor redColor] textColor:[UIColor whiteColor]];

@@ -34,7 +34,7 @@
 
 @property (strong, nonatomic) IBOutlet UITextField *titleField;
 
-@property (strong, nonatomic) IBOutlet UITextField *subtitleField;
+@property (strong, nonatomic) IBOutlet UITextView *subtitleField;
 
 @property (strong, nonatomic) IBOutlet UITextField *locationField;
 
@@ -57,11 +57,6 @@
 //@property (strong, nonatomic) IBOutlet UIImageView *imageView;
 @property (strong, nonatomic) IBOutlet UIButton *imageButton;
 
-@property (strong, nonatomic) IBOutlet UITextField *urlField;
-
-@property (strong, nonatomic) IBOutlet UITextField *descriptionField;
-
-@property (strong, nonatomic) IBOutlet UITextView *descriptionTextView;
 
 @property (strong, nonatomic) IBOutlet UIButton *contactUsButton;
 

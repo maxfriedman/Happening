@@ -71,7 +71,7 @@
         annotationView.canShowCallout = YES;
         annotationView.image = [UIImage imageNamed:@"Annotation"];
         annotationView.centerOffset = CGPointMake(0, -18);
-        annotationView.rightCalloutAccessoryView = [UIButton buttonWithType:UIButtonTypeDetailDisclosure];
+        //annotationView.rightCalloutAccessoryView = [UIButton buttonWithType:UIButtonTypeDetailDisclosure];
         
         return annotationView;
     }

@@ -13,7 +13,7 @@
 #import "EventTVC.h"
 #import "moreDetailFromTable.h"
 #import <Parse/Parse.h>
-#import <FacebookSDK/FacebookSDK.h>
+#import <FBSDKCoreKit/FBSDKCoreKit.h>
 
 @interface ExternalProfileTVC () <EventTVCDelegate>
 
@@ -51,7 +51,9 @@
         nameEventsLabel.text = [NSString stringWithFormat:@"Events %@ has created", user[@"firstName"]];
             
             
-        FBProfilePictureView *profPicView = [[FBProfilePictureView alloc] initWithProfileID:user[@"FBObjectID"] pictureCropping: FBProfilePictureCroppingSquare];
+        FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] init]; // initWithProfileID:user[@"FBObjectID"] pictureCropping:FBSDKProfilePictureModeSquare];
+        profPicView.profileID = user[@"FBObjectID"];
+        profPicView.pictureMode = FBSDKProfilePictureModeSquare;
         profPicView.layer.cornerRadius = 10;
         profPicView.layer.masksToBounds = YES;
         profPicView.layer.borderColor = [UIColor colorWithRed:232.0/255 green:232.0/255 blue:232.0/255 alpha:1.0].CGColor;
@@ -95,12 +97,13 @@
         nameEventsLabel.text = [NSString stringWithFormat:@"%@'s events", user[@"firstName"]];
         
         
-        FBProfilePictureView *profPicView = [[FBProfilePictureView alloc] initWithProfileID:user[@"FBObjectID"] pictureCropping: FBProfilePictureCroppingSquare];
+        FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(120, 24, 80, 80)]; // initWithProfileID:user[@"FBObjectID"] pictureCropping:FBSDKProfilePictureModeSquare];
+        profPicView.profileID = user[@"FBObjectID"];
+        profPicView.pictureMode = FBSDKProfilePictureModeSquare;
         profPicView.layer.cornerRadius = 10;
         profPicView.layer.masksToBounds = YES;
         profPicView.layer.borderColor = [UIColor colorWithRed:232.0/255 green:232.0/255 blue:232.0/255 alpha:1.0].CGColor;
         profPicView.layer.borderWidth = 3.0;
-        profPicView.frame = CGRectMake(120, 24, 80, 80);
         [self.view addSubview:profPicView];
         
         

@@ -145,13 +145,16 @@
     }
     
     
-    NSString *url = draggableView.URL;
+    /*
+    NSString *url = object[@"URL"];
     NSURL *urlFromString = [NSURL URLWithString:url];
     
     if (urlFromString != nil)
         event.URL = urlFromString;
     else
-        event.URL = [NSURL URLWithString:@"http://www.gethappeningapp.com"];
+        
+    */
+        event.URL = [NSURL URLWithString:[NSString stringWithFormat:@"http://www.happening.city/events/%@", draggableView.objectID]];
     
     
     //[event addAlarm:[EKAlarm alarmWithRelativeOffset:60.0f * -60.0f * 24]];

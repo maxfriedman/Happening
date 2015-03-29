@@ -36,6 +36,7 @@
         NSLog(@"Current Location is: %@", currentLocation);
     }
     
+    /*
     
     [FBRequestConnection startForMeWithCompletionHandler:^(FBRequestConnection *connection, id result, NSError *error) {
         if (!error) {
@@ -56,13 +57,7 @@
             parseUser[@"link"] = [result objectForKey:@"link"];
             
             parseUser[@"link"] = [result objectForKey:@"id"];
-            
-            /*
-            PFACL *groupACL = [PFACL ACL];
-            [groupACL setWriteAccess:YES forUserId:parseUser.objectId];
-            [groupACL setReadAccess:YES forUserId:parseUser.objectId];
-            parseUser.ACL = groupACL;
-            */
+     
             
             // Default radius
             NSNumber *fifty = [NSNumber numberWithInt:50];
@@ -91,6 +86,8 @@
             // See: https://developers.facebook.com/docs/ios/errors
         }
     }];
+     
+     */
     
     
 }

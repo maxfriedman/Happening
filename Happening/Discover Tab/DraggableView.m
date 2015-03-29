@@ -20,6 +20,7 @@
 #import "DraggableView.h"
 #import "AppDelegate.h"
 #import "UIImage+ImageEffects.h"
+#import <CoreText/CoreText.h>
 
 @implementation DraggableView {
     CGFloat xFromCenter;
@@ -52,7 +53,7 @@
 @synthesize swipesRight;
 
 @synthesize locImage, userImage, shareButton;
-@synthesize activityView, cardBackground, cardView, greyLocImageView, calImageView, calDayLabel, calDayOfWeekLabel, calMonthLabel, calTimeLabel;
+@synthesize activityView, cardBackground, cardView, greyLocImageView, calImageView, calDayLabel, calDayOfWeekLabel, calMonthLabel, calTimeLabel, moreButton;
 
 @synthesize xButton, checkButton, eventStore, blurEffectView;
 
@@ -116,7 +117,7 @@
         
         title = [[UILabel alloc]initWithFrame:CGRectMake(15, 106, eventImage.frame.size.width - 92, 70)];
         
-        subtitle = [[UILabel alloc]initWithFrame:CGRectMake(15, 220, self.frame.size.width - 30, 80)];
+        subtitle = [[UILabel alloc]initWithFrame:CGRectMake(15, 220, self.frame.size.width - 30, 33)];
         location = [[UILabel alloc]initWithFrame:CGRectMake(15, 150, self.frame.size.width - 30, 100)];
         
         date = [[UILabel alloc]initWithFrame:CGRectMake(15, 110, self.frame.size.width - 100, 100)];
@@ -142,8 +143,10 @@
         
         UIView *view = [[UIView alloc]initWithFrame:self.blurEffectView.bounds];
         view.backgroundColor = [UIColor clearColor];
-        UIImageView *imageView = [[UIImageView alloc]initWithImage: [self convertViewToImage:view]];
-        imageView.image = [imageView.image applyLightEffect];
+        
+    // %%%%%%%%%%%%%%%% CODE FOR 
+        //UIImageView *imageView = [[UIImageView alloc]initWithImage: [self convertViewToImage:view]];
+        //imageView.image = [imageView.image applyLightEffect];
         
         //[eventImage addSubview:imageView];
 
@@ -209,8 +212,10 @@
         location.adjustsFontSizeToFitWidth = YES;
         //location.shadowColor = [UIColor blackColor];
         
-        transpBackground.backgroundColor = [UIColor grayColor];
-        transpBackground.backgroundColor = [UIColor colorWithHue:1.0 saturation:0.0 brightness:0.7 alpha:0.9];
+        transpBackground.backgroundColor = [UIColor redColor];
+        transpBackground.backgroundColor = [UIColor colorWithHue:196.36/360.0 saturation:1.0 brightness:0.949 alpha:0.95];
+        //transpBackground.backgroundColor = [UIColor colorWithHue:1.0 saturation:0.0 brightness:0.7 alpha:0.9];
+        //transpBackground. = 0.6
         
         /*
         [date setTextAlignment:NSTextAlignmentCenter];
@@ -246,7 +251,7 @@
         createdBy.font = [UIFont fontWithName:@"OpenSans" size:11.0];
         
         [shareButton setImage:[UIImage imageNamed:@"share"] forState:UIControlStateNormal];
-        [shareButton setImage:[UIImage imageNamed:@"share pressed"] forState:UIControlStateSelected];
+        [shareButton setImage:[UIImage imageNamed:@"share pressed"] forState:UIControlStateHighlighted];
         [cardView addSubview:shareButton];
         
         //locImage.image = [UIImage imageNamed:@"locImage"];
@@ -318,7 +323,31 @@
         [cardView addSubview:calTimeLabel];
         
         
+        moreButton = [[UIButton alloc] initWithFrame:CGRectMake(self.frame.size.width - 50, 352, 35, 20)];
+        [moreButton setTitleColor:[UIColor blueColor] forState:UIControlStateNormal];
+        moreButton.titleLabel.font = [UIFont fontWithName:@"OpenSans" size:11.0];
         
+        NSMutableAttributedString *attString = [[NSMutableAttributedString alloc] initWithString:@"more"];
+        [attString addAttribute:(NSString*)kCTUnderlineStyleAttributeName
+                          value:[NSNumber numberWithInt:kCTUnderlineStyleSingle]
+                          range:(NSRange){0,[attString length]}];
+        [attString addAttribute:NSForegroundColorAttributeName value:[UIColor colorWithRed:41.0/255 green:181.0/255 blue:1.0 alpha:1.0] range:NSMakeRange(0, [attString length])];
+        
+        [moreButton setAttributedTitle:attString forState:UIControlStateNormal];
+        
+        
+        NSMutableAttributedString *attString2 = [[NSMutableAttributedString alloc] initWithString:@"more"];
+        [attString2 addAttribute:(NSString*)kCTUnderlineStyleAttributeName
+                          value:[NSNumber numberWithInt:kCTUnderlineStyleSingle]
+                          range:(NSRange){0,[attString2 length]}];
+        [attString2 addAttribute:NSForegroundColorAttributeName value:[UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:1.0] range:NSMakeRange(0, [attString2 length])];
+        
+        [moreButton setAttributedTitle:attString2 forState:UIControlStateHighlighted];
+
+        
+        moreButton.alpha = 0;
+        
+        [cardView addSubview:moreButton];
 
     }
     
@@ -645,6 +674,7 @@
     
 }
 
+/*
 - (BOOL) colorOfPointIsWhite:(CGPoint)point
 {
     unsigned char pixel[4] = {0};
@@ -672,6 +702,7 @@
     
     return isWhite;
 }
+ */
 
 
 @end

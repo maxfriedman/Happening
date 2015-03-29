@@ -31,6 +31,8 @@
     
     PFQuery *eventQuery;
     
+    BOOL shouldRefresh;
+    
 }
 //this makes it so only two cards are loaded at a time to
 //avoid performance and memory costs
@@ -188,7 +190,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         }
         
         if (shouldLimit) {
-            [eventQuery orderByAscending:@"swipesRight"];
+            [eventQuery orderByDescending:@"swipesRight"];
         } else {
             [eventQuery orderByAscending:@"Date"];
         }
@@ -202,13 +204,23 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
         NSInteger radius = [defaults integerForKey:@"sliderValue"];
         [eventQuery whereKey:@"GeoLoc" nearGeoPoint:userLoc withinMiles:radius];
-                
+        
+        //eventQuery.limit = 10;
+        
         //NSLog(@"events: %@", [eventQuery findObjects]);
         [eventQuery findObjectsInBackgroundWithBlock:^(NSArray *eventObjects, NSError *error) {
             
-            if (eventObjects.count == 0) {
+            if (eventObjects.count == 0 && shouldLimit) {
                 // Do something?
-                NSLog(@"~~~~~~~~~~~~ NO EVENTS ~~~~~~~~~~~~~~~~~");
+                NSLog(@"~~~~~~~~~~~~ RUN ONE MORE TIME ~~~~~~~~~~~~~~~~~");
+                [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"noMoreEvents"]; //allows shouldLimit to = no
+                [[NSUserDefaults standardUserDefaults] synchronize];
+    
+            } else if (eventObjects.count == 0 && !shouldLimit) {
+                
+                NSLog(@"~~~~~~~~~~~~ NO MORE EVENTS ~~~~~~~~~~~~~~~~~");
+                [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"noMoreEvents"];
+                [[NSUserDefaults standardUserDefaults] synchronize];
             }
             
             for (int i = 0; i < eventObjects.count; i++) {
@@ -419,6 +431,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     DraggableView *draggableView = [[DraggableView alloc]initWithFrame:CGRectMake(0, 0, CARD_WIDTH, CARD_HEIGHT)];
     //[draggableView.activityView startAnimating];
     draggableView.userInteractionEnabled = NO;
+    self.userInteractionEnabled = NO;
     // &&& Adds image cards from array
     PFQuery *query = [PFQuery queryWithClassName:@"Event"];
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
@@ -437,6 +450,10 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         draggableView.URL = URLArray[index];
         
         draggableView.eventImage.image = [UIImage imageNamed:hashtagArray[index]];
+        
+        // Only allow interaction once all data is loaded
+        draggableView.userInteractionEnabled = YES;
+        self.userInteractionEnabled = YES;
 
         NSMutableAttributedString *attString = [[NSMutableAttributedString alloc] initWithString:createdByArray[index]];
         [attString addAttribute:(NSString*)kCTUnderlineStyleAttributeName
@@ -494,8 +511,9 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             [imageFile getDataInBackgroundWithBlock:^(NSData *imageData, NSError *error) {
                 if (!error) {
                     
-                    draggableView.eventImage.contentMode = UIViewContentModeScaleAspectFill;
+                    //draggableView.eventImage.contentMode = UIViewContentModeScaleAspectFill;
                     
+                    /*
                     draggableView.eventImage.autoresizingMask =
                     ( UIViewAutoresizingFlexibleBottomMargin
                      | UIViewAutoresizingFlexibleHeight
@@ -503,10 +521,11 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                      | UIViewAutoresizingFlexibleRightMargin
                      | UIViewAutoresizingFlexibleTopMargin
                      | UIViewAutoresizingFlexibleWidth );
+                    */
 
                     draggableView.eventImage.image = [UIImage imageWithData:imageData];
 
-                    
+                    /*
                     BOOL changeColor = false;
                     //UIColor *c1 = [self colorOfPoint:CGPointMake(68, 168)];
                     //UIColor *c2 = [self colorOfPoint:CGPointMake(160, 168)];
@@ -542,7 +561,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                     
                     if (changeColor)
                     {
-                        NSLog(@"White color-- change color");
+                        //NSLog(@"White color-- change color");
                         
                         [draggableView.cardView insertSubview:draggableView.transpBackground belowSubview:draggableView.locImage];
                         
@@ -557,6 +576,9 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                         blurView.dynamic = NO;
                         
                     }
+                     */
+                    
+                    [draggableView.cardView insertSubview:draggableView.transpBackground belowSubview:draggableView.locImage];
                     
                     //UIImage *blurredImage = [draggableView.eventImage.image applyLightEffect];
                     /*
@@ -589,8 +611,6 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         //draggableView.transpBackground.backgroundColor = [UIColor blackColor];
         //draggableView.transpBackground.backgroundColor = [UIColor colorWithHue:1.0 saturation:0.0 brightness:0 alpha:0.5];
         
-        // Only allow interaction once all data is loaded
-        draggableView.userInteractionEnabled = YES;
         
         UIImage *calImage = [UIImage imageNamed:@"calendar light grey"]; //[DraggableViewBackground drawText:calMonthArray[index] inImage:[UIImage imageNamed:@"calendar light grey"] atPoint:CGPointMake(20, 20) withColor:[UIColor blackColor] withFont:[UIFont fontWithName:@"OpenSans" size:10.0]];
         // calImage = [DraggableViewBackground drawText:calDayArray[index] inImage:[UIImage imageNamed:@"calendar light grey"] atPoint:CGPointMake(40, 40) withColor:[UIColor blackColor] withFont:[UIFont fontWithName:@"OpenSans" size:12.0]];
@@ -616,11 +636,13 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         [draggableView.calTimeLabel addGestureRecognizer:gr5];
         
         
-        UIGestureRecognizer *tgr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(subtitleTap)];
-        [draggableView.subtitle addGestureRecognizer:tgr];
+        //UIGestureRecognizer *tgr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(subtitleTap)];
+        //[draggableView.subtitle addGestureRecognizer:tgr];
+        UIGestureRecognizer *tgr2 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(moreButtonTap)];
+        [draggableView.moreButton addGestureRecognizer:tgr2];
         
         
-        [draggableView.shareButton addTarget:self action:@selector(shareAction) forControlEvents:UIControlEventTouchUpInside];
+        [draggableView.shareButton addTarget:self action:@selector(shareAction:) forControlEvents:UIControlEventTouchUpInside];
         
         UITapGestureRecognizer *createdByTapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(createdByTap)];
         [draggableView.createdBy addGestureRecognizer:createdByTapRecognizer];
@@ -670,6 +692,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             }
             
             [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"noMoreEvents"];
+            [[NSUserDefaults standardUserDefaults] synchronize];
             
             if (!error) {
                 
@@ -681,11 +704,31 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                 });
             }
             
-        } else {
+        } else if ([[NSUserDefaults standardUserDefaults] boolForKey:@"noMoreEvents"] ) { // run one more time without limits
+            
+            NSLog(@"Uno mas");
+
+            [self.myViewController refreshData];
+            
+        } else { // there really are no more events
             
             NSLog(@"no more events :(");
+            
             [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"noMoreEvents"];
-            [self.myViewController refreshData];
+            [[NSUserDefaults standardUserDefaults] synchronize];
+
+            //[self.myViewController refreshData];
+            
+            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                // time-consuming task
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [SVProgressHUD showErrorWithStatus:@"No more Happenings.\nTry changing search criteria." maskType:SVProgressHUDMaskTypeGradient];
+                });
+            });
+            
+            [self removeFromSuperview];
+            [self.myViewController dropdownPressed];
+            
         }
         
         if (loadedCards.count > 0) {
@@ -755,6 +798,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             if (succeeded) {
                 
                 [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"noMoreEvents"];
+                [[NSUserDefaults standardUserDefaults] synchronize];
                 [self.myViewController refreshData];
             }
             
@@ -870,6 +914,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                 });
                 
                 [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"noMoreEvents"];
+                [[NSUserDefaults standardUserDefaults] synchronize];
                 [self.myViewController refreshData];
             }
             
@@ -877,6 +922,11 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         
     } else {
         [swipesObject saveInBackground];
+    }
+    
+    if ( ! [[NSUserDefaults standardUserDefaults] boolForKey:@"hasSwipedRight"] ) {
+        NSLog(@"First swipe right");
+        
     }
 
     
@@ -1066,8 +1116,8 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 
 }
 
-- (void)shareAction {
-    [self.myViewController shareAction];
+- (void)shareAction:(id)sender {
+    [self.myViewController shareAction:sender];
 }
 
 - (void)createdByTap {
@@ -1075,6 +1125,10 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 }
 
 - (void)subtitleTap {
+    [self.myViewController showMoreDetail];
+}
+
+- (void)moreButtonTap {
     [self.myViewController showMoreDetail];
 }
 

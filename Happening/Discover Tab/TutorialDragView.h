@@ -36,6 +36,8 @@
 -(void)swipeRight;
 -(void)swipeDown;
 
+-(void) tapButtons;
+
 @property (weak) id <TutorialDragViewDelegate> delegate;
 
 @property (retain,nonatomic)NSMutableArray* exampleCardLabels; //%%% the labels the cards

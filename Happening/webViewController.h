@@ -10,10 +10,14 @@
 
 @interface webViewController : UIViewController <UIWebViewDelegate>
 
+-(void)hideToolbar;
+
 @property (strong, nonatomic) IBOutlet UIWebView *webView;
 
 @property (assign) NSString *urlString;
 @property (assign) NSString *titleString;
+@property (assign) BOOL shouldHideToolbar;
+
 
 @property (weak, nonatomic) IBOutlet UIBarButtonItem *back;
 @property (weak, nonatomic) IBOutlet UIBarButtonItem *forward;
@@ -21,4 +25,17 @@
 @property (weak, nonatomic) IBOutlet UIBarButtonItem *share;
 
 
+@property (strong, nonatomic) IBOutlet UIToolbar *toolbar;
+
 @end
+
+
+@interface APActivityProvider3 : UIActivityItemProvider <UIActivityItemSource>
+@property (assign) NSString *title;
+@property (assign) NSString *urlString;
+@property (assign) NSURL *url;
+@end
+
+@interface APActivityIcon3 : UIActivity
+@end
+

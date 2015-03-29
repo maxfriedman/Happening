@@ -168,6 +168,14 @@
 @property (nonatomic, strong) UILabel *middleLabel;
 @property (nonatomic, strong) UILabel *rightLabel;
 
+@property (assign) NSInteger currentPageIndex;
+
+@property (nonatomic, strong) UIButton *middleButton;
+
+
 - (void)scrolling:(BOOL)enabled;
+- (void)middleButtonTapped;
+- (void)tapSegmentButtonAction:(UIButton *)button;
+- (void)updateCurrentPageIndex:(int)newIndex;
 
 @end

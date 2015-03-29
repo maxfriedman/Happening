@@ -9,7 +9,7 @@
 #import "EventTVC.h"
 #import "RKDropdownAlert.h"
 
-@interface EventTVC ()
+@interface EventTVC () <UITextViewDelegate>
 
 @property (assign) NSInteger datePickerHeight;
 @property (assign) NSInteger endTimePickerHeight;
@@ -40,6 +40,9 @@
     NSString *emailString;
     NSString *createdByNameString;
     int frequencyInt;
+    
+    BOOL ticks;
+    BOOL isFree;
 }
 
 @synthesize imageView, button;
@@ -47,7 +50,7 @@
 
 @synthesize Event;
 
-@synthesize titleField, subtitleField, locationField;
+@synthesize titleField, locationField;
 
 @synthesize endTimePicker, datePicker;
 
@@ -63,7 +66,7 @@
 
 @synthesize dateDetailLabel, endTimeDetailLabel, hashtagDetailLabel;
 
-@synthesize urlField, descriptionField, descriptionTextView, delegate;
+@synthesize delegate;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -106,10 +109,12 @@
     NSString *lastName = user[@"lastName"];
     createdByNameString = [NSString stringWithFormat:@"%@ %@", firstName, lastName];
     
-    urlString = @"www.gethappeningapp.com";
+    urlString = @"";
     repeatsInt = 0;
     frequencyInt = 1;
     descriptionString = @"";
+    isFree = NO;
+    ticks = NO;
     
     if (user.email != nil) {
         emailString = user.email;
@@ -220,7 +225,9 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    if (indexPath.section == 2 && indexPath.row == 1)
+    if (indexPath.section == 0 && indexPath.row == 1)
+        return 103;
+    else if (indexPath.section == 2 && indexPath.row == 1)
         return self.datePickerHeight;
     else if (indexPath.section == 2 && indexPath.row == 3)
         return self.endTimePickerHeight;
@@ -292,19 +299,6 @@
         locCell.accessoryType = UITableViewCellAccessoryNone;
 }
 
-- (IBAction)subtitleTextInput:(UITextField *)sender {
-    
-    Event[@"Description"] = self.subtitleField.text;
-    NSIndexPath *path = [[NSIndexPath alloc]init];
-    path = [NSIndexPath indexPathForRow:1 inSection:0];
-    UITableViewCell *locCell = [self.tableView cellForRowAtIndexPath:path];
-    
-    if (self.subtitleField.text.length > 0) {
-        locCell.accessoryType = UITableViewCellAccessoryCheckmark;
-    } else
-        locCell.accessoryType = UITableViewCellAccessoryNone;
-}
-
 - (IBAction)locationTextInput:(UITextField *)sender {
     
     Event[@"Location"] = self.locationField.text;
@@ -317,6 +311,37 @@
     } else
         locCell.accessoryType = UITableViewCellAccessoryNone;
 }
+
+- (void)textViewDidBeginEditing:(UITextView *)textView {
+    
+    if ([textView.text isEqualToString:@"Description"]) {
+        textView.text = @"";
+    }
+    textView.textColor = [UIColor blackColor];
+    textView.font = [UIFont systemFontOfSize:14.0];
+    
+}
+
+- (void)textViewDidEndEditing:(UITextView *)textView {
+    
+    UITableViewCell *currentCell = [self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:0]];
+    
+    if ([textView.text isEqualToString:@""]) {
+        
+        textView.text = @"Description";
+        textView.textColor = [UIColor lightGrayColor];
+        textView.font = [UIFont systemFontOfSize:17.0];
+        currentCell.accessoryType = UITableViewCellAccessoryNone;
+        
+    } else {
+        //passedEvent[@"Description"] = textView.text;
+        Event[@"Description"] = textView.text;
+        currentCell.accessoryType = UITableViewCellAccessoryCheckmark;
+    }
+    
+    
+}
+
 
 - (IBAction)doneButton:(UIBarButtonItem *)sender {
         
@@ -365,30 +390,10 @@
         }
         
         //%%%%%
-        if (self.titleField.text.length > 24 && self.subtitleField.text.length > 31 && self.locationField.text.length > 30)
-        {
-            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Warning" message:@"You may want to shorten the length of the title, subtitle and location name fields, as they could be cut off upon display (i.e. \"Event locatio...\")" delegate:self cancelButtonTitle:@"Edit" otherButtonTitles:@"Continue", nil];
-            [alert show];
-            break;
-        }
-        
-        if (self.titleField.text.length > 24 && self.subtitleField.text.length > 31)
-        {
-            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Warning" message:@"You may want to shorten the length of the title and subtitle fields, as they could be cut off upon display (i.e. \"Check out this eve...\")" delegate:self cancelButtonTitle:@"Edit" otherButtonTitles:@"Continue", nil];
-            [alert show];
-            break;
-        }
         
         if (self.titleField.text.length > 24 && self.locationField.text.length > 30)
         {
             UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Warning" message:@"You may want to shorten the length of the title and location name fields, as they could be cut off upon display (i.e. \"Event locati...\")" delegate:self cancelButtonTitle:@"Edit" otherButtonTitles:@"Continue", nil];
-            [alert show];
-            break;
-        }
-        
-        if (self.subtitleField.text.length > 31 && self.locationField.text.length > 30)
-        {
-            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Warning" message:@"You may want to shorten the length of the subtitle and location name fields, as they could be cut off upon display (i.e. \"Event locatio...\")" delegate:self cancelButtonTitle:@"Edit" otherButtonTitles:@"Continue", nil];
             [alert show];
             break;
         }
@@ -410,7 +415,8 @@
         Event[@"Frequency"] = @(frequencyInt);
         Event[@"URL"] = urlString;
         Event[@"ContactEmail"] = emailString;
-        Event[@"Description"] = descriptionString;
+        Event[@"isTicketedEvent"] = @(ticks);
+        Event[@"isFreeEvent"] = @(isFree);
         
         PFGeoPoint *loc = [PFGeoPoint geoPointWithLocation:item.placemark.location];
         Event[@"GeoLoc"] = loc;
@@ -659,49 +665,29 @@ clickedButtonAtIndex:(NSInteger)buttonIndex{
     }
 }
 
--(void)textViewDidBeginEditing:(UITextView *)textView {
-    
-    if ([descriptionTextView.text isEqualToString:@"Description (optional)"]) {
-    descriptionTextView.text = @"";
-    } else {
-        descriptionTextView.textColor = [UIColor blackColor];
-        [descriptionTextView.font fontWithSize:14.0];
-    }
-    
-}
-
-- (void)textViewDidEndEditing:(UITextView *)textView {
-    
-    if ([descriptionTextView.text isEqualToString:@""]) {
-        descriptionTextView.text = [NSString stringWithFormat:@"Description (optional)"];
-    }
-}
-
-- (void)eventRepeats:(int)repeats url:(NSString *)url description:(NSString *)desc email:(NSString *)email frequency:(int)freq{
-    
-    NSLog(@"Repeats: %d", repeats);
-    NSLog(@"URL: %@", url);
-    NSLog(@"Description: %@", desc);
-    NSLog(@"Email: %@", email);
-    NSLog(@"Frequency: %d", freq);
+- (void)eventRepeats:(int)repeats tickets:(BOOL)tickets free:(BOOL)free url:(NSString *)url email:(NSString *)email frequency:(int)freq {
     
     repeatsInt = repeats;
     urlString = url;
-    descriptionString = desc;
     emailString = email;
     frequencyInt = freq;
+    ticks = tickets;
+    isFree = free;
     
-    Event[@"Description"] = desc;
     Event[@"ContactEmail"] = email;
     Event[@"Frequency"] = @(freq);
     Event[@"URL"] = urlString;
-    Event[@"ContactEmail"] = urlString;
+    Event[@"ContactEmail"] = email;
+    Event[@"isTicketedEvent"] = @(ticks);
+    Event[@"isFreeEvent"] = @(isFree);
     
+    /*
     NSIndexPath *path = [[NSIndexPath alloc]init];
     path = [NSIndexPath indexPathForRow:0 inSection:5];
     UITableViewCell *locCell = [self.tableView cellForRowAtIndexPath:path];
     
     //locCell.detailTextLabel.text = @"Yes";
+     */
     
 }
 
@@ -716,19 +702,20 @@ clickedButtonAtIndex:(NSInteger)buttonIndex{
         repeatEvent[@"CreatedBy"] = Event[@"CreatedBy"];
         repeatEvent[@"CreatedByName"] = Event[@"CreatedByName"];
         repeatEvent[@"ContactEmail"] = Event[@"ContactEmail"];
-        repeatEvent[@"Description"] = Event[@"Description"];
         repeatEvent[@"GeoLoc"] = Event[@"GeoLoc"];
         repeatEvent[@"Hashtag"] = Event[@"Hashtag"];
         repeatEvent[@"Image"] = Event[@"Image"];
         repeatEvent[@"Location"] = Event[@"Location"];
         repeatEvent[@"Repeats"] = Event[@"Repeats"];
-        repeatEvent[@"Subtitle"] = Event[@"Subtitle"];
+        repeatEvent[@"Description"] = Event[@"Description"];
         repeatEvent[@"Title"] = Event[@"Title"];
         repeatEvent[@"URL"] = Event[@"URL"];
         repeatEvent[@"swipesLeft"] = Event[@"swipesLeft"];
         repeatEvent[@"swipesRight"] = Event[@"swipesRight"];
         repeatEvent[@"Frequency"] = Event[@"Frequency"];
-    
+        repeatEvent[@"isTicketedEvent"] = Event[@"isTicketedEvent"];
+        repeatEvent[@"isFreeEvent"] = Event[@"isFreeEvent"];
+        
         if (repeatsInt == 1) { // Weekly 604800 seconds
         
             NSLog(@"Repeats weekly");
@@ -815,11 +802,12 @@ clickedButtonAtIndex:(NSInteger)buttonIndex{
         vc.delegate = self;
         
         vc.urlString = urlString;
-        vc.descriptionString = descriptionString;
         vc.emailString = emailString;
         vc.createdByNameString = createdByNameString;
         vc.repeatsInt = repeatsInt;
         vc.frequency = frequencyInt;
+        vc.freeBOOL = isFree;
+        vc.ticketBOOL = ticks;
         
         [vc setPassedEvent:Event];
     }

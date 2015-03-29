@@ -56,7 +56,7 @@
     // Create the data model
     //_pageTitles = @[@"Currently being designed!", @"Have fun, save money", @"Spend more time with friends", @":)"];
     _pageTitles = @[@"", @"", @"", @"", @""];
-    _pageImages = @[@"hapLogo", @"Page1.png", @"Page2.png", @"Page3.png", @"Page4.png"];
+    _pageImages = @[@"interested_face", @"interested_face", @"interested_face", @"interested_face", @"interested_face"];
     
     // Create page view controller
     self.pageViewController = [self.storyboard instantiateViewControllerWithIdentifier:@"PageViewController"];

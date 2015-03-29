@@ -11,7 +11,7 @@
 
 @protocol EditExtraInfoTVCDelegate
 
--(void)setUrl:(NSString *)url description:(NSString *)desc email:(NSString *)email;
+-(void)setUrl:(NSString *)url tickets:(BOOL)tickets free:(BOOL)free email:(NSString *)email;
 
 @end
 
@@ -21,7 +21,6 @@
 
 @property (strong, nonatomic) IBOutlet UITextField *urlField;
 
-@property (strong, nonatomic) IBOutlet UITextView *descriptionScrollField;
 
 @property (strong, nonatomic) PFObject *passedEvent;
 
@@ -34,8 +33,8 @@
 //@property (assign) int frequency;
 
 @property (assign) NSString *urlString;
-@property (assign) NSString *descString;
 @property (assign) NSString *emailString;
-
+@property (assign) BOOL ticketsBOOL;
+@property (assign) BOOL freeBOOL;
 
 @end
