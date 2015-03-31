@@ -13,6 +13,7 @@
 #import "RKDropdownAlert.h"
 #import <CoreText/CoreText.h>
 #import "SVProgressHUD.h"
+#import "AppDelegate.h"
 
 @interface DraggableViewBackground()
 
@@ -30,6 +31,7 @@
     UIButton* xButton;
     
     PFQuery *eventQuery;
+    PFQuery *finalQuery;
     
     BOOL shouldRefresh;
     
@@ -189,26 +191,49 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             
         }
         
+        //[eventQuery orderByDescending:@"weight"];
+        
         if (shouldLimit) {
-            [eventQuery orderByDescending:@"swipesRight"];
+            //[eventQuery addDescendingOrder:@"swipesRight"];
         } else {
-            [eventQuery orderByAscending:@"Date"];
+            //[eventQuery addAscendingOrder:@"Date"];
         }
         
-        PFQuery *didUserSwipe = [PFQuery queryWithClassName:@"Swipes"];
-        [didUserSwipe whereKey:@"UserID" containsString:user.objectId];
-        NSLog(@"current user: %@", user.username);
         
-        [eventQuery whereKey:@"objectId" doesNotMatchKey:@"EventID" inQuery:didUserSwipe];
+        /*
         PFGeoPoint *userLoc = user[@"userLoc"];
         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
         NSInteger radius = [defaults integerForKey:@"sliderValue"];
         [eventQuery whereKey:@"GeoLoc" nearGeoPoint:userLoc withinMiles:radius];
+         */
+        
+        PFQuery *weightedQuery = [PFQuery queryWithClassName:@"Event"];
+        [weightedQuery whereKey:@"globalWeight" greaterThan:@0];
+        [weightedQuery whereKey:@"EndTime" greaterThan:[NSDate date]];
+        
+        finalQuery = [PFQuery orQueryWithSubqueries:@[eventQuery, weightedQuery]];
+        
+        PFGeoPoint *userLoc = user[@"userLoc"];
+        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        NSInteger radius = [defaults integerForKey:@"sliderValue"];
+        [finalQuery whereKey:@"GeoLoc" nearGeoPoint:userLoc withinMiles:radius];
+        
+        PFQuery *didUserSwipe = [PFQuery queryWithClassName:@"Swipes"];
+        [didUserSwipe whereKey:@"UserID" containsString:user.objectId];
+        [finalQuery whereKey:@"objectId" doesNotMatchKey:@"EventID" inQuery:didUserSwipe];
+        
+        
+        // %%%%%%%%% THE MAGIC FORMULA %%%%%%%%%%%%%%% \\
+        
+        [finalQuery orderByDescending:@"globalWeight"];
+        [finalQuery addDescendingOrder:@"weight"];
+        [finalQuery addDescendingOrder:@"swipesRight"];
+        [finalQuery addAscendingOrder:@"Date"];
         
         //eventQuery.limit = 10;
         
         //NSLog(@"events: %@", [eventQuery findObjects]);
-        [eventQuery findObjectsInBackgroundWithBlock:^(NSArray *eventObjects, NSError *error) {
+        [finalQuery findObjectsInBackgroundWithBlock:^(NSArray *eventObjects, NSError *error) {
             
             if (eventObjects.count == 0 && shouldLimit) {
                 // Do something?
@@ -357,7 +382,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                 }
                 
                 NSString *name = eventObject[@"CreatedByName"];
-                NSString *fullName = [NSString stringWithFormat:@"%@", name];
+                //NSString *fullName = [NSString stringWithFormat:@"%@", name];
                 [createdByArray addObject:name];
                 
                 NSString *urlString = eventObject[@"URL"];
@@ -432,6 +457,10 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     //[draggableView.activityView startAnimating];
     draggableView.userInteractionEnabled = NO;
     self.userInteractionEnabled = NO;
+    
+    self.myViewController.checkButton.userInteractionEnabled = NO;
+    self.myViewController.xButton.userInteractionEnabled = NO;
+    
     // &&& Adds image cards from array
     PFQuery *query = [PFQuery queryWithClassName:@"Event"];
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
@@ -454,6 +483,8 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         // Only allow interaction once all data is loaded
         draggableView.userInteractionEnabled = YES;
         self.userInteractionEnabled = YES;
+        self.myViewController.checkButton.userInteractionEnabled = YES;
+        self.myViewController.xButton.userInteractionEnabled = YES;
 
         NSMutableAttributedString *attString = [[NSMutableAttributedString alloc] initWithString:createdByArray[index]];
         [attString addAttribute:(NSString*)kCTUnderlineStyleAttributeName
@@ -660,7 +691,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 -(void)loadCards
 {
     
-    [eventQuery countObjectsInBackgroundWithBlock:^(int eventCount, NSError *error) {
+    [finalQuery countObjectsInBackgroundWithBlock:^(int eventCount, NSError *error) {
         
         NSLog(@"%lu cards loaded",(unsigned long)eventCount);
         
@@ -826,7 +857,11 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         [object saveInBackground];
         
         NSString *tag = [NSString stringWithFormat:@"%@", object[@"Hashtag"]];
-        [user incrementKey:tag];
+        if ([tag isEqualToString:@"Happy Hour"]) {
+            [user incrementKey:@"HappyHour"];
+        } else {
+            [user incrementKey:tag];
+        }
         
         [user saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
             if (!error) {
@@ -856,6 +891,14 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         swipesObject[@"FBObjectID"] = user[@"FBObjectID"];
     }
 
+    [PFCloud callFunctionInBackground:@"swipeRight"
+                       withParameters:@{@"user":user.objectId, @"event":dragView.objectID}
+                                block:^(NSString *result, NSError *error) {
+                                    if (!error) {
+                                        // result is @"Hello world!"
+                                        NSLog(@"%@", result);
+                                    }
+                                }];
     
     //PFObject *analyticsObject = [PFObject objectWithClassName:@"Analytics"];
     //analyticsObject[@"Age"] = user[@"]
@@ -927,6 +970,11 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     if ( ! [[NSUserDefaults standardUserDefaults] boolForKey:@"hasSwipedRight"] ) {
         NSLog(@"First swipe right");
         
+        AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+        RKSwipeBetweenViewControllers *rk = appDelegate.rk;
+        [rk showCallout];
+        
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"hasSwipedRight"];
     }
 
     
@@ -1042,7 +1090,6 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     PFObject *object = [query getObjectWithId:dragView.objectID];
     
     EKEvent *event = [EKEvent eventWithEventStore:eventStore];
-    EKEventViewController *evc = [[EKEventViewController alloc] init];
     
     event.title = dragView.title.text;
 
@@ -1107,7 +1154,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         //[RKDropdownAlert title:@"Event added to your main calendar!" backgroundColor:[UIColor colorWithRed:.05 green:.29 blue:.49 alpha:1.0] textColor:[UIColor whiteColor]];
         
         [event setCalendar:[eventStore defaultCalendarForNewEvents]];
-        NSError *err;
+        //NSError *err;
         //[eventStore saveEvent:event span:EKSpanThisEvent error:&err];
         //NSLog(@"Added %@ to calendar. Object ID: %@", dragView.title.text, dragView.objectID);
         
@@ -1175,6 +1222,8 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     return categories;
 }
 
+/*
+
 +(UIImage*) drawText:(NSString*) text
              inImage:(UIImage*)  image
              atPoint:(CGPoint)   point
@@ -1187,14 +1236,16 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     [image drawInRect:CGRectMake(0,0,image.size.width,image.size.height)];
     CGRect rect = CGRectMake(point.x, point.y, image.size.width, image.size.height);
     [color set];
-    UILabel *label;
+    //UILabel *label;
     //label.text = text;
     //[label drawTextInRect:rect];
-    [text drawInRect:CGRectIntegral(rect) withFont:font];
+    //[text drawInRect:CGRectIntegral(rect) withFont:font];
     UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     
     return newImage;
 }
+ 
+ */
 
 @end

@@ -26,6 +26,7 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
+    scrollView.scrollEnabled = YES;
     
     titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, 20, 280, 200)];
     titleLabel.font = [UIFont fontWithName:@"OpenSans-Bold" size:15.0];
@@ -59,8 +60,8 @@
     [subtitleLabel sizeToFit];
     [scrollView addSubview:subtitleLabel];
     
-    if (subtitleLabel.frame.size.height + subtitleLabel.frame.origin.y > self.view.frame.size.height) {
-        scrollView.contentSize = CGSizeMake(self.view.frame.size.width, subtitleLabel.frame.size.height + subtitleLabel.frame.origin.y + 20);
+    if (subtitleLabel.frame.size.height + subtitleLabel.frame.origin.y + 50 > self.view.frame.size.height) {
+        scrollView.contentSize = CGSizeMake(self.view.frame.size.width, subtitleLabel.frame.size.height + subtitleLabel.frame.origin.y + 50);
     }
     
 }

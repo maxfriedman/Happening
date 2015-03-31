@@ -80,14 +80,14 @@
     
     if ([FBSDKAccessToken currentAccessToken]) {
         // User is logged in, do work such as go to next view controller.
-        NSLog(@"User is already logged in!");
+        //NSLog(@"User is already logged in!");
         UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
         rk = [storyboard instantiateViewControllerWithIdentifier:@"rk"];
         self.window.rootViewController = rk;
         
     } else {
         
-        NSLog(@"User is not logged in!");
+        //NSLog(@"User is not logged in!");
         UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
         movieLoginVC *vc = [storyboard instantiateViewControllerWithIdentifier:@"movieLogin"];
         self.window.rootViewController = vc;
@@ -222,6 +222,10 @@
 - (void)applicationDidEnterBackground:(UIApplication *)application {
     // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+    
+    //[[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"noMoreEvents"];
+    //[[NSUserDefaults standardUserDefaults] synchronize];
+    
 }
 
 - (void)applicationWillEnterForeground:(UIApplication *)application {
@@ -233,6 +237,12 @@
     //[FBAppCall handleDidBecomeActiveWithSession:[PFFacebookUtils session]];
     
     [FBSDKAppEvents activateApp];
+    
+    PFInstallation *currentInstallation = [PFInstallation currentInstallation];
+    if (currentInstallation.badge != 0) {
+        currentInstallation.badge = 0;
+        [currentInstallation saveEventually];
+    }
     
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     if ([defaults boolForKey:@"hasLaunched"])
@@ -322,12 +332,18 @@
     // Store the deviceToken in the current installation and save it to Parse.
     PFInstallation *currentInstallation = [PFInstallation currentInstallation];
     [currentInstallation setDeviceTokenFromData:deviceToken];
-    currentInstallation.channels = @[ @"global" ];
+    currentInstallation.channels = @[ @"global", @"reminders", @"matches", @"friendJoined", @"popularEvents", @"matchesInApp"];
+    
+    // Associate the device with a user
+    //PFUser *user = [PFUser currentUser];
+    //currentInstallation[@"userID"] = user.objectId;
     [currentInstallation saveInBackground];
 }
 
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo {
     [PFPush handlePush:userInfo];
+    
+    
 }
 
 

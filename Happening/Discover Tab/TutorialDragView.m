@@ -89,6 +89,11 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         [self setupView];
         self.myViewController.frontViewIsVisible = YES; // Cards start off with front view visible
         
+        
+        // %%%%%%%%%% SO I CAN REMOVE FROM SUPERVIEW %%%%%%%%%
+        self.tag = 999;
+        // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        
         eventStore = [[EKEventStore alloc] init];
                 
         self.actionMargin = ACTION_MARGIN;
@@ -235,21 +240,13 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         
     } else if (index == 3) {
         
-        UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 40, CARD_WIDTH, 100)];
-        [label setText:@"Tap to see"];
-        [label setFont:[UIFont fontWithName:@"OpenSans-Bold" size:23.0]];
+        UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 50, CARD_WIDTH, 100)];
+        [label setText:@"Tap the card!"];
+        [label setFont:[UIFont fontWithName:@"OpenSans-Bold" size:25.0]];
         [label setTextColor:color];
         [label setTextAlignment:NSTextAlignmentCenter];
+        label.tag = 3;
         [tutorialView addSubview:label];
-        label.tag = 9;
-        
-        UILabel *label2 = [[UILabel alloc] initWithFrame:CGRectMake(0, 70, CARD_WIDTH, 100)];
-        [label2 setText:@"more information"];
-        [label2 setFont:[UIFont fontWithName:@"OpenSans-Bold" size:23.0]];
-        [label2 setTextColor:color];
-        [label2 setTextAlignment:NSTextAlignmentCenter];
-        [tutorialView addSubview:label2];
-        label2.tag = 9;
         
         UIImageView *imv = [[UIImageView alloc] initWithFrame:CGRectMake(121.5, 160, 40, 40)];
         imv.image = [UIImage imageNamed:@"click"];
@@ -444,6 +441,37 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 }
 */
 
+-(void)nowScrollDown {
+    
+    for (UIView *view in dragView.subviews) {
+        
+        if (view.tag == 3) {
+            [view removeFromSuperview];
+        }
+        
+    }
+    
+    UIColor *color = [UIColor colorWithRed:77.0/255.0 green:78.0/255.0 blue:77.0/255.0 alpha:1.0];
+
+    UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 40, CARD_WIDTH, 100)];
+    [label setText:@"Scroll down for"];
+    [label setFont:[UIFont fontWithName:@"OpenSans-Bold" size:23.0]];
+    [label setTextColor:color];
+    [label setTextAlignment:NSTextAlignmentCenter];
+    [dragView addSubview:label];
+    label.tag = 9;
+    
+    UILabel *label2 = [[UILabel alloc] initWithFrame:CGRectMake(0, 70, CARD_WIDTH, 100)];
+    [label2 setText:@"more information"];
+    [label2 setFont:[UIFont fontWithName:@"OpenSans-Bold" size:23.0]];
+    [label2 setTextColor:color];
+    [label2 setTextAlignment:NSTextAlignmentCenter];
+    [dragView addSubview:label2];
+    label2.tag = 9;
+    
+    
+}
+
 -(void)tapButtons {
     
     self.allowCardExpand = NO;
@@ -490,8 +518,8 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 
 -(void)showButtons {
     
-    [self.myViewController.xButton addTarget:self action:@selector(leftClickAction) forControlEvents:UIControlEventTouchUpInside];
-    [self.myViewController.checkButton addTarget:self action:@selector(rightClickAction) forControlEvents:UIControlEventTouchUpInside];
+    [self.myViewController.xButton addTarget:self action:@selector(leftClick) forControlEvents:UIControlEventTouchUpInside];
+    [self.myViewController.checkButton addTarget:self action:@selector(rightClick) forControlEvents:UIControlEventTouchUpInside];
 
     
     [UIView animateWithDuration:0.7 animations:^{
@@ -602,8 +630,10 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     
 }
 
--(void)rightClickAction
+-(void)rightClick
 {
+    
+    if (self.myViewController.tutIsShown) {
     
     //self.superview.superview.superview.userInteractionEnabled = NO; // BE CAREFUL... disables UI during button click
     [self setEnabledSidewaysScrolling:NO];
@@ -617,6 +647,9 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         [self setEnabledSidewaysScrolling:YES];
         [self removeFromSuperview];
         
+        //[checkButton removeTarget:self action:@selector(rightClick) forControlEvents:UIControlEventTouchUpInside];
+        //[xButton removeTarget:self action:@selector(leftClick) forControlEvents:UIControlEventTouchUpInside];
+        
         //if (dragView.tag == 50 || dragView.tag == 3) {
             NSLog(@"Last card swiped");
             [self.myViewController dropdownPressedFromTut:YES];
@@ -628,10 +661,14 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     [self cardSwipedRight:self fromFlippedView:NO];
     
     NSLog(@"YES");
+        
+    }
 }
 
--(void)leftClickAction
+-(void)leftClick
 {
+    
+    if (self.myViewController.tutIsShown) {
     
     //self.superview.superview.superview.userInteractionEnabled = NO; // BE CAREFUL... disables UI during button click
     [self setEnabledSidewaysScrolling:NO];
@@ -645,6 +682,9 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         [self setEnabledSidewaysScrolling:YES];
         [self removeFromSuperview];
         
+        //[checkButton removeTarget:self action:@selector(rightClick) forControlEvents:UIControlEventTouchUpInside];
+        //[xButton removeTarget:self action:@selector(leftClick) forControlEvents:UIControlEventTouchUpInside];
+        
         //if (dragView.tag == 50 || dragView.tag == 3) {
             NSLog(@"Last card swiped");
             [self.myViewController dropdownPressedFromTut:YES];
@@ -655,6 +695,8 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     [self cardSwipedLeft:self fromFlippedView:NO];
     
     NSLog(@"NO");
+        
+    }
 }
 
 -(void)cardExpanded:(BOOL)b

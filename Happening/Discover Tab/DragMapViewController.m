@@ -42,7 +42,7 @@
         
         MKCoordinateRegion region = MKCoordinateRegionMakeWithDistance(mapLocation.coordinate, 1250, 1250);
         [mapView setRegion:region animated:NO];
-        [mapView setUserTrackingMode:MKUserTrackingModeFollow];
+        //[mapView setUserTrackingMode:MKUserTrackingModeFollow];
         [mapView regionThatFits:region];
         
     }];
@@ -70,7 +70,11 @@
         annotationView.enabled = YES;
         annotationView.canShowCallout = YES;
         annotationView.image = [UIImage imageNamed:@"Annotation"];
-        annotationView.centerOffset = CGPointMake(0, -18);
+        annotationView.frame = CGRectMake(0, 0, 20, 25);
+        annotationView.centerOffset = CGPointMake(0, -5);
+        //annotationView.calloutOffset = CGPointMake(10, 0);
+        //annotationView.layer.anchorPoint = CGPointMake(0.5f, 1.0f);
+
         //annotationView.rightCalloutAccessoryView = [UIButton buttonWithType:UIButtonTypeDetailDisclosure];
         
         return annotationView;

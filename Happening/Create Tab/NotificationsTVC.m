@@ -7,12 +7,15 @@
 //
 
 #import "NotificationsTVC.h"
+#import <Parse/Parse.h>
 
 @interface NotificationsTVC ()
 
 @end
 
 @implementation NotificationsTVC
+
+@synthesize inAppMatches, popular, pushMatches, reminders, friendJoined;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -21,6 +24,16 @@
     [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"navBar"] forBarMetrics:UIBarMetricsDefault];
     self.navigationController.navigationBar.translucent = NO;
     
+    PFInstallation *currentInstallation = [PFInstallation currentInstallation];
+    
+    NSArray *channels = currentInstallation.channels;
+    
+    inAppMatches.on = [channels containsObject:@"matchesInApp"];
+    popular.on = [channels containsObject:@"popularEvents"];
+    pushMatches.on = [channels containsObject:@"matches"];
+    friendJoined.on = [channels containsObject:@"friendJoined"];
+    reminders.on = [channels containsObject:@"reminders"];
+    
     
 }
 
@@ -28,6 +41,83 @@
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
+
+
+- (IBAction)inAppMatchesSwitch:(UISwitch *)sender {
+    
+    
+    PFInstallation *currentInstallation = [PFInstallation currentInstallation];
+    
+    if (sender.on) {
+        [currentInstallation addObject:@"matchesInApp" forKey:@"channels"];
+    } else {
+        [currentInstallation removeObject:@"matchesInApp" forKey:@"channels"];
+    }
+    
+    [currentInstallation saveInBackground];
+    
+}
+
+- (IBAction)pushMatchesSwitch:(UISwitch *)sender {
+    
+    
+    PFInstallation *currentInstallation = [PFInstallation currentInstallation];
+    
+    if (sender.on) {
+        [currentInstallation addObject:@"matches" forKey:@"channels"];
+    } else {
+        [currentInstallation removeObject:@"matches" forKey:@"channels"];
+    }
+    
+    [currentInstallation saveInBackground];
+    
+}
+
+- (IBAction)pushPopularSwitch:(UISwitch *)sender {
+    
+    
+    PFInstallation *currentInstallation = [PFInstallation currentInstallation];
+    
+    if (sender.on) {
+        [currentInstallation addObject:@"popularEvents" forKey:@"channels"];
+    } else {
+        [currentInstallation removeObject:@"popularEvents" forKey:@"channels"];
+    }
+    
+    [currentInstallation saveInBackground];
+    
+}
+
+- (IBAction)pushFriendJoinedSwitch:(UISwitch *)sender {
+    
+    
+    PFInstallation *currentInstallation = [PFInstallation currentInstallation];
+    
+    if (sender.on) {
+        [currentInstallation addObject:@"friendJoined" forKey:@"channels"];
+    } else {
+        [currentInstallation removeObject:@"friendJoined" forKey:@"channels"];
+    }
+    
+    [currentInstallation saveInBackground];
+    
+}
+
+- (IBAction)pushRemindersSwitch:(UISwitch *)sender {
+    
+    
+    PFInstallation *currentInstallation = [PFInstallation currentInstallation];
+    
+    if (sender.on) {
+        [currentInstallation addObject:@"reminders" forKey:@"channels"];
+    } else {
+        [currentInstallation removeObject:@"reminders" forKey:@"channels"];
+    }
+    
+    [currentInstallation saveInBackground];
+    
+}
+
 
 /*
 #pragma mark - Table view data source
@@ -44,7 +134,7 @@
     return 0;
 }
 
-/*
+
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:<#@"reuseIdentifier"#> forIndexPath:indexPath];
     

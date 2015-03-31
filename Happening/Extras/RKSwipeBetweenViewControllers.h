@@ -171,11 +171,17 @@
 @property (assign) NSInteger currentPageIndex;
 
 @property (nonatomic, strong) UIButton *middleButton;
+@property (nonatomic, strong) UIButton *middleButton2;
+@property (nonatomic, strong) UIButton *leftButton;
+@property (nonatomic, strong) UIButton *rightButton;
 
 
 - (void)scrolling:(BOOL)enabled;
 - (void)middleButtonTapped;
 - (void)tapSegmentButtonAction:(UIButton *)button;
 - (void)updateCurrentPageIndex:(int)newIndex;
+
+- (void)showCallout;
+- (void)hideCallout;
 
 @end

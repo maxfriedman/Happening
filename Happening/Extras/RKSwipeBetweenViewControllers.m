@@ -13,6 +13,7 @@
 #import "AttendEvent.h"
 #import "UIButton+Extensions.h"
 #import "AppDelegate.h"
+#import "AMPopTip.h"
 
 //%%% customizeable button attributes
 #define X_BUFFER 0 //%%% the number of pixels on either side of the segment
@@ -28,17 +29,14 @@
 
 @interface RKSwipeBetweenViewControllers () {
     
-    UIButton *leftButton;
-    UIButton *middleButton;
-    UIButton *middleButton2;
-    UIButton *rightButton;
-    
     BOOL leftButtonTapScrolling;
     BOOL middleButtonTapScrolling;
     BOOL rightButtonTapScrolling;
     BOOL longScroll;
     
     DragViewController *dvc;
+    
+    AMPopTip *popTip;
 }
 
 @end
@@ -50,7 +48,7 @@
 @synthesize pageController;
 @synthesize navigationView;
 @synthesize buttonText;
-@synthesize pageScrollView, rightLabel, middleLabel, leftLabel, currentPageIndex, middleButton;
+@synthesize pageScrollView, rightLabel, middleLabel, leftLabel, currentPageIndex, middleButton, middleButton2, rightButton, leftButton;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -135,7 +133,7 @@
 {
     navigationView = [[UIView alloc]initWithFrame:CGRectMake(0,0,self.view.frame.size.width,self.navigationBar.frame.size.height)];
     
-    NSInteger numControllers = [viewControllerArray count];
+    //NSInteger numControllers = [viewControllerArray count];
     
     if (!buttonText) {
         buttonText = [[NSArray alloc]initWithObjects: @"Create",@"Discover",@"Attend",nil]; //%%%buttontitle
@@ -214,9 +212,7 @@
     [leftButton addSubview:leftLabel];
     [rightButton addSubview:rightLabel];
     
-    
-    
-     pageController.navigationController.navigationBar.topItem.titleView = navigationView;
+    pageController.navigationController.navigationBar.topItem.titleView = navigationView;
     
     [self setupSelector];
 }
@@ -382,7 +378,7 @@
     
     selectionBar.frame = CGRectMake(xCoor-xFromCenter/[viewControllerArray count], selectionBar.frame.origin.y, selectionBar.frame.size.width, selectionBar.frame.size.height);
     
-    NSLog(@"%f", xFromCenter);
+    //NSLog(@"%f", xFromCenter);
     
     if (leftButtonTapScrolling) {
         [self fadeLabels:0];
@@ -396,7 +392,7 @@
         
         if (abs((int)xFromCenter) >= 0) {
         
-            NSLog (@"Left label");
+            //NSLog (@"Left label");
             
             leftLabel.alpha = 1 - abs((int)xFromCenter) / 320.0;
         
@@ -409,7 +405,7 @@
         
     } else if (xCoor == 104) {
         
-        NSLog (@"Middle Label");
+        //NSLog (@"Middle Label");
         
         if (xFromCenter > 0) {
             
@@ -431,7 +427,7 @@
         
     } else if (xCoor == 211) {
      
-        NSLog (@"Right Label");
+        //NSLog (@"Right Label");
         
         if (abs((int)xFromCenter) >= 0) {
             
@@ -549,7 +545,7 @@
 
 - (void)middleButtonTapped {
     
-    NSLog(@"middle button tapped");
+    //NSLog(@"middle button tapped");
     
     CGFloat xFromCenter = self.view.frame.size.width-pageScrollView.contentOffset.x; //%%% positive for right swipe, negative for left
     
@@ -571,6 +567,8 @@
 }
 
 - (void)rightButtonTapped {
+    
+    [self hideCallout];
     
     if (currentPageIndex == 0) {
         longScroll = YES;
@@ -622,12 +620,40 @@
 
 -(void)refreshButtonTapped {
     
-    if (!dvc.frontViewIsVisible) {
+    if (dvc.dropdownExpanded) {
         
-        [dvc flipCurrentView];
+        [dvc dropdownPressed];
     }
     
     [dvc refreshData];
+}
+
+- (void)showCallout {
+    
+    popTip = [AMPopTip popTip];
+    
+    popTip.shouldDismissOnTap = YES;
+    popTip.edgeMargin = 5;
+    popTip.offset = 2;
+    popTip.edgeInsets = UIEdgeInsetsMake(0, 10, 0, 10);
+    popTip.tapHandler = ^{
+        NSLog(@"Tap!");
+    };
+    popTip.dismissHandler = ^{
+        NSLog(@"Dismiss!");
+    };
+    
+    //popTip.popoverColor = [UIColor colorWithRed:.05 green:.29 blue:.49 alpha:1.0];
+    popTip.popoverColor = [UIColor colorWithRed:0.0 green:184.0/255.0 blue:245.0/255.0 alpha:1.0]; //0,184,245
+    
+    [popTip showText:@"Your events are saved here" direction:AMPopTipDirectionDown maxWidth:200 inView:self.navigationView fromFrame:rightButton.frame];
+    
+}
+
+- (void)hideCallout {
+    
+    [popTip hide];
+    
 }
 
 @end

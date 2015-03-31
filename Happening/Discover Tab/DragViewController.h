@@ -58,6 +58,9 @@
 
 @property (assign) BOOL frontViewIsVisible;
 @property (assign) BOOL userSwipedFromFlippedView;
+@property (assign) BOOL dropdownExpanded;
+@property (assign) BOOL tutIsShown;
+
 
 -(void)testing;
 -(void)stopPanning;

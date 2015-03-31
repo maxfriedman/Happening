@@ -64,9 +64,9 @@
     [super viewDidAppear:animated];
     
     if ([FBSDKAccessToken currentAccessToken]) {
-
         
         [self performSegueWithIdentifier:@"toMain" sender:self];
+        
     } else {
         
         NSString *stringPath = [[NSBundle mainBundle] pathForResource:@"Happening Intro vid" ofType:@"mp4"];
@@ -89,7 +89,12 @@
         parseUser = [PFUser user];
         
         activityView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
-        activityView.center = CGPointMake(self.view.frame.size.width / 2, (self.view.frame.size.height / 2));
+        activityView.frame = CGRectMake(0, 0, 50, 50);
+        activityView.backgroundColor = [UIColor blackColor];
+        activityView.layer.cornerRadius = 5.0;
+        activityView.layer.masksToBounds = YES;
+        activityView.center = CGPointMake(self.view.frame.size.width / 2, (self.view.frame.size.height / 2) - 150);
+        [self.view addSubview:activityView];
         
         [self.view insertSubview:player.view belowSubview:imv];
         
@@ -103,8 +108,8 @@
             [self.view bringSubviewToFront:self.questionButton];
         }];
         
-        [_fbLoginView setReadPermissions:@[@"public_profile", @"email", @"user_friends", @"user_location"]];
-        [_fbLoginView setDelegate:self];
+        //[_fbLoginView setReadPermissions:@[@"public_profile", @"email", @"user_friends", @"user_location", @"user_birthday"]];
+        //[_fbLoginView setDelegate:self];
         
         [player play];
         
@@ -128,24 +133,55 @@
     
     FBSDKLoginManager *loginManager = [[FBSDKLoginManager alloc] init];
     loginManager.loginBehavior = FBSDKLoginBehaviorSystemAccount;
-    [loginManager logInWithReadPermissions:self.fbLoginView.readPermissions handler:^(FBSDKLoginManagerLoginResult *result, NSError *error) {
+    [loginManager logInWithReadPermissions:@[@"public_profile", @"email", @"user_friends", @"user_location", @"user_birthday"] handler:^(FBSDKLoginManagerLoginResult *result, NSError *error) {
         
         NSLog(@"result:%@", result);
-        __block NSSet *grantedPermissions = result.grantedPermissions;
+        NSLog(@"granted permissions: %@", result.grantedPermissions);
+        //__block NSSet *grantedPermissions = result.grantedPermissions;
         
         if (error) {
             // Process error
             NSLog(@"error");
             self.fbButton.alpha = 1.0;
             self.fbButton.userInteractionEnabled = YES;
+            [activityView stopAnimating];
             // An error occurred, we need to handle the error
             // See: https://developers.facebook.com/docs/ios/errors
+            
+            if([[[UIDevice currentDevice] systemVersion] floatValue]<8.0)
+            {
+                /*
+                UIAlertView* curr1=[[UIAlertView alloc] initWithTitle:@"This app does not have access to Location service" message:@"You can enable access in Settings->Privacy->Location->Location Services" delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+                [curr1 show];
+                 */
+                [[[UIAlertView alloc] initWithTitle:@"Aw snap"
+                                            message:@"We're having trouble connecting to Facebook. Please go to Settings -> Facebook -> Happening -> On"
+                                           delegate:self
+                                  cancelButtonTitle:@"I'm on it!"
+                                  otherButtonTitles:nil, nil] show];
+                
+            }
+            else
+            {
+                [[[UIAlertView alloc] initWithTitle:@"Aw snap"
+                                            message:@"We're having trouble connecting to Facebook. Please go to Settings -> Facebook -> Happening -> On"
+                                           delegate:self
+                                  cancelButtonTitle:@"I'm on it!"
+                                  otherButtonTitles:nil, nil] show];
+
+                                /*  otherButtonTitles:@"Settings", nil] show]; */
+            }
+        
+            
+            [player play];
         
         } else if (result.isCancelled) {
             
             NSLog(@"fb login cancelled");
+            [activityView stopAnimating];
             self.fbButton.alpha = 1.0;
             self.fbButton.userInteractionEnabled = YES;
+            [player play];
             
         } else { //success ?
             
@@ -153,10 +189,49 @@
              startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
                  if (!error) {
                      NSLog(@"fetched user:%@", result);
-
+                    
                      NSDictionary *user = result;
                      
-                     if ([grantedPermissions containsObject:@"email"]) {
+                     /*
+                     NSLog(@"%@", [user allKeys]);
+                     NSLog(@"%@", [user allValues]);
+                     
+                     NSArray *myArray = [grantedPermissions allObjects];
+                    
+                     NSLog(@" ~~~~~~~~ ~~~~~ ~~~~~~ %@", myArray[0]);
+                     NSLog(@" ~~~~~~~~ ~~~~~ ~~~~~~ %@", myArray[1]);
+                     NSLog(@" ~~~~~~~~ ~~~~~ ~~~~~~ %@", myArray[2]);
+                     NSLog(@" ~~~~~~~~ ~~~~~ ~~~~~~ %@", myArray[3]);
+                     NSLog(@" ~~~~~~~~ ~~~~~ ~~~~~~ %@", myArray[4]);
+                     NSLog(@" ~~~~~~~~ ~~~~~ ~~~~~~ %@", myArray[5]);
+                     NSLog(@" ~~~~~~~~ ~~~~~ ~~~~~~ %@", myArray[6]);
+
+                     NSLog(@"user_location ===> %d", [grantedPermissions containsObject:@"user_location"]);
+                     NSLog(@"user_birthday ===> %d", [grantedPermissions containsObject:@"user_birthday"]);
+                     NSLog(@"public_profile ===> %d", [grantedPermissions containsObject:@"public_profile"]);
+                     NSLog(@"email ===> %d", [grantedPermissions containsObject:@"email"]);
+                     NSLog(@"user_friends ===> %d", [grantedPermissions containsObject:@"user_friends"]);
+                     NSLog(@"basic_info ===> %d", [grantedPermissions containsObject:@"basic_info"]);
+                     NSLog(@"contact_email ===> %d", [grantedPermissions containsObject:@"contact_email"]);
+                     
+                     NSLog(@"user_location ===> %d", [grantedPermissions containsObject:@"user_location"]);
+                     NSLog(@"user_birthday ===> %d", [grantedPermissions containsObject:@"user_birthday"]);
+                     NSLog(@"public_profile ===> %d", [grantedPermissions containsObject:@"public_profile"]);
+                     NSLog(@"email ===> %d", [grantedPermissions containsObject:@"email"]);
+                     NSLog(@"user_friends ===> %d", [grantedPermissions containsObject:@"user_friends"]);
+                     NSLog(@"basic_info ===> %d", [grantedPermissions containsObject:@"basic_info"]);
+                     NSLog(@"contact_email ===> %d", [grantedPermissions containsObject:@"contact_email"]);
+                     
+                     NSLog(@"location ===> %@", [user valueForKey:@"location"]);
+                     NSLog(@"birthday ===> %@", [user valueForKey:@"birthday"]);
+                     NSLog(@"first_name ===> %@", [user valueForKey:@"first_name"]);
+                     NSLog(@"last_name ===> %@", [user objectForKey:@"last_name"]);
+                     NSLog(@"email ===> %@", [user valueForKey:@"email"]);
+                     NSLog(@"gender ===> %@", [user valueForKey:@"gender"]);
+                     NSLog(@"link ===> %@", [user valueForKey:@"link"]);
+                     */
+                     
+                     if ([user objectForKey:@"email"] != nil) {
                 
                          parseUser.username = [user objectForKey:@"email"];
                          parseUser.email = [user objectForKey:@"email"];
@@ -172,48 +247,73 @@
                      parseUser[@"link"] = [user objectForKey:@"link"];
             
             
-                     if ([grantedPermissions containsObject:@"first_name"])
+                     if ([user objectForKey:@"first_name"] != nil)
                          parseUser[@"firstName"] = [user objectForKey:@"first_name"];
-                     
-                     if ([grantedPermissions containsObject:@"last_name"])
-                         parseUser[@"lastName"] = [user objectForKey:@"last_name"];
             
-                     if ([grantedPermissions containsObject:@"gender"])
+                     if ([user objectForKey:@"last_name"] != nil)
+                         parseUser[@"lastName"] = [user objectForKey:@"last_name"];
+
+                     if ([user objectForKey:@"gender"] != nil)
                          parseUser[@"gender"] = [user objectForKey:@"gender"];
             
+                     /*
                      if ([grantedPermissions containsObject:@"bio"])
                          parseUser[@"bio"] = [user objectForKey:@"bio"];
-            
-                     if ([grantedPermissions containsObject:@"birthday"])
+                      */
+                      
+                     if ([user objectForKey:@"birthday"] != nil)
                          parseUser[@"birthday"] = [user objectForKey:@"birthday"];
             
-                     if ([grantedPermissions containsObject:@"location"]) {
+                     if ([user objectForKey:@"location"] != nil) {
                          NSDictionary *locationDict = [user objectForKey:@"location"];
                 
                          if ([locationDict objectForKey:@"name"] != nil)
                              parseUser[@"fbLocationName"] = [locationDict objectForKey:@"name"];
-            
+                             parseUser[@"city"] = [locationDict objectForKey:@"name"];
+
                      }
             
                      // Defaults
                      parseUser[@"radius"] = @50;
-                     parseUser[@"city"] = @"";
                      //parseUser[@"userLoc"] = [PFGeoPoint geoPointWithLatitude:38.907192 longitude:-77.036871];
             
                      [parseUser signUpInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
                          if (!error) {
                              NSLog(@"New user successfully signed up.");
                     
-                    // Hooray! Let them use the app now.
-                    NSLog(@"New user: %@", parseUser.username);
+                             // Hooray! Let them use the app now.
+                             NSLog(@"New user: %@", parseUser.username);
                     
-                    if (parseUser) {
+                             if (parseUser) {
                         
-                        //self.fbButton.alpha = 1.0;
-                        //self.fbButton.userInteractionEnabled = YES;
-                        [activityView stopAnimating];
-                        NSLog(@"2");
-                        [self performSegueWithIdentifier:@"toMain" sender:self];
+                                 UIRemoteNotificationType types = [[UIApplication sharedApplication] isRegisteredForRemoteNotifications];
+
+                                 if (types) {
+
+                                     PFInstallation *currentInstallation = [PFInstallation currentInstallation];
+                                 
+                                     NSLog(@"Saving notification ID");
+                                     
+                                     // Associate the device with a user
+                                     currentInstallation.channels = @[ @"global", @"reminders", @"matches", @"friendJoined", @"popularEvents", @"matchesInApp"];
+                                     currentInstallation[@"userID"] = parseUser.objectId;
+                                     
+                                     [currentInstallation saveInBackground];
+                                 }
+                                 
+                                 [PFCloud callFunctionInBackground:@"newUser"
+                                                    withParameters:@{@"user":parseUser.objectId}
+                                                             block:^(NSString *result, NSError *error) {
+                                                                 if (!error) {
+                                                                     // result is @"Hello world!"
+                                                                     NSLog(@"%@", result);
+                                                                 }
+                                                             }];
+                                 
+                                 //self.fbButton.alpha = 1.0;
+                                 //self.fbButton.userInteractionEnabled = YES;
+                                 [activityView stopAnimating];
+                                 [self performSegueWithIdentifier:@"toMain" sender:self];
                     }
                 } else {
                     
@@ -233,7 +333,7 @@
                                                                 self.fbButton.userInteractionEnabled = YES;
                                                                 [activityView stopAnimating];
                                                                 NSLog(@"%@", error);
-                                                                
+                                                                [player play];
                                                             }
                                                        }];
                     }
@@ -370,6 +470,20 @@
     
      */
     
+}
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if (buttonIndex == 1)
+    {
+        //code for opening settings app in iOS 8
+        /*
+        NSURL*url=[NSURL URLWithString:@"prefs:root=WIFI"];
+        [[UIApplication sharedApplication] openURL:url];
+        [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"prefs:root=General"]];
+        */
+        //UIApplicationOpenSettingsURLString
+    }
 }
 
 /*

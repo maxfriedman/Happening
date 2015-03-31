@@ -267,9 +267,7 @@
     UITableViewHeaderFooterView *header = (UITableViewHeaderFooterView *)view;
     [header.textLabel setTextColor:[UIColor darkTextColor]];
     [header.textLabel setFont:[UIFont fontWithName:@"OpenSans-Semibold" size:14]];
-    
-    NSLog(@"%@", header.constraints);
-    
+        
     // For some reason the the sub label was being added to every header---> this removes it.
     for (UIView *view in header.contentView.subviews) {
         
@@ -464,6 +462,8 @@
     AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
     RKSwipeBetweenViewControllers *rk = appDelegate.rk;
     rk.rightLabel.alpha = 1.0;
+    rk.middleButton2.alpha = 1.0;
+    rk.middleButton.alpha = 0.0;
 }
 
 - (void)noEvents {

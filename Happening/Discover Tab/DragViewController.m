@@ -23,7 +23,7 @@
 #import "SettingsChoosingLoc.h"
 #import "moreDetailFromCard.h"
 #import "Reachability.h"
-
+#import "AMPopTip.h"
 
 @interface DragViewController () <ChoosingLocationDelegate, dropdownSettingsViewDelegate>
 
@@ -39,11 +39,9 @@
     MKMapView *mapView;
     BOOL mapViewExpanded;
     MKPointAnnotation *annotation;
-    BOOL dropdownExpanded;
     NSUserDefaults *defaults;
     TutorialDragView *tutorialScreens;
     BOOL showTut;
-    BOOL tutIsShown;
     NSString *friendObjectID;
     NSString *urlString;
     EKEvent *calEvent;
@@ -63,9 +61,10 @@
     
     BOOL isReachable;
     
+    RKSwipeBetweenViewControllers *rk;
 }
 
-@synthesize shareButton, draggableBackground, flippedDVB, xButton, checkButton, delegate, scrollView, mySensitiveRect, cardView, settingsView;
+@synthesize shareButton, draggableBackground, flippedDVB, xButton, checkButton, delegate, scrollView, mySensitiveRect, cardView, settingsView, dropdownExpanded, tutIsShown;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -99,12 +98,12 @@
     [scrollView setDelaysContentTouches:NO];
     [scrollView setBouncesZoom:YES];
     
-    xButton = [[UIButton alloc]initWithFrame:CGRectMake(-100.5, 359, 244.5, 79)]; //413... CGRectMake(-100.5, 359, 244.5, 79)
+    xButton = [[UIButton alloc]initWithFrame:CGRectMake(-1000, 359 + 5, 244.5, 79)]; //413... CGRectMake(-100.5, 359, 244.5, 79)
     xButton.center = CGPointMake(-1000, xButton.center.y);
     [xButton setImage:[UIImage imageNamed:@"NotInterestedButton"] forState:UIControlStateNormal];
     [xButton addTarget:self action:@selector(swipeLeftDVC) forControlEvents:UIControlEventTouchUpInside];
     
-    checkButton = [[UIButton alloc]initWithFrame:CGRectMake(177, 361, 244.5, 79)];  //415... CGRectMake(177, 361, 244.5, 79)
+    checkButton = [[UIButton alloc]initWithFrame:CGRectMake(1300, 361 + 5, 244.5, 79)];  //415... CGRectMake(177, 361, 244.5, 79)
     checkButton.center = CGPointMake(1300, checkButton.center.y);
     [checkButton setImage:[UIImage imageNamed:@"InterestedButton"] forState:UIControlStateNormal];
     [checkButton addTarget:self action:@selector(swipeRightDVC) forControlEvents:UIControlEventTouchUpInside];
@@ -123,6 +122,7 @@
     settingsView.layer.masksToBounds = YES;
     [self.view addSubview:settingsView];
     */
+    
 }
 
 
@@ -187,7 +187,7 @@
     // Double-check :)
     
     AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
-    RKSwipeBetweenViewControllers *rk = appDelegate.rk;
+    rk = appDelegate.rk;
     
     //UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
     //rk = [storyboard instantiateViewControllerWithIdentifier:@"rk"];
@@ -210,6 +210,8 @@
             });
         });
         
+        
+        [[scrollView viewWithTag:999] removeFromSuperview];
         [tutorialScreens removeFromSuperview];
     
         if (self.frontViewIsVisible == NO) {
@@ -273,7 +275,7 @@
         delegate = draggableBackground;
     
         self.mySensitiveRect = CGRectMake(0, 0, 0, 0);
-        UITapGestureRecognizer *gr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleGesture:)];
+        //UITapGestureRecognizer *gr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleGesture:)];
         //[scrollView addGestureRecognizer:gr];
     
         //NSLog(@"card view subviews: %@", cardView.subviews);
@@ -319,16 +321,34 @@
 
 -(void)swipeLeftDVC
 {
+    xButton.userInteractionEnabled = NO;
+    checkButton.userInteractionEnabled = NO;
+    
     NSLog(@"Left click");
     [delegate swipeLeft];
     //[draggableBackground cardSwipedLeft:draggableBackground.dragView];
+    
+    [self performSelector:@selector(turnOnButtonInteraction) withObject:nil afterDelay:0.4];
+
 }
 
 -(void)swipeRightDVC
 {
+    checkButton.userInteractionEnabled = NO;
+    xButton.userInteractionEnabled = NO;
+    
     NSLog(@"Right click");
     [delegate swipeRight];
     //[draggableBackground cardSwipedLeft:draggableBackground.dragView];
+    
+    [self performSelector:@selector(turnOnButtonInteraction) withObject:nil afterDelay:0.4];
+
+}
+
+- (void)turnOnButtonInteraction {
+    
+    xButton.userInteractionEnabled = YES;
+    checkButton.userInteractionEnabled = YES;
 }
 
 - (void)flipCurrentView {
@@ -336,11 +356,11 @@
     //scrollView.delaysContentTouches = NO;
     
     CGRect titleFrame = draggableBackground.dragView.title.frame;
-    CGRect timeFrame = draggableBackground.dragView.date.frame;
+    //CGRect timeFrame = draggableBackground.dragView.date.frame;
     CGRect geoLocFrame = draggableBackground.dragView.geoLoc.frame;
-    CGRect locImageFrame = draggableBackground.dragView.locImage.frame;
-    CGRect imageFrame = draggableBackground.dragView.eventImage.frame;
-    CGRect locationFrame = draggableBackground.dragView.location.frame;
+    //CGRect locImageFrame = draggableBackground.dragView.locImage.frame;
+    //CGRect imageFrame = draggableBackground.dragView.eventImage.frame;
+    //CGRect locationFrame = draggableBackground.dragView.location.frame;
     CGRect subtitleFrame = draggableBackground.dragView.subtitle.frame;
     
     if (self.frontViewIsVisible == YES) {
@@ -412,7 +432,10 @@
             draggableBackground.dragView.geoLoc.frame = CGRectMake(geoLocFrame.origin.x, geoLocFrame.origin.y + 45, geoLocFrame.size.width, geoLocFrame.size.height);
             
             draggableBackground.dragView.createdBy.frame = CGRectMake(draggableBackground.dragView.createdBy.frame.origin.x, draggableBackground.dragView.createdBy.frame.origin.y - 76, 254, draggableBackground.dragView.createdBy.frame.size.height);
-            [draggableBackground.dragView.createdBy sizeToFit];
+            
+            if ( ! draggableBackground.dragView.createdBy.frame.size.width > 254) {
+                [draggableBackground.dragView.createdBy sizeToFit];
+            }
 
             
             //draggableBackground.dragView.locImage.frame = CGRectMake(locImageFrame.origin.x, locImageFrame.origin.y + 50, locImageFrame.size.width, locImageFrame.size.height);
@@ -453,7 +476,7 @@
             draggableBackground.dragView.swipesRight.center = CGPointMake(draggableBackground.dragView.swipesRight.center.x, draggableBackground.dragView.swipesRight.center.y + 10 + extraDescHeight);
             draggableBackground.dragView.userImage.center = CGPointMake(draggableBackground.dragView.userImage.center.x, draggableBackground.dragView.userImage.center.y + 10 + extraDescHeight);
             
-            UIColor *blueColor = [UIColor colorWithRed:(128.0/255.0) green:(208.0/255.0) blue:(244.0/255.0) alpha:1.0];
+            //UIColor *blueColor = [UIColor colorWithRed:(128.0/255.0) green:(208.0/255.0) blue:(244.0/255.0) alpha:1.0];
             UIColor *grayColor = [UIColor colorWithRed:(70.0/255.0) green:(70.0/255.0) blue:(70.0/255.0) alpha:1.0];
             UIColor *lightGrayColor = [UIColor colorWithRed:(164.0/255.0) green:(163.0/255.0) blue:(163.0/255.0) alpha:1.0];
             
@@ -750,7 +773,7 @@
 
 - (void)addSubviewsToCard:(DraggableView *)card {
     
-    scrollView.contentSize = CGSizeMake(320, 588 + extraDescHeight);
+    scrollView.contentSize = CGSizeMake(320, 588 + 11 + extraDescHeight);
     
     //scrollView.delaysContentTouches = NO;
     
@@ -879,8 +902,9 @@
             } else {
                 
                 //ticketsButton = [[UIButton alloc] initWithFrame:CGRectMake(79, 500, 126, 20)];
-                [ticketsButton setImage:[UIImage imageNamed:@"buy tickets"] forState:UIControlStateNormal];
-                [ticketsButton setImage:[UIImage imageNamed:@"buy tickets pressed"] forState:UIControlStateHighlighted];
+                ticketsButton.frame = CGRectMake(98.5, 540 + extraDescHeight, 97, 20);
+                [ticketsButton setImage:[UIImage imageNamed:@"get tickets"] forState:UIControlStateNormal];
+                [ticketsButton setImage:[UIImage imageNamed:@"get tickets pressed"] forState:UIControlStateHighlighted];
 
                 //[self ticketsUpdateFrameBy:20];
                 [card.cardView addSubview:ticketsButton];
@@ -959,32 +983,7 @@
     NSLog(@"Loading FB Friends");
     
     if ([FBSDKAccessToken currentAccessToken]) {
-     
-        
-        // if the session is closed, then we open it here, and establish a handler for state changes
-        /*
-        [FBSession openActiveSessionWithReadPermissions:@[@"public_profile", @"user_friends"]
-                                           allowLoginUI:NO
-                                      completionHandler:^(FBSession *session,
-                                                          FBSessionState state,
-                                                          NSError *error) {
-                                          if (error) {
-                                              UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Facebook Error"
-                                                                                                  message:error.localizedDescription
-                                                                                                 delegate:nil
-                                                                                        cancelButtonTitle:@"That's odd"
-                                                                                        otherButtonTitles:nil];
-                                              [alertView show];
-                                          } else if (session.isOpen) {
-                                              NSLog(@"Session open, recurse");
-                                              
-                                              [self loadFBFriends:friendScrollView];
-                                          } else {
-                                              NSLog(@"Made it");
-                                          }
-                                      }];
-    }
-         */
+
     
     [[[FBSDKGraphRequest alloc] initWithGraphPath:@"/me/friends" parameters:nil] startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
         //code
@@ -1295,7 +1294,8 @@
         annotationView.enabled = YES;
         annotationView.canShowCallout = YES;
         annotationView.image = [UIImage imageNamed:@"Annotation"];
-        annotationView.centerOffset = CGPointMake(0, -18);
+        annotationView.frame = CGRectMake(0, 0, 20, 25);
+        annotationView.centerOffset = CGPointMake(0, -5);
         //annotationView.rightCalloutAccessoryView = [UIButton buttonWithType:UIButtonTypeDetailDisclosure];
         
         return annotationView;
@@ -1309,42 +1309,27 @@
         NSLog(@"Uber button tapped- app exists! Opening app...");
         
         PFQuery *query = [PFQuery queryWithClassName:@"Event"];
-        [query getObjectInBackgroundWithId:self.eventID block:^(PFObject *object, NSError *error) {
+        [query getObjectInBackgroundWithId:draggableBackground.dragView.objectID block:^(PFObject *object, NSError *error) {
             
-            PFGeoPoint *loc = object[@"GeoPoint"];
-            NSString *locationName = object[@"Location"];
+            PFGeoPoint *loc = object[@"GeoLoc"];
             
-            CLLocation *location = [[CLLocation alloc]initWithLatitude:loc.latitude longitude:loc.longitude];
-            [[[CLGeocoder alloc]init] reverseGeocodeLocation:location completionHandler:^(NSArray *placemarks, NSError *error) {
-                CLPlacemark *placemark = placemarks[0];
-                NSString *destinationAddress = [[NSString alloc]init];
+            NSString *locationName = @"";
+            if (object[@"Location"] != nil) {
+                locationName = object[@"Location"];
+            }
+            
+            if (!error) {
                 
-                NSString *streetName = placemark.addressDictionary[@"Street"];
-                NSString *cityName = placemark.addressDictionary[@"City"];
-                NSString *stateName = placemark.addressDictionary[@"State"];
-                NSString *zipCode = placemark.addressDictionary[@"ZIP"];
-                NSString *country = placemark.addressDictionary[@"Country"];
+                NSString *myLocationString = @"My%20Location";
                 
-                if (streetName && zipCode && cityName) {
-                    destinationAddress = [NSString stringWithFormat:@"%@ %@, %@, %@ %@", streetName, cityName, stateName, zipCode, country];
-                } else if (zipCode && !streetName) {
-                    destinationAddress = [NSString stringWithFormat:@"%@, %@ %@ %@", cityName, stateName, zipCode, country];
-                } else if (cityName && streetName) {
-                    destinationAddress = [NSString stringWithFormat:@"%@, %@, %@ %@", streetName, cityName, stateName, country];
-                } else
-                    destinationAddress = draggableBackground.dragView.location.text;
+                NSString *urlStringUber = [NSString stringWithFormat:@"uber://?client_id=Vmks1LNIHQiiaUYd8Z3FaMNkvD-7s53V&action=setPickup&pickup=my_location&pickup[nickname]=%@&dropoff[latitude]=%f&dropoff[longitude]=%f&dropoff[nickname]=%@", myLocationString, loc.latitude, loc.longitude, locationName];
                 
-                
-                destinationAddress = [destinationAddress stringByReplacingOccurrencesOfString:@" " withString:@"%20"];
-                
-                
-                NSString *urlStringUber = [NSString stringWithFormat:@"uber://?client_id=Vmks1LNIHQiiaUYd8Z3FaMNkvD-7s53V&action=setPickup&pickup=my_location&dropoff[latitude]=%f&dropoff[longitude]=%f&dropoff[nickname]=%@&dropoff[formatted_address]=%@", loc.latitude, loc.longitude, locationName, destinationAddress ];
-                
-                urlStringUber = [urlStringUber stringByAddingPercentEscapesUsingEncoding:NSStringEncodingConversionExternalRepresentation];
+                urlStringUber = [urlStringUber stringByReplacingOccurrencesOfString:@" " withString:@"%20"];
+                urlStringUber = [urlStringUber stringByReplacingOccurrencesOfString:@"," withString:@"%2C"];
                 
                 [[UIApplication sharedApplication] openURL:[NSURL URLWithString: urlStringUber]];
-                
-            }];
+
+            }
             
         }];
     }
@@ -1354,53 +1339,33 @@
         
         PFUser *currentUser = [PFUser currentUser];
         
+        NSString *firstName = currentUser[@"firstName"];
+        NSString *lastName = currentUser[@"lastName"];
+        NSString *userEmail = currentUser.email;
+        
+        if (!userEmail) {
+            userEmail = @"";
+        }
+            
         PFQuery *query = [PFQuery queryWithClassName:@"Event"];
-        [query getObjectInBackgroundWithId:self.eventID block:^(PFObject *object, NSError *error) {
+        [query getObjectInBackgroundWithId:draggableBackground.dragView.objectID block:^(PFObject *object, NSError *error) {
             
-            PFGeoPoint *loc = object[@"GeoPoint"];
-            NSString *locationName = object[@"Location"];
+            PFGeoPoint *loc = object[@"GeoLoc"];
             
-            NSString *firstName = currentUser[@"firstName"];
-            NSString *lastName = currentUser[@"lastName"];
-            NSString *userEmail = currentUser.email;
-            if (!userEmail) {
-                userEmail = @"";
-            }
+            NSString *locationName = @"";
+            if (object[@"Location"] != nil)
+                locationName = object[@"Location"];
             
-            
-            CLLocation *location = [[CLLocation alloc]initWithLatitude:loc.latitude longitude:loc.longitude];
-            [[[CLGeocoder alloc]init] reverseGeocodeLocation:location completionHandler:^(NSArray *placemarks, NSError *error) {
-                CLPlacemark *placemark = placemarks[0];
-                NSString *destinationAddress = [[NSString alloc]init];
-                
-                NSString *streetName = placemark.addressDictionary[@"Street"];
-                NSString *cityName = placemark.addressDictionary[@"City"];
-                NSString *stateName = placemark.addressDictionary[@"State"];
-                NSString *zipCode = placemark.addressDictionary[@"ZIP"];
-                NSString *country = placemark.addressDictionary[@"Country"];
-                
-                
-                if (streetName && zipCode && cityName) {
-                    destinationAddress = [NSString stringWithFormat:@"%@ %@, %@, %@ %@", streetName, cityName, stateName, zipCode, country];
-                } else if (zipCode && !streetName) {
-                    destinationAddress = [NSString stringWithFormat:@"%@, %@ %@ %@", cityName, stateName, zipCode, country];
-                } else if (cityName && streetName) {
-                    destinationAddress = [NSString stringWithFormat:@"%@, %@, %@ %@", streetName, cityName, stateName, country];
-                } else
-                    destinationAddress = draggableBackground.dragView.location.text;
-                
-                [destinationAddress stringByReplacingOccurrencesOfString:@" " withString:@"%20"];
-
-                
-                NSLog(@"%@", destinationAddress);
-                
+            if (!error) {
+                    
                 NSString *urlStringUber = [NSString stringWithFormat:@"https://m.uber.com/sign-up?client_id=Vmks1LNIHQiiaUYd8Z3FaMNkvD-7s53V&first_name=%@&last_name=%@&email=%@&country_code=us&&dropoff_latitude=%f&dropoff_longitude=%f&dropoff_nickname=%@", firstName, lastName, userEmail, loc.latitude, loc.longitude, locationName ];
-                
-                //urlString = [urlString stringByAddingPercentEscapesUsingEncoding:NSStringEncodingConversionExternalRepresentation];
-                
+                    
+                urlStringUber = [urlStringUber stringByReplacingOccurrencesOfString:@" " withString:@"%20"];
+                urlStringUber = [urlStringUber stringByReplacingOccurrencesOfString:@"," withString:@"%2C"];
+                    
                 [[UIApplication sharedApplication] openURL:[NSURL URLWithString: urlStringUber]];
-                
-            }];
+                    
+            }
             
         }];
         
@@ -1546,10 +1511,10 @@
         [self dropdownPressed];
         
         AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
-        RKSwipeBetweenViewControllers *rk = appDelegate.rk;
+        rk = appDelegate.rk;
         [rk updateCurrentPageIndex:1];
         
-        NSLog(@"CPI +++ %lu", rk.currentPageIndex);
+        //NSLog(@"CPI +++ %lu", rk.currentPageIndex);
         //[self refreshData];
     }
     
@@ -1559,7 +1524,7 @@
 - (void)setEnabledSidewaysScrolling:(BOOL)enabled {
     
     AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
-    RKSwipeBetweenViewControllers *rk = appDelegate.rk;
+    rk = appDelegate.rk;
     [rk scrolling:enabled];
     
 }
@@ -1586,7 +1551,7 @@
     APActivityProvider *ActivityProvider = [[APActivityProvider alloc] init];
     ActivityProvider.APdragView = draggableBackground.dragView;
     
-    NSString *eventUrlString = [NSString stringWithFormat:@"http://www.happening.city/events/%@", self.eventID];
+    NSString *eventUrlString = [NSString stringWithFormat:@"http://www.happening.city/events/%@", draggableBackground.dragView.objectID];
     NSURL *myWebsite = [NSURL URLWithString:eventUrlString];
     
     NSArray *itemsToShare = @[ActivityProvider, myWebsite];
@@ -1738,7 +1703,7 @@
         
         //[self addSubviewsToCard:draggableBackground.dragView];
         
-        scrollView.contentSize = CGSizeMake(320, 650);
+        scrollView.contentSize = CGSizeMake(320, 665);
         scrollView.scrollEnabled = YES;
         
         [UIView animateWithDuration:0.5 animations:^{
@@ -1755,6 +1720,8 @@
             for (UIPanGestureRecognizer *pgr in [tutorialScreens.dragView gestureRecognizers]) {
                 pgr.enabled = NO;
             }
+            
+            [tutorialScreens nowScrollDown];
             
         }];
         
@@ -1896,7 +1863,7 @@
     } else if ([segue.identifier isEqualToString:@"toMoreDetail"]) {
         
         moreDetailFromCard *vc = (moreDetailFromCard *)[[segue destinationViewController] topViewController];
-        vc.eventID = self.eventID;
+        vc.eventID = draggableBackground.dragView.objectID;
         vc.titleText = draggableBackground.dragView.title.text;
         vc.subtitleText = draggableBackground.dragView.subtitle.text;
         vc.locationText = draggableBackground.dragView.location.text;

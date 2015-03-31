@@ -22,6 +22,8 @@
     [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"navBar"] forBarMetrics:UIBarMetricsDefault];
     self.navigationController.navigationBar.translucent = NO;
     
+    self.socialSwitch.on = [[NSUserDefaults standardUserDefaults] boolForKey:@"socialMode"];
+    
 }
 
 - (void)didReceiveMemoryWarning {
@@ -51,7 +53,7 @@
     return 0;
 }
 
-/*
+
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:<#@"reuseIdentifier"#> forIndexPath:indexPath];
     

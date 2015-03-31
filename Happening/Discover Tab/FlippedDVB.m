@@ -201,7 +201,6 @@
     self.viewController.checkButton.hidden = YES;
     */
     
-    CGRect buttonFrame = CGRectMake(10.0, 209.0, 234.0, 37.0);
     
     panGestureRecognizer = [[UIPanGestureRecognizer alloc]initWithTarget:self action:@selector(beingDragged:)];
     

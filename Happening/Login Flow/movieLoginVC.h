@@ -12,7 +12,7 @@
 #import <FBSDKCoreKit/FBSDKCoreKit.h>
 #import <Parse/Parse.h>
 
-@interface movieLoginVC : UIViewController <FBSDKLoginButtonDelegate, FBSDKGraphRequestConnectionDelegate>
+@interface movieLoginVC : UIViewController <FBSDKGraphRequestConnectionDelegate>
 
 @property (weak, nonatomic) IBOutlet FBSDKLoginButton *fbLoginView;
 

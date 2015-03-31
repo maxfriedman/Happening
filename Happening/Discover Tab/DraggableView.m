@@ -565,6 +565,8 @@
     //self.superview.superview.superview.userInteractionEnabled = NO; // BE CAREFUL... disables UI during button click
     [self setEnabledSidewaysScrolling:NO];
 
+    
+    
     CGPoint finishPoint = CGPointMake(900, self.center.y);
     [UIView animateWithDuration:0.5 delay:0.3 options:UIViewAnimationOptionCurveEaseInOut animations:^{
         cardView.center = finishPoint;

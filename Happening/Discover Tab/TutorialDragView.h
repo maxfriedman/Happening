@@ -37,6 +37,7 @@
 -(void)swipeDown;
 
 -(void) tapButtons;
+-(void) nowScrollDown;
 
 @property (weak) id <TutorialDragViewDelegate> delegate;
 

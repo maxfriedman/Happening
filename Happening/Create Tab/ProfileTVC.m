@@ -22,6 +22,7 @@
 @property (strong, nonatomic) NSArray *sortedDays;
 @property (strong, nonatomic) NSDateFormatter *sectionDateFormatter;
 @property (strong, nonatomic) NSDateFormatter *cellDateFormatter;
+@property (strong, nonatomic) IBOutlet UISegmentedControl *segControl;
 
 - (NSDate *)dateAtBeginningOfDayForDate:(NSDate *)inputDate;
 
@@ -46,10 +47,17 @@
     user = [PFUser currentUser];
     nameLabel.text = [NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]];
     
-    if (user[@"city"] != nil) {
-        detailLabel.text = [NSString stringWithFormat:@"%@", user[@"city"]];
+    if ((user[@"userLocTitle"] != nil) && (! [user[@"userLocTitle"] isEqualToString:@"Current Location"]) ) {
+        
+        if ( ! [user[@"userLocTitle"] isEqualToString:@"Current Location"])
+            detailLabel.text = [NSString stringWithFormat:@"%@", user[@"userLocTitle"]];
+    
     } else {
-        detailLabel.text = [NSString stringWithFormat:@""];
+        if (user[@"fbLocationName"] != nil)
+            detailLabel.text = [NSString stringWithFormat:@"%@", user[@"fbLocationName"]];
+        else
+            detailLabel.text = @"";
+        
     }
     
     FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(120, 24, 80, 80)]; // initWithProfileID:user[@"FBObjectID"] pictureCropping:FBSDKProfilePictureModeSquare];
@@ -66,11 +74,12 @@
     profilePicImageView.layer.masksToBounds = YES;
     profilePicImageView.layer.borderColor =  [UIColor colorWithRed:232.0/255 green:232.0/255 blue:232.0/255 alpha:1.0].CGColor;
     profilePicImageView.layer.borderWidth = 3.0;
+
     
     noEventsView = [[UIView alloc] initWithFrame: CGRectMake(0, 350, self.view.frame.size.width, 200)];
     [self.view addSubview:noEventsView];
     
-    if (![[NSUserDefaults standardUserDefaults] boolForKey:@"hasCreatedEvent"]) {
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"hasCreatedEvent"] == NO) {
         
         UILabel *topTextLabel = [[UILabel alloc] init];
         topTextLabel.text = @"You haven't created";
@@ -120,7 +129,11 @@
     
     [self setEnabledSidewaysScrolling:YES];
     showUpcomingEvents = YES;
-    [self loadUpcomingEvents];
+    
+    if (self.segControl.selectedSegmentIndex == 0)
+        [self loadUpcomingEvents];
+    else
+        [self loadPastEvents];
     
 }
 
@@ -163,7 +176,7 @@
             
             [self.tableView reloadData];
             
-        } else if (eventsArray > 0) {
+        } else if (eventsArray.count > 0) {
             
             [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"hasCreatedEvent"];
             [[NSUserDefaults standardUserDefaults] synchronize];
@@ -214,7 +227,7 @@
             
             [self.tableView reloadData];
             
-        } else if (eventsArray > 0) {
+        } else if (eventsArray.count > 0) {
                         
             [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"hasCreatedEvent"];
             [[NSUserDefaults standardUserDefaults] synchronize];
@@ -352,6 +365,7 @@
                 //cell.blurView.alpha = 0;
                 cell.eventImageView.image = [UIImage imageWithData:imageData];
                 
+                
                 CAGradientLayer *l = [CAGradientLayer layer];
                 l.frame = cell.eventImageView.bounds;
                 l.colors = [NSArray arrayWithObjects:(id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:0.0] CGColor], (id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:1] CGColor], nil];
@@ -363,12 +377,15 @@
                 //[NSNumber numberWithFloat:0.3],
                 //[NSNumber numberWithFloat:0.4], nil];
                 
-                cell.eventImageView.layer.mask = l;
+                //cell.eventImageView.layer.mask = l;
                 //cell.blurView.dynamic = NO;
                 
                 //blurView.layer.mask = l;
                 
                 //[cell addSubview:blurView];
+                 
+                //cell.blurView.dynamic = NO;
+
             }
         }];
         
@@ -426,7 +443,9 @@
 - (void)refreshMyEvents {
     
     NSLog(@"refreshing events....");
-    [self.myEventsTableView reloadData];
+    
+    self.segControl.selectedSegmentIndex = 0;
+    [self loadUpcomingEvents];
 }
 
 
@@ -504,6 +523,9 @@
     AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
     RKSwipeBetweenViewControllers *rk = appDelegate.rk;
     rk.leftLabel.alpha = 1.0;
+    
+    rk.middleButton2.alpha = 1.0;
+    rk.middleButton.alpha = 0.0;
 }
 
 @end

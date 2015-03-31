@@ -94,7 +94,8 @@
     [self.imageView addSubview:self.distanceLabel];
     [self.imageView addSubview:self.locationImageView];
     */
-     
+    
+    /*
     CAGradientLayer *gradient = [CAGradientLayer layer];
     gradient.frame = CGRectMake(self.imageView.frame.origin.x, self.imageView.frame.origin.y + 113, self.imageView.frame.size.width, self.imageView.frame.size.height - 100);
     gradient.colors = [NSArray arrayWithObjects:(id)[[UIColor clearColor] CGColor], (id)[[UIColor whiteColor] CGColor], nil];
@@ -110,6 +111,7 @@
     
     //you can change the direction, obviously, this would be top to bottom fade
     self.imageView.layer.mask = l;
+     */
 
     [cardView addSubview:self.imageView];
     
@@ -152,7 +154,7 @@
         NSDate *eventDate = [[NSDate alloc]init];
         eventDate = object[@"Date"];
         
-        NSString *finalString;
+        //NSString *finalString;
         
         NSDate *endDate = object[@"EndTime"];
         
@@ -304,8 +306,9 @@
             } else {
                 
                 //ticketsButton = [[UIButton alloc] initWithFrame:CGRectMake(79, 500, 126, 20)];
-                [ticketsButton setImage:[UIImage imageNamed:@"buy tickets"] forState:UIControlStateNormal];
-                [ticketsButton setImage:[UIImage imageNamed:@"buy tickets pressed"] forState:UIControlStateHighlighted];
+                ticketsButton.frame = CGRectMake(98.5, 552, 97, 20);
+                [ticketsButton setImage:[UIImage imageNamed:@"get tickets"] forState:UIControlStateNormal];
+                [ticketsButton setImage:[UIImage imageNamed:@"get tickets pressed"] forState:UIControlStateHighlighted];
                 
                 //[self ticketsUpdateFrameBy:20];
             }
@@ -667,7 +670,7 @@
     
 }
 
-- (MKAnnotationView *)mapView:(MKMapView *)mapView viewForAnnotation:(id <MKAnnotation>)annotation
+- (MKAnnotationView *)mapView:(MKMapView *)mapView viewForAnnotation:(id <MKAnnotation>)anno
 {
     NSLog(@"Made it 1");
     if ([annotation isKindOfClass:[MKUserLocation class]])
@@ -682,8 +685,9 @@
         annotationView.enabled = YES;
         annotationView.canShowCallout = YES;
         annotationView.image = [UIImage imageNamed:@"Annotation"];
-        annotationView.centerOffset = CGPointMake(0, -18);
-        annotationView.rightCalloutAccessoryView = [UIButton buttonWithType:UIButtonTypeDetailDisclosure];
+        annotationView.centerOffset = CGPointMake(0, -5);
+        annotationView.frame = CGRectMake(0, 0, 20, 25);
+        //annotationView.rightCalloutAccessoryView = [UIButton buttonWithType:UIButtonTypeDetailDisclosure];
         
         return annotationView;
     }
@@ -700,44 +704,25 @@
         // Do something awesome - the app is installed! Launch App.
         NSLog(@"Uber button tapped- app exists! Opening app...");
         
-        /*
         PFQuery *query = [PFQuery queryWithClassName:@"Event"];
         [query getObjectInBackgroundWithId:self.eventID block:^(PFObject *object, NSError *error) {
-
-            PFGeoPoint *loc = object[@"GeoPoint"];
+            
+            PFGeoPoint *loc = object[@"GeoLoc"];
+            
             NSString *locationName = object[@"Location"];
-        */
-         
-            [[[CLGeocoder alloc]init] reverseGeocodeLocation:mapLocation completionHandler:^(NSArray *placemarks, NSError *error) {
-                CLPlacemark *placemark = placemarks[0];
-                NSString *destinationAddress = [[NSString alloc]init];
-                
-                NSString *streetName = placemark.addressDictionary[@"Street"];
-                NSString *cityName = placemark.addressDictionary[@"City"];
-                NSString *stateName = placemark.addressDictionary[@"State"];
-                NSString *zipCode = placemark.addressDictionary[@"ZIP"];
-                NSString *country = placemark.addressDictionary[@"Country"];
-                
-                
-                if (streetName && zipCode && cityName) {
-                    destinationAddress = [NSString stringWithFormat:@"%@ %@, %@, %@ %@", streetName, cityName, stateName, zipCode, country];
-                } else if (zipCode && !streetName) {
-                    destinationAddress = [NSString stringWithFormat:@"%@, %@ %@ %@", cityName, stateName, zipCode, country];
-                } else if (cityName && streetName) {
-                    destinationAddress = [NSString stringWithFormat:@"%@, %@, %@ %@", streetName, cityName, stateName, country];
-                } else
-                    destinationAddress = self.locationText;
-                
-                destinationAddress = [destinationAddress stringByReplacingOccurrencesOfString:@" " withString:@"%20"];
             
-            
-                NSString *urlStringUber = [NSString stringWithFormat:@"uber://?client_id=Vmks1LNIHQiiaUYd8Z3FaMNkvD-7s53V&action=setPickup&pickup=my_location&dropoff[latitude]=%f&dropoff[longitude]=%f&dropoff[nickname]=%@&dropoff[formatted_address]=%@", mapLocation.coordinate.latitude, mapLocation.coordinate.longitude, self.locationText, destinationAddress ];
+            if (!error) {
                 
-                urlStringUber = [urlStringUber stringByAddingPercentEscapesUsingEncoding:NSStringEncodingConversionExternalRepresentation];
-            
+                NSString *myLocationString = @"My%20Location";
+                
+                NSString *urlStringUber = [NSString stringWithFormat:@"uber://?client_id=Vmks1LNIHQiiaUYd8Z3FaMNkvD-7s53V&action=setPickup&pickup=my_location&pickup[nickname]=%@&dropoff[latitude]=%f&dropoff[longitude]=%f&dropoff[nickname]=%@", myLocationString, loc.latitude, loc.longitude, locationName];
+                
+                urlStringUber = [urlStringUber stringByReplacingOccurrencesOfString:@" " withString:@"%20"];
+                urlStringUber = [urlStringUber stringByReplacingOccurrencesOfString:@"," withString:@"%2C"];
+                
                 [[UIApplication sharedApplication] openURL:[NSURL URLWithString: urlStringUber]];
-            
-            //}];
+                
+            }
             
         }];
     }
@@ -747,48 +732,34 @@
         
         PFUser *currentUser = [PFUser currentUser];
         
-            NSString *firstName = currentUser[@"firstName"];
-            NSString *lastName = currentUser[@"lastName"];
-            NSString *userEmail = currentUser.email;
-            if (!userEmail) {
-                userEmail = @"";
+        NSString *firstName = currentUser[@"firstName"];
+        NSString *lastName = currentUser[@"lastName"];
+        NSString *userEmail = currentUser.email;
+        if (!userEmail) {
+            userEmail = @"";
+        }
+        
+        PFQuery *query = [PFQuery queryWithClassName:@"Event"];
+        [query getObjectInBackgroundWithId:self.eventID block:^(PFObject *object, NSError *error) {
+            
+            PFGeoPoint *loc = object[@"GeoLoc"];
+            
+            NSString *locationName = object[@"Location"];
+            
+            if (!error) {
+                
+                NSString *urlStringUber = [NSString stringWithFormat:@"https://m.uber.com/sign-up?client_id=Vmks1LNIHQiiaUYd8Z3FaMNkvD-7s53V&first_name=%@&last_name=%@&email=%@&country_code=us&&dropoff_latitude=%f&dropoff_longitude=%f&dropoff_nickname=%@", firstName, lastName, userEmail, loc.latitude, loc.longitude, locationName ];
+                
+                urlStringUber = [urlStringUber stringByReplacingOccurrencesOfString:@" " withString:@"%20"];
+                urlStringUber = [urlStringUber stringByReplacingOccurrencesOfString:@"," withString:@"%2C"];
+                
+                [[UIApplication sharedApplication] openURL:[NSURL URLWithString: urlStringUber]];
+                
             }
-            
-            
-            [[[CLGeocoder alloc]init] reverseGeocodeLocation:mapLocation completionHandler:^(NSArray *placemarks, NSError *error) {
-                CLPlacemark *placemark = placemarks[0];
-                NSString *destinationAddress = [[NSString alloc]init];
-                    
-                    NSString *streetName = placemark.addressDictionary[@"Street"];
-                    NSString *cityName = placemark.addressDictionary[@"City"];
-                    NSString *stateName = placemark.addressDictionary[@"State"];
-                    NSString *zipCode = placemark.addressDictionary[@"ZIP"];
-                    NSString *country = placemark.addressDictionary[@"Country"];
-                    
-                    
-                if (streetName && zipCode && cityName) {
-                    destinationAddress = [NSString stringWithFormat:@"%@ %@, %@, %@ %@", streetName, cityName, stateName, zipCode, country];
-                } else if (zipCode && !streetName) {
-                    destinationAddress = [NSString stringWithFormat:@"%@, %@ %@ %@", cityName, stateName, zipCode, country];
-                } else if (cityName && streetName) {
-                    destinationAddress = [NSString stringWithFormat:@"%@, %@, %@ %@", streetName, cityName, stateName, country];
-                } else
-                    destinationAddress = self.locationText;
-                
-                [destinationAddress stringByReplacingOccurrencesOfString:@" " withString:@"%20"];
-            
-                NSLog(@"%@", destinationAddress);
-                
-            NSString *urlStringUber = [NSString stringWithFormat:@"https://m.uber.com/sign-up?client_id=Vmks1LNIHQiiaUYd8Z3FaMNkvD-7s53V&first_name=%@&last_name=%@&email=%@&country_code=us&&dropoff_latitude=%f&dropoff_longitude=%f&dropoff_nickname=%@", firstName, lastName, userEmail, mapLocation.coordinate.latitude, mapLocation.coordinate.longitude, self.locationText ];
-            
-                //urlString = [urlString stringByAddingPercentEscapesUsingEncoding:NSStringEncodingConversionExternalRepresentation];
-                
-            [[UIApplication sharedApplication] openURL:[NSURL URLWithString: urlStringUber]];
             
         }];
         
     }
-    
     
     /* https://m.uber.com/sign-up?client_id=YOUR_CLIENT_ID
     &first_name=myFirstName&last_name=myLastName&email=test@example.com
@@ -956,7 +927,6 @@
     PFObject *object = [query getObjectWithId:self.eventID];
     
     EKEvent *event = [EKEvent eventWithEventStore:eventStore];
-    EKEventViewController *evc = [[EKEventViewController alloc] init];
     
     event.title = self.titleText;
     
@@ -1021,7 +991,7 @@
         //[RKDropdownAlert title:@"Event added to your main calendar!" backgroundColor:[UIColor colorWithRed:.05 green:.29 blue:.49 alpha:1.0] textColor:[UIColor whiteColor]];
         
         [event setCalendar:[eventStore defaultCalendarForNewEvents]];
-        NSError *err;
+        //NSError *err;
         //[eventStore saveEvent:event span:EKSpanThisEvent error:&err];
         //NSLog(@"Added %@ to calendar. Object ID: %@", dragView.title.text, dragView.objectID);
         
@@ -1193,7 +1163,7 @@
     PFObject *eventObject = [eventQuery getObjectWithId:APdragView.objectID];
     
     NSString *title = APdragView.title.text;
-    NSString *description = APdragView.subtitle.text;
+    //NSString *description = APdragView.subtitle.text;
     NSString* loc = APdragView.location.text;
     
     NSDateFormatter *formatter = [[NSDateFormatter alloc] init];

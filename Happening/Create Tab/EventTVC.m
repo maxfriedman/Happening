@@ -122,6 +122,7 @@
         emailString = @"";
     }
     
+    Event[@"Hashtag"] = @"Nightlife";
     Event[@"Repeats"] = @"Never";
     Event[@"CreatedBy"] = user.objectId;
     Event[@"CreatedByName"] = createdByNameString;
@@ -417,6 +418,8 @@
         Event[@"ContactEmail"] = emailString;
         Event[@"isTicketedEvent"] = @(ticks);
         Event[@"isFreeEvent"] = @(isFree);
+        
+        Event[@"weight"] = @3;
         
         PFGeoPoint *loc = [PFGeoPoint geoPointWithLocation:item.placemark.location];
         Event[@"GeoLoc"] = loc;
@@ -716,6 +719,9 @@ clickedButtonAtIndex:(NSInteger)buttonIndex{
         repeatEvent[@"isTicketedEvent"] = Event[@"isTicketedEvent"];
         repeatEvent[@"isFreeEvent"] = Event[@"isFreeEvent"];
         
+        repeatEvent[@"weight"] = @3;
+
+        
         if (repeatsInt == 1) { // Weekly 604800 seconds
         
             NSLog(@"Repeats weekly");
@@ -754,11 +760,12 @@ clickedButtonAtIndex:(NSInteger)buttonIndex{
     
     NSLog(@"Contact Us Tapped");
     // Email Subject
-    NSString *emailTitle = @"";
+    PFUser *user = [PFUser currentUser];
+    NSString *emailTitle = [NSString stringWithFormat:@"A message from user: %@", user.objectId];
     // Email Content
     NSString *messageBody = @"How can we help?";
     // To address
-    NSArray *toRecipents = [NSArray arrayWithObject:@"max@gethappeningapp.com"];
+    NSArray *toRecipents = [NSArray arrayWithObject:@"hello@happening.city"];
     
     MFMailComposeViewController *mc = [[MFMailComposeViewController alloc] init];
     mc.mailComposeDelegate = self;

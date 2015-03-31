@@ -10,7 +10,7 @@
 #import <Parse/Parse.h>
 #import <FBSDKCoreKit/FBSDKCoreKit.h>
 
-@interface LoginView : UIViewController <FBSDKLoginButtonDelegate, UIPickerViewDelegate, UIPickerViewDataSource, UINavigationControllerDelegate>
+@interface LoginView : UIViewController <UIPickerViewDelegate, UINavigationControllerDelegate>
 
 @property (strong,nonatomic) UIActivityIndicatorView *activityView;
 

@@ -98,7 +98,12 @@
     
     titleField.text = Event[@"Title"];
     locationField.text = Event[@"Location"];
-    self.descriptionField.text = Event[@"Description"];
+    
+    if (Event[@"Description"] != nil) {
+        self.descriptionField.text = Event[@"Description"];
+        self.descriptionField.textColor = [UIColor blackColor];
+        self.descriptionField.font = [UIFont systemFontOfSize:14.0];
+    }
     
     dateFormatter = [[NSDateFormatter alloc]init];
     [dateFormatter setDateFormat:@"EEE, MMM d    h:mm a"];
@@ -630,11 +635,12 @@ clickedButtonAtIndex:(NSInteger)buttonIndex{
     
     NSLog(@"Contact Us Tapped");
     // Email Subject
-    NSString *emailTitle = @"";
+    PFUser *user = [PFUser currentUser];
+    NSString *emailTitle = [NSString stringWithFormat:@"A message from user: %@", user.objectId];
     // Email Content
     NSString *messageBody = @"How can we help?";
     // To address
-    NSArray *toRecipents = [NSArray arrayWithObject:@"max@gethappeningapp.com"];
+    NSArray *toRecipents = [NSArray arrayWithObject:@"hello@happening.city"];
     
     MFMailComposeViewController *mc = [[MFMailComposeViewController alloc] init];
     mc.mailComposeDelegate = self;

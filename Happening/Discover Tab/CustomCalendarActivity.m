@@ -20,7 +20,7 @@
 
 - (NSString *)activityTitle
 {
-    return @"Add Event to Calendar";
+    return @"Calendar";
 }
 
 - (UIImage *)activityImage

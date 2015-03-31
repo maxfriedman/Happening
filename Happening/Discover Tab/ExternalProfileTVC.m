@@ -15,7 +15,7 @@
 #import <Parse/Parse.h>
 #import <FBSDKCoreKit/FBSDKCoreKit.h>
 
-@interface ExternalProfileTVC () <EventTVCDelegate>
+@interface ExternalProfileTVC ()
 
 @property (strong, nonatomic) NSMutableDictionary *sections;
 @property (strong, nonatomic) NSArray *sortedDays;

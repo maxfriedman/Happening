@@ -195,6 +195,11 @@
         
         dragView.locImage.image = [UIImage imageNamed:@"location"];
         
+        dragView.eventImage.image = [UIImage imageNamed:event[@"Hashtag"]];
+        
+        if (event[@"Image"] != nil) {
+            // Image formatting
+        
         PFFile *imageFile = event[@"Image"];
         [imageFile getDataInBackgroundWithBlock:^(NSData *imageData, NSError *error) {
             if (!error) {
@@ -210,6 +215,8 @@
             }
             
         }];
+            
+        }
         
         dragView.userImage.image = [UIImage imageNamed:@"interested_face"];
         

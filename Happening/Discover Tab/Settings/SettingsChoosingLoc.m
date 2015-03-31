@@ -213,7 +213,7 @@
         if (indexPath.row == 0) {
             
             [self didChooseCurrentLoc];
-            [delegate refreshSettings];
+            //[delegate refreshSettings];
             
         } else if (indexPath.row == 1) {
             
@@ -222,11 +222,19 @@
             
             PFGeoPoint *geoPoint = [PFGeoPoint geoPointWithLatitude:38.907192 longitude:-77.036871];
             user[@"userLoc"] = geoPoint;
-            
-            [user saveInBackground];
+
             [defaults synchronize];
-            [delegate refreshSettings];
-            [self dismissViewControllerAnimated:YES completion:nil];
+            
+            [user saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+                if (succeeded) {
+                    
+                    NSLog(@"Saved user");
+
+                    [self dismissViewControllerAnimated:YES completion:^{
+                        [delegate refreshSettings];
+                    }];
+                }
+            }];
             
         } else if (indexPath.row == 2) {
             
@@ -236,10 +244,19 @@
             PFGeoPoint *geoPoint = [PFGeoPoint geoPointWithLatitude:42.358431 longitude:-71.059773];
             user[@"userLoc"] = geoPoint;
             
-            [user saveInBackground];
             [defaults synchronize];
-            [delegate refreshSettings];
-            [self dismissViewControllerAnimated:YES completion:nil];
+            
+            [user saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+                if (succeeded) {
+                    
+                    NSLog(@"Saved user");
+                    
+                    [self dismissViewControllerAnimated:YES completion:^{
+                        [delegate refreshSettings];
+                    }];
+                }
+            }];
+            
         }
         
         user[@"userLocSubtitle"] = @"";
@@ -311,7 +328,8 @@
         locManager.desiredAccuracy=kCLLocationAccuracyBest;
         locManager.distanceFilter=50;
         [locManager startUpdatingLocation];
-        [delegate refreshSettings];
+
+        
         //[self dismissViewControllerAnimated:YES completion:nil];
 
         
@@ -335,30 +353,35 @@
 }
 
 
-#warning BE CAREFUL --- fix this later. updates literally every second... unnecessary
-
 - (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations{
 
     if (choseCurrentLoc) {
         
         NSLog(@"Location updated");
     
+        
         PFGeoPoint *loc = [PFGeoPoint geoPointWithLocation:locManager.location];
         user[@"userLoc"] = loc;
         user[@"userLocTitle"] = @"Current Location";
-        [user saveInBackground];
-    
-        // Peace out!
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-        //[defaults setBool:YES forKey:@"hasLaunched"];
-        [defaults setObject:@"Current Location" forKey:@"userLocTitle"];
-        [defaults setObject:@"" forKey:@"userLocSubtitle"];
-        [defaults synchronize];
-        
-        [delegate refreshSettings];
-        
-        [self dismissViewControllerAnimated:YES completion:nil];
-
+        [user saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+            if (succeeded) {
+                
+                NSLog(@"Saved user");
+                
+                // Peace out!
+                NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                //[defaults setBool:YES forKey:@"hasLaunched"];
+                [defaults setObject:@"Current Location" forKey:@"userLocTitle"];
+                [defaults setObject:@"" forKey:@"userLocSubtitle"];
+                [defaults synchronize];
+                
+                
+                [self dismissViewControllerAnimated:YES completion:^{
+                    [delegate refreshSettings];
+                }];
+                
+            }
+        }];
     }
     
 }

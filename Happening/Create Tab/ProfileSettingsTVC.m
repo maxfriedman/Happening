@@ -81,11 +81,14 @@
     
     NSLog(@"Contact Us Tapped");
     // Email Subject
-    NSString *emailTitle = @"";
+    
+    PFUser *user = [PFUser currentUser];
+    NSString *emailTitle = [NSString stringWithFormat:@"A message from user: %@", user.objectId];
     // Email Content
-    NSString *messageBody = [NSString stringWithFormat: @"User ID: %@ \n\n", [PFUser currentUser].objectId];
+    NSString *messageBody = @"How can we help?";
     // To address
-    NSArray *toRecipents = [NSArray arrayWithObject:@"max@gethappeningapp.com"];
+    NSArray *toRecipents = [NSArray arrayWithObject:@"hello@happening.city"];
+
     
     MFMailComposeViewController *mc = [[MFMailComposeViewController alloc] init];
     mc.mailComposeDelegate = self;
@@ -184,6 +187,23 @@
     UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:2 inSection:1]];
     cell.selected = NO;
     
+    [PFConfig getConfigInBackgroundWithBlock:^(PFConfig *config, NSError *error) {
+       
+        NSString *appStoreLink = config[@"AppStoreLink"];
+        
+        if (appStoreLink != nil) {
+            
+            //NSString *iTunesLink = @"https://itunes.apple.com/us/app/apple-store/id375380948?mt=8";
+            [[UIApplication sharedApplication] openURL:[NSURL URLWithString:appStoreLink]];
+            
+        }
+        else {
+            
+            [RKDropdownAlert title:@"Something went wrong :(" message:@"Unable to link to the App Store." backgroundColor:[UIColor redColor] textColor:[UIColor whiteColor]];
+            
+        }
+    }];
+
 }
 
 /*

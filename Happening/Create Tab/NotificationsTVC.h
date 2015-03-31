@@ -10,4 +10,10 @@
 
 @interface NotificationsTVC : UITableViewController
 
+@property (strong, nonatomic) IBOutlet UISwitch *inAppMatches;
+@property (strong, nonatomic) IBOutlet UISwitch *popular;
+@property (strong, nonatomic) IBOutlet UISwitch *pushMatches;
+@property (strong, nonatomic) IBOutlet UISwitch *reminders;
+@property (strong, nonatomic) IBOutlet UISwitch *friendJoined;
+
 @end
