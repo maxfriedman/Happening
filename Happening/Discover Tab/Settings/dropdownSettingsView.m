@@ -463,11 +463,18 @@
     [locationField setTitle:[NSString stringWithFormat:@"         Near %@", [defaults objectForKey:@"userLocTitle"]] forState:UIControlStateNormal];
     categoryChanged = YES;
     
-    if (![defaults boolForKey:@"hasLaunched"])
+    if (![defaults boolForKey:@"hasLaunched"]) {
+        NSLog(@"First time-- Loc selected.");
         [delegate dropdownPressedFromTut:NO];
+    }
     
 }
 
+-(void)iOS7Touch {
+    
+    //[delegate dropdownPressed];
+    [delegate refreshData];
+}
 
 - (BOOL)didPreferencesChange {
     

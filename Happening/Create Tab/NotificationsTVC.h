@@ -15,5 +15,6 @@
 @property (strong, nonatomic) IBOutlet UISwitch *pushMatches;
 @property (strong, nonatomic) IBOutlet UISwitch *reminders;
 @property (strong, nonatomic) IBOutlet UISwitch *friendJoined;
+@property (strong, nonatomic) IBOutlet UISwitch *friendPush;
 
 @end

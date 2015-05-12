@@ -90,7 +90,7 @@
     NSURL *candidateURL = [NSURL URLWithString:urlField.text];
     // WARNING > "test" is an URL according to RFCs, being just a path
     // so you still should check scheme and all other NSURL attributes you need
-    if (candidateURL && [urlField.text containsString:@"."] /* && candidateURL.scheme && candidateURL.host */) {
+    if (candidateURL && [self doesString:urlField.text contain:@"."] /* && candidateURL.scheme && candidateURL.host */) {
         // candidate is a well-formed url with:
         //  - a scheme (like http://)
         //  - a host (like stackoverflow.com)
@@ -112,11 +112,16 @@
     }
 }
 
+-(BOOL)doesString:(NSString *)first contain:(NSString*)other {
+    NSRange range = [first rangeOfString:other];
+    return range.length != 0;
+}
+
 - (IBAction)emailField:(id)sender {
     
     UITableViewCell *currentCell = [self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:1]];
     
-    if ([emailField.text containsString:@"@"] && [emailField.text containsString:@"."]) {
+    if ([self doesString:emailField.text contain:@"@"] && [self doesString:emailField.text contain:@"."]) {
         
         passedEvent[@"ContactEmail"] = emailField.text;
     

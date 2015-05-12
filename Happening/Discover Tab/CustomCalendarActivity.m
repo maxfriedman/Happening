@@ -123,8 +123,13 @@
     event.title = draggableView.title.text;
     NSLog(@"Added %@ to calendar. Object ID: %@", draggableView.title.text, draggableView.objectID);
     
-    event.startDate = object[@"Date"];
-    event.endDate = object[@"EndTime"];
+    NSDate *startDate = object[@"Date"];
+    NSDate *endDate = object[@"EndTime"];
+    
+#warning not goood.....
+    
+    event.startDate = [startDate dateByAddingTimeInterval:60*60*4];
+    event.endDate = [endDate dateByAddingTimeInterval:60*60*4];
     
     //get address REMINDER 76597869876
     PFGeoPoint *geoPoint = object[@"GeoLoc"];

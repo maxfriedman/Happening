@@ -34,12 +34,15 @@
     PFQuery *finalQuery;
     
     BOOL shouldRefresh;
+    BOOL shouldLimit;
+    
+    int evCount;
     
 }
 //this makes it so only two cards are loaded at a time to
 //avoid performance and memory costs
 static const int MAX_BUFFER_SIZE = 2; //%%% max number of cards loaded at any given time, must be greater than 1
-static const float CARD_HEIGHT = 310; //%%% height of the draggable card
+static const float CARD_HEIGHT = 350; //%%% height of the draggable card
 static const float CARD_WIDTH = 284; //%%% width of the draggable card
 
 @synthesize exampleCardLabels; //%%% all the labels I'm using as example data at the moment
@@ -89,6 +92,8 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         
         PFUser *user = [PFUser currentUser];
         
+        evCount = 0;
+        
         if(locManager && [CLLocationManager locationServicesEnabled]) {
             [self.locManager startUpdatingLocation];
             CLLocation *currentLocation = locManager.location;
@@ -126,16 +131,18 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         
         // Sorts the query by most recent event and only shows those after today's date
         
-        BOOL shouldLimit =! [[NSUserDefaults standardUserDefaults] boolForKey:@"noMoreEvents"];
+        shouldLimit =! [[NSUserDefaults standardUserDefaults] boolForKey:@"noMoreEvents"];
         
         if ([[NSUserDefaults standardUserDefaults] boolForKey:@"today"]) {
             
             NSLog(@"today");
             
             [eventQuery whereKey:@"EndTime" greaterThan:[NSDate dateWithTimeIntervalSinceNow:1800]]; // show today's events, must be at least 30 minutes left in the event (END)
+            NSLog(@"%@", [NSDate dateWithTimeIntervalSinceNow:1800]);
             if (shouldLimit) {
                 [eventQuery whereKey:@"Date" lessThan:[[NSDate date]endOfDay]];
             }
+            
             
         } else if ([[NSUserDefaults standardUserDefaults] boolForKey:@"tomorrow"]) {
             
@@ -193,13 +200,6 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         
         //[eventQuery orderByDescending:@"weight"];
         
-        if (shouldLimit) {
-            //[eventQuery addDescendingOrder:@"swipesRight"];
-        } else {
-            //[eventQuery addAscendingOrder:@"Date"];
-        }
-        
-        
         /*
         PFGeoPoint *userLoc = user[@"userLoc"];
         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -216,12 +216,67 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         PFGeoPoint *userLoc = user[@"userLoc"];
         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
         NSInteger radius = [defaults integerForKey:@"sliderValue"];
-        [finalQuery whereKey:@"GeoLoc" nearGeoPoint:userLoc withinMiles:radius];
         
-        PFQuery *didUserSwipe = [PFQuery queryWithClassName:@"Swipes"];
-        [didUserSwipe whereKey:@"UserID" containsString:user.objectId];
-        [finalQuery whereKey:@"objectId" doesNotMatchKey:@"EventID" inQuery:didUserSwipe];
         
+        if (shouldLimit && [[NSUserDefaults standardUserDefaults] boolForKey:@"today"]) {
+            //[eventQuery addDescendingOrder:@"swipesRight"];
+            
+            NSLog(@"LIMIT");
+            
+            PFQuery *yesQuery = [PFQuery queryWithClassName:@"Swipes"];
+            yesQuery.limit = 1000;
+            [yesQuery whereKey:@"UserID" containsString:user.objectId];
+            [yesQuery whereKey:@"swipedAgain" equalTo:@YES];
+            
+            [finalQuery whereKey:@"objectId" doesNotMatchKey:@"EventID" inQuery:yesQuery];
+            //eventQuery = [PFQuery orQueryWithSubqueries:@[eventQuery, yesQuery]];
+            
+        } else {
+            //[eventQuery addAscendingOrder:@"Date"];
+
+            NSLog(@"DO NOT LIMIT");
+            
+            PFQuery *didUserSwipe = [PFQuery queryWithClassName:@"Swipes"];
+            didUserSwipe.limit = 1000;
+            [didUserSwipe whereKey:@"UserID" containsString:user.objectId];
+            [finalQuery whereKey:@"objectId" doesNotMatchKey:@"EventID" inQuery:didUserSwipe];
+            
+        }
+        
+        float milesToLat = 69;
+        //float milesToLong = 45;
+        
+        //Position, decimal degrees
+        
+        //Earth’s radius, sphere
+        float earthRadius = 6378137.0;
+        
+        //offsets in meters
+        float dn = radius * 1609.344;
+        float de = radius * 1609.344;
+        
+        //Coordinate offsets in radians
+        float dLat = dn/earthRadius;
+        float dLon = de/(earthRadius*cosf(M_PI*userLoc.latitude/180));
+        
+        //OffsetPosition, decimal degrees
+        float lat1 = userLoc.latitude - dLat * 180/M_PI;
+        float lon1 = userLoc.longitude - dLon * 180/M_PI;
+        
+        float lat2 = userLoc.latitude + dLat * 180/M_PI;
+        float lon2 = userLoc.longitude + dLon * 180/M_PI;
+        
+        float blah = cosf(userLoc.latitude) * 69;
+        
+        PFGeoPoint *swc = [PFGeoPoint geoPointWithLatitude:lat1 longitude:lon1];
+        PFGeoPoint *nwc = [PFGeoPoint geoPointWithLatitude:lat2 longitude:lon2];
+        
+        // F this query, screws up the entire logic
+        //[finalQuery whereKey:@"GeoLoc" nearGeoPoint:userLoc withinMiles:radius];
+        
+        [finalQuery whereKey:@"GeoLoc" withinGeoBoxFromSouthwest:swc toNortheast:nwc];
+        
+        //finalQuery.limit = 500;
         
         // %%%%%%%%% THE MAGIC FORMULA %%%%%%%%%%%%%%% \\
         
@@ -230,10 +285,17 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         [finalQuery addDescendingOrder:@"swipesRight"];
         [finalQuery addAscendingOrder:@"Date"];
         
-        //eventQuery.limit = 10;
-        
-        //NSLog(@"events: %@", [eventQuery findObjects]);
+        finalQuery.limit = 10;
+         
+        //whereKey:withinGeoBoxFromSouthwest:toNortheast:
+
+        NSLog(@"=======  1  ========");
+
         [finalQuery findObjectsInBackgroundWithBlock:^(NSArray *eventObjects, NSError *error) {
+
+            NSLog(@"=======  2  ========");
+            
+            evCount = (unsigned)(long)eventObjects.count;
             
             if (eventObjects.count == 0 && shouldLimit) {
                 // Do something?
@@ -263,22 +325,33 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                 [locationArray addObject:eventObject[@"Location"]];
                 
                 NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+                
                 [formatter setDateFormat:@"EEE, MMM d"];
                 NSDate *eventDate = [[NSDate alloc]init];
+                
                 eventDate = eventObject[@"Date"];
                 
+                
                 NSString *finalString;
+                BOOL funkyDates = NO;
+                NSString *calTimeString = @"";
                 
                 // FORMAT FOR MULTI-DAY EVENT
                 NSDate *endDate = eventObject[@"EndTime"];
                 
-                
-                if ([eventDate beginningOfDay] == [[NSDate date]beginningOfDay]) {  // TODAY
+                if ([eventDate compare:[NSDate date]] == NSOrderedAscending) {
+                  
+                    finalString = [NSString stringWithFormat:@"Happening NOW!"];
+                    [calDayOfWeekArray addObject:@"Happening now!"];
+                    funkyDates = YES;
+                    [formatter setDateFormat:@"h:mma"];
+                    calTimeString = [NSString stringWithFormat:@"Now - %@", [formatter stringFromDate:endDate]];
+                    
+                } else if ([eventDate beginningOfDay] == [[NSDate date]beginningOfDay]) {  // TODAY
                     
                     [formatter setDateFormat:@"h:mma"];
                     NSString *timeString = [formatter stringFromDate:eventDate];
                     finalString = [NSString stringWithFormat:@"Today at %@", timeString];
-                    
                     [calDayOfWeekArray addObject:@"Today"];
                     
                 } else if ([eventDate beginningOfDay] == [[NSDate dateWithTimeIntervalSinceNow:86400] beginningOfDay]) { // TOMORROW
@@ -311,8 +384,10 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                     
                     finalString = [NSString stringWithFormat:@"%@ at %@ to %@ at %@", dateString, timeString, endDateString, endTimeString];
                     
-                    [formatter setDateFormat:@"EEEE"];
-                    [calDayOfWeekArray addObject:[formatter stringFromDate:eventDate]];
+                    [formatter setDateFormat:@"EEE"];
+                    [calDayOfWeekArray addObject:[NSString stringWithFormat:@"%@ - %@", [formatter stringFromDate:eventDate], [formatter stringFromDate:endDate]]];
+                    //funkyDates = YES;
+                    //calTimeString = [NSString stringWithFormat:@"%@ - %@", [formatter stringFromDate:eventDate], [formatter stringFromDate:endDate]];
                 
                 } else { // Past this week- uses abbreviated date format
                 
@@ -326,28 +401,42 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                     
                 }
                 
-                [formatter setDateFormat:@"MMM"];
-                [calMonthArray addObject:[formatter stringFromDate:eventDate]];
-                [formatter setDateFormat:@"d"];
-                [calDayArray addObject:[formatter stringFromDate:eventDate]];
-                
-                [formatter setDateFormat:@"h:mma"];
-                NSString *calTimeString = [NSString stringWithFormat:@"%@ - %@", [formatter stringFromDate:eventDate], [formatter stringFromDate:endDate]];
-                
-                if ([calTimeString containsString:@":00"]) {
+                if (funkyDates) {
                     
-                    calTimeString = [calTimeString stringByReplacingOccurrencesOfString:@":00" withString:@" "];
+                    [formatter setDateFormat:@"MMM"];
+                    [calMonthArray addObject:[formatter stringFromDate:eventDate]];
                     
+                    [formatter setDateFormat:@"d"];
+                    NSString *dateSpan = @"";
+                    
+                    NSString *startDay =[formatter stringFromDate:eventDate];
+                    NSString *endDay = [formatter stringFromDate:endDate];
+                    
+                    if (![startDay isEqualToString:endDay]) {
+                        dateSpan = [NSString stringWithFormat:@"%@-%@",startDay,endDay];
+                    } else {
+                        dateSpan = startDay;
+
+                    }
+                    
+                    [calDayArray addObject:dateSpan];
+                    
+                } else {
+                    
+                    [formatter setDateFormat:@"MMM"];
+                    [calMonthArray addObject:[formatter stringFromDate:eventDate]];
+                    [formatter setDateFormat:@"d"];
+                    [calDayArray addObject:[formatter stringFromDate:eventDate]];
+                    [formatter setDateFormat:@"h:mma"];
+                    calTimeString = [NSString stringWithFormat:@"%@ - %@", [formatter stringFromDate:eventDate], [formatter stringFromDate:endDate]];
                 }
+
+                calTimeString = [calTimeString stringByReplacingOccurrencesOfString:@":00" withString:@" "];
                 
                 [calTimeArray addObject:calTimeString];
                 
                 
-                if ([finalString containsString:@":00"]) {
-                    
-                    finalString = [finalString stringByReplacingOccurrencesOfString:@":00" withString:@" "];
-                    
-                }
+                finalString = [finalString stringByReplacingOccurrencesOfString:@":00" withString:@" "];
                
                 [dateArray addObject:finalString];
                 
@@ -404,6 +493,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                 dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
                     // time-consuming task
                     dispatch_async(dispatch_get_main_queue(), ^{
+                        [SVProgressHUD setViewForExtension:self];
                         [SVProgressHUD showErrorWithStatus:@"Houston, we have a problem." maskType:SVProgressHUDMaskTypeGradient];
                     });
                 });
@@ -468,7 +558,18 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         //NSLog(objectIDs[index]);
 
         draggableView.objectID = objectIDs[index];
-        draggableView.title.text = titleArray[index];
+        
+        NSString *titleString = titleArray[index];
+        
+        if (titleString.length > 33) {
+            draggableView.title.numberOfLines = 2;
+            draggableView.title.font = [UIFont fontWithName:@"OpenSans-Bold" size:16];
+            draggableView.title.minimumScaleFactor = 0.75;
+
+        }
+        
+        draggableView.title.text = titleString;
+        
         draggableView.subtitle.text = subtitleArray[index];
         [draggableView.subtitle sizeToFit];
         draggableView.location.text = locationArray[index];
@@ -513,7 +614,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             draggableView.geoLoc.text = distance;
             }
             
-            draggableView.locImage.image = [UIImage imageNamed:@"location"];
+            draggableView.locImage.image = [UIImage imageNamed:@"locationGrey"];
         }
         
         /*
@@ -555,62 +656,26 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                     */
 
                     draggableView.eventImage.image = [UIImage imageWithData:imageData];
+                    
+                    //[draggableView.cardView insertSubview:draggableView.transpBackground belowSubview:draggableView.locImage];
+                    
 
-                    /*
-                    BOOL changeColor = false;
-                    //UIColor *c1 = [self colorOfPoint:CGPointMake(68, 168)];
-                    //UIColor *c2 = [self colorOfPoint:CGPointMake(160, 168)];
-                    //UIColor *c3 = [self colorOfPoint:CGPointMake(252, 168)];
+                    CAGradientLayer *l = [CAGradientLayer layer];
+                    l.frame = draggableView.eventImage.bounds;
+                    l.colors = [NSArray arrayWithObjects:(id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:0.0] CGColor], (id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:0.1] CGColor], (id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:0.3] CGColor], (id)[[UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.75] CGColor], nil];
                     
-                    //NSLog(@"%f, %f, %f", c1., c1.CIColor.green, c1.CIColor.blue);
+                    //l.startPoint = CGPointMake(0.0, 0.7f);
+                    //l.endPoint = CGPointMake(0.0f, 1.0f);
+                    l.locations = [NSArray arrayWithObjects:[NSNumber numberWithFloat:0.0], [NSNumber numberWithFloat:0.2],
+                    [NSNumber numberWithFloat:0.5],
+                    //[NSNumber numberWithFloat:0.9],
+                    [NSNumber numberWithFloat:1.0], nil];
                     
-                    if ([draggableView colorOfPointIsWhite:CGPointMake(50, 145)]) {
-                        //NSLog(@"Made it 1");
-                        changeColor = true;
-                        
-                        UIImageView *im = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"noButton"]];
-                        im.center = CGPointMake(50, 145);
-                        //[draggableView.cardView addSubview:im];
-                        
-                    } else if ([draggableView colorOfPointIsWhite:CGPointMake(142, 150)]) {
-                        //NSLog(@"Made it 2");
-                        changeColor = true;
-                        
-                        UIImageView *im = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"noButton"]];
-                        im.center = CGPointMake(142, 150);
-                        //[draggableView.cardView addSubview:im];
-                        
-                    } else if ([draggableView colorOfPointIsWhite:CGPointMake(234, 155)]) {
-                        //NSLog(@"Made it 3");
-                        changeColor = true;
-                        
-                        UIImageView *im = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"noButton"]];
-                        im.center = CGPointMake(234, 155);
-                        //[draggableView.cardView addSubview:im];
-                        
-                    }
+                    [draggableView.eventImage.layer insertSublayer:l atIndex:0];
                     
-                    if (changeColor)
-                    {
-                        //NSLog(@"White color-- change color");
-                        
-                        [draggableView.cardView insertSubview:draggableView.transpBackground belowSubview:draggableView.locImage];
-                        
-                        //blurView.tintColor = [UIColor blackColor];
-                        
-                    } else {
-                        
-                        blurView = [[FXBlurView alloc]initWithFrame:draggableView.blurEffectView.frame];
-                        blurView.blurRadius = 50;
-                        blurView.tintColor = [UIColor clearColor];
-                        [draggableView.eventImage addSubview:blurView];
-                        blurView.dynamic = NO;
-                        
-                    }
-                     */
+                    //blurView.layer.mask = l;
                     
-                    [draggableView.cardView insertSubview:draggableView.transpBackground belowSubview:draggableView.locImage];
-                    
+
                     //UIImage *blurredImage = [draggableView.eventImage.image applyLightEffect];
                     /*
                      CGRect clippedRect  = CGRectMake(0, 240, 480, 140);
@@ -691,8 +756,10 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 -(void)loadCards
 {
     
-    [finalQuery countObjectsInBackgroundWithBlock:^(int eventCount, NSError *error) {
-        
+    //[finalQuery countObjectsInBackgroundWithBlock:^(int eventCount, NSError *error) {
+    
+    int eventCount = evCount;
+    
         NSLog(@"%lu cards loaded",(unsigned long)eventCount);
         
         if(eventCount > 0) {
@@ -725,7 +792,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"noMoreEvents"];
             [[NSUserDefaults standardUserDefaults] synchronize];
             
-            if (!error) {
+            //if (!error) {
                 
                 dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
                     // time-consuming task
@@ -733,7 +800,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                         [SVProgressHUD dismiss];
                     });
                 });
-            }
+            //}
             
         } else if ([[NSUserDefaults standardUserDefaults] boolForKey:@"noMoreEvents"] ) { // run one more time without limits
             
@@ -767,7 +834,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             [dragView.cardBackground removeFromSuperview];
         }
 
-    }];//end of PFQuery
+    //}];//end of PFQuery
     
     
 }
@@ -792,17 +859,85 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         
     }];
     
-    PFObject *swipesObject = [PFObject objectWithClassName:@"Swipes"];
     PFUser *user = [PFUser currentUser];
-    swipesObject[@"UserID"] = user.objectId;
-    swipesObject[@"username"] = user.username;
-    swipesObject[@"EventID"] = c.objectID;
-    swipesObject[@"swipedRight"] = @NO;
-    swipesObject[@"swipedLeft"] = @YES;
     
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"socialMode"]) {
-        swipesObject[@"FBObjectID"] = user[@"FBObjectID"];
-    }
+    PFQuery *swipesQuery = [PFQuery queryWithClassName:@"Swipes"];
+    [swipesQuery whereKey:@"EventID" equalTo:dragView.objectID];
+    [swipesQuery whereKey:@"UserID" equalTo:user.objectId];
+    
+    PFObject *swipesObject = [PFObject objectWithClassName:@"Swipes"];
+    
+    [swipesQuery countObjectsInBackgroundWithBlock:^(int count, NSError *error) {
+            
+        if (count > 0) {
+                
+            NSLog(@"SECOND time Swiping");
+                
+            [swipesQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error){
+                    
+                object[@"swipedAgain"] = @YES;
+                object[@"swipedRight"] = @NO;
+                object[@"swipedLeft"] = @YES;
+                
+                if (loadedCards.count == 0) {
+                    
+                    [object saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+                        
+                        if (succeeded) {
+                            
+                            [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"noMoreEvents"];
+                            [[NSUserDefaults standardUserDefaults] synchronize];
+                            [self.myViewController refreshData];
+                        }
+                        
+                    }];
+                    
+                } else {
+                    
+                    [object saveInBackground];
+                }
+                
+            }];
+            
+            
+        } else {
+            
+            NSLog(@"FIRST time Swiping");
+            
+            swipesObject[@"UserID"] = user.objectId;
+            swipesObject[@"username"] = user.username;
+            swipesObject[@"EventID"] = c.objectID;
+            swipesObject[@"swipedRight"] = @NO;
+            swipesObject[@"swipedLeft"] = @YES;
+            
+            //never show again if Swiped left
+            swipesObject[@"swipedAgain"] = @YES;
+ 
+            
+            if ([[NSUserDefaults standardUserDefaults] boolForKey:@"socialMode"]) {
+                swipesObject[@"FBObjectID"] = user[@"FBObjectID"];
+            }
+         
+            if (loadedCards.count == 0) {
+                
+                [swipesObject saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+                    
+                    if (succeeded) {
+                        
+                        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"noMoreEvents"];
+                        [[NSUserDefaults standardUserDefaults] synchronize];
+                        [self.myViewController refreshData];
+                    }
+                    
+                }];
+                
+            } else {
+                [swipesObject saveInBackground];
+            }
+            
+        }
+        
+    }];
 
     
     [loadedCards removeObjectAtIndex:0]; //%%% card was swiped, so it's no longer a "loaded card"
@@ -821,23 +956,6 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         [self.myViewController flipCurrentView];
     } else
         self.myViewController.userSwipedFromFlippedView = NO;
-    
-    if (loadedCards.count == 0) {
-        
-        [swipesObject saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
-            
-            if (succeeded) {
-                
-                [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"noMoreEvents"];
-                [[NSUserDefaults standardUserDefaults] synchronize];
-                [self.myViewController refreshData];
-            }
-            
-        }];
-    
-    } else {
-        [swipesObject saveInBackground];
-    }
     
 }
 
@@ -879,20 +997,9 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             NSLog(@"Parse error: %@", error);
               }
     }];
-    
-    PFObject *swipesObject = [PFObject objectWithClassName:@"Swipes"];
-    swipesObject[@"UserID"] = user.objectId;
-    swipesObject[@"username"] = user.username;
-    swipesObject[@"EventID"] = c.objectID;
-    swipesObject[@"swipedRight"] = @YES;
-    swipesObject[@"swipedLeft"] = @NO;
-    
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"socialMode"]) {
-        swipesObject[@"FBObjectID"] = user[@"FBObjectID"];
-    }
 
     [PFCloud callFunctionInBackground:@"swipeRight"
-                       withParameters:@{@"user":user.objectId, @"event":dragView.objectID}
+                       withParameters:@{@"user":user.objectId, @"event":dragView.objectID, @"fbID":user[@"FBObjectID"], @"fbToken":[FBSDKAccessToken currentAccessToken].tokenString, @"title":dragView.title.text, @"loc":dragView.location.text}
                                 block:^(NSString *result, NSError *error) {
                                     if (!error) {
                                         // result is @"Hello world!"
@@ -902,8 +1009,96 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     
     //PFObject *analyticsObject = [PFObject objectWithClassName:@"Analytics"];
     //analyticsObject[@"Age"] = user[@"]
+    
+    PFQuery *swipesQuery = [PFQuery queryWithClassName:@"Swipes"];
+    [swipesQuery whereKey:@"EventID" equalTo:dragView.objectID];
+    [swipesQuery whereKey:@"UserID" equalTo:user.objectId];
+    
+    PFObject *swipesObject = [PFObject objectWithClassName:@"Swipes"];
+    
+        [swipesQuery countObjectsInBackgroundWithBlock:^(int count, NSError *error) {
+            
+            if (count > 0) {
+                
+                NSLog(@"SECOND time Swiping");
+                
+                [swipesQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error){
+                    
+                    object[@"swipedAgain"] = @YES;
+                    object[@"swipedAgain"] = @NO;
+                    object[@"swipedRight"] = @YES;
+                    
+                    if (loadedCards.count == 0) {
+                        
+                        [object saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+                            
+                            if (succeeded) {
+                                
+                                [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"noMoreEvents"];
+                                [[NSUserDefaults standardUserDefaults] synchronize];
+                                [self.myViewController refreshData];
+                            }
+                            
+                        }];
+                        
+                    } else {
+                        [object saveInBackground];
+                    }
+                    
+                }];
+                
+                
+            } else {
+                
+                NSLog(@"FIRST time Swiping");
+                
+                PFObject *swipesObject = [PFObject objectWithClassName:@"Swipes"];
+                swipesObject[@"UserID"] = user.objectId;
+                swipesObject[@"username"] = user.username;
+                swipesObject[@"EventID"] = c.objectID;
+                swipesObject[@"swipedRight"] = @YES;
+                swipesObject[@"swipedLeft"] = @NO;
+                
+                if (shouldLimit) {
+                    swipesObject[@"swipedAgain"] = @YES;
+                }
+                
+                if ([[NSUserDefaults standardUserDefaults] boolForKey:@"socialMode"]) {
+                    swipesObject[@"FBObjectID"] = user[@"FBObjectID"];
+                }
+                
+                if (loadedCards.count == 0) {
+                    
+                    [swipesObject saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+                        
+                        if (succeeded) {
+                            
+                            [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"noMoreEvents"];
+                            [[NSUserDefaults standardUserDefaults] synchronize];
+                            [self.myViewController refreshData];
+                        }
+                        
+                    }];
+                    
+                } else {
+                    [swipesObject saveInBackground];
+                }
+            
+            }
+            
+        }];
 
-
+    
+    if ( ! [[NSUserDefaults standardUserDefaults] boolForKey:@"hasSwipedRight"] ) {
+        NSLog(@"First swipe right");
+        
+        AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+        RKSwipeBetweenViewControllers *rk = appDelegate.rk;
+        [rk showCallout];
+        
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"hasSwipedRight"];
+    }
+    
     [loadedCards removeObjectAtIndex:0]; //%%% card was swiped, so it's no longer a "loaded card"
     
     if (cardsLoadedIndex < [allCards count]) { //%%% if we haven't reached the end of all cards, put another into the loaded cards
@@ -915,68 +1110,12 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     dragView = [loadedCards firstObject]; // Make dragView the current card
     [dragView.cardBackground removeFromSuperview];
     
-    if (loadedCards.count > 1) {
-        DraggableView *secondDragView = [loadedCards objectAtIndex:1];
-        [secondDragView sendSubviewToBack:secondDragView.cardBackground];
-    }
-    
     if (flippedBool == YES) {
         self.myViewController.userSwipedFromFlippedView = YES;
         [self.myViewController flipCurrentView];
     } else
         self.myViewController.userSwipedFromFlippedView = NO;
     
-    if (loadedCards.count == 0) {
-        
-        [swipesObject saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
-            
-            if (succeeded) {
-                
-                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-                    // time-consuming task
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        NSString *message = [[NSString alloc] init];
-                        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-                        if ([defaults boolForKey:@"today"]) {
-                            
-                            message = @"No more events today.\nLoading future events...";
-                            
-                        } else if ([defaults boolForKey:@"tomorrow"]) {
-                            
-                            message = @"No more events tomorrow.\nLoading future events...";
-                            
-                        } else {
-
-                            message = @"No more events this weekend.\nLoading future events...";
-                            
-                        }
-                        
-                        [SVProgressHUD showWithStatus:message maskType:SVProgressHUDMaskTypeGradient];
-                        [SVProgressHUD setFont:[UIFont fontWithName:@"OpenSans" size:14.0]];
-                    });
-                });
-                
-                [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"noMoreEvents"];
-                [[NSUserDefaults standardUserDefaults] synchronize];
-                [self.myViewController refreshData];
-            }
-            
-        }];
-        
-    } else {
-        [swipesObject saveInBackground];
-    }
-    
-    if ( ! [[NSUserDefaults standardUserDefaults] boolForKey:@"hasSwipedRight"] ) {
-        NSLog(@"First swipe right");
-        
-        AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
-        RKSwipeBetweenViewControllers *rk = appDelegate.rk;
-        [rk showCallout];
-        
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"hasSwipedRight"];
-    }
-
     
 }
 
@@ -1055,9 +1194,9 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         case EKAuthorizationStatusDenied:
         case EKAuthorizationStatusRestricted:
         {
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Privacy Warning" message:@"Permission was not granted for Calendar"
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Aw, man" message:@"Swiping down saves an event to your calendar, and it seems you've disabled this permission. To change this, go to Settings -> Happening -> Calendars -> On"
                                                            delegate:nil
-                                                  cancelButtonTitle:@"Okaaay"
+                                                  cancelButtonTitle:@"Okey dokey"
                                                   otherButtonTitles:nil];
             [alert show];
         }
@@ -1092,9 +1231,12 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     EKEvent *event = [EKEvent eventWithEventStore:eventStore];
     
     event.title = dragView.title.text;
-
-    event.startDate = object[@"Date"];
-    event.endDate = object[@"EndTime"];
+    
+    NSDate *startDate = object[@"Date"];
+    NSDate *endDate = object[@"EndTime"];
+    
+    event.startDate = startDate;
+    event.endDate = endDate;
 
     //get address REMINDER 76597869876
     PFGeoPoint *geoPoint = object[@"GeoLoc"];
@@ -1120,7 +1262,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     if (urlFromString != nil)
         event.URL = urlFromString;
     else
-        event.URL = [NSURL URLWithString:@"http://www.gethappeningapp.com"];
+        event.URL = [NSURL URLWithString:[NSString stringWithFormat:@"http://www.happening.city/events/%@", object.objectId]];
     
     
     //[event addAlarm:[EKAlarm alarmWithRelativeOffset:60.0f * -60.0f * 24]];

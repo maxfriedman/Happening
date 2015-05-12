@@ -45,6 +45,18 @@
     
     [self setEnabledSidewaysScrolling:YES];
     
+    self.sectionDateFormatter = [[NSDateFormatter alloc] init];
+    [self.sectionDateFormatter setDateFormat:@"EEEE, MMMM d"];
+    
+    self.cellDateFormatter = [[NSDateFormatter alloc] init];
+    [self.cellDateFormatter setDateStyle:NSDateFormatterNoStyle];
+    [self.cellDateFormatter setTimeStyle:NSDateFormatterShortStyle];
+    
+    [self loadData];
+}
+
+- (void)loadData {
+    
     // Instantiate event dictionary--- this is where all event info is stored
     self.sections = [NSMutableDictionary dictionary];
     
@@ -65,7 +77,7 @@
     eventsArray = [[NSArray alloc]init];
     
     [eventQuery findObjectsInBackgroundWithBlock:^(NSArray *events, NSError *error) {
-    
+        
         eventsArray = events;
         
         for (PFObject *event in eventsArray)
@@ -109,12 +121,6 @@
         
     }];
     
-    self.sectionDateFormatter = [[NSDateFormatter alloc] init];
-    [self.sectionDateFormatter setDateFormat:@"EEEE, MMMM d"];
-    
-    self.cellDateFormatter = [[NSDateFormatter alloc] init];
-    [self.cellDateFormatter setDateStyle:NSDateFormatterNoStyle];
-    [self.cellDateFormatter setTimeStyle:NSDateFormatterShortStyle];
 }
 
 
@@ -181,18 +187,29 @@
     // Time formatting
     NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
     [formatter setDateFormat:@"h:mm a"];
-    NSString *startTimeString = [formatter stringFromDate:Event[@"Date"]];
-    NSString *endTimeString = [formatter stringFromDate:Event[@"EndTime"]];
-    NSString *eventTimeString = [[NSString alloc]init];
-    eventTimeString = [NSString stringWithFormat:@"%@", startTimeString];
-    if (endTimeString) {
-        eventTimeString = [NSString stringWithFormat:@"%@ to %@", eventTimeString, endTimeString];
-    }
-    eventTimeString = [eventTimeString stringByReplacingOccurrencesOfString:@":00" withString:@""];
     
-    [cell.timeLabel setText:[NSString stringWithFormat:@"%@",eventTimeString]];
+    NSDate *startDate = Event[@"Date"];
+    NSDate *endDate = Event[@"EndTime"];
+    
+    if ([startDate compare:[NSDate date]] == NSOrderedAscending) {
+        
+        [cell.timeLabel setText: [NSString stringWithFormat:@"Happening NOW!"]];
+        
+    } else {
+    
+        NSString *startTimeString = [formatter stringFromDate:startDate];
+        NSString *endTimeString = [formatter stringFromDate:endDate];
+        NSString *eventTimeString = [[NSString alloc]init];
+        eventTimeString = [NSString stringWithFormat:@"%@", startTimeString];
+        if (endTimeString) {
+            eventTimeString = [NSString stringWithFormat:@"%@ to %@", eventTimeString, endTimeString];
+        }
+        eventTimeString = [eventTimeString stringByReplacingOccurrencesOfString:@":00" withString:@""];
+    
+        [cell.timeLabel setText:[NSString stringWithFormat:@"%@",eventTimeString]];
+        }
 
-    cell.eventImageView.image = [UIImage imageNamed:Event[@"Hashtag"]];
+        cell.eventImageView.image = [UIImage imageNamed:Event[@"Hashtag"]];
     
     if (Event[@"Image"] != nil) {
     // Image formatting
@@ -200,7 +217,8 @@
         [imageFile getDataInBackgroundWithBlock:^(NSData *imageData, NSError *error) {
             if (!error) {
             
-            
+                cell.blurView.tintColor = [UIColor blackColor];
+                
                 //cell.blurView.alpha = 0;
                 cell.eventImageView.image = [UIImage imageWithData:imageData];
             
@@ -219,7 +237,7 @@
                 //cell.blurView.dynamic = NO;
                 
                 //blurView.layer.mask = l;
-            
+                
                 //[cell addSubview:blurView];
             }
         }];

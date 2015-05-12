@@ -17,7 +17,7 @@ PF_ASSUME_NONNULL_BEGIN
 @class BFTask;
 @class PFConfig;
 
-typedef void(^PFConfigResultBlock)(PF_NULLABLE_S PFConfig *config, PF_NULLABLE_S NSError *error);
+typedef void(^PFConfigResultBlock)(PFConfig * __nullable config, NSError * __nullable error);
 
 /*!
  `PFConfig` is a representation of the remote configuration object.

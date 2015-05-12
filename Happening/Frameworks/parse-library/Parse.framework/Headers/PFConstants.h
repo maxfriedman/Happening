@@ -374,16 +374,16 @@ typedef NS_ENUM(NSInteger, PFErrorCode) {
 /// @name Blocks
 ///--------------------------------------
 
-typedef void (^PFBooleanResultBlock)(BOOL succeeded, PF_NULLABLE_S NSError *error);
-typedef void (^PFIntegerResultBlock)(int number, PF_NULLABLE_S NSError *error);
-typedef void (^PFArrayResultBlock)(PF_NULLABLE_S NSArray *objects, PF_NULLABLE_S NSError *error);
-typedef void (^PFObjectResultBlock)(PF_NULLABLE_S PFObject *object, PF_NULLABLE_S NSError *error);
-typedef void (^PFSetResultBlock)(PF_NULLABLE_S NSSet *channels, PF_NULLABLE_S NSError *error);
-typedef void (^PFUserResultBlock)(PF_NULLABLE_S PFUser *user, PF_NULLABLE_S NSError *error);
-typedef void (^PFDataResultBlock)(PF_NULLABLE_S NSData *data, PF_NULLABLE_S NSError *error);
-typedef void (^PFDataStreamResultBlock)(PF_NULLABLE_S NSInputStream *stream, PF_NULLABLE_S NSError *error);
-typedef void (^PFStringResultBlock)(PF_NULLABLE_S NSString *string, PF_NULLABLE_S NSError *error);
-typedef void (^PFIdResultBlock)(PF_NULLABLE_S id object, PF_NULLABLE_S NSError *error);
+typedef void (^PFBooleanResultBlock)(BOOL succeeded, NSError * __nullable error);
+typedef void (^PFIntegerResultBlock)(int number, NSError * __nullable error);
+typedef void (^PFArrayResultBlock)(NSArray * __nullable objects, NSError * __nullable error);
+typedef void (^PFObjectResultBlock)(PFObject * __nullable object, NSError * __nullable error);
+typedef void (^PFSetResultBlock)(NSSet * __nullable channels, NSError * __nullable error);
+typedef void (^PFUserResultBlock)(PFUser * __nullable user, NSError * __nullable error);
+typedef void (^PFDataResultBlock)(NSData * __nullable data, NSError * __nullable error);
+typedef void (^PFDataStreamResultBlock)(NSInputStream * __nullable stream, NSError * __nullable error);
+typedef void (^PFStringResultBlock)(NSString * __nullable string, NSError * __nullable error);
+typedef void (^PFIdResultBlock)(PF_NULLABLE_S id object, NSError * __nullable error);
 typedef void (^PFProgressBlock)(int percentDone);
 
 ///--------------------------------------

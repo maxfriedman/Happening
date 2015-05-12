@@ -18,7 +18,7 @@ PF_ASSUME_NONNULL_BEGIN
 
 @class PFSession;
 
-typedef void(^PFSessionResultBlock)(PF_NULLABLE_S PFSession *session, PF_NULLABLE_S NSError *error);
+typedef void(^PFSessionResultBlock)(PFSession * __nullable session, NSError * __nullable error);
 
 /*!
  `PFSession` is a local representation of a session.

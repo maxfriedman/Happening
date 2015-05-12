@@ -13,9 +13,17 @@
 #import <CoreText/CoreText.h>
 #import "ExternalProfileTVC.h"
 #import "moreDetailFromCard.h"
+#import "tempProfile.h"
 #import "DragMapViewController.h"
 
-@interface moreDetailFromTable ()
+
+#define SYSTEM_VERSION_EQUAL_TO(v)                  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedSame)
+#define SYSTEM_VERSION_GREATER_THAN(v)              ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedDescending)
+#define SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(v)  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedAscending)
+#define SYSTEM_VERSION_LESS_THAN(v)                 ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedAscending)
+#define SYSTEM_VERSION_LESS_THAN_OR_EQUAL_TO(v)     ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedDescending)
+
+@interface moreDetailFromTable () <UIAlertViewDelegate>
 
 @property (nonatomic, strong) EKEventStore *eventStore;
 
@@ -37,6 +45,17 @@
 }
 
 @synthesize  mapView, cardView, ticketsButton, uberButton, scrollView, friendScrollView, createdBy, calDayLabel, calDayOfWeekLabel, calMonthLabel, calTimeLabel, eventStore;
+
+- (void)viewDidLayoutSubviews {
+    
+    if (SYSTEM_VERSION_LESS_THAN(@"8.0")) {
+        
+        NSLog(@" ====== iOS 7 ====== ");
+    
+        scrollView.contentSize = CGSizeMake(320, 650);
+        
+    }
+}
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -158,7 +177,11 @@
         
         NSDate *endDate = object[@"EndTime"];
         
-        if ([eventDate beginningOfDay] <= [[NSDate date]beginningOfDay]) {  // TODAY
+        if ([eventDate compare:[NSDate date]] == NSOrderedAscending) {
+            
+            calDayOfWeekLabel.text = @"Happening NOW!";
+            
+        } else if ([eventDate beginningOfDay] <= [[NSDate date]beginningOfDay]) {  // TODAY
 
             calDayOfWeekLabel.text = @"Today";
             
@@ -191,11 +214,9 @@
         [formatter setDateFormat:@"h:mma"];
         NSString *calTimeString = [NSString stringWithFormat:@"%@ - %@", [formatter stringFromDate:eventDate], [formatter stringFromDate:endDate]];
         
-        if ([calTimeString containsString:@":00"]) {
-            
-            calTimeString = [calTimeString stringByReplacingOccurrencesOfString:@":00" withString:@" "];
-            
-        }
+        
+        calTimeString = [calTimeString stringByReplacingOccurrencesOfString:@":00" withString:@" "];
+        
         
         calTimeLabel.text = calTimeString;
 
@@ -296,21 +317,29 @@
             ticketsButton.userInteractionEnabled = YES;
             ticketsButton.tag = 3;
             
-            if ([ticketLink containsString:@"eventbrite"]) {
+            if ([self doesString:ticketLink contain:@"eventbrite"]) {
                 
-                //ticketsButton = [[UIButton alloc] initWithFrame:CGRectMake(79, 500, 126, 20)];
                 [ticketsButton setImage:[UIImage imageNamed:@"buy tickets"] forState:UIControlStateNormal];
                 [ticketsButton setImage:[UIImage imageNamed:@"buy tickets pressed"] forState:UIControlStateHighlighted];
                 
-                //[self ticketsUpdateFrameBy:20];
+            } else if ([self doesString:ticketLink contain:@"facebook"]) {  //[ticketLink containsString:@"eventbrite"]) {
+                
+                ticketsButton.frame = CGRectMake(87.75, 552, 109.5, 20);
+                [ticketsButton setImage:[UIImage imageNamed:@"join facebook"] forState:UIControlStateNormal];
+                [ticketsButton setImage:[UIImage imageNamed:@"join facebook pressed"] forState:UIControlStateHighlighted];
+                
+            } else if ([self doesString:ticketLink contain:@"meetup"]) {  //[ticketLink containsString:@"eventbrite"]) {
+                
+                ticketsButton.frame = CGRectMake(69.5, 552, 145, 20);
+                [ticketsButton setImage:[UIImage imageNamed:@"rsvp to meetup"] forState:UIControlStateNormal];
+                [ticketsButton setImage:[UIImage imageNamed:@"rsvp to meetup pressed"] forState:UIControlStateHighlighted];
+                
             } else {
                 
-                //ticketsButton = [[UIButton alloc] initWithFrame:CGRectMake(79, 500, 126, 20)];
-                ticketsButton.frame = CGRectMake(98.5, 552, 97, 20);
+                ticketsButton.frame = CGRectMake(93.5, 552, 97, 20);
                 [ticketsButton setImage:[UIImage imageNamed:@"get tickets"] forState:UIControlStateNormal];
                 [ticketsButton setImage:[UIImage imageNamed:@"get tickets pressed"] forState:UIControlStateHighlighted];
-                
-                //[self ticketsUpdateFrameBy:20];
+
             }
             
             ticketsButton.accessibilityIdentifier = ticketLink;
@@ -355,11 +384,28 @@
     
         [self loadFBFriends];
         
+        
+        UIButton *notInterestedButton = [[UIButton alloc] initWithFrame:CGRectMake(85.5, self.scrollView.contentSize.height, 149, 30)];
+        //[notInterestedButton setTitle:@"No Longer Interested" forState:UIControlStateNormal];
+        //[notInterestedButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+        [notInterestedButton setImage:[UIImage imageNamed:@"not interested"] forState:UIControlStateNormal];
+        [notInterestedButton setImage:[UIImage imageNamed:@"not interested pressed"] forState:UIControlStateHighlighted];
+        [notInterestedButton addTarget:self action:@selector(notInterested) forControlEvents:UIControlEventTouchUpInside];
+        [self.scrollView addSubview:notInterestedButton];
+        
+        scrollView.contentSize = CGSizeMake(scrollView.contentSize.width, scrollView.contentSize.height + 50);
+        
     }];
     
     NSLog(@"%@", self.eventID);
     
 }
+
+-(BOOL)doesString:(NSString *)first contain:(NSString*)other {
+    NSRange range = [first rangeOfString:other];
+    return range.length != 0;
+}
+
 /*
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
@@ -505,7 +551,7 @@
          }
          */
         
-        [[[FBSDKGraphRequest alloc] initWithGraphPath:@"/me/friends" parameters:nil] startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
+        [[[FBSDKGraphRequest alloc] initWithGraphPath:@"/me/friends?limit=5000" parameters:nil] startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
             //code
             
             NSArray* friends = [result objectForKey:@"data"];
@@ -525,6 +571,9 @@
             [friendQuery whereKey:@"swipedRight" equalTo:@YES];
             
             PFQuery *userQuery = [PFUser query];
+            
+            //NSLog(@"%@", friends);
+            
             [userQuery whereKey:@"objectId" matchesKey:@"UserID" inQuery:friendQuery];
             
             [userQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
@@ -869,6 +918,10 @@
     friendObjectID = view.accessibilityIdentifier;
     [self performSegueWithIdentifier:@"showFriendProf" sender:self];
      */
+    
+    UIView *view = gr.view;
+    friendObjectID = view.accessibilityIdentifier;
+    [self performSegueWithIdentifier:@"toProf" sender:self];
 }
 
 -(void)sendToMoreInfo {
@@ -930,8 +983,13 @@
     
     event.title = self.titleText;
     
-    event.startDate = object[@"Date"];
-    event.endDate = object[@"EndTime"];
+    NSDate *startDate = object[@"Date"];
+    NSDate *endDate = object[@"EndTime"];
+    
+#warning not goood.....
+    
+    event.startDate = [startDate dateByAddingTimeInterval:60*60*4];
+    event.endDate = [endDate dateByAddingTimeInterval:60*60*4];
     
     //get address REMINDER 76597869876
     PFGeoPoint *geoPoint = object[@"GeoLoc"];
@@ -999,6 +1057,59 @@
     }];
     
 }
+
+- (void)notInterested {
+    
+    NSLog(@"Made it");
+    
+    UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Are you sure?" message:@"Indicating you are no longer in this event removes it forever, and you will no longer appear as being interested in this event." delegate:self cancelButtonTitle:@"Nevermind" otherButtonTitles:@"Continue", nil];
+    [alert show];
+    
+    
+}
+
+- (void)alertView:(UIAlertView *)alertView
+clickedButtonAtIndex:(NSInteger)buttonIndex{
+    
+    if (buttonIndex == [alertView cancelButtonIndex]){
+        NSLog(@"Alert shown- user clicked NO");
+        
+    } else {
+        NSLog(@"Alert shown- user clicked Continue");
+        
+        [RKDropdownAlert title:@"Event removed!" message:@"You are no longer being shown as \n interested in attending this event" backgroundColor:[UIColor colorWithRed:.05 green:.29 blue:.49 alpha:1.0] textColor:[UIColor whiteColor]];
+        
+        PFUser *currentUser = [PFUser currentUser];
+        
+        PFQuery *swipeQuery = [PFQuery queryWithClassName:@"Swipes"];
+        [swipeQuery whereKey:@"EventID" equalTo:self.eventID];
+        [swipeQuery whereKey:@"UserID" equalTo:currentUser.objectId];
+        
+        [swipeQuery getFirstObjectInBackgroundWithBlock:^(PFObject *swipe, NSError *error){
+            
+            if (!error) {
+                swipe[@"swipedRight"] = @NO;
+                swipe[@"swipedLeft"] = @YES;
+                
+                [swipe saveInBackgroundWithBlock:^(BOOL success, NSError *error){
+                    
+                    if (success) {
+                        
+                        [self.attendEventVC loadData];
+                        [self backButtonAction:nil];
+                    }
+                }];
+
+            } else {
+                NSLog(@"ERROR SAVING EVENT: %@", error);
+                
+                [RKDropdownAlert title:@"Something went wrong :(" message:@"Please check your internet connection \n and try again." backgroundColor:[UIColor redColor] textColor:[UIColor whiteColor]];
+                
+            }
+        }];
+    }
+}
+
 
 -(void)showEditEventVCWithEvent:(EKEvent *)event eventStore:(EKEventStore *)es {
 
@@ -1124,6 +1235,13 @@
         
         ExternalProfileTVC *vc = (ExternalProfileTVC *)[segue destinationViewController];
         vc.userID = friendObjectID;
+        NSLog(@"friend oID = %@", friendObjectID);
+        
+    } else if ([segue.identifier isEqualToString:@"toProf"]) {
+        
+        tempProfile *vc = (tempProfile *)[segue destinationViewController];
+        vc.userID = friendObjectID;
+        vc.eventID = self.eventID;
         NSLog(@"friend oID = %@", friendObjectID);
         
     } else if ([segue.identifier isEqualToString:@"toMoreInfo"]) {

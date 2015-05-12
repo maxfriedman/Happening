@@ -9,6 +9,12 @@
 #import "SettingsChoosingLoc.h"
 #import "RKDropdownAlert.h"
 
+#define SYSTEM_VERSION_EQUAL_TO(v)                  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedSame)
+#define SYSTEM_VERSION_GREATER_THAN(v)              ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedDescending)
+#define SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(v)  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedAscending)
+#define SYSTEM_VERSION_LESS_THAN(v)                 ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedAscending)
+#define SYSTEM_VERSION_LESS_THAN_OR_EQUAL_TO(v)     ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedDescending)
+
 @interface SettingsChoosingLoc () <UISearchDisplayDelegate, UISearchBarDelegate, /*UISearchResultsUpdating,*/ UISearchControllerDelegate, CLLocationManagerDelegate>
 
 @end
@@ -229,10 +235,24 @@
                 if (succeeded) {
                     
                     NSLog(@"Saved user");
+                    
+                    
+                    if (SYSTEM_VERSION_LESS_THAN(@"8.0")) {
+                        
+                        NSLog(@" ====== iOS 7 ====== ");
+                        
+                        [self dismissViewControllerAnimated:YES completion:^{
+                            [delegate refreshSettings];
+                            [delegate iOS7Touch];
+                        }];
 
-                    [self dismissViewControllerAnimated:YES completion:^{
-                        [delegate refreshSettings];
-                    }];
+                    } else {
+                        
+                        [self dismissViewControllerAnimated:YES completion:^{
+                            [delegate refreshSettings];
+                        }];
+                    }
+                    
                 }
             }];
             
@@ -251,9 +271,21 @@
                     
                     NSLog(@"Saved user");
                     
-                    [self dismissViewControllerAnimated:YES completion:^{
-                        [delegate refreshSettings];
-                    }];
+                    if (SYSTEM_VERSION_LESS_THAN(@"8.0")) {
+                        
+                        NSLog(@" ====== iOS 7 ====== ");
+                        
+                        [self dismissViewControllerAnimated:YES completion:^{
+                            [delegate refreshSettings];
+                            [delegate iOS7Touch];
+                        }];
+                        
+                    } else {
+                        
+                        [self dismissViewControllerAnimated:YES completion:^{
+                            [delegate refreshSettings];
+                        }];
+                    }
                 }
             }];
             
@@ -313,7 +345,13 @@
         choseCurrentLoc = YES;
         locManager = [[CLLocationManager alloc] init];
         locManager.delegate=self;
-        [locManager requestWhenInUseAuthorization];
+        
+        if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0")) {
+            
+            NSLog(@" ====== iOS 8 ====== ");
+            [locManager requestWhenInUseAuthorization];
+        }
+        
         locManager.desiredAccuracy=kCLLocationAccuracyBest;
         locManager.distanceFilter=50;
         [locManager startUpdatingLocation];
@@ -324,7 +362,13 @@
         choseCurrentLoc = YES;
         locManager = [[CLLocationManager alloc] init];
         locManager.delegate = self;
-        [locManager requestWhenInUseAuthorization];
+        
+        if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0")) {
+            
+            NSLog(@" ====== iOS 8 ====== ");
+            [locManager requestWhenInUseAuthorization];
+        }
+        
         locManager.desiredAccuracy=kCLLocationAccuracyBest;
         locManager.distanceFilter=50;
         [locManager startUpdatingLocation];
@@ -358,7 +402,6 @@
     if (choseCurrentLoc) {
         
         NSLog(@"Location updated");
-    
         
         PFGeoPoint *loc = [PFGeoPoint geoPointWithLocation:locManager.location];
         user[@"userLoc"] = loc;
@@ -376,9 +419,21 @@
                 [defaults synchronize];
                 
                 
-                [self dismissViewControllerAnimated:YES completion:^{
-                    [delegate refreshSettings];
-                }];
+                if (SYSTEM_VERSION_LESS_THAN(@"8.0")) {
+                    
+                    NSLog(@" ====== iOS 7 ====== ");
+                    
+                    [self dismissViewControllerAnimated:YES completion:^{
+                        [delegate refreshSettings];
+                        [delegate iOS7Touch];
+                    }];
+                    
+                } else {
+                    
+                    [self dismissViewControllerAnimated:YES completion:^{
+                        [delegate refreshSettings];
+                    }];
+                }
                 
             }
         }];

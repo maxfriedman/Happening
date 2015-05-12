@@ -16,6 +16,7 @@
 @protocol SettingsChoosingLocDelegate <NSObject>
 
 - (void)refreshSettings;
+- (void)iOS7Touch;
 
 @end
 

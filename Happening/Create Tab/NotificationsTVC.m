@@ -15,7 +15,7 @@
 
 @implementation NotificationsTVC
 
-@synthesize inAppMatches, popular, pushMatches, reminders, friendJoined;
+@synthesize inAppMatches, popular, pushMatches, reminders, friendJoined, friendPush;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -33,7 +33,7 @@
     pushMatches.on = [channels containsObject:@"matches"];
     friendJoined.on = [channels containsObject:@"friendJoined"];
     reminders.on = [channels containsObject:@"reminders"];
-    
+    friendPush.on = [channels containsObject:@"friendPush"];
     
 }
 
@@ -118,6 +118,19 @@
     
 }
 
+- (IBAction)friendPushSwitch:(UISwitch *)sender {
+    
+    PFInstallation *currentInstallation = [PFInstallation currentInstallation];
+    
+    if (sender.on) {
+        [currentInstallation addObject:@"friendPush" forKey:@"channels"];
+    } else {
+        [currentInstallation removeObject:@"friendPush" forKey:@"channels"];
+    }
+    
+    [currentInstallation saveInBackground];
+    
+}
 
 /*
 #pragma mark - Table view data source

@@ -16,6 +16,12 @@
 #import "AppDelegate.h"
 #import "ProfileSettingsTVC.h"
 
+#define SYSTEM_VERSION_EQUAL_TO(v)                  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedSame)
+#define SYSTEM_VERSION_GREATER_THAN(v)              ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedDescending)
+#define SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(v)  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedAscending)
+#define SYSTEM_VERSION_LESS_THAN(v)                 ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedAscending)
+#define SYSTEM_VERSION_LESS_THAN_OR_EQUAL_TO(v)     ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedDescending)
+
 @interface ProfileTVC () <EventTVCDelegate>
 
 @property (strong, nonatomic) NSMutableDictionary *sections;
@@ -304,6 +310,10 @@
     // FORMAT FOR MULTI-DAY EVENT
     NSDate *endDate = Event[@"EndTime"];
     
+    [formatter setDateFormat:@"h:mma"];
+    [formatter setTimeZone:[NSTimeZone localTimeZone]];
+    NSLog(@"%@", [formatter stringFromDate:Event.createdAt]);
+
     
     if ([eventDate beginningOfDay] == [[NSDate date]beginningOfDay]) {  // TODAY
         
@@ -470,9 +480,37 @@
     return beginningOfDay;
 }
 
+- (IBAction)plusButtonTapped:(id)sender {
+    
+    if (SYSTEM_VERSION_LESS_THAN(@"8.0")) {
+        
+        NSLog(@" ====== iOS 7 ====== ");
+        
+        UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Oops" message:@"You must have iOS 8 to create an event for now. Sorry!!" delegate:self cancelButtonTitle:@"Bummer" otherButtonTitles:nil, nil];
+        [alert show];
+        
+    } else {
+        
+        [self performSegueWithIdentifier:@"createNewEvent" sender:self];
+        
+    }
+    
+}
+
 - (void)createEventButtonTapped {
     
-    [self performSegueWithIdentifier:@"createNewEvent" sender:self];
+    if (SYSTEM_VERSION_LESS_THAN(@"8.0")) {
+        
+        NSLog(@" ====== iOS 7 ====== ");
+        
+        UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Oops" message:@"You must have iOS 8 to create an event for now. Sorry!!" delegate:self cancelButtonTitle:@"Bummer" otherButtonTitles:nil, nil];
+        [alert show];
+
+    } else {
+        
+        [self performSegueWithIdentifier:@"createNewEvent" sender:self];
+        
+    }
     
 }
 

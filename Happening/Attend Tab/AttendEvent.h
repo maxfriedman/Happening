@@ -16,5 +16,6 @@
 @property CLLocationManager *locManager;
 
 -(void)showNavTitle;
+-(void)loadData;
 
 @end

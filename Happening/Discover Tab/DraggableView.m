@@ -21,6 +21,8 @@
 #import "AppDelegate.h"
 #import "UIImage+ImageEffects.h"
 #import <CoreText/CoreText.h>
+#import "UIButton+Extensions.h"
+
 
 @implementation DraggableView {
     CGFloat xFromCenter;
@@ -68,7 +70,7 @@
         eventStore = [[EKEventStore alloc] init];
         
         cardBackground = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"cardBackground"]];
-        cardBackground.frame = CGRectMake(7, 308, 270, cardBackground.image.size.height - 5);
+        cardBackground.frame = CGRectMake(7, 349, 270, cardBackground.image.size.height - 5);
         [self addSubview:cardBackground];
         
         [self setupView:frame];
@@ -115,21 +117,21 @@
         [[blurEffectView contentView] addSubview:vibrancyEffectView];
         */
         
-        title = [[UILabel alloc]initWithFrame:CGRectMake(15, 106, eventImage.frame.size.width - 92, 70)];
+        title = [[UILabel alloc]initWithFrame:CGRectMake(15, 103, eventImage.frame.size.width - 30, 100)];
         
-        subtitle = [[UILabel alloc]initWithFrame:CGRectMake(15, 220, self.frame.size.width - 30, 33)];
+        subtitle = [[UILabel alloc]initWithFrame:CGRectMake(15, 235, self.frame.size.width - 30, 33)];
         location = [[UILabel alloc]initWithFrame:CGRectMake(15, 150, self.frame.size.width - 30, 100)];
         
-        date = [[UILabel alloc]initWithFrame:CGRectMake(15, 110, self.frame.size.width - 100, 100)];
+        date = [[UILabel alloc]initWithFrame:CGRectMake(15, 172, self.frame.size.width - 100, 100)];
         time = [[UILabel alloc]initWithFrame:CGRectMake(0, 309, self.frame.size.width - 30, 100)];
         
         //date = [[UILabel alloc]initWithFrame:CGRectMake(0, 285, self.frame.size.width, 100)];
         //time = [[UILabel alloc]initWithFrame:CGRectMake(0, 315, self.frame.size.width, 100)];
 
         //hashtag = [[UILabel alloc]initWithFrame:CGRectMake(15, 240, self.frame.size.width - 30, 100)];
-        geoLoc = [[UILabel alloc]initWithFrame:CGRectMake(15, 100, self.frame.size.width - 30, 100)];
-        swipesRight = [[UILabel alloc]initWithFrame:CGRectMake(204, 240, 65, 100)];
-        createdBy = [[UILabel alloc]initWithFrame:CGRectMake(15, 282, 160, 30)];
+        geoLoc = [[UILabel alloc]initWithFrame:CGRectMake(15, 172, self.frame.size.width - 30, 100)];
+        swipesRight = [[UILabel alloc]initWithFrame:CGRectMake(204, 280, 65, 100)];
+        createdBy = [[UILabel alloc]initWithFrame:CGRectMake(15, 322, 160, 30)];
         
         shareButton = [[UIButton alloc] initWithFrame:CGRectMake(self.frame.size.width - 45, 15, 30, 30)];
         
@@ -156,12 +158,12 @@
         
         [title setTextAlignment:NSTextAlignmentLeft];
         title.textColor = [UIColor whiteColor];
-        title.font = [UIFont fontWithName:@"OpenSans-Bold" size:18];
-        title.minimumScaleFactor = 0.75;
+        title.font = [UIFont fontWithName:@"OpenSans-Bold" size:21];
+        title.minimumScaleFactor = 0.7;
         title.adjustsFontSizeToFitWidth = YES;
         
         [date setTextAlignment:NSTextAlignmentLeft];
-        date.textColor = [UIColor darkTextColor];
+        date.textColor = [UIColor colorWithHue:196.36/360.0 saturation:1.0 brightness:0.949 alpha:0.95];
         date.font = [UIFont fontWithName:@"OpenSans-Semibold" size:12];
         date.minimumScaleFactor = 0.75;
         date.adjustsFontSizeToFitWidth = YES;
@@ -177,13 +179,13 @@
         
         [cardView addSubview:eventImage];
         
-        transpBackground = [[UILabel alloc]initWithFrame:blurEffectView.frame];
+        transpBackground = [[UILabel alloc]initWithFrame:CGRectMake(0, 120, eventImage.frame.size.width, 60)];
         
         objectID = [[NSString alloc]init];
         geoPoint = [[PFGeoPoint alloc]init];
         
-        locImage = [[UIImageView alloc]initWithFrame:CGRectMake(214, 141, 18, 18)];
-        userImage = [[UIImageView alloc]initWithFrame:CGRectMake(183, 282, 18, 18)];
+        locImage = [[UIImageView alloc]initWithFrame:CGRectMake(218, 215, 13, 15)];
+        userImage = [[UIImageView alloc]initWithFrame:CGRectMake(183, 322, 18, 18)];
         
         greyLocImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"locationGrey"]];
         greyLocImageView.frame = CGRectMake(216, 186, 14, 18);
@@ -198,9 +200,9 @@
          
         [subtitle setTextAlignment:NSTextAlignmentLeft];
         //subtitle.textColor = [UIColor darkGrayColor];
-        subtitle.textColor = [UIColor colorWithHue:0 saturation:0 brightness:.64 alpha:1.0];
+        subtitle.textColor = [UIColor colorWithHue:0 saturation:0 brightness:.50 alpha:1.0];
         subtitle.font = [UIFont fontWithName:@"OpenSans" size:12];
-        subtitle.numberOfLines = 2;
+        subtitle.numberOfLines = 3;
         [subtitle setLineBreakMode:NSLineBreakByTruncatingTail];
         subtitle.userInteractionEnabled = YES;
         
@@ -229,29 +231,30 @@
          
         [hashtag setTextAlignment:NSTextAlignmentLeft];
         //hashtag.textColor = [UIColor grayColor];
-        hashtag.textColor = [UIColor colorWithHue:0 saturation:0 brightness:.64 alpha:1.0];
+        hashtag.textColor = [UIColor colorWithHue:0 saturation:0 brightness:.50 alpha:1.0];
         hashtag.font = [UIFont fontWithName:@"OpenSans" size:11.0];
         //hashtag.font = [UIFont boldSystemFontOfSize:15];
         //hashtag.shadowColor = [UIColor blackColor];
         
         [geoLoc setTextAlignment:NSTextAlignmentRight];
-        geoLoc.textColor = [UIColor whiteColor];
+        geoLoc.textColor = [UIColor colorWithHue:0 saturation:0 brightness:.50 alpha:1.0];
         geoLoc.font = [UIFont fontWithName:@"OpenSans" size:12.0];
         
         [swipesRight setTextAlignment:NSTextAlignmentRight];
         //swipesRight.textColor = [UIColor grayColor];
-        swipesRight.textColor = [UIColor colorWithHue:0 saturation:0 brightness:.64 alpha:1.0];
+        swipesRight.textColor = [UIColor colorWithHue:0 saturation:0 brightness:.50 alpha:1.0];
         swipesRight.font = [UIFont fontWithName:@"OpenSans" size:11.0];
         swipesRight.minimumScaleFactor = 0.6;
         swipesRight.adjustsFontSizeToFitWidth = YES;
         
         [createdBy setUserInteractionEnabled:YES];
         [createdBy setTextAlignment:NSTextAlignmentLeft];
-        createdBy.textColor = [UIColor colorWithHue:0 saturation:0 brightness:.64 alpha:1.0];
+        createdBy.textColor = [UIColor colorWithHue:0 saturation:0 brightness:.50 alpha:1.0];
         createdBy.font = [UIFont fontWithName:@"OpenSans" size:11.0];
         
         [shareButton setImage:[UIImage imageNamed:@"share"] forState:UIControlStateNormal];
         [shareButton setImage:[UIImage imageNamed:@"share pressed"] forState:UIControlStateHighlighted];
+        [shareButton setHitTestEdgeInsets:UIEdgeInsetsMake(-20, -20, -20, -20)];
         [cardView addSubview:shareButton];
         
         //locImage.image = [UIImage imageNamed:@"locImage"];
@@ -300,6 +303,8 @@
         calDayLabel.textAlignment = NSTextAlignmentCenter;
         calDayLabel.font = [UIFont fontWithName:@"OpenSans-Light" size:10.0];
         calDayLabel.textColor = grayColor;
+        calDayLabel.minimumScaleFactor = 0.75;
+        calDayLabel.adjustsFontSizeToFitWidth = YES;
         calDayLabel.alpha = 0;
         calDayLabel.userInteractionEnabled = YES;
         [cardView addSubview:calDayLabel];

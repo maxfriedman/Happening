@@ -419,7 +419,7 @@
         Event[@"isTicketedEvent"] = @(ticks);
         Event[@"isFreeEvent"] = @(isFree);
         
-        Event[@"weight"] = @3;
+        Event[@"weight"] = @3.0;
         
         PFGeoPoint *loc = [PFGeoPoint geoPointWithLocation:item.placemark.location];
         Event[@"GeoLoc"] = loc;
@@ -486,7 +486,6 @@ clickedButtonAtIndex:(NSInteger)buttonIndex{
         Event[@"Frequency"] = @(frequencyInt);
         Event[@"URL"] = urlString;
         Event[@"ContactEmail"] = emailString;
-        Event[@"Description"] = descriptionString;
         
         PFGeoPoint *loc = [PFGeoPoint geoPointWithLocation:item.placemark.location];
         Event[@"GeoLoc"] = loc;

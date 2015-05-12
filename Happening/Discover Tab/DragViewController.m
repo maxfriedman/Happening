@@ -24,6 +24,7 @@
 #import "moreDetailFromCard.h"
 #import "Reachability.h"
 #import "AMPopTip.h"
+#import "tempProfile.h"
 
 @interface DragViewController () <ChoosingLocationDelegate, dropdownSettingsViewDelegate>
 
@@ -75,7 +76,42 @@
                                               object:nil];
     
     defaults = [NSUserDefaults standardUserDefaults];
+
+    NSLog(@"%@",  [FBSDKAccessToken currentAccessToken].tokenString); //[FBSDKAccessToken currentAccessToken]);
+
+    /*
+    PFQuery *query = [PFQuery queryWithClassName:@"Event"];
+    [query whereKey:@"weight" lessThan:@1];
+    query.limit = 500;
+    [query findObjectsInBackgroundWithBlock:^(NSArray *events, NSError *err) {
+                                             
+        for (PFObject *ob in events) {
+            
+            NSDate *ed = ob[@"EndTime"];
+            ob[@"EndTime"] = [ed dateByAddingTimeInterval:-(4*60*60)];
+            [ob saveInBackground];
+        }
+        
+    }];
+    */
     
+    /*
+    [PFCloud callFunctionInBackground:@"reminders"
+                       withParameters:@{}
+                                block:^(NSString *result, NSError *error) {
+                                    
+                                    if (!error) {
+
+                                        NSLog(@"RESULTS: %@", result);
+                                        
+                                    } else {
+                                        
+                                        NSLog(@"ERROR: %@", error);
+
+                                        
+                                    }
+                                }];
+    */
     if (![defaults boolForKey:@"hasLaunched"]) {
         showTut = YES;
     }
@@ -108,8 +144,31 @@
     [checkButton setImage:[UIImage imageNamed:@"InterestedButton"] forState:UIControlStateNormal];
     [checkButton addTarget:self action:@selector(swipeRightDVC) forControlEvents:UIControlEventTouchUpInside];
     
-    [self.scrollView addSubview:checkButton];
-    [self.scrollView addSubview:xButton];
+    UIButton *inviteButton = [[UIButton alloc] initWithFrame:CGRectMake(40, 410, 80, 40)];
+    [inviteButton setTitle:@"Share" forState:UIControlStateNormal];
+    [inviteButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [inviteButton setBackgroundColor:[UIColor colorWithHue:196.36/360.0 saturation:1.0 brightness:0.949 alpha:0.95]];
+    inviteButton.layer.masksToBounds = YES;
+    inviteButton.layer.cornerRadius = 10.0;
+    [scrollView addSubview:inviteButton];
+    
+    UIButton *actionButton = [[UIButton alloc] initWithFrame:CGRectMake(160, 410, 130, 40)];
+    [actionButton setTitle:@"Buy tickets" forState:UIControlStateNormal];
+    [actionButton setTitleColor:[UIColor colorWithHue:196.36/360.0 saturation:1.0 brightness:0.949 alpha:0.95] forState:UIControlStateNormal];
+    [actionButton setBackgroundColor:[UIColor whiteColor]];
+    actionButton.layer.masksToBounds = YES;
+    actionButton.layer.cornerRadius = 10.0;
+    actionButton.layer.borderColor = [UIColor colorWithHue:196.36/360.0 saturation:1.0 brightness:0.949 alpha:0.95].CGColor;
+    actionButton.layer.borderWidth = 2.0;
+    [scrollView addSubview:actionButton];
+    
+    
+    // :(
+    //[self.scrollView addSubview:checkButton];
+    //[self.scrollView addSubview:xButton];
+    
+    
+    
     //[self.view sendSubviewToBack:checkButton]; //So that card is above buttons
     //[self.view sendSubviewToBack:xButton];
     [self.view bringSubviewToFront:scrollView];
@@ -200,7 +259,10 @@
         checkButton.center = CGPointMake(1300, checkButton.center.y);
     
         NSLog(@"Refreshing data...");
-    
+        
+        [SVProgressHUD setViewForExtension:self.view];
+        [SVProgressHUD setOffsetFromCenter:UIOffsetMake(0, -66)];
+
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             // time-consuming task
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -240,6 +302,7 @@
         
         }
         self.frontViewIsVisible = YES;
+        self.dropdownExpanded = NO;
         self.userSwipedFromFlippedView = NO;
     
         // Removes the previous content!!!!!! (when view was burned in behind the cards)
@@ -608,7 +671,7 @@
             
             [UIView transitionWithView:draggableBackground.dragView.date duration:0.5 options:UIViewAnimationOptionTransitionCrossDissolve animations:^{
                 
-                [draggableBackground.dragView.date setTextColor:[UIColor darkTextColor]];
+                //[draggableBackground.dragView.date setTextColor:[UIColor darkTextColor]];
                 
             } completion:nil];
             
@@ -801,6 +864,7 @@
     
     UIScrollView *friendScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(15, 330 + extraDescHeight, 254, 50)];
     friendScrollView.scrollEnabled = YES;
+    friendScrollView.showsHorizontalScrollIndicator = NO;
     [card.cardView addSubview:friendScrollView];
     [self loadFBFriends:friendScrollView];
     friendScrollView.tag = 3;
@@ -890,25 +954,32 @@
             ticketsButton.userInteractionEnabled = YES;
             ticketsButton.tag = 3;
             
-            if ([ticketLink containsString:@"eventbrite"]) {
+            if ([self doesString:ticketLink contain:@"eventbrite"]) {  //[ticketLink containsString:@"eventbrite"]) {
     
-                //ticketsButton = [[UIButton alloc] initWithFrame:CGRectMake(79, 500, 126, 20)];
                 [ticketsButton setImage:[UIImage imageNamed:@"buy tickets"] forState:UIControlStateNormal];
                 [ticketsButton setImage:[UIImage imageNamed:@"buy tickets pressed"] forState:UIControlStateHighlighted];
-    
-                //[self ticketsUpdateFrameBy:20];
-                [card.cardView addSubview:ticketsButton];
+                
+            } else if ([self doesString:ticketLink contain:@"facebook"]) {  //[ticketLink containsString:@"eventbrite"]) {
+                
+                ticketsButton.frame = CGRectMake(87.75, 540 + extraDescHeight, 109.5, 20);
+                [ticketsButton setImage:[UIImage imageNamed:@"join facebook"] forState:UIControlStateNormal];
+                [ticketsButton setImage:[UIImage imageNamed:@"join facebook pressed"] forState:UIControlStateHighlighted];
+                
+            } else if ([self doesString:ticketLink contain:@"meetup"]) {  //[ticketLink containsString:@"eventbrite"]) {
+                
+                ticketsButton.frame = CGRectMake(69.5, 540 + extraDescHeight, 145, 20);
+                [ticketsButton setImage:[UIImage imageNamed:@"rsvp to meetup"] forState:UIControlStateNormal];
+                [ticketsButton setImage:[UIImage imageNamed:@"rsvp to meetup pressed"] forState:UIControlStateHighlighted];
                 
             } else {
                 
-                //ticketsButton = [[UIButton alloc] initWithFrame:CGRectMake(79, 500, 126, 20)];
-                ticketsButton.frame = CGRectMake(98.5, 540 + extraDescHeight, 97, 20);
+                ticketsButton.frame = CGRectMake(93.5, 540 + extraDescHeight, 97, 20);
                 [ticketsButton setImage:[UIImage imageNamed:@"get tickets"] forState:UIControlStateNormal];
                 [ticketsButton setImage:[UIImage imageNamed:@"get tickets pressed"] forState:UIControlStateHighlighted];
 
-                //[self ticketsUpdateFrameBy:20];
-                [card.cardView addSubview:ticketsButton];
             }
+            
+            [card.cardView addSubview:ticketsButton];
             
             ticketsButton.accessibilityIdentifier = ticketLink;
             [ticketsButton addTarget:self action:@selector(ticketsButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
@@ -978,6 +1049,11 @@
     */
 }
 
+-(BOOL)doesString:(NSString *)first contain:(NSString*)other {
+    NSRange range = [first rangeOfString:other];
+    return range.length != 0;
+}
+
 - (void)loadFBFriends:(UIScrollView *)friendScrollView {
     
     NSLog(@"Loading FB Friends");
@@ -985,7 +1061,7 @@
     if ([FBSDKAccessToken currentAccessToken]) {
 
     
-    [[[FBSDKGraphRequest alloc] initWithGraphPath:@"/me/friends" parameters:nil] startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
+    [[[FBSDKGraphRequest alloc] initWithGraphPath:@"/me/friends?limit=5000" parameters:nil] startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
         //code
                 
         NSArray* friends = [result objectForKey:@"data"];
@@ -1021,7 +1097,7 @@
                     
                     profPicView.layer.cornerRadius = 20;
                     profPicView.layer.masksToBounds = YES;
-                    profPicView.accessibilityIdentifier = object[@"UserID"];
+                    profPicView.accessibilityIdentifier = object.objectId;
                     profPicView.userInteractionEnabled = YES;
                     [friendScrollView addSubview:profPicView];
                     
@@ -1649,6 +1725,10 @@
     friendObjectID = view.accessibilityIdentifier;
     [self performSegueWithIdentifier:@"showFriendProfile" sender:self];
      */
+    
+    UIView *view = gr.view;
+    friendObjectID = view.accessibilityIdentifier;
+    [self performSegueWithIdentifier:@"toTemp" sender:self];
 }
 
 -(void)showMoreDetail {
@@ -1840,6 +1920,13 @@
         
         ExternalProfileTVC *vc = (ExternalProfileTVC *)[segue destinationViewController];
         vc.userID = friendObjectID;
+        NSLog(@"friend oID = %@", friendObjectID);
+        
+    } else if ([segue.identifier isEqualToString:@"toTemp"]) {
+        
+        tempProfile *vc = (tempProfile *)[segue destinationViewController];
+        vc.userID = friendObjectID;
+        vc.eventID = self.draggableBackground.dragView.objectID;
         NSLog(@"friend oID = %@", friendObjectID);
         
     } else if ([segue.identifier isEqualToString:@"toWebView"]) {

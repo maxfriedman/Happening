@@ -9,6 +9,12 @@
 #import "movieLoginVC.h"
 #import "RKSwipeBetweenViewControllers.h"
 
+#define SYSTEM_VERSION_EQUAL_TO(v)                  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedSame)
+#define SYSTEM_VERSION_GREATER_THAN(v)              ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedDescending)
+#define SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(v)  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedAscending)
+#define SYSTEM_VERSION_LESS_THAN(v)                 ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedAscending)
+#define SYSTEM_VERSION_LESS_THAN_OR_EQUAL_TO(v)     ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedDescending)
+
 #define IS_WIDESCREEN ( [ [ UIScreen mainScreen ] bounds ].size.height >= 568 )
 
 @interface movieLoginVC ()
@@ -64,6 +70,10 @@
     [super viewDidAppear:animated];
     
     if ([FBSDKAccessToken currentAccessToken]) {
+        
+        PFUser *user = [PFUser currentUser];
+        user[@"fbToken"] = [FBSDKAccessToken currentAccessToken].tokenString;
+        [user saveInBackground];
         
         [self performSegueWithIdentifier:@"toMain" sender:self];
         
@@ -275,6 +285,7 @@
             
                      // Defaults
                      parseUser[@"radius"] = @50;
+                     parseUser[@"fbToken"] = [FBSDKAccessToken currentAccessToken].tokenString;
                      //parseUser[@"userLoc"] = [PFGeoPoint geoPointWithLatitude:38.907192 longitude:-77.036871];
             
                      [parseUser signUpInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
@@ -285,30 +296,55 @@
                              NSLog(@"New user: %@", parseUser.username);
                     
                              if (parseUser) {
-                        
-                                 UIRemoteNotificationType types = [[UIApplication sharedApplication] isRegisteredForRemoteNotifications];
-
-                                 if (types) {
-
-                                     PFInstallation *currentInstallation = [PFInstallation currentInstallation];
                                  
-                                     NSLog(@"Saving notification ID");
-                                     
-                                     // Associate the device with a user
-                                     currentInstallation.channels = @[ @"global", @"reminders", @"matches", @"friendJoined", @"popularEvents", @"matchesInApp"];
-                                     currentInstallation[@"userID"] = parseUser.objectId;
-                                     
-                                     [currentInstallation saveInBackground];
-                                 }
+                                 
+                                 NSString *name = @"";
+                                 if ([user objectForKey:@"first_name"] != nil)
+                                     name = [user objectForKey:@"first_name"];
+                                 
+                                 if ([user objectForKey:@"last_name"] != nil)
+                                     name = [NSString stringWithFormat:@"%@ %@", name, [user objectForKey:@"last_name"]];
+                                 
+                                 NSLog(@"%@", name);
                                  
                                  [PFCloud callFunctionInBackground:@"newUser"
-                                                    withParameters:@{@"user":parseUser.objectId}
+                                                    withParameters:@{@"user":parseUser.objectId, @"name":name, @"fbID":parseUser[@"FBObjectID"], @"fbToken":[FBSDKAccessToken currentAccessToken].tokenString}
                                                              block:^(NSString *result, NSError *error) {
                                                                  if (!error) {
                                                                      // result is @"Hello world!"
                                                                      NSLog(@"%@", result);
                                                                  }
                                                              }];
+                        
+                                 if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0")) {
+                                 
+                                     UIRemoteNotificationType types = [[UIApplication sharedApplication] isRegisteredForRemoteNotifications];
+
+                                     if (types) {
+
+                                         PFInstallation *currentInstallation = [PFInstallation currentInstallation];
+                                 
+                                         NSLog(@"Saving notification ID");
+                                     
+                                         // Associate the device with a user
+                                         currentInstallation.channels = @[@"global", @"reminders", @"matches", @"friendJoined", @"popularEvents", @"matchesInApp", @"friendPush"];
+                                         currentInstallation[@"userID"] = parseUser.objectId;
+                                     
+                                         [currentInstallation saveInBackground];
+                                     }
+                                 } else if ([PFInstallation currentInstallation] != nil) {
+                                     
+                                     PFInstallation *currentInstallation = [PFInstallation currentInstallation];
+                                     
+                                     NSLog(@"Saving notification ID");
+                                     
+                                     // Associate the device with a user
+                                     currentInstallation.channels = @[@"global", @"reminders", @"matches", @"friendJoined", @"popularEvents", @"matchesInApp", @"friendPush"];
+                                     currentInstallation[@"userID"] = parseUser.objectId;
+                                     
+                                     [currentInstallation saveInBackground];
+                                     
+                                 }
                                  
                                  //self.fbButton.alpha = 1.0;
                                  //self.fbButton.userInteractionEnabled = YES;

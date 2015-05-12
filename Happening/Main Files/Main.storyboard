@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="6751" systemVersion="14C1514" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="dWi-8I-Xi7">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="7702" systemVersion="14D136" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="dWi-8I-Xi7">
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6736"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="7701"/>
         <capability name="Alignment constraints to the first baseline" minToolsVersion="6.0"/>
         <capability name="Alignment constraints with different attributes" minToolsVersion="5.1"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
@@ -20,11 +20,14 @@
         <mutableArray key="OpenSans-Extrabold.ttf">
             <string>OpenSans-Extrabold</string>
             <string>OpenSans-Extrabold</string>
+            <string>OpenSans-Extrabold</string>
+            <string>OpenSans-Extrabold</string>
         </mutableArray>
         <mutableArray key="OpenSans-Italic.ttf">
             <string>OpenSans-Italic</string>
         </mutableArray>
         <mutableArray key="OpenSans-Light.ttf">
+            <string>OpenSans-Light</string>
             <string>OpenSans-Light</string>
             <string>OpenSans-Light</string>
             <string>OpenSans-Light</string>
@@ -106,8 +109,11 @@
             <string>OpenSans</string>
             <string>OpenSans</string>
             <string>OpenSans</string>
+            <string>OpenSans</string>
+            <string>OpenSans</string>
         </mutableArray>
         <mutableArray key="OpenSans-Semibold.ttf">
+            <string>OpenSans-Semibold</string>
             <string>OpenSans-Semibold</string>
             <string>OpenSans-Semibold</string>
             <string>OpenSans-Semibold</string>
@@ -233,7 +239,7 @@
                                             </button>
                                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="pOV-a2-hAI" userLabel="TapToDropDown">
                                                 <rect key="frame" x="0.0" y="0.0" width="320" height="45"/>
-                                                <color key="backgroundColor" red="0.98039215686274506" green="0.98039215686274506" blue="0.98039215686274506" alpha="1" colorSpace="calibratedRGB"/>
+                                                <color key="backgroundColor" red="0.93725490196078431" green="0.93725490196078431" blue="0.95686274509803926" alpha="1" colorSpace="calibratedRGB"/>
                                                 <accessibility key="accessibilityConfiguration" label=""/>
                                                 <state key="normal">
                                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
@@ -243,9 +249,9 @@
                                                 <rect key="frame" x="280" y="10" width="25" height="25"/>
                                             </imageView>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="What's Happening..." lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="brS-Sk-o7U">
-                                                <rect key="frame" x="15" y="12" width="131" height="21"/>
-                                                <fontDescription key="fontDescription" name="OpenSans" family="Open Sans" pointSize="14"/>
-                                                <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
+                                                <rect key="frame" x="15" y="12" width="157" height="21"/>
+                                                <fontDescription key="fontDescription" name="OpenSans-Semibold" family="Open Sans" pointSize="14"/>
+                                                <color key="textColor" red="0.23529411764705882" green="0.23529411764705882" blue="0.23529411764705882" alpha="1" colorSpace="calibratedRGB"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="VfF-iG-rpd">
@@ -301,6 +307,7 @@
                         <segue destination="Drv-ar-Nfk" kind="presentation" identifier="showFriendProfile" modalTransitionStyle="crossDissolve" id="pfl-XA-FWV"/>
                         <segue destination="E3f-NK-189" kind="presentation" identifier="toWebView" id="UJY-NU-Mxu"/>
                         <segue destination="zqr-VE-hMB" kind="presentation" identifier="toMoreDetail" modalTransitionStyle="crossDissolve" id="sd9-zV-ihv"/>
+                        <segue destination="HYR-A5-Aob" kind="presentation" identifier="toTemp" modalTransitionStyle="crossDissolve" id="lRk-4C-UL1"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="x5A-6p-PRh" sceneMemberID="firstResponder"/>
@@ -2381,6 +2388,21 @@
                         <color key="separatorColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                         <color key="sectionIndexColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                         <color key="sectionIndexBackgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <view key="tableHeaderView" contentMode="scaleToFill" id="4et-tE-uaU">
+                            <rect key="frame" x="0.0" y="0.0" width="320" height="55"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            <subviews>
+                                <segmentedControl opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="y1s-OS-mwL">
+                                    <rect key="frame" x="32" y="19" width="257" height="29"/>
+                                    <segments>
+                                        <segment title="My events"/>
+                                        <segment title="Best of this week"/>
+                                    </segments>
+                                    <color key="tintColor" red="0.10588235294117647" green="0.67843137254901964" blue="0.88235294117647056" alpha="1" colorSpace="calibratedRGB"/>
+                                </segmentedControl>
+                            </subviews>
+                            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        </view>
                         <prototypes>
                             <tableViewCell tag="1" contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" reuseIdentifier="tag" rowHeight="150" id="cWR-Nz-Zqs" customClass="AttendTableCell">
                                 <autoresizingMask key="autoresizingMask"/>
@@ -2395,12 +2417,14 @@
                                             <fontDescription key="fontDescription" name="OpenSans-Bold" family="Open Sans" pointSize="18"/>
                                             <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                             <nil key="highlightedColor"/>
+                                            <size key="shadowOffset" width="-1" height="-1"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" tag="3" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Time" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ShD-wb-AT6">
                                             <rect key="frame" x="30" y="32" width="174" height="21"/>
                                             <fontDescription key="fontDescription" name="OpenSans-Semibold" family="Open Sans" pointSize="11"/>
                                             <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                             <nil key="highlightedColor"/>
+                                            <size key="shadowOffset" width="-1" height="0.0"/>
                                         </label>
                                         <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="DZN-4u-jDl" customClass="FXBlurView">
                                             <rect key="frame" x="10" y="4" width="300" height="58"/>
@@ -2414,6 +2438,7 @@
                                             <fontDescription key="fontDescription" name="OpenSans-Light" family="Open Sans" pointSize="11"/>
                                             <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                             <nil key="highlightedColor"/>
+                                            <size key="shadowOffset" width="-1" height="1"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Subtitle" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Uee-XV-Zto">
                                             <rect key="frame" x="30" y="84" width="260" height="38"/>
@@ -2507,7 +2532,7 @@
         <!--More Detail From Table-->
         <scene sceneID="wrl-lh-sel">
             <objects>
-                <viewController hidesBottomBarWhenPushed="YES" id="k6u-Sb-2Pc" customClass="moreDetailFromTable" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="detailView" hidesBottomBarWhenPushed="YES" id="k6u-Sb-2Pc" customClass="moreDetailFromTable" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="eqi-VG-vM6"/>
                         <viewControllerLayoutGuide type="bottom" id="iK3-hu-7o5"/>
@@ -2589,7 +2614,7 @@
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <label opaque="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kOt-6u-5iu">
-                                                <rect key="frame" x="43" y="227" width="55" height="21"/>
+                                                <rect key="frame" x="43" y="227" width="83" height="21"/>
                                                 <fontDescription key="fontDescription" name="OpenSans" family="Open Sans" pointSize="10"/>
                                                 <color key="textColor" red="0.27450980392156865" green="0.27450980392156865" blue="0.27450980392156865" alpha="1" colorSpace="calibratedRGB"/>
                                                 <nil key="highlightedColor"/>
@@ -2604,6 +2629,11 @@
                                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                     </view>
                                 </subviews>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="size" keyPath="contentSize">
+                                        <size key="value" width="320" height="900"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
                                 <connections>
                                     <outlet property="delegate" destination="k6u-Sb-2Pc" id="mY4-47-gZR"/>
                                 </connections>
@@ -2648,11 +2678,91 @@
                         <segue destination="Drv-ar-Nfk" kind="presentation" identifier="showFriendProf" modalTransitionStyle="crossDissolve" id="66u-mL-ohL"/>
                         <segue destination="zqr-VE-hMB" kind="presentation" identifier="toMoreInfo" modalTransitionStyle="crossDissolve" id="jhP-SJ-u6y"/>
                         <segue destination="F3I-ZS-J7X" kind="presentation" identifier="toMapView" modalTransitionStyle="crossDissolve" id="Sj0-L7-Vqz"/>
+                        <segue destination="HYR-A5-Aob" kind="presentation" identifier="toProf" modalTransitionStyle="crossDissolve" id="2G4-Ow-Sgh"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="erd-bO-Qjd" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="1874" y="801"/>
+        </scene>
+        <!--Temp Profile-->
+        <scene sceneID="FQl-Yp-JBk">
+            <objects>
+                <viewController id="HYR-A5-Aob" customClass="tempProfile" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="gt7-BZ-Tir"/>
+                        <viewControllerLayoutGuide type="bottom" id="bCO-53-KQo"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="W13-Bj-7iO">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="City" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hdR-yx-Lea">
+                                <rect key="frame" x="23" y="174" width="274" height="21"/>
+                                <fontDescription key="fontDescription" name="OpenSans" family="Open Sans" pointSize="13"/>
+                                <color key="textColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.23529411759999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Name" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bnE-iv-bUs">
+                                <rect key="frame" x="22" y="154" width="277" height="22"/>
+                                <fontDescription key="fontDescription" name="OpenSans-Extrabold" family="Open Sans" pointSize="16"/>
+                                <color key="textColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.23529411759999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jfQ-AD-cHd">
+                                <rect key="frame" x="16" y="25" width="45" height="45"/>
+                                <state key="normal" image="x button"/>
+                                <state key="selected" image="x button pressed"/>
+                                <state key="highlighted" image="x button pressed"/>
+                                <connections>
+                                    <action selector="backButton:" destination="Drv-ar-Nfk" eventType="touchUpInside" id="TXE-Wk-G6f"/>
+                                    <action selector="backButton:" destination="HYR-A5-Aob" eventType="touchUpInside" id="l74-hc-1C3"/>
+                                </connections>
+                            </button>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="friends" translatesAutoresizingMaskIntoConstraints="NO" id="SlP-j2-VHK">
+                                <rect key="frame" x="121" y="55" width="78" height="78"/>
+                            </imageView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Tap the button below if you want to go with NAME to TITLE" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="DK1-9d-4be">
+                                <rect key="frame" x="44" y="209" width="232" height="103"/>
+                                <fontDescription key="fontDescription" name="OpenSans" family="Open Sans" pointSize="14"/>
+                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="VIV-Oe-CVy">
+                                <rect key="frame" x="85" y="321" width="150" height="150"/>
+                                <color key="backgroundColor" red="0.0" green="0.71764705880000002" blue="0.93333333330000001" alpha="1" colorSpace="calibratedRGB"/>
+                                <fontDescription key="fontDescription" name="OpenSans-Extrabold" family="Open Sans" pointSize="21"/>
+                                <state key="normal" title="Tap!">
+                                    <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="notifyUserButtonTapped:" destination="HYR-A5-Aob" eventType="touchUpInside" id="hDh-WC-oUB"/>
+                                </connections>
+                            </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Label" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Me8-1h-xA0">
+                                <rect key="frame" x="22" y="500" width="277" height="48"/>
+                                <fontDescription key="fontDescription" name="OpenSans" family="Open Sans" pointSize="9"/>
+                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    </view>
+                    <simulatedOrientationMetrics key="simulatedOrientationMetrics"/>
+                    <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina4"/>
+                    <connections>
+                        <outlet property="detailLabel" destination="hdR-yx-Lea" id="yhg-50-SRP"/>
+                        <outlet property="explanationLabel" destination="Me8-1h-xA0" id="HBr-eB-ryF"/>
+                        <outlet property="nameLabel" destination="bnE-iv-bUs" id="y4N-zQ-Lh8"/>
+                        <outlet property="notifyButton" destination="VIV-Oe-CVy" id="nk8-g9-JLe"/>
+                        <outlet property="profilePicImageView" destination="SlP-j2-VHK" id="g5B-ti-18U"/>
+                        <outlet property="subLabel" destination="DK1-9d-4be" id="g1C-7T-Aff"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="x0H-At-iaS" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1874" y="1505"/>
         </scene>
         <!--More Information-->
         <scene sceneID="xtd-Nd-0Ll">
@@ -3673,6 +3783,29 @@
                                             </subviews>
                                         </tableViewCellContentView>
                                     </tableViewCell>
+                                    <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" id="Vcx-mG-izk">
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="Vcx-mG-izk" id="3hq-rC-bjY">
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Messages from friends" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="LGh-EF-aVL">
+                                                    <rect key="frame" x="13" y="12" width="229" height="24"/>
+                                                    <fontDescription key="fontDescription" name="OpenSans-Light" family="Open Sans" pointSize="17"/>
+                                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="gO7-pI-z1Z">
+                                                    <rect key="frame" x="263" y="6" width="51" height="31"/>
+                                                    <color key="onTintColor" red="0.0" green="0.71764705880000002" blue="0.93333333330000001" alpha="1" colorSpace="calibratedRGB"/>
+                                                    <connections>
+                                                        <action selector="friendPushSwitch:" destination="l1n-7e-Y4T" eventType="valueChanged" id="03r-ZS-Czw"/>
+                                                        <action selector="pushFriendSwitch:" destination="l1n-7e-Y4T" eventType="valueChanged" id="B0q-P8-IHo"/>
+                                                        <action selector="pushRemindersSwitch:" destination="l1n-7e-Y4T" eventType="valueChanged" id="YD0-Wd-u87"/>
+                                                    </connections>
+                                                </switch>
+                                            </subviews>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
                                 </cells>
                             </tableViewSection>
                         </sections>
@@ -3977,7 +4110,7 @@
                                         <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                     </state>
                                     <connections>
-                                        <segue destination="RGA-Pl-eWM" kind="presentation" identifier="createNewEvent" id="8uk-L1-0cu"/>
+                                        <action selector="plusButtonTapped:" destination="8NL-C8-lOd" eventType="touchUpInside" id="TWC-BG-UXt"/>
                                     </connections>
                                 </button>
                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Name" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="NyJ-Th-nCx">
@@ -4102,6 +4235,7 @@
                         <outlet property="nameLabel" destination="NyJ-Th-nCx" id="LR9-dL-vNN"/>
                         <outlet property="profilePicImageView" destination="AVR-VL-oRx" id="vvk-ZY-rhf"/>
                         <outlet property="segControl" destination="op3-0Q-kPv" id="VCB-6C-5Rn"/>
+                        <segue destination="RGA-Pl-eWM" kind="presentation" identifier="createNewEvent" id="Lbp-MI-xaM"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="cnw-Do-nXs" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -4403,15 +4537,16 @@
         <image name="xButton" width="120" height="120"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="F4y-zq-O3P"/>
         <segue reference="Atg-Zw-3bC"/>
-        <segue reference="wkA-rj-BF3"/>
-        <segue reference="8uk-L1-0cu"/>
-        <segue reference="I3f-qb-sXO"/>
+        <segue reference="F4y-zq-O3P"/>
+        <segue reference="Lbp-MI-xaM"/>
+        <segue reference="yr5-Tu-v5G"/>
+        <segue reference="UJY-NU-Mxu"/>
+        <segue reference="pfl-XA-FWV"/>
         <segue reference="1W1-wd-rZd"/>
-        <segue reference="Sj0-L7-Vqz"/>
-        <segue reference="iEV-6Q-kPo"/>
-        <segue reference="YhQ-b1-v01"/>
-        <segue reference="jhP-SJ-u6y"/>
+        <segue reference="CBJ-jo-VT2"/>
+        <segue reference="lRk-4C-UL1"/>
+        <segue reference="sd9-zV-ihv"/>
+        <segue reference="YNH-ig-s17"/>
     </inferredMetricsTieBreakers>
 </document>

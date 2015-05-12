@@ -18,8 +18,8 @@
 
 PF_ASSUME_NONNULL_BEGIN
 
-typedef void(^PFUserSessionUpgradeResultBlock)(PF_NULLABLE_S NSError *error);
-typedef void(^PFUserLogoutResultBlock)(PF_NULLABLE_S NSError *error);
+typedef void(^PFUserSessionUpgradeResultBlock)(NSError * __nullable error);
+typedef void(^PFUserLogoutResultBlock)(NSError * __nullable error);
 
 
 @class PFQuery;

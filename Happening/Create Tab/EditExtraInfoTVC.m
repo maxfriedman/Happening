@@ -83,40 +83,11 @@
     // Dispose of any resources that can be recreated.
 }
 
-- (IBAction)urlField:(id)sender {
-    
-    UITableViewCell *currentCell = [self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]];
-    
-    NSURL *candidateURL = [NSURL URLWithString:urlField.text];
-    // WARNING > "test" is an URL according to RFCs, being just a path
-    // so you still should check scheme and all other NSURL attributes you need
-    if (candidateURL && [urlField.text containsString:@"."] /* && candidateURL.scheme && candidateURL.host */) {
-        // candidate is a well-formed url with:
-        //  - a scheme (like http://)
-        //  - a host (like stackoverflow.com)
-        passedEvent[@"URL"] = urlField.text;
-        
-        currentCell.accessoryType =UITableViewCellAccessoryCheckmark;
-        
-        url = urlField.text;
-        [delegate setUrl:url tickets:tickets free:free email:email];
-        
-    } else {
-        UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Not a valid web address" message:@"" delegate:self cancelButtonTitle:@"Roger that" otherButtonTitles:nil, nil];
-        [alert show];
-        
-        currentCell.accessoryType = UITableViewCellAccessoryNone;
-        
-        url = @"";
-        [delegate setUrl:url tickets:tickets free:free email:email];
-    }
-}
-
 - (IBAction)emailField:(id)sender {
     
     UITableViewCell *currentCell = [self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:1]];
     
-    if ([emailField.text containsString:@"@"] && [emailField.text containsString:@"."]) {
+    if ([self doesString:emailField.text contain:@"@"] && [self doesString:emailField.text contain:@"."]) {
         
         passedEvent[@"ContactEmail"] = emailField.text;
         
@@ -135,6 +106,11 @@
         [delegate setUrl:url tickets:tickets free:free email:email];
     }
     
+}
+
+-(BOOL)doesString:(NSString *)first contain:(NSString*)other {
+    NSRange range = [first rangeOfString:other];
+    return range.length != 0;
 }
 
 - (IBAction)ticketSwitchPressed:(id)sender {

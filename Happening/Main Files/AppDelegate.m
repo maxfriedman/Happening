@@ -14,8 +14,15 @@
 #import "DragViewController.h"
 #import "MyEventsTVC.h"
 #import "movieLoginVC.h"
+#import "moreDetailFromTable.h"
 
 #import <AVFoundation/AVFoundation.h>
+
+#define SYSTEM_VERSION_EQUAL_TO(v)                  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedSame)
+#define SYSTEM_VERSION_GREATER_THAN(v)              ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedDescending)
+#define SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(v)  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedAscending)
+#define SYSTEM_VERSION_LESS_THAN(v)                 ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedAscending)
+#define SYSTEM_VERSION_LESS_THAN_OR_EQUAL_TO(v)     ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedDescending)
 
 @interface AppDelegate ()
 
@@ -60,20 +67,44 @@
         // Yay! It worked!
     }
     
+    [ParseCrashReporting enable];
     [Parse setApplicationId:@"olSntgsT5uY3ZZbJtnjNz8yvol4CxwmArTsbkCZa"
                   clientKey:@"xwmrITvs8UaFBNfBupzXcUa6HN3sU515xp1TsGxu"];
     
     [PFAnalytics trackAppOpenedWithLaunchOptions:launchOptions];
-    //[ParseCrashReporting enable];
-    
-    // Register for Push Notitications
-    UIUserNotificationType userNotificationTypes = (UIUserNotificationTypeAlert |
-                                                    UIUserNotificationTypeBadge |
-                                                    UIUserNotificationTypeSound);
-    UIUserNotificationSettings *settings = [UIUserNotificationSettings settingsForTypes:userNotificationTypes
-                                                                             categories:nil];
-    [application registerUserNotificationSettings:settings];
-    [application registerForRemoteNotifications];
+
+    if (SYSTEM_VERSION_LESS_THAN(@"8.0")) {
+        
+        NSLog(@" ====== iOS 7 ====== ");
+        
+        [[UIApplication sharedApplication] registerForRemoteNotificationTypes: (UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound | UIRemoteNotificationTypeAlert)];
+        
+    } else {
+        
+        NSLog(@" ====== iOS 8 ====== ");
+        
+        UIUserNotificationType userNotificationTypes = (UIUserNotificationTypeAlert |
+                                                        UIUserNotificationTypeBadge |
+                                                        UIUserNotificationTypeSound);
+        UIUserNotificationSettings *settings = [UIUserNotificationSettings settingsForTypes:userNotificationTypes
+                                                                                 categories:nil];
+        [application registerUserNotificationSettings:settings];
+        [application registerForRemoteNotifications];
+        
+        if(self.locationManager==nil){
+            _locationManager=[[CLLocationManager alloc] init];
+            
+            _locationManager.delegate=self;
+            _locationManager.desiredAccuracy=kCLLocationAccuracyBest;
+            _locationManager.distanceFilter=50;
+            self.locationManager=_locationManager;
+        }
+        
+        if([CLLocationManager locationServicesEnabled]){
+            [self.locationManager startUpdatingLocation];
+        }
+        
+    }
     
     [FBSDKLoginButton class];
     
@@ -91,20 +122,6 @@
         UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
         movieLoginVC *vc = [storyboard instantiateViewControllerWithIdentifier:@"movieLogin"];
         self.window.rootViewController = vc;
-    }
-    
-    
-    if(self.locationManager==nil){
-        _locationManager=[[CLLocationManager alloc] init];
-        
-        _locationManager.delegate=self;
-        _locationManager.desiredAccuracy=kCLLocationAccuracyBest;
-        _locationManager.distanceFilter=50;
-        self.locationManager=_locationManager;
-    }
-    
-    if([CLLocationManager locationServicesEnabled]){
-        [self.locationManager startUpdatingLocation];
     }
 
     
@@ -124,7 +141,7 @@
         NSLog(@"First launch ever!");
         
         // THIS IS CRUCIAL TO MAKE CHANGES DOWN THE ROAD
-        [defaults setFloat:1.0 forKey:@"version"];
+        [defaults setFloat:1.03 forKey:@"version"];
         ///////////////////////////////////////////////
         
         [defaults setBool:NO forKey:@"refreshData"];
@@ -171,37 +188,58 @@
         [defaults synchronize];
         // This is the first launch ever
     }
+   
+    // Extract the notification data
+    NSDictionary *notificationPayload = launchOptions[UIApplicationLaunchOptionsRemoteNotificationKey];
     
-    
-    //NSLog(@"%@", [NSUserDefaults standardUserDefaults].dictionaryRepresentation);
-    
-    /*
-    if (FBSession.activeSession.state == FBSessionStateCreatedTokenLoaded && currentUser) {
-        NSLog(@"Found a cached session");
-        // If there's one, just open the session silently, without showing the user the login UI
-        [FBSession openActiveSessionWithReadPermissions:@[@"public_profile", @"email", @"user_friends", @"user_events", @"user_about_me", @"rsvp_event", @"user_location"]
-                                           allowLoginUI:NO
-                                      completionHandler:^(FBSession *session, FBSessionState state, NSError *error) {
-                                          // Handler for session state changes
-                                          // This method will be called EACH time the session state changes,
-                                          // also for intermediate states and NOT just when the session open
-                                          [self sessionStateChanged:session state:state error:error];
-                                      }];
-        //self.window.rootViewController = tabBar;
+    // Create a pointer to the Photo object
+    if ([notificationPayload objectForKey:@"eventID"] != nil) {
         
+        NSString *eventID = [notificationPayload objectForKey:@"eventID"];
         
-        self.window.rootViewController = rk;
+        PFQuery *query = [PFQuery queryWithClassName:@"Event"];
+        [query getObjectInBackgroundWithId:eventID block:^(PFObject *event, NSError *error){
+            
+            if (!error) {
+                
+                UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+                moreDetailFromTable *vc = [storyboard instantiateViewControllerWithIdentifier:@"detailView"];
+                UINavigationController *nvc = [[UINavigationController alloc] initWithRootViewController:vc];
+                nvc.navigationBar.tintColor = [UIColor whiteColor];
+                nvc.navigationItem.leftBarButtonItem.tintColor = [UIColor whiteColor];
+                nvc.navigationBar.titleTextAttributes = [NSDictionary dictionaryWithObject:[UIColor whiteColor] forKey:NSForegroundColorAttributeName];
+                nvc.modalPresentationStyle = UIModalTransitionStyleCrossDissolve;
+                
+                // Pass data
+                vc.eventID = eventID;
+                vc.titleText = event[@"Title"];
+                vc.distanceText = @"0.1 mi";
+                vc.subtitleText = event[@"Description"];
+                vc.locationText = event[@"Location"];
+                
+                vc.attendEventVC = nil;
+                
+                PFFile *file = event[@"Image"];
+                
+                [file getDataInBackgroundWithBlock:^(NSData *data, NSError *error){
+                    
+                    vc.image = [UIImage imageWithData:data];
+                    
+                    [rk presentViewController:nvc animated:YES completion:^{
+                        
+                    }];
+                    
+                }];
+                
+            } else {
+                
+                NSLog(@"ERROR!!!!!!");
+            }
+            
+            
+        }];
         
-        
-        // If there's no cached session, view goes to first screen (splash screens) which is set in storyboard
-    } else {
-        //UIButton *loginButton = [self.customLoginViewController loginButton];
-        //[loginButton setTitle:@"Log in with Facebook" forState:UIControlStateNormal];
     }
-    
-     */
-     
-    //self.window.rootViewController = [storyboard instantiateViewControllerWithIdentifier:@"ChoosingLocation"];
     
     return [[FBSDKApplicationDelegate sharedInstance] application:application
                                     didFinishLaunchingWithOptions:launchOptions];
@@ -330,9 +368,12 @@
 
 - (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
     // Store the deviceToken in the current installation and save it to Parse.
+    
+    NSLog(@"User registered for push notifications!");
+    
     PFInstallation *currentInstallation = [PFInstallation currentInstallation];
     [currentInstallation setDeviceTokenFromData:deviceToken];
-    currentInstallation.channels = @[ @"global", @"reminders", @"matches", @"friendJoined", @"popularEvents", @"matchesInApp"];
+    currentInstallation.channels = @[ @"global", @"reminders", @"matches", @"friendJoined", @"popularEvents", @"matchesInApp", @"friendPush"];
     
     // Associate the device with a user
     //PFUser *user = [PFUser currentUser];
@@ -343,7 +384,56 @@
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo {
     [PFPush handlePush:userInfo];
     
+    NSLog(@"PUSH NOTIFICATION");
+    NSLog(@"Info from push: %@", userInfo);
     
+    if ([userInfo objectForKey:@"eventID"] != nil) {
+    
+        NSString *eventID = [userInfo objectForKey:@"eventID"];
+
+        PFQuery *query = [PFQuery queryWithClassName:@"Event"];
+        [query getObjectInBackgroundWithId:eventID block:^(PFObject *event, NSError *error){
+    
+            if (!error) {
+        
+                UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+                moreDetailFromTable *vc = [storyboard instantiateViewControllerWithIdentifier:@"detailView"];
+                UINavigationController *nvc = [[UINavigationController alloc] initWithRootViewController:vc];
+                nvc.navigationBar.tintColor = [UIColor whiteColor];
+                nvc.navigationItem.leftBarButtonItem.tintColor = [UIColor whiteColor];
+                nvc.navigationBar.titleTextAttributes = [NSDictionary dictionaryWithObject:[UIColor whiteColor] forKey:NSForegroundColorAttributeName];
+                nvc.modalPresentationStyle = UIModalTransitionStyleCrossDissolve;
+            
+                // Pass data
+                vc.eventID = eventID;
+                vc.titleText = event[@"Title"];
+                vc.distanceText = @"0.1 mi";
+                vc.subtitleText = event[@"Description"];
+                vc.locationText = event[@"Location"];
+            
+                vc.attendEventVC = nil;
+            
+                PFFile *file = event[@"Image"];
+            
+                    [file getDataInBackgroundWithBlock:^(NSData *data, NSError *error){
+                
+                        vc.image = [UIImage imageWithData:data];
+                
+                        [rk presentViewController:nvc animated:YES completion:^{
+                    
+                        }];
+                
+                    }];
+            
+            } else {
+            
+                NSLog(@"ERROR!!!!!!");
+            }
+
+        
+        }];
+    
+    }
 }
 
 

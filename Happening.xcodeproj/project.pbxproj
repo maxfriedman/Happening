@@ -109,7 +109,9 @@
 		50BF2CE31A75531B00160B5E /* movieLoginVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 50BF2CE21A75531B00160B5E /* movieLoginVC.m */; };
 		50BF2CE61A758D8300160B5E /* RKSwipeBetweenViewControllers.m in Sources */ = {isa = PBXBuildFile; fileRef = 50BF2CE51A758D8300160B5E /* RKSwipeBetweenViewControllers.m */; };
 		50C2938F1A83D37A00F9185C /* Happening Intro vid.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 50C2938E1A83D37A00F9185C /* Happening Intro vid.mp4 */; };
+		50C35E081ADB166400389EF4 /* tempProfile.m in Sources */ = {isa = PBXBuildFile; fileRef = 50C35E071ADB166400389EF4 /* tempProfile.m */; };
 		50D255A41A6388A10086B7A4 /* OpenSans-Extrabold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50478F1B1A44DF1500161D01 /* OpenSans-Extrabold.ttf */; };
+		50E1C8151AD67481001A639D /* SVProgressHUD.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 50E1C8141AD67481001A639D /* SVProgressHUD.bundle */; };
 		50F7DEA51A5643A6008B8C2B /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 50478F101A44DE6900161D01 /* main.m */; };
 		50F7DEA71A5794D6008B8C2B /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50F7DEA61A5794D5008B8C2B /* MessageUI.framework */; };
 		50F7DEAA1A57B4B8008B8C2B /* UICountingLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = 50F7DEA91A57B4B8008B8C2B /* UICountingLabel.m */; };
@@ -258,8 +260,6 @@
 		50512F1C1ABB714000118FD9 /* PrivacyTVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PrivacyTVC.m; path = "Happening/Create Tab/PrivacyTVC.m"; sourceTree = SOURCE_ROOT; };
 		50512F1F1ABB719700118FD9 /* SVIndefiniteAnimatedView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SVIndefiniteAnimatedView.h; sourceTree = "<group>"; };
 		50512F201ABB719700118FD9 /* SVIndefiniteAnimatedView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SVIndefiniteAnimatedView.m; sourceTree = "<group>"; };
-		50512F211ABB719700118FD9 /* SVProgressHUD-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SVProgressHUD-Prefix.pch"; sourceTree = "<group>"; };
-		50512F221ABB719700118FD9 /* SVProgressHUD.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = SVProgressHUD.bundle; sourceTree = "<group>"; };
 		50512F231ABB719700118FD9 /* SVProgressHUD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SVProgressHUD.h; sourceTree = "<group>"; };
 		50512F241ABB719700118FD9 /* SVProgressHUD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SVProgressHUD.m; sourceTree = "<group>"; };
 		50594CCF1A2FAD1B00749B49 /* AddressBook.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AddressBook.framework; path = System/Library/Frameworks/AddressBook.framework; sourceTree = SDKROOT; };
@@ -295,7 +295,11 @@
 		50BF2CE41A758D8300160B5E /* RKSwipeBetweenViewControllers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RKSwipeBetweenViewControllers.h; path = Happening/Extras/RKSwipeBetweenViewControllers.h; sourceTree = SOURCE_ROOT; };
 		50BF2CE51A758D8300160B5E /* RKSwipeBetweenViewControllers.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RKSwipeBetweenViewControllers.m; path = Happening/Extras/RKSwipeBetweenViewControllers.m; sourceTree = SOURCE_ROOT; };
 		50C2938E1A83D37A00F9185C /* Happening Intro vid.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Happening Intro vid.mp4"; sourceTree = "<group>"; };
+		50C35E061ADB166400389EF4 /* tempProfile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = tempProfile.h; path = "Happening/Discover Tab/tempProfile.h"; sourceTree = SOURCE_ROOT; };
+		50C35E071ADB166400389EF4 /* tempProfile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = tempProfile.m; path = "Happening/Discover Tab/tempProfile.m"; sourceTree = SOURCE_ROOT; };
 		50D252DD1A6385DC0086B7A4 /* HappeningTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HappeningTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		50E1C8131AD67481001A639D /* SVProgressHUD-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "SVProgressHUD-Prefix.pch"; path = "../../../../SVProgressHUD-master/SVProgressHUD/SVProgressHUD-Prefix.pch"; sourceTree = "<group>"; };
+		50E1C8141AD67481001A639D /* SVProgressHUD.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = SVProgressHUD.bundle; path = "../../../../SVProgressHUD-master/SVProgressHUD/SVProgressHUD.bundle"; sourceTree = "<group>"; };
 		50F7DEA61A5794D5008B8C2B /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		50F7DEA81A57B4B8008B8C2B /* UICountingLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UICountingLabel.h; path = Happening/Extras/UICountingLabel.h; sourceTree = SOURCE_ROOT; };
 		50F7DEA91A57B4B8008B8C2B /* UICountingLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = UICountingLabel.m; path = Happening/Extras/UICountingLabel.m; sourceTree = SOURCE_ROOT; };
@@ -733,10 +737,10 @@
 		50512F1E1ABB719700118FD9 /* SVProgressHUD */ = {
 			isa = PBXGroup;
 			children = (
+				50E1C8131AD67481001A639D /* SVProgressHUD-Prefix.pch */,
+				50E1C8141AD67481001A639D /* SVProgressHUD.bundle */,
 				50512F1F1ABB719700118FD9 /* SVIndefiniteAnimatedView.h */,
 				50512F201ABB719700118FD9 /* SVIndefiniteAnimatedView.m */,
-				50512F211ABB719700118FD9 /* SVProgressHUD-Prefix.pch */,
-				50512F221ABB719700118FD9 /* SVProgressHUD.bundle */,
 				50512F231ABB719700118FD9 /* SVProgressHUD.h */,
 				50512F241ABB719700118FD9 /* SVProgressHUD.m */,
 			);
@@ -762,6 +766,8 @@
 		506961F91A8F11E4009CB5DB /* Other */ = {
 			isa = PBXGroup;
 			children = (
+				50C35E061ADB166400389EF4 /* tempProfile.h */,
+				50C35E071ADB166400389EF4 /* tempProfile.m */,
 				50478EE31A44DD6C00161D01 /* moreDetailFromCard.h */,
 				50478EE41A44DD6C00161D01 /* moreDetailFromCard.m */,
 				50478EE51A44DD6C00161D01 /* OverlayView.h */,
@@ -872,6 +878,7 @@
 				506DC5421A46014300DD4591 /* OpenSans-Italic.ttf in Resources */,
 				506DC5431A46014300DD4591 /* OpenSans-Light.ttf in Resources */,
 				506DC5441A46014300DD4591 /* OpenSans-LightItalic.ttf in Resources */,
+				50E1C8151AD67481001A639D /* SVProgressHUD.bundle in Resources */,
 				506DC5451A46014300DD4591 /* OpenSans-Regular.ttf in Resources */,
 				506DC5461A46014300DD4591 /* OpenSans-Semibold.ttf in Resources */,
 				506DC5471A46014300DD4591 /* OpenSans-SemiboldItalic.ttf in Resources */,
@@ -908,6 +915,7 @@
 				50478EF31A44DD9800161D01 /* SettingsTVC.m in Sources */,
 				50F7DEAA1A57B4B8008B8C2B /* UICountingLabel.m in Sources */,
 				50478EC31A44DCAD00161D01 /* PageContentViewController.m in Sources */,
+				50C35E081ADB166400389EF4 /* tempProfile.m in Sources */,
 				50478EBD1A44DBCC00161D01 /* InitialLocationSearch.m in Sources */,
 				50478EBE1A44DBCC00161D01 /* LogInExistingUser.m in Sources */,
 				50478ED31A44DD2400161D01 /* EditEventTVC.m in Sources */,
@@ -1011,7 +1019,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "";
@@ -1050,7 +1058,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "";
