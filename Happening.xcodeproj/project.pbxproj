@@ -105,6 +105,8 @@
 		509248F71A58819D002BE584 /* EditExtraInfoTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 509248F61A58819D002BE584 /* EditExtraInfoTVC.m */; };
 		50965A641A76A6DB00EDF5FC /* dropdownSettingsView.m in Sources */ = {isa = PBXBuildFile; fileRef = 50965A631A76A6DB00EDF5FC /* dropdownSettingsView.m */; };
 		50A677761A59B67C00E1E12A /* RKDropdownAlert.m in Sources */ = {isa = PBXBuildFile; fileRef = 50A677751A59B67C00E1E12A /* RKDropdownAlert.m */; };
+		50B7071A1B1575BD0080657E /* inviteHomies.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B707191B1575BD0080657E /* inviteHomies.m */; };
+		50B707201B17D2D90080657E /* inviteHomiesCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B7071F1B17D2D90080657E /* inviteHomiesCell.m */; };
 		50BA96391AC5DDD2006A8A13 /* InitialVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 50BA96381AC5DDD2006A8A13 /* InitialVC.m */; };
 		50BF2CE31A75531B00160B5E /* movieLoginVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 50BF2CE21A75531B00160B5E /* movieLoginVC.m */; };
 		50BF2CE61A758D8300160B5E /* RKSwipeBetweenViewControllers.m in Sources */ = {isa = PBXBuildFile; fileRef = 50BF2CE51A758D8300160B5E /* RKSwipeBetweenViewControllers.m */; };
@@ -288,6 +290,10 @@
 		50965A631A76A6DB00EDF5FC /* dropdownSettingsView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = dropdownSettingsView.m; path = "Happening/Discover Tab/Settings/dropdownSettingsView.m"; sourceTree = SOURCE_ROOT; };
 		50A677741A59B67C00E1E12A /* RKDropdownAlert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RKDropdownAlert.h; path = Happening/Extras/RKDropdownAlert.h; sourceTree = SOURCE_ROOT; };
 		50A677751A59B67C00E1E12A /* RKDropdownAlert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RKDropdownAlert.m; path = Happening/Extras/RKDropdownAlert.m; sourceTree = SOURCE_ROOT; };
+		50B707181B1575BD0080657E /* inviteHomies.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = inviteHomies.h; path = "Happening/Discover Tab/inviteHomies.h"; sourceTree = SOURCE_ROOT; };
+		50B707191B1575BD0080657E /* inviteHomies.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = inviteHomies.m; path = "Happening/Discover Tab/inviteHomies.m"; sourceTree = SOURCE_ROOT; };
+		50B7071E1B17D2D90080657E /* inviteHomiesCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = inviteHomiesCell.h; path = "Happening/Discover Tab/inviteHomiesCell.h"; sourceTree = SOURCE_ROOT; };
+		50B7071F1B17D2D90080657E /* inviteHomiesCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = inviteHomiesCell.m; path = "Happening/Discover Tab/inviteHomiesCell.m"; sourceTree = SOURCE_ROOT; };
 		50BA96371AC5DDD2006A8A13 /* InitialVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = InitialVC.h; path = "Happening/Create Tab/InitialVC.h"; sourceTree = SOURCE_ROOT; };
 		50BA96381AC5DDD2006A8A13 /* InitialVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = InitialVC.m; path = "Happening/Create Tab/InitialVC.m"; sourceTree = SOURCE_ROOT; };
 		50BF2CE11A75531B00160B5E /* movieLoginVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = movieLoginVC.h; path = "Happening/Login Flow/movieLoginVC.h"; sourceTree = SOURCE_ROOT; };
@@ -776,6 +782,10 @@
 				50FA6B881A7ECC35009AA6A0 /* TutorialDragView.m */,
 				506961FA1A8F122C009CB5DB /* ExternalProfileTVC.h */,
 				506961FB1A8F122C009CB5DB /* ExternalProfileTVC.m */,
+				50B707181B1575BD0080657E /* inviteHomies.h */,
+				50B707191B1575BD0080657E /* inviteHomies.m */,
+				50B7071E1B17D2D90080657E /* inviteHomiesCell.h */,
+				50B7071F1B17D2D90080657E /* inviteHomiesCell.m */,
 				5028636A1AC1B2980029BD15 /* unused */,
 			);
 			name = Other;
@@ -958,7 +968,9 @@
 				50512F111ABB51DB00118FD9 /* ProfileSettingsTVC.m in Sources */,
 				50478ED81A44DD2400161D01 /* showMyEventVC.m in Sources */,
 				50BF2CE61A758D8300160B5E /* RKSwipeBetweenViewControllers.m in Sources */,
+				50B707201B17D2D90080657E /* inviteHomiesCell.m in Sources */,
 				50478EBC1A44DBCC00161D01 /* FirstTimeScreen.m in Sources */,
+				50B7071A1B1575BD0080657E /* inviteHomies.m in Sources */,
 				50F7DEA51A5643A6008B8C2B /* main.m in Sources */,
 				50512F051AB389B600118FD9 /* UIButton+Extensions.m in Sources */,
 				506DFD801A60A94600715079 /* UIImage+ImageEffects.m in Sources */,

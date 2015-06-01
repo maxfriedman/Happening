@@ -15,11 +15,6 @@
 
 @interface AttendEvent ()
 
-@property (strong, nonatomic) NSMutableDictionary *sections;
-@property (strong, nonatomic) NSArray *sortedDays;
-@property (strong, nonatomic) NSDateFormatter *sectionDateFormatter;
-@property (strong, nonatomic) NSDateFormatter *cellDateFormatter;
-
 - (NSDate *)dateAtBeginningOfDayForDate:(NSDate *)inputDate;
 
 @end
@@ -27,12 +22,11 @@
 @implementation AttendEvent {
     NSInteger count;
     NSArray *eventsArray;
+    NSMutableArray *sectionHeaders1;
     UIView *noEventsView;
 }
 
 @synthesize locManager, refreshControl;
-@synthesize sections;
-@synthesize sortedDays;
 
 
 - (void)viewDidLoad {
@@ -45,20 +39,12 @@
     
     [self setEnabledSidewaysScrolling:YES];
     
-    self.sectionDateFormatter = [[NSDateFormatter alloc] init];
-    [self.sectionDateFormatter setDateFormat:@"EEEE, MMMM d"];
-    
-    self.cellDateFormatter = [[NSDateFormatter alloc] init];
-    [self.cellDateFormatter setDateStyle:NSDateFormatterNoStyle];
-    [self.cellDateFormatter setTimeStyle:NSDateFormatterShortStyle];
-    
     [self loadData];
 }
 
 - (void)loadData {
     
-    // Instantiate event dictionary--- this is where all event info is stored
-    self.sections = [NSMutableDictionary dictionary];
+    sectionHeaders1 = [[NSMutableArray alloc] init];
     
     PFQuery *swipesQuery = [PFQuery queryWithClassName:@"Swipes"];
     // Query only for current user's events
@@ -70,7 +56,7 @@
     PFQuery *eventQuery = [PFQuery queryWithClassName:@"Event"];
     [eventQuery whereKey:@"objectId" matchesKey:@"EventID" inQuery:swipesQuery];
     [eventQuery whereKey:@"EndTime" greaterThan:[NSDate dateWithTimeIntervalSinceNow:1800]]; // show today's events, must be at least 30 minutes left in the event (END)
-    [eventQuery orderByAscending:@"Date"];
+    [eventQuery orderByAscending:@"swipesRight"];
     
     count = 0;
     
@@ -80,41 +66,25 @@
         
         eventsArray = events;
         
-        for (PFObject *event in eventsArray)
-        {
-            // Reduce event start date to date components (year, month, day)
-            NSDate *dateRepresentingThisDay = [self dateAtBeginningOfDayForDate:event[@"Date"]];
-            if ([dateRepresentingThisDay compare:[NSDate date]] == NSOrderedAscending) {
-                dateRepresentingThisDay = [self dateAtBeginningOfDayForDate:[NSDate date]];
-            }
-            
-            // If we don't yet have an array to hold the events for this day, create one
-            NSMutableArray *eventsOnThisDay = [self.sections objectForKey:dateRepresentingThisDay];
-            if (eventsOnThisDay == nil) {
-                eventsOnThisDay = [NSMutableArray array];
-                
-                // Use the reduced date as dictionary key to later retrieve the event list this day
-                [self.sections setObject:eventsOnThisDay forKey:dateRepresentingThisDay];
-            }
-            
-            // Add the event to the list for this day
-            [eventsOnThisDay addObject:event];
-            
-            count++;
-        }
-        
-        // Create a sorted list of days
-        NSArray *unsortedDays = [self.sections allKeys];
-        self.sortedDays = [unsortedDays sortedArrayUsingSelector:@selector(compare:)];
-        
         if (eventsArray.count == 0) {
             
             [noEventsView removeFromSuperview];
-            [self noEvents];
+            //[self noEvents];
             
         } else {
             
             [noEventsView removeFromSuperview];
+        }
+        
+        for (int i = 0; i < eventsArray.count; i++) {
+            
+            if (i == 0) {
+                [sectionHeaders1 addObject:[NSString stringWithFormat:@"The must-do:"]];
+            } else if (i == 1) {
+                [sectionHeaders1 addObject:[NSString stringWithFormat:@"Runner-up:"]];
+            } else {
+                [sectionHeaders1 addObject:[NSString stringWithFormat:@"#%d", i+1]];
+            }
         }
         
         [self.tableView reloadData];
@@ -132,46 +102,29 @@
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    
-    return [self.sections count];
+
+    return [sectionHeaders1 count];
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
     
-    NSDate *eventDate = [[NSDate alloc]init];
-    eventDate = [self.sortedDays objectAtIndex:section];
-    
-    if ((section == 0 || section == 1) && ([eventDate beginningOfDay] == [[NSDate date] beginningOfDay])) {
-        return @"Today";
-    }
-    
-    if ((section == 0 || section == 1) && ([eventDate beginningOfDay] == [[NSDate dateWithTimeIntervalSinceNow:86400] beginningOfDay])) {
-        return @"Tomorrow";
-    }
-    
-    return [self.sectionDateFormatter stringFromDate:eventDate];}
+    return [sectionHeaders1 objectAtIndex:section];
+}
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     
-    NSDate *dateRepresentingThisDay = [self.sortedDays objectAtIndex:section];
-    NSArray *eventsOnThisDay = [self.sections objectForKey:dateRepresentingThisDay];
-    return [eventsOnThisDay count];
-    //return 1;
+    return 1;
     
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     AttendTableCell *cell = (AttendTableCell *)[tableView dequeueReusableCellWithIdentifier:@"tag" forIndexPath:indexPath];
 
-    //NSLog(@"%@", self.view.subviews);
     [noEventsView removeFromSuperview];
     
     [cell setupCell];
     
-    NSDate *dateRepresentingThisDay = [self.sortedDays objectAtIndex:indexPath.section];
-    NSArray *eventsOnThisDay = [self.sections objectForKey:dateRepresentingThisDay];
-    
-    PFObject *Event = eventsOnThisDay[indexPath.row];
+    PFObject *Event = eventsArray[indexPath.section];
     
     [cell.titleLabel setText:[NSString stringWithFormat:@"%@",Event[@"Title"]]];
     
@@ -278,70 +231,12 @@
 
 - (void)tableView:(UITableView *)tableView willDisplayHeaderView:(UIView *)view forSection:(NSInteger)section
 {
-    // Background color
-    //view.tintColor = [UIColor blackColor]
+
     
-    // Text Color
     UITableViewHeaderFooterView *header = (UITableViewHeaderFooterView *)view;
-    [header.textLabel setTextColor:[UIColor darkTextColor]];
+    [header.textLabel setTextColor:[UIColor darkGrayColor]];
     [header.textLabel setFont:[UIFont fontWithName:@"OpenSans-Semibold" size:14]];
-        
-    // For some reason the the sub label was being added to every header---> this removes it.
-    for (UIView *view in header.contentView.subviews) {
-        
-        if (view.tag == 99)
-            [view removeFromSuperview];
-    }
-
-
     
-    if ([header.textLabel.text isEqualToString:@"TODAY"]) {
-        UILabel *subDateLabel = [[UILabel alloc] initWithFrame:CGRectMake(67, 16, 100, 20)];
-        subDateLabel.textColor = [UIColor darkTextColor];
-        subDateLabel.font = [UIFont fontWithName:@"OpenSans" size:9];
-        subDateLabel.tag = 99;
-        
-        NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-        [formatter setDateStyle:NSDateFormatterShortStyle];
-        NSString *dateString = [formatter stringFromDate:[NSDate date]];
-        subDateLabel.text = dateString;
-        
-        [header.contentView addSubview:subDateLabel];
-        
-    }  else if ([header.textLabel.text isEqualToString:@"TOMORROW"] && section == 0) {
-
-        UILabel *subDateLabel = [[UILabel alloc] initWithFrame:CGRectMake(107, 16, 100, 20)];
-        subDateLabel.textColor = [UIColor darkTextColor];
-        subDateLabel.font = [UIFont fontWithName:@"OpenSans" size:9];
-        subDateLabel.tag = 99;
-        
-        NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-        [formatter setDateStyle:NSDateFormatterShortStyle];
-        NSString *dateString = [formatter stringFromDate:[NSDate dateWithTimeIntervalSinceNow:(86400)]];
-        subDateLabel.text = dateString;
-        
-        [header.contentView addSubview:subDateLabel];
-        
-    } else if ([header.textLabel.text isEqualToString:@"TOMORROW"] && section == 1) {
-        
-        UILabel *subDateLabel = [[UILabel alloc] initWithFrame:CGRectMake(107, 0, 100, 17)];
-        subDateLabel.textColor = [UIColor darkTextColor];
-        subDateLabel.font = [UIFont fontWithName:@"OpenSans" size:9];
-        subDateLabel.tag = 99;
-        
-        NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-        [formatter setDateStyle:NSDateFormatterShortStyle];
-        NSString *dateString = [formatter stringFromDate:[NSDate dateWithTimeIntervalSinceNow:(86400)]];
-        subDateLabel.text = dateString;
-        
-        [header.contentView addSubview:subDateLabel];
-    }
-
-    
-    
-    // Another way to set the background color
-    // Note: does not preserve gradient effect of original header
-    // header.contentView.backgroundColor = [UIColor blackColor];
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
@@ -349,101 +244,8 @@
     if (section != 0) {
         return 22;
     }
-    return 40;
+    return 33;
 }
-
-// Method for deleting table cells, only works if there are multiple events/cells in a section
-
-/*
-// Override to support editing the table view.
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
-    AttendTableCell *cell = [tableView cellForRowAtIndexPath:indexPath];
-    
-    if (editingStyle == UITableViewCellEditingStyleDelete) {
-        
-        // Delete the row/section from the data source
-        NSDate *dateRepresentingThisDay = [self.sortedDays objectAtIndex:indexPath.section];
-        NSMutableArray *eventsOnThisDay = [self.sections objectForKey:dateRepresentingThisDay];
-        
-        if (eventsOnThisDay.count <= 1) {
-            
-            PFQuery *swipesQuery = [PFQuery queryWithClassName:@"Swipes"];
-            // Query only for current user's events
-            PFUser *user = [PFUser currentUser];
-            [swipesQuery whereKey:@"UserID" equalTo:user.username];
-            [swipesQuery whereKey:@"swipedRight" equalTo:@YES];
-            //NSArray *swipesArray = [swipesQuery findObjects];
-            
-            PFQuery *eventQuery = [PFQuery queryWithClassName:@"Event"];
-            [eventQuery whereKey:@"objectId" matchesKey:@"EventID" inQuery:swipesQuery];
-            [eventQuery whereKey:@"Date" greaterThan:[NSDate date]];
-            [eventQuery orderByAscending:@"Date"];
-            
-            [eventQuery findObjectsInBackgroundWithBlock:^(NSArray *eventsArray, NSError *error) {
-            
-            for (PFObject *event in eventsArray)
-            {
-                // Reduce event start date to date components (year, month, day)
-                NSDate *dateRepresentingThisDay = [self dateAtBeginningOfDayForDate:event[@"Date"]];
-                
-                // If we don't yet have an array to hold the events for this day, create one
-                NSMutableArray *eventsOnThisDay = [self.sections objectForKey:dateRepresentingThisDay];
-                if (eventsOnThisDay == nil) {
-                    eventsOnThisDay = [NSMutableArray array];
-                    
-                    // Use the reduced date as dictionary key to later retrieve the event list this day
-                    [self.sections setObject:eventsOnThisDay forKey:dateRepresentingThisDay];
-                }
-                
-                // Add the event to the list for this day
-                [eventsOnThisDay addObject:event];
-            }
-            
-            // Create a sorted list of days
-            NSArray *unsortedDays = [self.sections allKeys];
-            self.sortedDays = [unsortedDays sortedArrayUsingSelector:@selector(compare:)];
-        
-        PFQuery *swipesQuery = [PFQuery queryWithClassName:@"Swipes"];
-        [swipesQuery whereKey:@"EventID" equalTo:cell.eventID];
-        PFUser *user = [PFUser currentUser];
-        [swipesQuery whereKey:@"UserID" equalTo:user.username];
-        PFObject *swipesObject = [swipesQuery getFirstObject];
-        [swipesObject setValue:@NO forKey:@"swipedRight"];
-        [swipesObject setValue:@YES forKey:@"swipedLeft"];
-        [swipesObject saveInBackground];
-        
-        // Make a dictionary with with the eventID (objectID), row number, section number, and total number in the order
-        // Use this to find the correct event, use the eventID to query swipes, and switch swiped right and swiped left
-        
-        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-        }];
-            } else {
-            
-            [eventsOnThisDay removeObjectAtIndex:indexPath.row];
-            [self.sections setObject:eventsOnThisDay forKey:dateRepresentingThisDay];
-            
-            [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-        }
-        
-    } else if (editingStyle == UITableViewCellEditingStyleInsert) {
-        // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-    }   
-}
-*/
-
-/*
-// Override to support rearranging the table view.
-- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath {
-}
-*/
-
-/*
-// Override to support conditional rearranging of the table view.
-- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the item to be re-orderable.
-    return YES;
-}
-*/
 
 - (NSDate *)dateAtBeginningOfDayForDate:(NSDate *)inputDate
 {
@@ -485,7 +287,8 @@
 }
 
 - (void)noEvents {
-        
+    
+    
     noEventsView = [[UIView alloc] initWithFrame: CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height)];
     //noEventsView.backgroundColor = [UIColor redColor];
         

@@ -84,7 +84,7 @@
 @property (nonatomic,strong)UILabel* calTimeLabel;
 
 @property (assign) NSString *URL;
-
+@property (assign) NSString *ticketLink;
 
 @property (assign)int actionMargin;
 @property (assign)int swipeDownMargin;

@@ -87,8 +87,8 @@
     
     dvc = vc;
     
-    MyEventsTVC *mtvc = [storyboard instantiateViewControllerWithIdentifier:@"Create"];
-    AttendEvent *atvc = [storyboard instantiateViewControllerWithIdentifier:@"Attend"];
+    MyEventsTVC *mtvc = [storyboard instantiateViewControllerWithIdentifier:@"Attend"];
+    AttendEvent *atvc = [storyboard instantiateViewControllerWithIdentifier:@"Create"];
 
     [viewControllerArray addObjectsFromArray:@[mtvc,vc,atvc]];
     

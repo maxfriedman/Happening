@@ -25,6 +25,7 @@
 #import "Reachability.h"
 #import "AMPopTip.h"
 #import "tempProfile.h"
+#import "inviteHomies.h"
 
 @interface DragViewController () <ChoosingLocationDelegate, dropdownSettingsViewDelegate>
 
@@ -43,7 +44,6 @@
     NSUserDefaults *defaults;
     TutorialDragView *tutorialScreens;
     BOOL showTut;
-    NSString *friendObjectID;
     NSString *urlString;
     EKEvent *calEvent;
     EKEventStore *calEventStore;
@@ -55,6 +55,8 @@
     
     UIButton *uberButton;
     UIButton *ticketsButton;
+    
+    UIButton *mainTixButton;
     
     CGFloat extraDescHeight;
     
@@ -76,24 +78,6 @@
                                               object:nil];
     
     defaults = [NSUserDefaults standardUserDefaults];
-
-    NSLog(@"%@",  [FBSDKAccessToken currentAccessToken].tokenString); //[FBSDKAccessToken currentAccessToken]);
-
-    /*
-    PFQuery *query = [PFQuery queryWithClassName:@"Event"];
-    [query whereKey:@"weight" lessThan:@1];
-    query.limit = 500;
-    [query findObjectsInBackgroundWithBlock:^(NSArray *events, NSError *err) {
-                                             
-        for (PFObject *ob in events) {
-            
-            NSDate *ed = ob[@"EndTime"];
-            ob[@"EndTime"] = [ed dateByAddingTimeInterval:-(4*60*60)];
-            [ob saveInBackground];
-        }
-        
-    }];
-    */
     
     /*
     [PFCloud callFunctionInBackground:@"reminders"
@@ -144,6 +128,11 @@
     [checkButton setImage:[UIImage imageNamed:@"InterestedButton"] forState:UIControlStateNormal];
     [checkButton addTarget:self action:@selector(swipeRightDVC) forControlEvents:UIControlEventTouchUpInside];
     
+    
+    [self.scrollView addSubview:mainTixButton];
+
+    /*
+    
     UIButton *inviteButton = [[UIButton alloc] initWithFrame:CGRectMake(40, 410, 80, 40)];
     [inviteButton setTitle:@"Share" forState:UIControlStateNormal];
     [inviteButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
@@ -162,7 +151,8 @@
     actionButton.layer.borderWidth = 2.0;
     [scrollView addSubview:actionButton];
     
-    
+    */
+     
     // :(
     //[self.scrollView addSubview:checkButton];
     //[self.scrollView addSubview:xButton];
@@ -202,7 +192,8 @@
    // NSLog(@"MAADEEE ITT!!!");
     //NSLog(@"scroll view subviews: %@", scrollView.subviews);
 
-    
+    //[defaults setBool:YES forKey:@"hasLaunched"];
+    //[defaults synchronize];
     // Refresh only if there was a change in preferences or the app has loaded for the first time.
     
     if (![defaults boolForKey:@"hasLaunched"]) {
@@ -318,8 +309,7 @@
     
         [scrollView addSubview:draggableBackground];
         [scrollView bringSubviewToFront:draggableBackground];
-    
-    
+        
         draggableBackground.myViewController = self;
         //[cardView addSubview:draggableBackground];
     
@@ -343,12 +333,83 @@
     
         //NSLog(@"card view subviews: %@", cardView.subviews);
         
+        
     } else if (!isReachable && [defaults boolForKey:@"hasLaunched"] && rk.currentPageIndex == 1) {
         
         //[RKDropdownAlert title:@"Something went wrong :(" message:@"Please check your internet connection\nand try again" backgroundColor:[UIColor redColor] textColor:[UIColor whiteColor]];
     }
     
     //refreshingData = NO;
+    
+}
+
+- (void) updateMainTixButton {
+    
+    NSLog(@"Yo");
+    
+    [UIView animateWithDuration:0.5 animations:^{
+        
+        mainTixButton.alpha = 0;
+        
+    } completion:^(BOOL finished) {
+        
+        NSString *ticketLink = [NSString stringWithFormat:@"%@", draggableBackground.dragView.ticketLink];
+        
+        if (ticketLink != nil && ![ticketLink isEqualToString:@""]) {
+            
+            NSLog(@"ticket link::: %@", ticketLink);
+            
+            mainTixButton = [[UIButton alloc] initWithFrame:CGRectMake(79, 410, 162, 40)];
+            mainTixButton.alpha = 0;
+            [self.scrollView addSubview:mainTixButton];
+            mainTixButton.enabled = YES;
+            mainTixButton.userInteractionEnabled = YES;
+            mainTixButton.tag = 3;
+            
+            if ([self doesString:ticketLink contain:@"eventbrite"]) {  //[ticketLink containsString:@"eventbrite"]) {
+                
+                [mainTixButton setImage:[UIImage imageNamed:@"buy tickets"] forState:UIControlStateNormal];
+                [mainTixButton setImage:[UIImage imageNamed:@"buy tickets pressed"] forState:UIControlStateHighlighted];
+                
+            } else if ([self doesString:ticketLink contain:@"facebook"]) {  //[ticketLink containsString:@"eventbrite"]) {
+                
+                mainTixButton.frame = CGRectMake(50.5, 410, 219, 40);
+                [mainTixButton setImage:[UIImage imageNamed:@"join facebook"] forState:UIControlStateNormal];
+                [mainTixButton setImage:[UIImage imageNamed:@"join facebook pressed"] forState:UIControlStateHighlighted];
+                
+            } else if ([self doesString:ticketLink contain:@"meetup"]) {  //[ticketLink containsString:@"eventbrite"]) {
+                
+                mainTixButton.frame = CGRectMake(15, 410, 290, 40);
+                [mainTixButton setImage:[UIImage imageNamed:@"rsvp to meetup"] forState:UIControlStateNormal];
+                [mainTixButton setImage:[UIImage imageNamed:@"rsvp to meetup pressed"] forState:UIControlStateHighlighted];
+                
+            } else {
+                UIButton *actionButton = [[UIButton alloc] initWithFrame:CGRectMake(160, 410, 130, 40)];
+                
+                mainTixButton.frame = CGRectMake(63, 410, 194, 40);
+                [mainTixButton setImage:[UIImage imageNamed:@"get tickets"] forState:UIControlStateNormal];
+                [mainTixButton setImage:[UIImage imageNamed:@"get tickets pressed"] forState:UIControlStateHighlighted];
+                
+            }
+            
+            mainTixButton.accessibilityIdentifier = ticketLink;
+            //[mainTixButton addTarget:self action:@selector(ticketsButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
+            
+            [UIView animateWithDuration:0.3 animations:^{
+                
+                mainTixButton.alpha = 1.0;
+                
+            } completion:^(BOOL finished) {
+
+            
+            }];
+            
+        }
+        
+        
+    }];
+
+
     
 }
 
@@ -1061,7 +1122,7 @@
     if ([FBSDKAccessToken currentAccessToken]) {
 
     
-    [[[FBSDKGraphRequest alloc] initWithGraphPath:@"/me/friends?limit=5000" parameters:nil] startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
+    [[[FBSDKGraphRequest alloc] initWithGraphPath:@"/me/friends?limit=1000" parameters:nil] startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
         //code
                 
         NSArray* friends = [result objectForKey:@"data"];
@@ -1720,15 +1781,21 @@
 }
 
 -(void)showFriendProfile:(UITapGestureRecognizer *)gr {
+    
+    UIView *view = gr.view;
+    self.friendObjectID = view.accessibilityIdentifier;
+    [self performSegueWithIdentifier:@"showFriendProfile" sender:self];
+     
     /*
     UIView *view = gr.view;
     friendObjectID = view.accessibilityIdentifier;
-    [self performSegueWithIdentifier:@"showFriendProfile" sender:self];
-     */
-    
-    UIView *view = gr.view;
-    friendObjectID = view.accessibilityIdentifier;
     [self performSegueWithIdentifier:@"toTemp" sender:self];
+     */
+}
+
+-(void)inviteHomies {
+    
+    [self performSegueWithIdentifier:@"inviteHomies" sender:self];
 }
 
 -(void)showMoreDetail {
@@ -1919,15 +1986,19 @@
     } else if ([segue.identifier isEqualToString:@"showFriendProfile"]) {
         
         ExternalProfileTVC *vc = (ExternalProfileTVC *)[segue destinationViewController];
-        vc.userID = friendObjectID;
-        NSLog(@"friend oID = %@", friendObjectID);
+        vc.userID = self.friendObjectID;
+        
+    } else if ([segue.identifier isEqualToString:@"inviteHomies"]) {
+        
+        inviteHomies *vc = (inviteHomies *)[[segue destinationViewController] topViewController];
+        vc.objectID = draggableBackground.dragView.objectID;
+        vc.eventTitle = draggableBackground.dragView.title.text;
         
     } else if ([segue.identifier isEqualToString:@"toTemp"]) {
         
         tempProfile *vc = (tempProfile *)[segue destinationViewController];
-        vc.userID = friendObjectID;
+        vc.userID = self.friendObjectID;
         vc.eventID = self.draggableBackground.dragView.objectID;
-        NSLog(@"friend oID = %@", friendObjectID);
         
     } else if ([segue.identifier isEqualToString:@"toWebView"]) {
         
@@ -1954,7 +2025,7 @@
         vc.titleText = draggableBackground.dragView.title.text;
         vc.subtitleText = draggableBackground.dragView.subtitle.text;
         vc.locationText = draggableBackground.dragView.location.text;
-    }
+    } 
     
     /*
     if ([segue.identifier isEqualToString: @"toSettings"]) {

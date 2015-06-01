@@ -39,6 +39,9 @@
 - (void)showCreatedByProfile;
 - (void)showMoreDetail;
 - (void)showEditEventVCWithEvent:(EKEvent *)event eventStore:(EKEventStore *)es;
+- (void)updateMainTixButton;
+- (void)showFriendProfile:(UITapGestureRecognizer *)gr;
+- (void)inviteHomies;
 
 @property (weak) id <DragViewControllerDelegate> delegate;
 
@@ -60,6 +63,7 @@
 @property (assign) BOOL userSwipedFromFlippedView;
 @property (assign) BOOL dropdownExpanded;
 @property (assign) BOOL tutIsShown;
+@property (assign) NSString *friendObjectID;
 
 
 -(void)testing;

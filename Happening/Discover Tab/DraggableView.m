@@ -119,7 +119,7 @@
         
         title = [[UILabel alloc]initWithFrame:CGRectMake(15, 103, eventImage.frame.size.width - 30, 100)];
         
-        subtitle = [[UILabel alloc]initWithFrame:CGRectMake(15, 235, self.frame.size.width - 30, 33)];
+        subtitle = [[UILabel alloc]initWithFrame:CGRectMake(15, 300, self.frame.size.width - 30, 33)];
         location = [[UILabel alloc]initWithFrame:CGRectMake(15, 150, self.frame.size.width - 30, 100)];
         
         date = [[UILabel alloc]initWithFrame:CGRectMake(15, 172, self.frame.size.width - 100, 100)];
@@ -158,8 +158,8 @@
         
         [title setTextAlignment:NSTextAlignmentLeft];
         title.textColor = [UIColor whiteColor];
-        title.font = [UIFont fontWithName:@"OpenSans-Bold" size:21];
-        title.minimumScaleFactor = 0.7;
+        title.font = [UIFont fontWithName:@"OpenSans-Bold" size:23];
+        title.minimumScaleFactor = 0.6;
         title.adjustsFontSizeToFitWidth = YES;
         
         [date setTextAlignment:NSTextAlignmentLeft];
@@ -206,11 +206,14 @@
         [subtitle setLineBreakMode:NSLineBreakByTruncatingTail];
         subtitle.userInteractionEnabled = YES;
         
+        subtitle.alpha = 0;
+        
+        
         [location setTextAlignment:NSTextAlignmentLeft];
         //location.textColor = [UIColor colorWithRed:70/255 green:70/255 blue:70/255 alpha:0.7];
         location.textColor = [UIColor colorWithHue:0 saturation:0 brightness:.27 alpha:1.0];
-        location.font = [UIFont fontWithName:@"OpenSans-Bold" size:18];
-        location.minimumScaleFactor = 0.75;
+        location.font = [UIFont fontWithName:@"OpenSans-Semibold" size:15];
+        location.minimumScaleFactor = 0.6;
         location.adjustsFontSizeToFitWidth = YES;
         //location.shadowColor = [UIColor blackColor];
         

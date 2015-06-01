@@ -52,6 +52,7 @@
 @property (retain,nonatomic)NSMutableArray* createdByArray;
 @property (retain,nonatomic)NSMutableArray* createdByUserIDArray;
 @property (retain,nonatomic)NSMutableArray* URLArray;
+@property (retain,nonatomic)NSMutableArray* ticketLinkArray;
 
 
 @property (retain,nonatomic)NSMutableArray* calMonthArray;
