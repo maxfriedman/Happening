@@ -519,7 +519,7 @@
                      }];
     
     [cardBackground removeFromSuperview];
-    [delegate cardSwipedRight:self fromFlippedView:NO];
+    [delegate cardSwipedRight:self fromExpandedView:NO];
     
     NSLog(@"YES");
 }
@@ -540,7 +540,7 @@
                          [self removeFromSuperview];
                      }];
     
-    [delegate cardSwipedLeft:self fromFlippedView:NO];
+    [delegate cardSwipedLeft:self fromExpandedView:NO];
     
     NSLog(@"NO");
 }
@@ -561,7 +561,7 @@
                      }];
     
     [delegate checkEventStoreAccessForCalendar];
-    [delegate cardSwipedRight:self fromFlippedView:NO];
+    [delegate cardSwipedRight:self fromExpandedView:NO];
     
     
     NSLog(@"DOWN");
@@ -586,7 +586,7 @@
     }];
 
     
-    [delegate cardSwipedRight:self fromFlippedView:NO];
+    [delegate cardSwipedRight:self fromExpandedView:NO];
     
     NSLog(@"YES");
 }
@@ -607,7 +607,7 @@
         [self removeFromSuperview];
     }];
     
-    [delegate cardSwipedLeft:self fromFlippedView:NO];
+    [delegate cardSwipedLeft:self fromExpandedView:NO];
     
     NSLog(@"NO");
 }

@@ -32,15 +32,19 @@
     NSInteger count;
     UIView *noEventsView;
     PFObject *user;
+    PFUser *currentUser;
     UIVisualEffectView *blurEffectView;
+    BOOL bestFriends;
 }
 
 //@synthesize locManager, refreshControl;
 @synthesize sections, sortedDays, locManager, eventID, userID;
-@synthesize nameLabel, detailLabel, profilePicImageView, myEventsTableView, nameEventsLabel;
+@synthesize nameLabel, detailLabel, profilePicImageView, myEventsTableView, nameEventsLabel, starButton;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+    currentUser = [PFUser currentUser];
     
     nameLabel.text = @"";
     detailLabel.text = @"";
@@ -51,25 +55,62 @@
     profilePicImageView.layer.borderColor =  [UIColor colorWithRed:232.0/255 green:232.0/255 blue:232.0/255 alpha:1.0].CGColor;
     profilePicImageView.layer.borderWidth = 3.0;
     
+    FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(120, 24, 80, 80)];
+    profPicView.profileID = @"";
+    [self.view addSubview:profPicView];
+
+    
     PFQuery *userQuery = [PFUser query];
     [userQuery getObjectInBackgroundWithId:userID block:^(PFObject *userObject, NSError *error){
 
         if (!error) {
         
             user = userObject;
-        
-            nameLabel.text = [NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]];
+            
+            NSString *bdayString = user[@"birthday"];
+            NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+            [formatter setDateFormat:@"MM/dd/yyyy"];
+            NSDate *birthday = [formatter dateFromString:bdayString];
+            NSLog(@"%@", birthday);
+
+            
+            NSDate *now = [NSDate date];
+            NSDateComponents *ageComponents = [[NSCalendar currentCalendar]
+                                               components:NSYearCalendarUnit
+                                               fromDate:birthday
+                                               toDate:now
+                                               options:0];
+            NSInteger age = [ageComponents year];
+            
+            NSMutableAttributedString *aAttrString1 = [[NSMutableAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@ %@, ", user[@"firstName"], user[@"lastName"]]];
+            
+            UIFont *font = [UIFont fontWithName:@"OpenSans" size:15.0];
+            NSDictionary *attrsDictionary = [NSDictionary dictionaryWithObject:font
+                                                                        forKey:NSFontAttributeName];
+            NSMutableAttributedString *aAttrString2 = [[NSMutableAttributedString alloc] initWithString:[NSString stringWithFormat:@"%lu", age] attributes:attrsDictionary];
+            //[[NSMutableAttributedString alloc] initWithString:@"Profile" attributes: arialDict2];
+            
+            [aAttrString1 appendAttributedString:aAttrString2];
+            
+            //nameLabel.text = [NSString stringWithFormat:@"%@ %@, ", user[@"firstName"], user[@"lastName"]];
+            nameLabel.attributedText = aAttrString1;
             detailLabel.text = [NSString stringWithFormat:@"%@", user[@"city"]];
-            nameEventsLabel.text = [NSString stringWithFormat:@"%@'s events", user[@"firstName"]];
+            nameEventsLabel.text = [NSString stringWithFormat:@"%@'s Happenings", user[@"firstName"]];
         
-            FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(120, 24, 80, 80)];
             profPicView.profileID = user[@"FBObjectID"];
             profPicView.pictureMode = FBSDKProfilePictureModeSquare;
             profPicView.layer.cornerRadius = 10;
             profPicView.layer.masksToBounds = YES;
             profPicView.layer.borderColor = [UIColor colorWithRed:232.0/255 green:232.0/255 blue:232.0/255 alpha:1.0].CGColor;
             profPicView.layer.borderWidth = 3.0;
-            [self.view addSubview:profPicView];
+            
+            self.sectionDateFormatter = [[NSDateFormatter alloc] init];
+            [self.sectionDateFormatter setDateFormat:@"EEEE, MMMM d"];
+            
+            self.cellDateFormatter = [[NSDateFormatter alloc] init];
+            [self.cellDateFormatter setDateStyle:NSDateFormatterNoStyle];
+            [self.cellDateFormatter setTimeStyle:NSDateFormatterShortStyle];
+            self.sections = [NSMutableDictionary dictionary];
             
             [self loadData];
             [self bestFriendsCheck];
@@ -86,14 +127,6 @@
 
 -(void)viewWillAppear:(BOOL)animated {
     
-    self.sectionDateFormatter = [[NSDateFormatter alloc] init];
-    [self.sectionDateFormatter setDateFormat:@"EEEE, MMMM d"];
-    
-    self.cellDateFormatter = [[NSDateFormatter alloc] init];
-    [self.cellDateFormatter setDateStyle:NSDateFormatterNoStyle];
-    [self.cellDateFormatter setTimeStyle:NSDateFormatterShortStyle];
-    self.sections = [NSMutableDictionary dictionary];
-    
 }
 
 - (void)loadData {
@@ -101,11 +134,13 @@
     PFQuery *swipesQuery = [PFQuery queryWithClassName:@"Swipes"];
     [swipesQuery whereKey:@"UserID" equalTo:user.objectId];
     [swipesQuery whereKey:@"swipedRight" equalTo:@YES];
+    swipesQuery.limit = 1000;
     
     PFQuery *eventQuery = [PFQuery queryWithClassName:@"Event"];
     [eventQuery whereKey:@"objectId" matchesKey:@"EventID" inQuery:swipesQuery];
-    [eventQuery whereKey:@"EndTime" greaterThan:[NSDate dateWithTimeIntervalSinceNow:1800]]; // show today's events, must be at least 30 minutes left in the event (END)
+    [eventQuery whereKey:@"EndTime" greaterThan:[NSDate date]]; // show today's events, must be at least 30 minutes left in the event (END)
     [eventQuery orderByAscending:@"Date"];
+    eventQuery.limit = 1000;
     
     count = 0;
     
@@ -114,6 +149,7 @@
     [eventQuery findObjectsInBackgroundWithBlock:^(NSArray *events, NSError *error) {
         
         eventsArray = events;
+        NSLog(@"%@", eventsArray);
         
         for (PFObject *event in eventsArray)
         {
@@ -439,64 +475,64 @@
     
 }
 
+- (IBAction)starButtonPressed:(id)sender {
+    
+    bestFriends = !bestFriends;
+    
+    if (bestFriends) {
+        [starButton setImage:[UIImage imageNamed: @"star blue"] forState:UIControlStateNormal];
+        [starButton setImage:[UIImage imageNamed: @"star gray"] forState:UIControlStateHighlighted];
+        NSMutableArray *bestFriendsArray = currentUser[@"BestFriends"];
+        if (bestFriendsArray == nil)
+            bestFriendsArray = [NSMutableArray array];
+        [bestFriendsArray addObject:user[@"FBObjectID"]];
+        currentUser[@"BestFriends"] = bestFriendsArray;
+        [currentUser saveInBackground];
+        
+    } else {
+        [starButton setImage:[UIImage imageNamed: @"star gray"] forState:UIControlStateNormal];
+        [starButton setImage:[UIImage imageNamed: @"star blue"] forState:UIControlStateHighlighted];
+        NSMutableArray *bestFriendsArray = currentUser[@"BestFriends"];
+        [bestFriendsArray removeObject:user[@"FBObjectID"]];
+        currentUser[@"BestFriends"] = bestFriendsArray;
+        [currentUser saveInBackground];
+    }
+        
+}
+
 - (void)bestFriendsCheck {
     
-    PFUser *currentUser = [PFUser currentUser];
-    NSArray *bestFriends = currentUser[@"BestFriends"];
+    NSArray *bestFriendsArray = currentUser[@"BestFriends"];
     
-    if ([bestFriends containsObject:user[@"FBObjectID"]]) { //BFFs
+    NSLog(@"--- %@", user[@"firstName"]);
+    
+    if ([bestFriendsArray containsObject:user[@"FBObjectID"]]) { //BFFs
         
-        
+        bestFriends = YES;
+        [starButton setImage:[UIImage imageNamed: @"star blue"] forState:UIControlStateNormal];
+        [starButton setImage:[UIImage imageNamed: @"star gray"] forState:UIControlStateHighlighted];
         
     } else { //Not BFFs
     
+        bestFriends = NO;
+        [starButton setImage:[UIImage imageNamed: @"star gray"] forState:UIControlStateNormal];
+        [starButton setImage:[UIImage imageNamed: @"star blue"] forState:UIControlStateHighlighted];
+        
+        /*
         UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleLight];
         blurEffectView = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
-        /*
-        CGFloat height = 0;
-        for (int i = 0; i < self.sections.count; i++) {
-            NSLog(@"2324234");
-            CGRect rect = [self.tableView rectForSection:(i)];
-            
-            height += CGRectGetHeight(rect);
-            
-        }
-        
-        NSLog(@"HEIGHT: %f", height);
-        
-        if (height <= 305)
-            blurEffectView.frame = CGRectMake(0, 263, 320, 305);
-        else */
-            blurEffectView.frame = CGRectMake(0, 264, 320, 500);
-/*
-        UIView *colorView = [[UIView alloc] initWithFrame:blurEffectView.frame];
-        colorView.backgroundColor = [UIColor cyanColor];
-        colorView.alpha = 0.1;
-        [self.view addSubview:colorView];
-        */
-        
-        //self.tableView.backgroundColor = [UIColor cyanColor];
+        blurEffectView.frame = CGRectMake(0, 264, 320, 500);
         
         [self.view addSubview:blurEffectView];
-        
         self.tableView.scrollEnabled = NO;
         
-        /*
-        UIVibrancyEffect *vibrancyEffect = [UIVibrancyEffect effectForBlurEffect:blurEffect];
-        UIVisualEffectView *vibrancyEffectView = [[UIVisualEffectView alloc] initWithEffect:vibrancyEffect];
-        vibrancyEffectView.frame = blurEffectView.bounds;
-         */
-        
-        // Label for vibrant text
-         NSString *gender = user[@"gender"];
-         NSString *genderString = @"";
+        NSString *gender = user[@"gender"];
+        NSString *genderString = @"";
          
-         if ([gender isEqualToString:@"male"]) {
-         genderString = @"with him";
-         } else if ([gender isEqualToString:@"female"]) {
-         genderString = @"with her";
-         }
-        
+        if ([gender isEqualToString:@"male"])
+            genderString = @"with him";
+        else if ([gender isEqualToString:@"female"])
+            genderString = @"with her";
          
         UILabel *vibrantLabel = [[UILabel alloc] init];
         [vibrantLabel setText:[NSString stringWithFormat:@"To view %@'s events you must be best friends %@", user[@"firstName"], genderString]];
@@ -506,15 +542,10 @@
         [vibrantLabel setTextAlignment:NSTextAlignmentCenter];
         [vibrantLabel setFrame:CGRectMake(40, 40, 240, 150)];
         vibrantLabel.numberOfLines = 0;
-
-        
-        // Add label to the vibrancy view
-        //[[vibrancyEffectView contentView] addSubview:vibrantLabel];
-        
-        // Add the vibrancy view to the blur view
-        //[[blurEffectView contentView] addSubview:vibrancyEffectView];
         
         [blurEffectView addSubview:vibrantLabel];
+        */
+        
         
     }
     
@@ -572,6 +603,10 @@
         vc.hidesBottomBarWhenPushed = YES;
         
     }
+}
+
+- (BOOL)prefersStatusBarHidden {
+    return YES;
 }
 
 @end

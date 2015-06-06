@@ -129,7 +129,7 @@
     [checkButton addTarget:self action:@selector(swipeRightDVC) forControlEvents:UIControlEventTouchUpInside];
     
     
-    [self.scrollView addSubview:mainTixButton];
+    //[self.scrollView addSubview:mainTixButton];
 
     /*
     
@@ -164,7 +164,7 @@
     [self.view bringSubviewToFront:scrollView];
     
     self.frontViewIsVisible = YES;
-    self.userSwipedFromFlippedView = NO;
+    self.userSwipedFromExpandedView = NO;
     
     /*
     dropdownSettingsView *settingsView = [[dropdownSettingsView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 40)];
@@ -268,7 +268,7 @@
         [tutorialScreens removeFromSuperview];
     
         if (self.frontViewIsVisible == NO) {
-            [self flipCurrentView]; // Makes blur view look weird and messes with seg control when flipping
+            [self expandCurrentView]; // Makes blur view look weird and messes with seg control when flipping
             [draggableBackground removeFromSuperview];
 
         
@@ -294,7 +294,7 @@
         }
         self.frontViewIsVisible = YES;
         self.dropdownExpanded = NO;
-        self.userSwipedFromFlippedView = NO;
+        self.userSwipedFromExpandedView = NO;
     
         // Removes the previous content!!!!!! (when view was burned in behind the cards)
         //NSLog(@"%lu", (unsigned long)[self.view.subviews count] );
@@ -426,7 +426,7 @@
     if (CGRectContainsPoint(mySensitiveRect, p)) {
         NSLog(@"got a tap in the region i care about");
         [draggableBackground.dragView cardExpanded:self.frontViewIsVisible];
-        [self flipCurrentView];
+        [self expandCurrentView];
         
     } else {
         NSLog(@"got a tap, but not where i need it");
@@ -439,7 +439,7 @@
     NSLog(@"Tap");
     
     [draggableBackground.dragView cardExpanded:self.frontViewIsVisible];
-    [self flipCurrentView];
+    [self expandCurrentView];
     
 }
 
@@ -475,7 +475,7 @@
     checkButton.userInteractionEnabled = YES;
 }
 
-- (void)flipCurrentView {
+- (void)expandCurrentView {
     
     //scrollView.delaysContentTouches = NO;
     
@@ -1571,6 +1571,8 @@
         
         NSLog(@"expanding dropdown menu...");
         
+        [settingsView showTapToGoBack:YES];
+        
         [self setEnabledSidewaysScrolling:NO];
         
         CABasicAnimation *rotation;
@@ -1599,6 +1601,8 @@
         }];
         
     } else {
+        
+        [settingsView showTapToGoBack:NO];
         
         if (!tutIsShown) {
         
@@ -1769,7 +1773,7 @@
     
     NSLog(@"Made it");
     [draggableBackground.dragView cardExpanded:self.frontViewIsVisible];
-    [self flipCurrentView];
+    [self expandCurrentView];
     //[draggableBackground.dragView tapAction];
     
 }
@@ -1844,70 +1848,74 @@
     
     if (((tutorialScreens.dragView.tag == 3) || (tutorialScreens.dragView.tag == 50)) && tutorialScreens.allowCardExpand) {
     
-    if (!tutorialScreens.cardExpanded) {
-        
-        NSLog(@"expand tut card");
-        
-        //[self addSubviewsToCard:draggableBackground.dragView];
-        
-        scrollView.contentSize = CGSizeMake(320, 665);
-        scrollView.scrollEnabled = YES;
-        
-        [UIView animateWithDuration:0.5 animations:^{
+        if (!tutorialScreens.cardExpanded) {
+            
+            NSLog(@"expand tut card");
+            
+            //[self addSubviewsToCard:draggableBackground.dragView];
+            
+            scrollView.contentSize = CGSizeMake(320, 665);
+            scrollView.scrollEnabled = YES;
+            
+            [UIView animateWithDuration:0.5 animations:^{
+                
+                tutorialScreens.dragView.layer.masksToBounds = YES;
+                tutorialScreens.dragView.frame = CGRectMake(tutorialScreens.dragView.frame.origin.x, tutorialScreens.dragView.frame.origin.y, tutorialScreens.dragView.frame.size.width, 620);
+                tutorialScreens.frame = CGRectMake(tutorialScreens.frame.origin.x, tutorialScreens.frame.origin.y, tutorialScreens.frame.size.width, 620);
+                
+            } completion:^(BOOL finished) {
+                
+                tutorialScreens.dragView.layer.masksToBounds = NO;
+                //tutorialScreens.dragView.tag = 1;
+                
+                for (UIPanGestureRecognizer *pgr in [tutorialScreens.dragView gestureRecognizers]) {
+                    pgr.enabled = NO;
+                }
+                
+                [tutorialScreens nowScrollDown];
+                
+            }];
+            
+            
+        } else {
+            
+            NSLog(@"contract tut card");
             
             tutorialScreens.dragView.layer.masksToBounds = YES;
-            tutorialScreens.dragView.frame = CGRectMake(tutorialScreens.dragView.frame.origin.x, tutorialScreens.dragView.frame.origin.y, tutorialScreens.dragView.frame.size.width, 620);
-            tutorialScreens.frame = CGRectMake(tutorialScreens.frame.origin.x, tutorialScreens.frame.origin.y, tutorialScreens.frame.size.width, 620);
+            //tutorialScreens.allowCardSwipe = YES;
+            tutorialScreens.allowCardExpand = NO;
+            tutorialScreens.dragView.tag = 50;
             
-        } completion:^(BOOL finished) {
+            [scrollView setContentOffset:CGPointMake(0, 0) animated:YES];
+            scrollView.scrollEnabled = NO;
             
-            tutorialScreens.dragView.layer.masksToBounds = NO;
-            //tutorialScreens.dragView.tag = 1;
+            [UIView animateWithDuration:0.5 animations:^{
+                
+                tutorialScreens.dragView.frame = CGRectMake(tutorialScreens.dragView.frame.origin.x, tutorialScreens.dragView.frame.origin.y, tutorialScreens.dragView.frame.size.width, 310);
+                tutorialScreens.frame = CGRectMake(tutorialScreens.frame.origin.x, tutorialScreens.frame.origin.y, tutorialScreens.frame.size.width, 310);
+                
+            } completion:^(BOOL finished) {
+                
+                tutorialScreens.dragView.layer.masksToBounds = NO;
+                //tutorialScreens.dragView.tag = 0;
+                
+                for (UIPanGestureRecognizer *pgr in [tutorialScreens.dragView gestureRecognizers]) {
+                    pgr.enabled = YES;
+                }
+                
+                [tutorialScreens tapButtons];
+                
+            }];
             
-            for (UIPanGestureRecognizer *pgr in [tutorialScreens.dragView gestureRecognizers]) {
-                pgr.enabled = NO;
+        
             }
-            
-            [tutorialScreens nowScrollDown];
-            
-        }];
-        
-        
-    } else {
-        
-        NSLog(@"contract tut card");
-        
-        tutorialScreens.dragView.layer.masksToBounds = YES;
-        //tutorialScreens.allowCardSwipe = YES;
-        tutorialScreens.allowCardExpand = NO;
-        tutorialScreens.dragView.tag = 50;
-        
-        [scrollView setContentOffset:CGPointMake(0, 0) animated:YES];
-        scrollView.scrollEnabled = NO;
-        
-        [UIView animateWithDuration:0.5 animations:^{
-            
-            tutorialScreens.dragView.frame = CGRectMake(tutorialScreens.dragView.frame.origin.x, tutorialScreens.dragView.frame.origin.y, tutorialScreens.dragView.frame.size.width, 310);
-            tutorialScreens.frame = CGRectMake(tutorialScreens.frame.origin.x, tutorialScreens.frame.origin.y, tutorialScreens.frame.size.width, 310);
-            
-        } completion:^(BOOL finished) {
-            
-            tutorialScreens.dragView.layer.masksToBounds = NO;
-            //tutorialScreens.dragView.tag = 0;
-            
-            for (UIPanGestureRecognizer *pgr in [tutorialScreens.dragView gestureRecognizers]) {
-                pgr.enabled = YES;
-            }
-            
-            [tutorialScreens tapButtons];
-            
-        }];
-        
-    
-        }
         
         tutorialScreens.cardExpanded =! tutorialScreens.cardExpanded;
     }
+}
+
+-(void)updateTopLabel {
+    [self.settingsView setTimeString];
 }
 
 /*

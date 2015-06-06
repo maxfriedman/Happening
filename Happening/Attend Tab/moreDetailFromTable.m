@@ -986,11 +986,6 @@
     NSDate *startDate = object[@"Date"];
     NSDate *endDate = object[@"EndTime"];
     
-#warning not goood.....
-    
-    event.startDate = [startDate dateByAddingTimeInterval:60*60*4];
-    event.endDate = [endDate dateByAddingTimeInterval:60*60*4];
-    
     //get address REMINDER 76597869876
     PFGeoPoint *geoPoint = object[@"GeoLoc"];
     CLLocation *eventLocation = [[CLLocation alloc]initWithLatitude:geoPoint.latitude longitude:geoPoint.longitude];

@@ -14,10 +14,9 @@
 @property (strong, nonatomic) IBOutlet UIImageView *profilePicImageView;
 @property (strong, nonatomic) IBOutlet UILabel *nameLabel;
 @property (strong, nonatomic) IBOutlet UILabel *detailLabel;
-
 @property (strong, nonatomic) IBOutlet UITableView *myEventsTableView;
-
 @property (strong, nonatomic) IBOutlet UILabel *nameEventsLabel;
+@property (strong, nonatomic) IBOutlet UIButton *starButton;
 
 @property CLLocationManager *locManager;
 

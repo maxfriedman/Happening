@@ -21,6 +21,8 @@
 
 -(BOOL)didPreferencesChange;
 -(void)tutViewAction;
+-(void)setTimeString;
+-(void)showTapToGoBack:(BOOL)shouldShow;
 
 @property (weak) id <dropdownSettingsViewDelegate> delegate;
 

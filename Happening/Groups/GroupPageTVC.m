@@ -1,134 +1,59 @@
 //
-//  ProfileTVC.m
+//  GroupPageTVCTableViewController.m
 //  Happening
 //
-//  Created by Max on 2/8/15.
+//  Created by Max on 6/4/15.
 //  Copyright (c) 2015 Happening. All rights reserved.
 //
 
-#import "ProfileTVC.h"
-#import "AttendTableCell.h"
-#import "CupertinoYankee.h"
-#import "showMyEventVC.h"
-#import "EventTVC.h"
+#import "GroupPageTVC.h"
+#import "GroupsEventCell.h"
 #import <Parse/Parse.h>
-#import <FBSDKCoreKit/FBSDKCoreKit.h>
-#import "AppDelegate.h"
-#import "ProfileSettingsTVC.h"
+#import "CupertinoYankee.h"
 
-#define SYSTEM_VERSION_EQUAL_TO(v)                  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedSame)
-#define SYSTEM_VERSION_GREATER_THAN(v)              ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedDescending)
-#define SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(v)  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedAscending)
-#define SYSTEM_VERSION_LESS_THAN(v)                 ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedAscending)
-#define SYSTEM_VERSION_LESS_THAN_OR_EQUAL_TO(v)     ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedDescending)
-
-@interface ProfileTVC () <EventTVCDelegate>
+@interface GroupPageTVC ()
 
 @property (strong, nonatomic) NSMutableDictionary *sections;
 @property (strong, nonatomic) NSArray *sortedDays;
 @property (strong, nonatomic) NSDateFormatter *sectionDateFormatter;
 @property (strong, nonatomic) NSDateFormatter *cellDateFormatter;
-@property (strong, nonatomic) IBOutlet UISegmentedControl *segControl;
-
-- (NSDate *)dateAtBeginningOfDayForDate:(NSDate *)inputDate;
+//@property (strong, nonatomic) IBOutlet UISegmentedControl *segControl;
 
 @end
 
-@implementation ProfileTVC {
+@implementation GroupPageTVC {
     
-    PFUser *user;
+    PFUser *currentUser;
     NSArray *eventsArray;
     UIView *noEventsView;
     NSUInteger count;
-    
-    BOOL showUpcomingEvents;
 }
 
-//@synthesize locManager, refreshControl;
-@synthesize sections, sortedDays, locManager;
-@synthesize nameLabel, detailLabel, profilePicImageView, myEventsTableView;
+@synthesize groupId, locManager, groupName;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    user = [PFUser currentUser];
-    nameLabel.text = [NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:YES];
     
-    if ((user[@"userLocTitle"] != nil) && (! [user[@"userLocTitle"] isEqualToString:@"Current Location"]) ) {
-        
-        if ( ! [user[@"userLocTitle"] isEqualToString:@"Current Location"])
-            detailLabel.text = [NSString stringWithFormat:@"%@", user[@"userLocTitle"]];
-    
-    } else {
-        if (user[@"fbLocationName"] != nil)
-            detailLabel.text = [NSString stringWithFormat:@"%@", user[@"fbLocationName"]];
-        else
-            detailLabel.text = @"";
-        
+    if(locManager && [CLLocationManager locationServicesEnabled]){
+        [self.locManager startUpdatingLocation];
+        CLLocation *currentLocation = locManager.location;
+        currentUser[@"userLoc"] = [PFGeoPoint geoPointWithLocation:currentLocation];
+        NSLog(@"Current Location is: %@", currentLocation);
+        [currentUser saveInBackground];
     }
     
-    FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(120, 24, 80, 80)]; // initWithProfileID:user[@"FBObjectID"] pictureCropping:FBSDKProfilePictureModeSquare];
-    profPicView.profileID = user[@"FBObjectID"];
-    profPicView.pictureMode = FBSDKProfilePictureModeSquare;
-    profPicView.layer.cornerRadius = 10;
-    profPicView.layer.masksToBounds = YES;
-    profPicView.layer.borderColor = [UIColor colorWithRed:232.0/255 green:232.0/255 blue:232.0/255 alpha:1.0].CGColor;
-    profPicView.layer.borderWidth = 3.0;
-    //profPicView.frame = CGRectMake(120, 24, 80, 80);
-    [self.view addSubview:profPicView];
-    
-    profilePicImageView.layer.cornerRadius = 10;
-    profilePicImageView.layer.masksToBounds = YES;
-    profilePicImageView.layer.borderColor =  [UIColor colorWithRed:232.0/255 green:232.0/255 blue:232.0/255 alpha:1.0].CGColor;
-    profilePicImageView.layer.borderWidth = 3.0;
+    currentUser = [PFUser currentUser];
 
+    self.navigationController.navigationBar.barTintColor = [UIColor clearColor]; //%%% bartint
+    [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"navBar"] forBarMetrics:UIBarMetricsDefault];
+    self.navigationController.navigationBar.translucent = NO;
+    self.navigationItem.title = groupName;
     
-    noEventsView = [[UIView alloc] initWithFrame: CGRectMake(0, 350, self.view.frame.size.width, 200)];
-    [self.view addSubview:noEventsView];
-    
-    /*
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"hasCreatedEvent"] == NO) {
-        
-        UILabel *topTextLabel = [[UILabel alloc] init];
-        topTextLabel.text = @"You haven't created";
-        topTextLabel.font = [UIFont fontWithName:@"OpenSans" size:18.0];
-        topTextLabel.textColor = [UIColor colorWithRed:153.0/255 green:154.0/255 blue:155.0/255 alpha:1.0];
-        [topTextLabel sizeToFit];
-        topTextLabel.center = CGPointMake(self.view.center.x, 10);
-        topTextLabel.tag = 9;
-        [noEventsView addSubview:topTextLabel];
-        
-        
-        UILabel *bottomTextLabel = [[UILabel alloc] init];
-        bottomTextLabel.text = @"any events yet.";
-        bottomTextLabel.font = [UIFont fontWithName:@"OpenSans" size:18.0];
-        bottomTextLabel.textColor = [UIColor colorWithRed:153.0/255 green:154.0/255 blue:155.0/255 alpha:1.0];
-        [bottomTextLabel sizeToFit];
-        bottomTextLabel.center = CGPointMake(self.view.center.x, 30);
-        bottomTextLabel.tag = 9;
-        [noEventsView addSubview:bottomTextLabel];
-        
-        
-        UIButton *createEventButton = [[UIButton alloc] initWithFrame:CGRectMake(101.5, 55, 117, 40)];
-        [createEventButton setImage:[UIImage imageNamed:@"createButton"] forState:UIControlStateNormal];
-        [createEventButton setImage:[UIImage imageNamed:@"create pressed"] forState:UIControlStateHighlighted];
-        [createEventButton addTarget:self action:@selector(createEventButtonTapped) forControlEvents:UIControlEventTouchUpInside];
-        createEventButton.tag = 9;
-        [noEventsView addSubview:createEventButton];
-        
-    } */
-    
-}
-
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
-}
-
--(void)viewWillAppear:(BOOL)animated {
-    
-    [self setEnabledSidewaysScrolling:YES];
-    showUpcomingEvents = YES;
     
     self.sectionDateFormatter = [[NSDateFormatter alloc] init];
     [self.sectionDateFormatter setDateFormat:@"EEEE, MMMM d"];
@@ -139,34 +64,29 @@
     self.sections = [NSMutableDictionary dictionary];
     
     //if (self.segControl.selectedSegmentIndex == 0)
-        [self loadData];
-   // else
-     //   [self loadPastEvents];
-    
+    [self loadData];
+
 }
 
 - (void)loadData {
     
-    user = [PFUser currentUser];
-    
-    PFQuery *swipesQuery = [PFQuery queryWithClassName:@"Swipes"];
-    [swipesQuery whereKey:@"UserID" equalTo:user.objectId];
-    [swipesQuery whereKey:@"swipedRight" equalTo:@YES];
-    swipesQuery.limit = 1000;
+    PFQuery *notificationQuery = [PFQuery queryWithClassName:@"Notifications"];
+    [notificationQuery whereKey:@"UserID" equalTo:currentUser.objectId];
+    [notificationQuery whereKey:@"Type" equalTo:@"group"];
+    [notificationQuery whereKey:@"GroupID" equalTo:groupId];
     
     PFQuery *eventQuery = [PFQuery queryWithClassName:@"Event"];
-    [eventQuery whereKey:@"objectId" matchesKey:@"EventID" inQuery:swipesQuery];
-    [eventQuery whereKey:@"EndTime" greaterThan:[NSDate dateWithTimeIntervalSinceNow:1800]]; // show today's events, must be at least 30 minutes left in the event (END)
+    [eventQuery whereKey:@"objectId" matchesKey:@"EventID" inQuery:notificationQuery];
+    [eventQuery whereKey:@"EndTime" greaterThan:[NSDate date]];
     [eventQuery orderByAscending:@"Date"];
-    eventQuery.limit = 1000;
     
     count = 0;
-    
     eventsArray = [[NSArray alloc]init];
     
-    [eventQuery findObjectsInBackgroundWithBlock:^(NSArray *events, NSError *error) {
+    [eventQuery findObjectsInBackgroundWithBlock:^(NSArray *events, NSError *error){
         
-        eventsArray = events;
+       eventsArray = events;
+        NSLog(@"Events Array: %@", events);
         
         for (PFObject *event in eventsArray)
         {
@@ -206,13 +126,11 @@
         }
         
         [self.tableView reloadData];
-        
+
     }];
-    
     
 }
 
-#pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     
@@ -248,7 +166,9 @@
 // %%%%%% Runs through this code every time I scroll in Table
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     
-    AttendTableCell *cell = (AttendTableCell *)[tableView dequeueReusableCellWithIdentifier:@"tag" forIndexPath:indexPath];
+    NSLog(@"indexp: %ld", (long)indexPath.row);
+    
+    GroupsEventCell *cell = (GroupsEventCell *)[tableView dequeueReusableCellWithIdentifier:@"groupEvent" forIndexPath:indexPath];
     
     [noEventsView removeFromSuperview];
     
@@ -259,14 +179,9 @@
     
     [cell.titleLabel setText:[NSString stringWithFormat:@"%@",Event[@"Title"]]];
     
-    if (Event[@"Description"])
-        [cell.subtitle setText:[NSString stringWithFormat:@"%@",Event[@"Description"]]];
-    else
-        [cell.subtitle setText:[NSString stringWithFormat:@""]];
+    [cell.locationLabel setText:[NSString stringWithFormat:@"%@",Event[@"Location"]]];
     
-    [cell.locLabel setText:[NSString stringWithFormat:@"%@",Event[@"Location"]]];
-    
-    cell.eventID = Event.objectId;
+    //cell.eventID = Event.objectId;
     
     // Time formatting
     NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
@@ -331,27 +246,18 @@
         // default image
     }
     
-    // Location formatting
-    if(locManager && [CLLocationManager locationServicesEnabled]){
-        [self.locManager startUpdatingLocation];
-        CLLocation *currentLocation = locManager.location;
-        user[@"userLoc"] = [PFGeoPoint geoPointWithLocation:currentLocation];
-        NSLog(@"Current Location is: %@", currentLocation);
-        [user saveInBackground];
-    }
-    
     PFGeoPoint *loc = Event[@"GeoLoc"];
     
     if (loc.latitude == 0) {
-        cell.distance.text = @"";
+        cell.distanceLabel.text = @"";
     } else {
-        PFGeoPoint *userLoc = user[@"userLoc"];
+        PFGeoPoint *userLoc = currentUser[@"userLoc"];
         NSNumber *meters = [NSNumber numberWithDouble:([loc distanceInMilesTo:userLoc])];
         NSString *distance = [NSString stringWithFormat:(@"%.1f mi"), meters.floatValue];
-        cell.distance.text = distance;
+        cell.distanceLabel.text = distance;
     }
     
-    cell.interestedLabel.text = [NSString stringWithFormat:@"%@ interested", Event[@"swipesRight"]];
+    //cell.interestedLabel.text = [NSString stringWithFormat:@"%@ interested", Event[@"swipesRight"]];
     
     return cell;
 }
@@ -378,7 +284,7 @@
     
     NSLog(@"refreshing events....");
     
-    self.segControl.selectedSegmentIndex = 0;
+    //self.segControl.selectedSegmentIndex = 0;
     [self loadData];
 }
 
@@ -448,19 +354,57 @@
     // header.contentView.backgroundColor = [UIColor blackColor];
 }
 
-- (IBAction)segControl:(UISegmentedControl *)sender {
+- (IBAction)xButtonPressed:(id)sender {
     
-    if (sender.selectedSegmentIndex == 0) { // Upcoming events
-        
-        [self loadData];
-        
-    } else { // Past Events
-        
-        //[self loadPastEvents];
-        
-    }
+    [self dismissViewControllerAnimated:YES completion:^{
+        //<#code#>
+    }];
     
 }
+
+/*
+// Override to support conditional editing of the table view.
+- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
+    // Return NO if you do not want the specified item to be editable.
+    return YES;
+}
+*/
+
+/*
+// Override to support editing the table view.
+- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (editingStyle == UITableViewCellEditingStyleDelete) {
+        // Delete the row from the data source
+        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
+    } else if (editingStyle == UITableViewCellEditingStyleInsert) {
+        // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
+    }   
+}
+*/
+
+/*
+// Override to support rearranging the table view.
+- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath {
+}
+*/
+
+/*
+// Override to support conditional rearranging of the table view.
+- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath {
+    // Return NO if you do not want the item to be re-orderable.
+    return YES;
+}
+*/
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
 
 - (NSDate *)dateAtBeginningOfDayForDate:(NSDate *)inputDate
 {
@@ -480,92 +424,6 @@
     // Convert back
     NSDate *beginningOfDay = [calendar dateFromComponents:dateComps];
     return beginningOfDay;
-}
-
-- (IBAction)plusButtonTapped:(id)sender {
-    
-    if (SYSTEM_VERSION_LESS_THAN(@"8.0")) {
-        
-        NSLog(@" ====== iOS 7 ====== ");
-        
-        UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Oops" message:@"You must have iOS 8 to create an event for now. Sorry!!" delegate:self cancelButtonTitle:@"Bummer" otherButtonTitles:nil, nil];
-        [alert show];
-        
-    } else {
-        
-        [self performSegueWithIdentifier:@"createNewEvent" sender:self];
-        
-    }
-    
-}
-
-- (void)createEventButtonTapped {
-    
-    if (SYSTEM_VERSION_LESS_THAN(@"8.0")) {
-        
-        NSLog(@" ====== iOS 7 ====== ");
-        
-        UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Oops" message:@"You must have iOS 8 to create an event for now. Sorry!!" delegate:self cancelButtonTitle:@"Bummer" otherButtonTitles:nil, nil];
-        [alert show];
-
-    } else {
-        
-        [self performSegueWithIdentifier:@"createNewEvent" sender:self];
-        
-    }
-    
-}
-
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-    
-    if ([segue.identifier isEqualToString:@"showMyEvent"]) {
-        NSIndexPath *selectedIndexPath = [self.tableView indexPathForSelectedRow];
-        AttendTableCell *cell = (AttendTableCell *)[self.tableView cellForRowAtIndexPath:selectedIndexPath];
-        
-        UINavigationController *navController = [segue destinationViewController];
-        showMyEventVC *vc = (showMyEventVC *)([navController topViewController]);
-        vc.eventID = cell.eventID;
-        
-        vc.profileVC = self;
-        
-    } else if ([segue.identifier isEqualToString:@"createNewEvent"]) {
-        
-        UINavigationController *navController = [segue destinationViewController];
-        EventTVC *vc = (EventTVC *)([navController topViewController]);
-        vc.delegate = self;
-        
-        vc.profileVC = self;
-    
-    } else if ([segue.identifier isEqualToString:@"toProfileSettings"]) {
-        
-        UINavigationController *navController = [segue destinationViewController];
-        ProfileSettingsTVC *vc = (ProfileSettingsTVC *)([navController topViewController]);
-        
-        vc.profileVC = self;
-    }
-    
-}
-
-- (void)setEnabledSidewaysScrolling:(BOOL)enabled {
-    
-    AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
-    RKSwipeBetweenViewControllers *rk = appDelegate.rk;
-    [rk scrolling:enabled];
-    
-}
-
-- (void)showNavTitle {
-    
-    NSLog(@"show title");
-    
-    AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
-    RKSwipeBetweenViewControllers *rk = appDelegate.rk;
-    rk.rightButton.alpha = 1.0;
-    
-    rk.middleButton2.alpha = 1.0;
-    rk.middleButton.alpha = 0.0;
 }
 
 @end

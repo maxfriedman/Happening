@@ -7,6 +7,7 @@
 //
 
 #import "dropdownSettingsView.h"
+#import "FBShimmeringView.h"
 #import <Parse/Parse.h>
 
 @implementation dropdownSettingsView {
@@ -22,7 +23,7 @@
     NSInteger selectedIndex;
     
     BOOL categoryChanged;
-    
+    NSString *timeString;
 }
 
 @synthesize locationField,distanceLabel,dropdownImageView,todayButton,tomorrowButton,weekendButton,slider,categoryTableView,topLabel,dropdownView,delegate;
@@ -87,6 +88,7 @@
         [weekendButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
         
         selectionBar.frame = CGRectMake(32, 183, todayButton.frame.size.width + 6, 3);
+        timeString = @"Today";
         
     } else if ([defaults boolForKey:@"tomorrow"]) {
         
@@ -95,6 +97,7 @@
         [weekendButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
         
         selectionBar.frame = CGRectMake(101, 183, tomorrowButton.frame.size.width + 6, 3);
+        timeString = @"Tomorrow";
         
     } else {
         
@@ -103,6 +106,7 @@
         [weekendButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
         
         selectionBar.frame = CGRectMake(194, 183, weekendButton.frame.size.width + 6, 3);
+        timeString = @"This weekend";
     }
     
     [self addSubview:selectionBar];
@@ -142,13 +146,33 @@
     [categoryTableView selectRowAtIndexPath:indexPath animated:NO scrollPosition:UITableViewScrollPositionMiddle];
     //[categoryTableView cellForRowAtIndexPath:indexPath].accessoryType = UITableViewCellAccessoryCheckmark;
     
-    topLabel.text = [defaults valueForKey:@"categoryName"];
+    [self setTopLabelText];
+}
+
+- (void)setTopLabelText {
     
+    NSMutableAttributedString *aAttrString1 = [[NSMutableAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@, ", [defaults valueForKey:@"categoryName"]]];
+    
+    UIFont *font = [UIFont fontWithName:@"OpenSans" size:14.0];
+    NSMutableDictionary *attrsDictionary = [NSMutableDictionary dictionaryWithObject:font
+                                                                forKey:NSFontAttributeName];
+    [attrsDictionary setObject:[UIColor colorWithRed:0.0/255 green:176.0/255 blue:242.0/255 alpha:1.0] forKey:NSForegroundColorAttributeName];
+    NSMutableAttributedString *aAttrString2 = [[NSMutableAttributedString alloc] initWithString:timeString attributes:attrsDictionary];
+    //[[NSMutableAttributedString alloc] initWithString:@"Profile" attributes: arialDict2];
+    
+    [aAttrString1 appendAttributedString:aAttrString2];
+    
+    topLabel.attributedText = aAttrString1;
+}
+
+- (void)setTimeString {
+    timeString = @"Any time";
+    [self setTopLabelText];
 }
 
 /*
 - (IBAction)doneButtonPressed:(id)sender {
-    
+ 
     // Save user preferences if values were changed
     if ([self didPreferencesChange]) {
         
@@ -236,10 +260,12 @@
     if (indexPath.row == [defaults integerForKey:@"categoryIndex"] )
     {
         cell.accessoryType = UITableViewCellAccessoryCheckmark;
+        cell.textLabel.font = [UIFont fontWithName:@"OpenSans-Semibold" size:16.0];
     }
     else
     {
         cell.accessoryType = UITableViewCellAccessoryNone;
+        cell.textLabel.font = [UIFont fontWithName:@"OpenSans-Light" size:16.0];
     }
     
     return cell;
@@ -263,6 +289,7 @@
         
         [defaults setBool:NO forKey:@"tomorrow"];
         [defaults setBool:NO forKey:@"thisWeekend"];
+        timeString = @"Today";
         
     } else if (tag == 2) {
         
@@ -279,6 +306,7 @@
         
         [defaults setBool:NO forKey:@"today"];
         [defaults setBool:NO forKey:@"thisWeekend"];
+        timeString = @"Tomorrow";
         
     } else {
         
@@ -295,12 +323,14 @@
         
         [defaults setBool:NO forKey:@"today"];
         [defaults setBool:NO forKey:@"tomorrow"];
+        timeString = @"This weekend";
     }
     
     //NSLog(@"%@", [[NSUserDefaults standardUserDefaults] dictionaryRepresentation]);
 
     categoryChanged = YES;
     [defaults synchronize];
+    [self setTopLabelText];
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -416,21 +446,66 @@
     
     for (int i = 0; i < categoryArray.count; i++) {
         
-        //if (i != indexPath.row) {
-            NSIndexPath *ip = [NSIndexPath indexPathForRow:i inSection:0];
-            [tableView cellForRowAtIndexPath:ip].accessoryType = UITableViewCellAccessoryNone;
-        //}
+        NSIndexPath *ip = [NSIndexPath indexPathForRow:i inSection:0];
+        UITableViewCell *cell = [tableView cellForRowAtIndexPath:ip];
+        cell.accessoryType = UITableViewCellAccessoryNone;
+        cell.textLabel.font = [UIFont fontWithName:@"OpenSans-Light" size:16.0];
     }
     
-    [tableView cellForRowAtIndexPath:indexPath].accessoryType = UITableViewCellAccessoryCheckmark;
+    UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+    cell.accessoryType = UITableViewCellAccessoryCheckmark;
+    cell.textLabel.font = [UIFont fontWithName:@"OpenSans-Semibold" size:16.0];
+    
     
     [defaults synchronize];
-    topLabel.text = [defaults valueForKey:@"categoryName"];
-    
+    [self setTopLabelText];
     [delegate dropdownPressed];
     [delegate refreshData];
     
     //[tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
+
+-(void)showTapToGoBack:(BOOL)shouldShow {
+    
+    if (shouldShow) {
+    
+        [[self viewWithTag:99] removeFromSuperview];
+        
+    UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleLight];
+    UIVisualEffectView *blurEffectView = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
+        blurEffectView.tag = 99;
+    blurEffectView.frame = CGRectMake(0, 0, 320, 45);
+        blurEffectView.alpha = 0;
+        
+        [self addSubview:blurEffectView];
+        
+        FBShimmeringView *shimmeringView = [[FBShimmeringView alloc] initWithFrame:blurEffectView.bounds];
+        [blurEffectView addSubview:shimmeringView];
+        
+        UILabel *loadingLabel = [[UILabel alloc] initWithFrame:shimmeringView.bounds];
+        loadingLabel.textAlignment = NSTextAlignmentCenter;
+        loadingLabel.text = NSLocalizedString(@"Tap to go back", nil);
+        loadingLabel.font = [UIFont fontWithName:@"OpenSans-Light" size:15.0];
+        loadingLabel.textColor = [UIColor darkGrayColor];
+        shimmeringView.contentView = loadingLabel;
+        shimmeringView.shimmeringSpeed = 200;
+        shimmeringView.opaque = 1.0;
+        
+        // Start shimmering.
+        shimmeringView.shimmering = YES;
+        
+        [UIView animateWithDuration:1.0 animations:^{
+            blurEffectView.alpha = 1.0;
+        }];
+    
+    } else {
+        
+        UIVisualEffectView *view = (UIVisualEffectView *)[self viewWithTag:99];
+        [UIView animateWithDuration:1.0 animations:^{
+            view.alpha = 0.0;
+        }];
+        
+    }
 }
 
 /*

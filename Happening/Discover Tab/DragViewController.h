@@ -30,7 +30,7 @@
 @interface DragViewController : UIViewController <UIScrollViewDelegate, MKMapViewDelegate, UIGestureRecognizerDelegate, EKEventEditViewDelegate>
 
 - (void)refreshData;
-- (void)flipCurrentView;
+- (void)expandCurrentView;
 - (void)dropdownPressed;
 - (void)dropdownPressedFromTut:(BOOL)var;
 - (void)tutorialCardTapped:(UIView *)view ;
@@ -42,6 +42,7 @@
 - (void)updateMainTixButton;
 - (void)showFriendProfile:(UITapGestureRecognizer *)gr;
 - (void)inviteHomies;
+- (void)updateTopLabel;
 
 @property (weak) id <DragViewControllerDelegate> delegate;
 
@@ -60,7 +61,7 @@
 @property (strong, nonatomic) UIScrollView *pageScrollView;
 
 @property (assign) BOOL frontViewIsVisible;
-@property (assign) BOOL userSwipedFromFlippedView;
+@property (assign) BOOL userSwipedFromExpandedView;
 @property (assign) BOOL dropdownExpanded;
 @property (assign) BOOL tutIsShown;
 @property (assign) NSString *friendObjectID;

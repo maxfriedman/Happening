@@ -23,40 +23,86 @@
     NSInteger count;
     NSArray *eventsArray;
     NSMutableArray *sectionHeaders1;
+    NSMutableArray *sectionHeaders2;
+    NSMutableArray *sectionHeaders3;
     UIView *noEventsView;
+    PFUser *user;
+    
+    NSUInteger selectedIndex;
 }
 
-@synthesize locManager, refreshControl;
+@synthesize locManager, refreshControl,locationField;
 
 
 - (void)viewDidLoad {
     
     [super viewDidLoad];
-        
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    [locationField setTitle:[NSString stringWithFormat:@"near %@", [defaults objectForKey:@"userLocTitle"]] forState:UIControlStateNormal];
+    [self loadBestOfThisWeek];
 }
 
 -(void)viewWillAppear:(BOOL)animated {
     
     [self setEnabledSidewaysScrolling:YES];
     
-    [self loadData];
 }
 
-- (void)loadData {
+- (IBAction)segControlAction:(UISegmentedControl *)segControl {
     
+    selectedIndex = segControl.selectedSegmentIndex;
+    if (selectedIndex == 0) {
+        [self loadBestOfThisWeek];
+    } else if (selectedIndex == 1) {
+        [self loadSearch];
+    } else {
+        [self loadNotifications];
+    }
+}
+
+- (void)loadBestOfThisWeek {
+    
+    selectedIndex = 0;
     sectionHeaders1 = [[NSMutableArray alloc] init];
     
-    PFQuery *swipesQuery = [PFQuery queryWithClassName:@"Swipes"];
-    // Query only for current user's events
-    PFUser *user = [PFUser currentUser];
-    [swipesQuery whereKey:@"UserID" equalTo:user.objectId];
-    [swipesQuery whereKey:@"swipedRight" equalTo:@YES];
-    //NSArray *swipesArray = [swipesQuery findObjects];
-    
+    user = [PFUser currentUser];
     PFQuery *eventQuery = [PFQuery queryWithClassName:@"Event"];
-    [eventQuery whereKey:@"objectId" matchesKey:@"EventID" inQuery:swipesQuery];
+
     [eventQuery whereKey:@"EndTime" greaterThan:[NSDate dateWithTimeIntervalSinceNow:1800]]; // show today's events, must be at least 30 minutes left in the event (END)
-    [eventQuery orderByAscending:@"swipesRight"];
+    [eventQuery whereKey:@"Date" lessThan:[NSDate dateWithTimeIntervalSinceNow:60*60*24*7]]; // show events that start this week
+    
+    PFGeoPoint *userLoc = user[@"userLoc"];
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    NSInteger radius = [defaults integerForKey:@"sliderValue"];
+    
+    //Earth’s radius, sphere
+    float earthRadius = 6378137.0;
+    
+    //offsets in meters
+    float dn = radius * 1609.344;
+    float de = radius * 1609.344;
+    
+    //Coordinate offsets in radians
+    float dLat = dn/earthRadius;
+    float dLon = de/(earthRadius*cosf(M_PI*userLoc.latitude/180));
+    
+    //OffsetPosition, decimal degrees
+    float lat1 = userLoc.latitude - dLat * 180/M_PI;
+    float lon1 = userLoc.longitude - dLon * 180/M_PI;
+    
+    float lat2 = userLoc.latitude + dLat * 180/M_PI;
+    float lon2 = userLoc.longitude + dLon * 180/M_PI;
+    
+    PFGeoPoint *swc = [PFGeoPoint geoPointWithLatitude:lat1 longitude:lon1];
+    PFGeoPoint *nwc = [PFGeoPoint geoPointWithLatitude:lat2 longitude:lon2];
+    
+    // F this query, screws up the entire logic
+    //[finalQuery whereKey:@"GeoLoc" nearGeoPoint:userLoc withinMiles:radius];
+    
+    [eventQuery whereKey:@"GeoLoc" withinGeoBoxFromSouthwest:swc toNortheast:nwc];
+    
+    [eventQuery orderByDescending:@"swipesRight"];
+    eventQuery.limit = 5;
     
     count = 0;
     
@@ -93,149 +139,191 @@
     
 }
 
+- (void)loadSearch {
+    
+    [self.tableView reloadData];
+}
 
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+- (void)loadNotifications {
+    
+    [self.tableView reloadData];
 }
 
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
 
-    return [sectionHeaders1 count];
+    if (selectedIndex == 0) {
+        return [sectionHeaders1 count];
+    } else if (selectedIndex == 1) {
+        return 1; //[sectionHeaders2 count];
+    } else {
+        return 1; //[sectionHeaders3 count];
+    }
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
     
-    return [sectionHeaders1 objectAtIndex:section];
+    if (selectedIndex == 0) {
+        return [sectionHeaders1 objectAtIndex:section];
+    } else if (selectedIndex == 1) {
+        return @"";
+    } else {
+        return @"";
+    }
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     
-    return 1;
+    if (selectedIndex == 0) {
+        return 1;
+    } else if (selectedIndex == 1) {
+        return 5;
+    } else {
+        return 5;
+    }
     
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    AttendTableCell *cell = (AttendTableCell *)[tableView dequeueReusableCellWithIdentifier:@"tag" forIndexPath:indexPath];
-
-    [noEventsView removeFromSuperview];
     
-    [cell setupCell];
-    
-    PFObject *Event = eventsArray[indexPath.section];
-    
-    [cell.titleLabel setText:[NSString stringWithFormat:@"%@",Event[@"Title"]]];
-    
-    if (Event[@"Description"])
-        [cell.subtitle setText:[NSString stringWithFormat:@"%@",Event[@"Description"]]];
-    else
-        [cell.subtitle setText:[NSString stringWithFormat:@""]];
-    
-    [cell.locLabel setText:[NSString stringWithFormat:@"%@",Event[@"Location"]]];
-    
-    cell.eventID = Event.objectId;
-    
-    // Time formatting
-    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-    [formatter setDateFormat:@"h:mm a"];
-    
-    NSDate *startDate = Event[@"Date"];
-    NSDate *endDate = Event[@"EndTime"];
-    
-    if ([startDate compare:[NSDate date]] == NSOrderedAscending) {
+    if (selectedIndex == 0) {
         
-        [cell.timeLabel setText: [NSString stringWithFormat:@"Happening NOW!"]];
-        
-    } else {
-    
-        NSString *startTimeString = [formatter stringFromDate:startDate];
-        NSString *endTimeString = [formatter stringFromDate:endDate];
-        NSString *eventTimeString = [[NSString alloc]init];
-        eventTimeString = [NSString stringWithFormat:@"%@", startTimeString];
-        if (endTimeString) {
-            eventTimeString = [NSString stringWithFormat:@"%@ to %@", eventTimeString, endTimeString];
-        }
-        eventTimeString = [eventTimeString stringByReplacingOccurrencesOfString:@":00" withString:@""];
-    
-        [cell.timeLabel setText:[NSString stringWithFormat:@"%@",eventTimeString]];
-        }
+        AttendTableCell *cell = (AttendTableCell *)[tableView dequeueReusableCellWithIdentifier:@"tag" forIndexPath:indexPath];
 
-        cell.eventImageView.image = [UIImage imageNamed:Event[@"Hashtag"]];
+        [noEventsView removeFromSuperview];
     
-    if (Event[@"Image"] != nil) {
-    // Image formatting
-        PFFile *imageFile = Event[@"Image"];
-        [imageFile getDataInBackgroundWithBlock:^(NSData *imageData, NSError *error) {
-            if (!error) {
+        [cell setupCell];
+    
+        PFObject *Event = eventsArray[indexPath.section];
+    
+        [cell.titleLabel setText:[NSString stringWithFormat:@"%@",Event[@"Title"]]];
+    
+        if (Event[@"Description"])
+            [cell.subtitle setText:[NSString stringWithFormat:@"%@",Event[@"Description"]]];
+        else
+            [cell.subtitle setText:[NSString stringWithFormat:@""]];
+    
+        [cell.locLabel setText:[NSString stringWithFormat:@"%@",Event[@"Location"]]];
+        
+        cell.eventID = Event.objectId;
+        
+        // Time formatting
+        NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+        [formatter setDateFormat:@"h:mm a"];
+        
+        NSDate *startDate = Event[@"Date"];
+        NSDate *endDate = Event[@"EndTime"];
+        
+        if ([startDate compare:[NSDate date]] == NSOrderedAscending) {
             
-                cell.blurView.tintColor = [UIColor blackColor];
-                
-                //cell.blurView.alpha = 0;
-                cell.eventImageView.image = [UIImage imageWithData:imageData];
+            [cell.timeLabel setText: [NSString stringWithFormat:@"Happening NOW!"]];
             
-                CAGradientLayer *l = [CAGradientLayer layer];
-                l.frame = cell.eventImageView.bounds;
-                l.colors = [NSArray arrayWithObjects:(id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:0.0] CGColor], (id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:1] CGColor], nil];
-            
-                l.startPoint = CGPointMake(0.0, 1.00f);
-                l.endPoint = CGPointMake(0.0f, 0.6f);
-                //l.locations = [NSArray arrayWithObjects:[NSNumber numberWithFloat:0.0],
-                                   //[NSNumber numberWithFloat:0.2],
-                                   //[NSNumber numberWithFloat:0.3],
-                                   //[NSNumber numberWithFloat:0.4], nil];
-            
-                //cell.eventImageView.layer.mask = l;
-                //cell.blurView.dynamic = NO;
-                
-                //blurView.layer.mask = l;
-                
-                //[cell addSubview:blurView];
+        } else {
+        
+            NSString *startTimeString = [formatter stringFromDate:startDate];
+            NSString *endTimeString = [formatter stringFromDate:endDate];
+            NSString *eventTimeString = [[NSString alloc]init];
+            eventTimeString = [NSString stringWithFormat:@"%@", startTimeString];
+            if (endTimeString) {
+                eventTimeString = [NSString stringWithFormat:@"%@ to %@", eventTimeString, endTimeString];
             }
-        }];
+            eventTimeString = [eventTimeString stringByReplacingOccurrencesOfString:@":00" withString:@""];
+        
+            [cell.timeLabel setText:[NSString stringWithFormat:@"%@",eventTimeString]];
+            }
+
+            cell.eventImageView.image = [UIImage imageNamed:Event[@"Hashtag"]];
+        
+        if (Event[@"Image"] != nil) {
+        // Image formatting
+            PFFile *imageFile = Event[@"Image"];
+            [imageFile getDataInBackgroundWithBlock:^(NSData *imageData, NSError *error) {
+                if (!error) {
+                
+                    cell.blurView.tintColor = [UIColor blackColor];
+                    
+                    //cell.blurView.alpha = 0;
+                    cell.eventImageView.image = [UIImage imageWithData:imageData];
+                
+                    CAGradientLayer *l = [CAGradientLayer layer];
+                    l.frame = cell.eventImageView.bounds;
+                    l.colors = [NSArray arrayWithObjects:(id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:0.0] CGColor], (id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:1] CGColor], nil];
+                
+                    l.startPoint = CGPointMake(0.0, 1.00f);
+                    l.endPoint = CGPointMake(0.0f, 0.6f);
+                    //l.locations = [NSArray arrayWithObjects:[NSNumber numberWithFloat:0.0],
+                                       //[NSNumber numberWithFloat:0.2],
+                                       //[NSNumber numberWithFloat:0.3],
+                                       //[NSNumber numberWithFloat:0.4], nil];
+                
+                    //cell.eventImageView.layer.mask = l;
+                    //cell.blurView.dynamic = NO;
+                    
+                    //blurView.layer.mask = l;
+                    
+                    //[cell addSubview:blurView];
+                }
+            }];
+            
+        } else {
+            
+            // default image
+        }
+        
+        // Location formatting
+        if(locManager && [CLLocationManager locationServicesEnabled]){
+            [self.locManager startUpdatingLocation];
+            CLLocation *currentLocation = locManager.location;
+            user[@"userLoc"] = [PFGeoPoint geoPointWithLocation:currentLocation];
+            NSLog(@"Current Location is: %@", currentLocation);
+            [user saveInBackground];
+        }
+        
+        PFGeoPoint *loc = Event[@"GeoLoc"];
+        
+        if (loc.latitude == 0) {
+            cell.distance.text = @"";
+        } else {
+            PFGeoPoint *userLoc = user[@"userLoc"];
+            NSNumber *meters = [NSNumber numberWithDouble:([loc distanceInMilesTo:userLoc])];
+            NSString *distance = [NSString stringWithFormat:(@"%.1f mi"), meters.floatValue];
+            cell.distance.text = distance;
+        }
+        
+        cell.interestedLabel.text = [NSString stringWithFormat:@"%@ interested", Event[@"swipesRight"]];
+        
+        //cell.selectionStyle = UITableViewCellSelectionStyleDefault;
+        
+        return cell;
+        
+    } else if (selectedIndex == 1) {
+        
+        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"notification" forIndexPath:indexPath];
+        
+        return cell;
         
     } else {
         
-        // default image
+        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"notification" forIndexPath:indexPath];
+        
+        return cell;
+        
     }
     
-    // Location formatting
-    if(locManager && [CLLocationManager locationServicesEnabled]){
-        [self.locManager startUpdatingLocation];
-        CLLocation *currentLocation = locManager.location;
-        PFUser *user = [PFUser currentUser];
-        user[@"userLoc"] = [PFGeoPoint geoPointWithLocation:currentLocation];
-        NSLog(@"Current Location is: %@", currentLocation);
-        [user saveInBackground];
-    }
-    
-    PFGeoPoint *loc = Event[@"GeoLoc"];
-    
-    if (loc.latitude == 0) {
-        cell.distance.text = @"";
-    } else {
-        PFUser *user = [PFUser currentUser];
-        PFGeoPoint *userLoc = user[@"userLoc"];
-        NSNumber *meters = [NSNumber numberWithDouble:([loc distanceInMilesTo:userLoc])];
-        NSString *distance = [NSString stringWithFormat:(@"%.1f mi"), meters.floatValue];
-        cell.distance.text = distance;
-    }
-    
-    cell.interestedLabel.text = [NSString stringWithFormat:@"%@ interested", Event[@"swipesRight"]];
-    
-    //cell.selectionStyle = UITableViewCellSelectionStyleDefault;
-    
-    return cell;
+    return nil;
 }
 
 - (void)tableView:(UITableView *)tableView willDisplayHeaderView:(UIView *)view forSection:(NSInteger)section
 {
 
+    if([view isKindOfClass:[UITableViewHeaderFooterView class]]){
+        UITableViewHeaderFooterView *header = (UITableViewHeaderFooterView *)view;
+        [header.textLabel setTextColor:[UIColor darkGrayColor]];
+        [header.textLabel setFont:[UIFont fontWithName:@"OpenSans-Semibold" size:14]];
+        header.textLabel.text = [header.textLabel.text capitalizedString];
+    }
     
-    UITableViewHeaderFooterView *header = (UITableViewHeaderFooterView *)view;
-    [header.textLabel setTextColor:[UIColor darkGrayColor]];
-    [header.textLabel setFont:[UIFont fontWithName:@"OpenSans-Semibold" size:14]];
     
 }
 

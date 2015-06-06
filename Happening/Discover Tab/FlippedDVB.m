@@ -449,8 +449,8 @@
     
     // when a tap gesture occurs tell the view controller to flip this view to the
     // back and show the AtomicElementFlippedView instead
-    self.viewController.userSwipedFromFlippedView = NO;
-    [self.viewController flipCurrentView];
+    self.viewController.userSwipedFromExpandedView = NO;
+    [self.viewController expandCurrentView];
 }
 
 

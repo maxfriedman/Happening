@@ -580,7 +580,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 
 //%%% action called when the card goes to the left.
 // This should be customized with your own action
--(void)cardSwipedLeft:(UIView *)card fromFlippedView:(BOOL)flippedBool
+-(void)cardSwipedLeft:(UIView *)card fromExpandedView:(BOOL)expandedBool
 {
     //do whatever you want with the card that was swiped
 
@@ -607,7 +607,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 
 //%%% action called when the card goes to the right.
 // This should be customized with your own action
--(void)cardSwipedRight:(UIView *)card fromFlippedView:(BOOL)flippedBool
+-(void)cardSwipedRight:(UIView *)card fromExpandedView:(BOOL)expandedBool
 {
     //do whatever you want with the card that was swiped
     
@@ -658,7 +658,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     }];
     
     
-    [self cardSwipedRight:self fromFlippedView:NO];
+    [self cardSwipedRight:self fromExpandedView:NO];
     
     NSLog(@"YES");
         
@@ -692,7 +692,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         //}
     }];
     
-    [self cardSwipedLeft:self fromFlippedView:NO];
+    [self cardSwipedLeft:self fromExpandedView:NO];
     
     NSLog(@"NO");
         
@@ -962,7 +962,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                      }];
     
     //[dragView removeFromSuperview];
-    [self cardSwipedRight:card fromFlippedView:NO];
+    [self cardSwipedRight:card fromExpandedView:NO];
     
     NSLog(@"YES");
 }
@@ -985,7 +985,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                          }
                      }];
     
-    [self cardSwipedLeft:card fromFlippedView:NO];
+    [self cardSwipedLeft:card fromExpandedView:NO];
     
     NSLog(@"NO");
 }
@@ -1008,7 +1008,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                      }];
     
     [self checkEventStoreAccessForCalendar];
-    [self cardSwipedRight:card fromFlippedView:NO];
+    [self cardSwipedRight:card fromExpandedView:NO];
     
     
     NSLog(@"DOWN");

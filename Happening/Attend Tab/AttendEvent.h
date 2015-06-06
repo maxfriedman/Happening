@@ -14,6 +14,7 @@
 @interface AttendEvent : UITableViewController <CLLocationManagerDelegate>
 
 @property CLLocationManager *locManager;
+@property (strong, nonatomic) IBOutlet UIButton *locationField;
 
 -(void)showNavTitle;
 -(void)loadData;

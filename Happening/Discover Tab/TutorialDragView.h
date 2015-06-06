@@ -28,8 +28,8 @@
 @property (nonatomic, weak) DragViewController *myViewController;
 
 //methods called in DraggableView
--(void)cardSwipedLeft:(UIView *)card fromFlippedView:(BOOL)flippedBool;
--(void)cardSwipedRight:(UIView *)card fromFlippedView:(BOOL)flippedBool;
+-(void)cardSwipedLeft:(UIView *)card fromExpandedView:(BOOL)expandedBool;
+-(void)cardSwipedRight:(UIView *)card fromExpandedView:(BOOL)expandedBool;
 - (UIImage *) imageWithView:(UIView *)view;
 
 -(void)swipeLeft;

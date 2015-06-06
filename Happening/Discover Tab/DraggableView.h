@@ -15,8 +15,8 @@
 
 @protocol DraggableViewDelegate <NSObject>
 
--(void)cardSwipedLeft:(UIView *)card fromFlippedView:(BOOL)flippedBool;
--(void)cardSwipedRight:(UIView *)card fromFlippedView:(BOOL)flippedBool;
+-(void)cardSwipedLeft:(UIView *)card fromExpandedView:(BOOL)expandedBool;
+-(void)cardSwipedRight:(UIView *)card fromExpandedView:(BOOL)expandedBool;
 -(void)checkEventStoreAccessForCalendar;
 
 - (UIImage *) imageWithView:(UIView *)view;

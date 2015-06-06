@@ -10,10 +10,11 @@
 #import "RKSwipeBetweenViewControllers.h"
 #import "DragViewController.h"
 #import "MyEventsTVC.h"
-#import "AttendEvent.h"
 #import "UIButton+Extensions.h"
 #import "AppDelegate.h"
 #import "AMPopTip.h"
+#import "GroupsTVC.h"
+#import "ProfileTVC.h"
 
 //%%% customizeable button attributes
 #define X_BUFFER 0 //%%% the number of pixels on either side of the segment
@@ -87,20 +88,20 @@
     
     dvc = vc;
     
-    MyEventsTVC *mtvc = [storyboard instantiateViewControllerWithIdentifier:@"Attend"];
-    AttendEvent *atvc = [storyboard instantiateViewControllerWithIdentifier:@"Create"];
+    GroupsTVC *gtvc = [storyboard instantiateViewControllerWithIdentifier:@"GroupsTVC"];
+    ProfileTVC *ptvc = [storyboard instantiateViewControllerWithIdentifier:@"Create"];
 
-    [viewControllerArray addObjectsFromArray:@[mtvc,vc,atvc]];
+    [viewControllerArray addObjectsFromArray:@[gtvc,vc,ptvc]];
     
     [self updateCurrentPageIndex:1];
     
     leftLabel = [[UILabel alloc]initWithFrame:CGRectMake(30, Y_BUFFER, 50, 20)];
-    leftLabel.text = @"Profile";
+    //leftLabel.text = @"Events";
     leftLabel.font = [UIFont fontWithName:@"OpenSans-Bold" size:14.0];
     leftLabel.textColor = [UIColor whiteColor];
     
     rightLabel = [[UILabel alloc]initWithFrame:CGRectMake(-50, Y_BUFFER, 50, 20)];
-    rightLabel.text = @"Events";
+    //rightLabel.text = @"Profile";
     rightLabel.font = [UIFont fontWithName:@"OpenSans-Bold" size:14.0];
     rightLabel.textColor = [UIColor whiteColor];
     
@@ -387,39 +388,64 @@
     } else if (rightButtonTapScrolling) {
         [self fadeLabels:2];
     }
+    /*
+     leftButton = [[UIButton alloc]initWithFrame:CGRectMake(0, Y_BUFFER, 25, 30)];
+     middleButton = [[UIButton alloc]initWithFrame:CGRectMake(X_BUFFER+width-15, Y_BUFFER + 5, width + 30, 21.5)];
+     middleButton2 = [[UIButton alloc]initWithFrame:CGRectMake(width*3/2 - 15, Y_BUFFER, 30, 30)];
+     rightButton = [[UIButton alloc]initWithFrame:CGRectMake(75+2*width, Y_BUFFER, 24, HEIGHT)];
+     */
+    
+    float zeroToOne = abs((int)xFromCenter) / 320.0;
+    float oneToZero = 1 - abs((int)xFromCenter) / 320.0;
     
     if (xCoor == -2) {
         
-        if (abs((int)xFromCenter) >= 0) {
+        if (abs((int)xFromCenter) > 0) {
         
-            //NSLog (@"Left label");
+           // NSLog (@"Left label");
             
-            leftLabel.alpha = 1 - abs((int)xFromCenter) / 320.0;
-        
-            middleButton2.alpha = 1 - abs((int)xFromCenter) / 320.0;
-            middleButton.alpha = abs((int)xFromCenter) / 320.0;
+            leftLabel.alpha = oneToZero;
+            middleButton2.alpha = oneToZero;
+            middleButton.alpha = zeroToOne;
             
-            //NSLog(@"%f", leftLabel.alpha);
-            
+            NSInteger width = 304/3;
+            leftButton.frame = CGRectMake((width*3/2 - 15)*oneToZero, Y_BUFFER, 25, 30);
+            //middleButton.frame = CGRectMake(X_BUFFER+width-15 + (width+35)*zeroToOne, Y_BUFFER + 5, width + 30, 21.5);
+            //middleButton2.frame = CGRectMake(width*3/2 - 15 + (width/2+90)*zeroToOne, Y_BUFFER, 30, 30);
+            middleButton.frame = CGRectMake(X_BUFFER+width+width+20 - (width+35)*zeroToOne, Y_BUFFER + 5, width + 30, 21.5);
+            middleButton2.frame = CGRectMake(75+2*width - (width/2+90)*zeroToOne, Y_BUFFER, 30, 30);
+            rightButton.frame = CGRectMake(75+3*width - width*zeroToOne, Y_BUFFER, 24, HEIGHT);
+
         }
         
     } else if (xCoor == 104) {
         
-        //NSLog (@"Middle Label");
+       // NSLog (@"Middle Label");
         
         if (xFromCenter > 0) {
+
+            leftLabel.alpha = zeroToOne;
+            middleButton2.alpha = zeroToOne;
+            middleButton.alpha = oneToZero;
             
-            leftLabel.alpha = abs((int)xFromCenter) / 320.0;
-            
-            middleButton2.alpha = abs((int)xFromCenter) / 320.0;
-            middleButton.alpha = 1 - abs((int)xFromCenter) / 320.0;
-            
+            NSInteger width = 304/3;
+            leftButton.frame = CGRectMake((width*3/2 - 15) * zeroToOne, Y_BUFFER, 25, 30);
+            middleButton.frame = CGRectMake(X_BUFFER+width-15 + (width+35) * zeroToOne, Y_BUFFER + 5, width + 30, 21.5);
+            middleButton2.frame = CGRectMake((width*3/2 - 15) + (90+width/2)* zeroToOne, Y_BUFFER, 30, 30);
+            rightButton.frame = CGRectMake(75+2*width + zeroToOne*width, Y_BUFFER, 24, HEIGHT);
+        
+             
         } else {
             
-            rightLabel.alpha = abs((int)xFromCenter) / 320.0;
+            rightLabel.alpha = zeroToOne;
+            middleButton2.alpha = zeroToOne;
+            middleButton.alpha = oneToZero;
             
-            middleButton2.alpha = abs((int)xFromCenter) / 320.0;
-            middleButton.alpha = 1 -abs((int)xFromCenter) / 320.0;
+            NSInteger width = 304/3;
+            leftButton.frame = CGRectMake(-width * zeroToOne, Y_BUFFER, 25, 30);
+            middleButton.frame = CGRectMake(X_BUFFER+width-15 - (width + 25)*zeroToOne , Y_BUFFER + 5, width + 30, 21.5);
+            middleButton2.frame = CGRectMake((width*3/2 - 15) * oneToZero, Y_BUFFER, 30, 30);
+            rightButton.frame = CGRectMake(75+2*width - (width/2 + 90) * zeroToOne, Y_BUFFER, 24, 30);
             
         }
         
@@ -429,15 +455,18 @@
      
         //NSLog (@"Right Label");
         
-        if (abs((int)xFromCenter) >= 0) {
+        if (abs((int)xFromCenter) > 0) {
             
-            rightLabel.alpha = 1 - abs((int)xFromCenter) / 320.0;
+            rightLabel.alpha = oneToZero;
+            middleButton2.alpha = oneToZero;
+            middleButton.alpha = zeroToOne;
             
-            middleButton2.alpha = 1 - abs((int)xFromCenter) / 320.0;
-            middleButton.alpha = abs((int)xFromCenter) / 320.0;
-            
-            //NSLog(@"%f", rightLabel.alpha);
-            
+            NSInteger width = 304/3;
+            leftButton.frame = CGRectMake(-width*oneToZero, Y_BUFFER, 25, 30);
+            middleButton.frame = CGRectMake(X_BUFFER-40 + (width + 25)*zeroToOne, Y_BUFFER + 5, width + 30, 21.5);
+            middleButton2.frame = CGRectMake(0 + (width*3/2 - 15)*zeroToOne, Y_BUFFER, 30, 30);
+            rightButton.frame = CGRectMake(width*3/2 - 15 + (width/2 + 90)*zeroToOne, Y_BUFFER, 24, 30);
+
         }
         
     }
@@ -531,6 +560,13 @@
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%//
 ////////////////////////////////////////////////////////////
 
+/*
+ leftButton = [[UIButton alloc]initWithFrame:CGRectMake(0, Y_BUFFER, 25, 30)];
+ middleButton = [[UIButton alloc]initWithFrame:CGRectMake(X_BUFFER+width-15, Y_BUFFER + 5, width + 30, 21.5)];
+ middleButton2 = [[UIButton alloc]initWithFrame:CGRectMake(width*3/2 - 15, Y_BUFFER, 30, 30)];
+ rightButton = [[UIButton alloc]initWithFrame:CGRectMake(75+2*width, Y_BUFFER, 24, HEIGHT)];
+ */
+
 
 - (void)leftButtonTapped {
 
@@ -538,8 +574,22 @@
         longScroll = YES;
     } else longScroll = NO;
     
-    [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"refresData"];
+    [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"refreshData"];
     [[NSUserDefaults standardUserDefaults] synchronize];
+    
+    /*
+    [UIView animateWithDuration:0.5 animations:^{
+        
+        NSInteger width = 304/3;
+        leftButton.frame = CGRectMake(width*3/2 - 15, Y_BUFFER, 25, 30);
+        middleButton.frame = CGRectMake(X_BUFFER+width+width+20, Y_BUFFER + 5, width + 30, 21.5);
+        middleButton2.frame = CGRectMake(75+2*width, Y_BUFFER, 30, 30);
+        rightButton.frame = CGRectMake(75+3*width, Y_BUFFER, 24, HEIGHT);
+        
+    } completion:^(BOOL finished) {
+        //<#code#>
+    }];
+     */
     
 }
 
@@ -564,6 +614,19 @@
         middleButtonTapScrolling = NO;
     }
     
+    /*
+    [UIView animateWithDuration:0.5 animations:^{
+        
+        NSInteger width = 304/3;
+        leftButton.frame = CGRectMake(0, Y_BUFFER, 25, 30);
+        middleButton.frame = CGRectMake(X_BUFFER+width-15, Y_BUFFER + 5, width + 30, 21.5);
+        middleButton2.frame = CGRectMake(width*3/2 - 15, Y_BUFFER, 30, 30);
+        rightButton.frame = CGRectMake(75+2*width, Y_BUFFER, 24, HEIGHT);
+        
+    } completion:^(BOOL finished) {
+        //<#code#>
+    }]; */
+    
 }
 
 - (void)rightButtonTapped {
@@ -574,8 +637,21 @@
         longScroll = YES;
     } else longScroll = NO;
     
-    [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"refresData"];
+    [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"refreshData"];
     [[NSUserDefaults standardUserDefaults] synchronize];
+    
+    /*
+    [UIView animateWithDuration:0.5 animations:^{
+        
+        NSInteger width = 304/3;
+        leftButton.frame = CGRectMake(-width, Y_BUFFER, 25, 30);
+        middleButton.frame = CGRectMake(X_BUFFER-40, Y_BUFFER + 5, width + 30, 21.5);
+        middleButton2.frame = CGRectMake(0, Y_BUFFER, 30, 30);
+        rightButton.frame = CGRectMake(width*3/2 - 15, Y_BUFFER, 24, 30);
+        
+    } completion:^(BOOL finished) {
+        //<#code#>
+    }]; */
        
 }
 

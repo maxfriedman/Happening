@@ -107,13 +107,20 @@
 		50A677761A59B67C00E1E12A /* RKDropdownAlert.m in Sources */ = {isa = PBXBuildFile; fileRef = 50A677751A59B67C00E1E12A /* RKDropdownAlert.m */; };
 		50B7071A1B1575BD0080657E /* inviteHomies.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B707191B1575BD0080657E /* inviteHomies.m */; };
 		50B707201B17D2D90080657E /* inviteHomiesCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B7071F1B17D2D90080657E /* inviteHomiesCell.m */; };
+		50B707271B1D26A90080657E /* GroupsTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B707261B1D26A90080657E /* GroupsTVC.m */; };
+		50B7072A1B1E573C0080657E /* GroupsCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B707291B1E573C0080657E /* GroupsCell.m */; };
+		50B707541B1FA7CD0080657E /* FBShimmeringLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B707511B1FA7CD0080657E /* FBShimmeringLayer.m */; };
+		50B707551B1FA7CD0080657E /* FBShimmeringView.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B707531B1FA7CD0080657E /* FBShimmeringView.m */; };
+		50B707581B2102260080657E /* GroupPageTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B707571B2102260080657E /* GroupPageTVC.m */; };
+		50B851091B21152800C1C8FB /* GroupsEventCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B851081B21152800C1C8FB /* GroupsEventCell.m */; };
+		50B8510C1B2147FA00C1C8FB /* NewGroupCreatorVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B8510B1B2147FA00C1C8FB /* NewGroupCreatorVC.m */; };
+		50B8510F1B23AC7400C1C8FB /* SVProgressHUD.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 50B8510E1B23AC7400C1C8FB /* SVProgressHUD.bundle */; };
 		50BA96391AC5DDD2006A8A13 /* InitialVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 50BA96381AC5DDD2006A8A13 /* InitialVC.m */; };
 		50BF2CE31A75531B00160B5E /* movieLoginVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 50BF2CE21A75531B00160B5E /* movieLoginVC.m */; };
 		50BF2CE61A758D8300160B5E /* RKSwipeBetweenViewControllers.m in Sources */ = {isa = PBXBuildFile; fileRef = 50BF2CE51A758D8300160B5E /* RKSwipeBetweenViewControllers.m */; };
 		50C2938F1A83D37A00F9185C /* Happening Intro vid.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 50C2938E1A83D37A00F9185C /* Happening Intro vid.mp4 */; };
 		50C35E081ADB166400389EF4 /* tempProfile.m in Sources */ = {isa = PBXBuildFile; fileRef = 50C35E071ADB166400389EF4 /* tempProfile.m */; };
 		50D255A41A6388A10086B7A4 /* OpenSans-Extrabold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50478F1B1A44DF1500161D01 /* OpenSans-Extrabold.ttf */; };
-		50E1C8151AD67481001A639D /* SVProgressHUD.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 50E1C8141AD67481001A639D /* SVProgressHUD.bundle */; };
 		50F7DEA51A5643A6008B8C2B /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 50478F101A44DE6900161D01 /* main.m */; };
 		50F7DEA71A5794D6008B8C2B /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50F7DEA61A5794D5008B8C2B /* MessageUI.framework */; };
 		50F7DEAA1A57B4B8008B8C2B /* UICountingLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = 50F7DEA91A57B4B8008B8C2B /* UICountingLabel.m */; };
@@ -294,6 +301,24 @@
 		50B707191B1575BD0080657E /* inviteHomies.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = inviteHomies.m; path = "Happening/Discover Tab/inviteHomies.m"; sourceTree = SOURCE_ROOT; };
 		50B7071E1B17D2D90080657E /* inviteHomiesCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = inviteHomiesCell.h; path = "Happening/Discover Tab/inviteHomiesCell.h"; sourceTree = SOURCE_ROOT; };
 		50B7071F1B17D2D90080657E /* inviteHomiesCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = inviteHomiesCell.m; path = "Happening/Discover Tab/inviteHomiesCell.m"; sourceTree = SOURCE_ROOT; };
+		50B707251B1D26A90080657E /* GroupsTVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GroupsTVC.h; path = Happening/Groups/GroupsTVC.h; sourceTree = SOURCE_ROOT; };
+		50B707261B1D26A90080657E /* GroupsTVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GroupsTVC.m; path = Happening/Groups/GroupsTVC.m; sourceTree = SOURCE_ROOT; };
+		50B707281B1E573C0080657E /* GroupsCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GroupsCell.h; path = Happening/Groups/GroupsCell.h; sourceTree = SOURCE_ROOT; };
+		50B707291B1E573C0080657E /* GroupsCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GroupsCell.m; path = Happening/Groups/GroupsCell.m; sourceTree = SOURCE_ROOT; };
+		50B7074E1B1FA7CD0080657E /* FBShimmering-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "FBShimmering-Prefix.pch"; sourceTree = "<group>"; };
+		50B7074F1B1FA7CD0080657E /* FBShimmering.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FBShimmering.h; sourceTree = "<group>"; };
+		50B707501B1FA7CD0080657E /* FBShimmeringLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FBShimmeringLayer.h; sourceTree = "<group>"; };
+		50B707511B1FA7CD0080657E /* FBShimmeringLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FBShimmeringLayer.m; sourceTree = "<group>"; };
+		50B707521B1FA7CD0080657E /* FBShimmeringView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FBShimmeringView.h; sourceTree = "<group>"; };
+		50B707531B1FA7CD0080657E /* FBShimmeringView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FBShimmeringView.m; sourceTree = "<group>"; };
+		50B707561B2102260080657E /* GroupPageTVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GroupPageTVC.h; path = Happening/Groups/GroupPageTVC.h; sourceTree = SOURCE_ROOT; };
+		50B707571B2102260080657E /* GroupPageTVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GroupPageTVC.m; path = Happening/Groups/GroupPageTVC.m; sourceTree = SOURCE_ROOT; };
+		50B851071B21152800C1C8FB /* GroupsEventCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GroupsEventCell.h; path = Happening/Groups/GroupsEventCell.h; sourceTree = SOURCE_ROOT; };
+		50B851081B21152800C1C8FB /* GroupsEventCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GroupsEventCell.m; path = Happening/Groups/GroupsEventCell.m; sourceTree = SOURCE_ROOT; };
+		50B8510A1B2147FA00C1C8FB /* NewGroupCreatorVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NewGroupCreatorVC.h; path = Happening/Groups/NewGroupCreatorVC.h; sourceTree = SOURCE_ROOT; };
+		50B8510B1B2147FA00C1C8FB /* NewGroupCreatorVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NewGroupCreatorVC.m; path = Happening/Groups/NewGroupCreatorVC.m; sourceTree = SOURCE_ROOT; };
+		50B8510D1B23AC7400C1C8FB /* SVProgressHUD-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SVProgressHUD-Prefix.pch"; sourceTree = "<group>"; };
+		50B8510E1B23AC7400C1C8FB /* SVProgressHUD.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = SVProgressHUD.bundle; sourceTree = "<group>"; };
 		50BA96371AC5DDD2006A8A13 /* InitialVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = InitialVC.h; path = "Happening/Create Tab/InitialVC.h"; sourceTree = SOURCE_ROOT; };
 		50BA96381AC5DDD2006A8A13 /* InitialVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = InitialVC.m; path = "Happening/Create Tab/InitialVC.m"; sourceTree = SOURCE_ROOT; };
 		50BF2CE11A75531B00160B5E /* movieLoginVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = movieLoginVC.h; path = "Happening/Login Flow/movieLoginVC.h"; sourceTree = SOURCE_ROOT; };
@@ -304,8 +329,6 @@
 		50C35E061ADB166400389EF4 /* tempProfile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = tempProfile.h; path = "Happening/Discover Tab/tempProfile.h"; sourceTree = SOURCE_ROOT; };
 		50C35E071ADB166400389EF4 /* tempProfile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = tempProfile.m; path = "Happening/Discover Tab/tempProfile.m"; sourceTree = SOURCE_ROOT; };
 		50D252DD1A6385DC0086B7A4 /* HappeningTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HappeningTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		50E1C8131AD67481001A639D /* SVProgressHUD-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "SVProgressHUD-Prefix.pch"; path = "../../../../SVProgressHUD-master/SVProgressHUD/SVProgressHUD-Prefix.pch"; sourceTree = "<group>"; };
-		50E1C8141AD67481001A639D /* SVProgressHUD.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = SVProgressHUD.bundle; path = "../../../../SVProgressHUD-master/SVProgressHUD/SVProgressHUD.bundle"; sourceTree = "<group>"; };
 		50F7DEA61A5794D5008B8C2B /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		50F7DEA81A57B4B8008B8C2B /* UICountingLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UICountingLabel.h; path = Happening/Extras/UICountingLabel.h; sourceTree = SOURCE_ROOT; };
 		50F7DEA91A57B4B8008B8C2B /* UICountingLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = UICountingLabel.m; path = Happening/Extras/UICountingLabel.m; sourceTree = SOURCE_ROOT; };
@@ -393,6 +416,7 @@
 			children = (
 				50478F0C1A44DE5C00161D01 /* Main Files */,
 				5041A10E1A44AC9500C151B7 /* Login Flow */,
+				50B707241B1D26890080657E /* Groups */,
 				5041A1101A44ACF500C151B7 /* Create Tab */,
 				5041A10F1A44ACB900C151B7 /* Discover Tab */,
 				5041A1141A44ADE100C151B7 /* Attend Tab */,
@@ -601,6 +625,7 @@
 		5041A1191A44AE7E00C151B7 /* Extras */ = {
 			isa = PBXGroup;
 			children = (
+				50B7074D1B1FA7CD0080657E /* FBShimmering */,
 				5041A10D1A44AC5900C151B7 /* Custom Segues */,
 				50512F1E1ABB719700118FD9 /* SVProgressHUD */,
 				504068791A44BB1E00C2CA81 /* Open Sans */,
@@ -620,6 +645,8 @@
 				50478F0F1A44DE6900161D01 /* Info.plist */,
 				50478F101A44DE6900161D01 /* main.m */,
 				50478F111A44DE6900161D01 /* Main.storyboard */,
+				50B8510A1B2147FA00C1C8FB /* NewGroupCreatorVC.h */,
+				50B8510B1B2147FA00C1C8FB /* NewGroupCreatorVC.m */,
 			);
 			name = "Main Files";
 			sourceTree = "<group>";
@@ -743,8 +770,8 @@
 		50512F1E1ABB719700118FD9 /* SVProgressHUD */ = {
 			isa = PBXGroup;
 			children = (
-				50E1C8131AD67481001A639D /* SVProgressHUD-Prefix.pch */,
-				50E1C8141AD67481001A639D /* SVProgressHUD.bundle */,
+				50B8510D1B23AC7400C1C8FB /* SVProgressHUD-Prefix.pch */,
+				50B8510E1B23AC7400C1C8FB /* SVProgressHUD.bundle */,
 				50512F1F1ABB719700118FD9 /* SVIndefiniteAnimatedView.h */,
 				50512F201ABB719700118FD9 /* SVIndefiniteAnimatedView.m */,
 				50512F231ABB719700118FD9 /* SVProgressHUD.h */,
@@ -790,6 +817,35 @@
 			);
 			name = Other;
 			sourceTree = "<group>";
+		};
+		50B707241B1D26890080657E /* Groups */ = {
+			isa = PBXGroup;
+			children = (
+				50B851071B21152800C1C8FB /* GroupsEventCell.h */,
+				50B851081B21152800C1C8FB /* GroupsEventCell.m */,
+				50B707251B1D26A90080657E /* GroupsTVC.h */,
+				50B707261B1D26A90080657E /* GroupsTVC.m */,
+				50B707281B1E573C0080657E /* GroupsCell.h */,
+				50B707291B1E573C0080657E /* GroupsCell.m */,
+				50B707561B2102260080657E /* GroupPageTVC.h */,
+				50B707571B2102260080657E /* GroupPageTVC.m */,
+			);
+			name = Groups;
+			sourceTree = "<group>";
+		};
+		50B7074D1B1FA7CD0080657E /* FBShimmering */ = {
+			isa = PBXGroup;
+			children = (
+				50B7074E1B1FA7CD0080657E /* FBShimmering-Prefix.pch */,
+				50B7074F1B1FA7CD0080657E /* FBShimmering.h */,
+				50B707501B1FA7CD0080657E /* FBShimmeringLayer.h */,
+				50B707511B1FA7CD0080657E /* FBShimmeringLayer.m */,
+				50B707521B1FA7CD0080657E /* FBShimmeringView.h */,
+				50B707531B1FA7CD0080657E /* FBShimmeringView.m */,
+			);
+			name = FBShimmering;
+			path = Happening/Extras/FBShimmering;
+			sourceTree = SOURCE_ROOT;
 		};
 /* End PBXGroup section */
 
@@ -888,7 +944,7 @@
 				506DC5421A46014300DD4591 /* OpenSans-Italic.ttf in Resources */,
 				506DC5431A46014300DD4591 /* OpenSans-Light.ttf in Resources */,
 				506DC5441A46014300DD4591 /* OpenSans-LightItalic.ttf in Resources */,
-				50E1C8151AD67481001A639D /* SVProgressHUD.bundle in Resources */,
+				50B8510F1B23AC7400C1C8FB /* SVProgressHUD.bundle in Resources */,
 				506DC5451A46014300DD4591 /* OpenSans-Regular.ttf in Resources */,
 				506DC5461A46014300DD4591 /* OpenSans-Semibold.ttf in Resources */,
 				506DC5471A46014300DD4591 /* OpenSans-SemiboldItalic.ttf in Resources */,
@@ -924,13 +980,18 @@
 				50512F271ABB719700118FD9 /* SVProgressHUD.m in Sources */,
 				50478EF31A44DD9800161D01 /* SettingsTVC.m in Sources */,
 				50F7DEAA1A57B4B8008B8C2B /* UICountingLabel.m in Sources */,
+				50B707541B1FA7CD0080657E /* FBShimmeringLayer.m in Sources */,
 				50478EC31A44DCAD00161D01 /* PageContentViewController.m in Sources */,
+				50B707581B2102260080657E /* GroupPageTVC.m in Sources */,
+				50B7072A1B1E573C0080657E /* GroupsCell.m in Sources */,
 				50C35E081ADB166400389EF4 /* tempProfile.m in Sources */,
 				50478EBD1A44DBCC00161D01 /* InitialLocationSearch.m in Sources */,
 				50478EBE1A44DBCC00161D01 /* LogInExistingUser.m in Sources */,
 				50478ED31A44DD2400161D01 /* EditEventTVC.m in Sources */,
 				50478F0A1A44DE1F00161D01 /* CupertinoYankee.m in Sources */,
 				50478ED61A44DD2400161D01 /* LocationSearching.m in Sources */,
+				50B707271B1D26A90080657E /* GroupsTVC.m in Sources */,
+				50B707551B1FA7CD0080657E /* FBShimmeringView.m in Sources */,
 				50478EF21A44DD9800161D01 /* SettingsChoosingLoc.m in Sources */,
 				50478EEA1A44DD6C00161D01 /* DragViewController.m in Sources */,
 				50478EBB1A44DBCC00161D01 /* ChoosingLocation.m in Sources */,
@@ -949,6 +1010,7 @@
 				50478ED21A44DD2400161D01 /* buttonOverride.m in Sources */,
 				506DFD831A6113CF00715079 /* FXBlurView.m in Sources */,
 				503ECF671A506815009D30F1 /* MFActivityIndicatorView.m in Sources */,
+				50B851091B21152800C1C8FB /* GroupsEventCell.m in Sources */,
 				508FC9A41A8B04A300BF246B /* DragMapViewController.m in Sources */,
 				50478EBF1A44DBCC00161D01 /* LoginView.m in Sources */,
 				50478F251A45049300161D01 /* MyEventTableCell.m in Sources */,
@@ -964,6 +1026,7 @@
 				50478EEC1A44DD6C00161D01 /* moreDetailFromCard.m in Sources */,
 				50478ED41A44DD2400161D01 /* EventTVC.m in Sources */,
 				50478F011A44DE0500161D01 /* AttendTableCell.m in Sources */,
+				50B8510C1B2147FA00C1C8FB /* NewGroupCreatorVC.m in Sources */,
 				50FA6B891A7ECC35009AA6A0 /* TutorialDragView.m in Sources */,
 				50512F111ABB51DB00118FD9 /* ProfileSettingsTVC.m in Sources */,
 				50478ED81A44DD2400161D01 /* showMyEventVC.m in Sources */,

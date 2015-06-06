@@ -758,20 +758,22 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         
     //}];
     
-    UIScrollView *friendScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(15, 250, 254, 50)];
+    UIScrollView *friendScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(15 + 46 + 10, 250, 254 - 46 - 10, 50)];
     friendScrollView.scrollEnabled = YES;
     friendScrollView.showsHorizontalScrollIndicator = NO;
     [draggableView.cardView addSubview:friendScrollView];
     
     
-    UIImageView *hapLogoButton = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 40, 40)];
-    hapLogoButton.image = [UIImage imageNamed:@"AppLogoButton"];
+    UIButton *hapLogoButton = [[UIButton alloc] initWithFrame:CGRectMake(15, 247, 46, 46)];
+    [hapLogoButton setImage:[UIImage imageNamed:@"AppLogoButton"] forState:UIControlStateNormal];
     
-    hapLogoButton.layer.cornerRadius = 20;
+    hapLogoButton.layer.cornerRadius = 23;
     hapLogoButton.layer.masksToBounds = YES;
+    hapLogoButton.layer.borderColor = [UIColor lightGrayColor].CGColor;
+    hapLogoButton.layer.borderWidth = 1;
     hapLogoButton.accessibilityIdentifier = @"hap";
     hapLogoButton.userInteractionEnabled = YES;
-    [friendScrollView addSubview:hapLogoButton];
+    [draggableView.cardView addSubview:hapLogoButton];
     
     UITapGestureRecognizer *gr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(inviteHomies)];
     [hapLogoButton addGestureRecognizer:gr];
@@ -840,8 +842,9 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         } else if ([[NSUserDefaults standardUserDefaults] boolForKey:@"noMoreEvents"] ) { // run one more time without limits
             
             NSLog(@"Uno mas");
-
+            
             [self.myViewController refreshData];
+            [self.myViewController updateTopLabel];
             
         } else { // there really are no more events
             
@@ -856,6 +859,8 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                 // time-consuming task
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [SVProgressHUD showErrorWithStatus:@"No more Happenings.\nTry changing search criteria." maskType:SVProgressHUDMaskTypeGradient];
+                    [NSTimer scheduledTimerWithTimeInterval:1.5 target:self
+                                                   selector:@selector(dismissHUD) userInfo:nil repeats:NO];
                 });
             });
             
@@ -871,8 +876,12 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 
     //}];//end of PFQuery
     
-    [self.myViewController updateMainTixButton];
+    //[self.myViewController updateMainTixButton];
     
+}
+
+- (void)dismissHUD {
+    [SVProgressHUD dismiss];
 }
 
 - (void)loadFBFriends:(UIScrollView *)friendScrollView withCard:(DraggableView *)card {
@@ -888,7 +897,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             NSArray* friends = [result objectForKey:@"data"];
             NSLog(@"Found: %lu friends", (unsigned long)friends.count);
             
-            __block int friendCount = 1;
+            __block int friendCount = 0;
             
             NSMutableArray *friendObjectIDs = [[NSMutableArray alloc] init];
             for (int i = 0; i < friends.count; i ++) {
@@ -939,7 +948,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                         
                         friendCount++;
                         
-                        if (friendCount == 2) {
+                        if (friendCount == 1) {
                             card.friendsInterested.text = [NSString stringWithFormat:@"%d friend interested", friendCount - 1];
                         } else {
                             card.friendsInterested.text = [NSString stringWithFormat:@"%d friends interested", friendCount - 1];
@@ -981,7 +990,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 
 //%%% action called when the card goes to the left.
 // This should be customized with your own action
--(void)cardSwipedLeft:(UIView *)card fromFlippedView:(BOOL)flippedBool
+-(void)cardSwipedLeft:(UIView *)card fromExpandedView:(BOOL)expandedBool
 {
     //do whatever you want with the card that was swiped
     DraggableView *c = (DraggableView *)card;
@@ -1092,18 +1101,18 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     dragView = [loadedCards firstObject]; // Make dragView the current card
     [dragView.cardBackground removeFromSuperview];
 
-    if (flippedBool == YES) {
-        self.myViewController.userSwipedFromFlippedView = YES;
-        [self.myViewController flipCurrentView];
+    if (expandedBool == YES) {
+        self.myViewController.userSwipedFromExpandedView = YES;
+        [self.myViewController expandCurrentView];
     } else
-        self.myViewController.userSwipedFromFlippedView = NO;
+        self.myViewController.userSwipedFromExpandedView = NO;
     
-    [self.myViewController updateMainTixButton];
+    //[self.myViewController updateMainTixButton];
 }
 
 //%%% action called when the card goes to the right.
 // This should be customized with your own action
--(void)cardSwipedRight:(UIView *)card fromFlippedView:(BOOL)flippedBool
+-(void)cardSwipedRight:(UIView *)card fromExpandedView:(BOOL)expandedBool
 {
     //do whatever you want with the card that was swiped
     DraggableView *c = (DraggableView *)card;
@@ -1253,13 +1262,13 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     dragView = [loadedCards firstObject]; // Make dragView the current card
     [dragView.cardBackground removeFromSuperview];
     
-    if (flippedBool == YES) {
-        self.myViewController.userSwipedFromFlippedView = YES;
-        [self.myViewController flipCurrentView];
+    if (expandedBool == YES) {
+        self.myViewController.userSwipedFromExpandedView = YES;
+        [self.myViewController expandCurrentView];
     } else
-        self.myViewController.userSwipedFromFlippedView = NO;
+        self.myViewController.userSwipedFromExpandedView = NO;
     
-    [self.myViewController updateMainTixButton];
+    //[self.myViewController updateMainTixButton];
     
 }
 
@@ -1307,7 +1316,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     self.myViewController.eventTitle = self.dragView.title.text;
     self.myViewController.locationTitle = self.dragView.location.text;
     
-    [self.myViewController flipCurrentView];
+    [self.myViewController expandCurrentView];
     
     [dragView cardExpanded:!self.myViewController.frontViewIsVisible];
 }
