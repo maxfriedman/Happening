@@ -12,6 +12,10 @@
 
 - (void)awakeFromNib {
     // Initialization code
+    
+    self.avatarImageView.layer.masksToBounds = YES;
+    self.avatarImageView.layer.cornerRadius = 30;
+    
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {

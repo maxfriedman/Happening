@@ -14,6 +14,8 @@
 #import <FBSDKCoreKit/FBSDKCoreKit.h>
 #import <FBSDKLoginKit/FBSDKLoginKit.h>
 #import "RKSwipeBetweenViewControllers.h"
+#import "MHCustomTabBarController.h"
+#import <LayerKit/LayerKit.h>
 
 
 @interface AppDelegate : UIResponder <UIApplicationDelegate, CLLocationManagerDelegate>
@@ -33,6 +35,9 @@
 @property BOOL wasHandled;
 
 @property (strong, nonatomic) RKSwipeBetweenViewControllers *rk;
+@property (strong, nonatomic) MHCustomTabBarController *mh;
+
+@property (nonatomic) LYRClient *layerClient;
 
 @end
 

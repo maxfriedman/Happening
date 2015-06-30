@@ -1,0 +1,17 @@
+PODS:
+  - Atlas (1.0.8):
+    - LayerKit (>= 0.13.3)
+  - LayerKit (0.13.3)
+  - RKNotificationHub (2.0.0)
+
+DEPENDENCIES:
+  - Atlas
+  - LayerKit
+  - RKNotificationHub
+
+SPEC CHECKSUMS:
+  Atlas: 8ded03b20e8f2ffc3383983468a304d4ceb50d6b
+  LayerKit: 212b87bdaa7e3592b7188952e2211404a2f59614
+  RKNotificationHub: 4aa3f0579c90caf96c4c0d7ab8e3f5ef5ad90b87
+
+COCOAPODS: 0.37.2

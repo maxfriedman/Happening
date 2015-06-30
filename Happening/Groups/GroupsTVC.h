@@ -7,7 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <Atlas/Atlas.h>
+#import "PFUser+ATLParticipant.h"
 
-@interface GroupsTVC : UITableViewController
+@interface GroupsTVC : ATLConversationListViewController
+
+- (void)refreshData;
 
 @end

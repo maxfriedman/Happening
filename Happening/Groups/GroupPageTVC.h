@@ -8,11 +8,20 @@
 
 #import <UIKit/UIKit.h>
 #import <CoreLocation/CoreLocation.h>
+#import <Atlas/Atlas.h>
+#import <Parse/Parse.h>
 
 @interface GroupPageTVC : UITableViewController <CLLocationManagerDelegate>
 
+@property (strong, nonatomic) IBOutlet UIButton *chatBubble;
 @property (assign) NSString *groupId;
 @property (assign) NSString *groupName;
+@property (strong, nonatomic) PFObject *group;
 @property CLLocationManager *locManager;
+@property (nonatomic, strong) LYRConversation *conversation;
+@property (assign) BOOL showDetails;
+@property (assign) BOOL groupDidLoad;
+
+@property (assign) BOOL loadTopView;
 
 @end

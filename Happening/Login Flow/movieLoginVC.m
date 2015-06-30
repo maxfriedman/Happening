@@ -75,7 +75,8 @@
         user[@"fbToken"] = [FBSDKAccessToken currentAccessToken].tokenString;
         [user saveInBackground];
         
-        [self performSegueWithIdentifier:@"toMain" sender:self];
+        //[self performSegueWithIdentifier:@"toMain" sender:self];
+        [self performSegueWithIdentifier:@"toMainTabBar" sender:self];
         
     } else {
         

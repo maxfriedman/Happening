@@ -79,6 +79,22 @@
     
     defaults = [NSUserDefaults standardUserDefaults];
     
+    self.navigationController.navigationBar.barTintColor = [UIColor clearColor]; //%%% bartint
+    [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"navBar"] forBarMetrics:UIBarMetricsDefault];
+    self.navigationController.navigationBar.translucent = NO;
+    
+    UIView *navigationView = [[UIView alloc]initWithFrame:CGRectMake(0,0,self.view.frame.size.width,self.navigationController.navigationBar.frame.size.height)];
+    NSInteger width = 304/3;
+    UIButton *middleButton = [[UIButton alloc]initWithFrame:CGRectMake(width-15, 12, width + 30, 21.5)];
+    [middleButton setImage:[UIImage imageNamed:@"happening text logo"] forState:UIControlStateNormal];
+    middleButton.backgroundColor = [UIColor clearColor]; //[UIColor colorWithRed:41.0/255 green:181.0/255 blue:1.0 alpha:1.0];;
+    [middleButton addTarget:self action:@selector(refreshData) forControlEvents:UIControlEventTouchUpInside];
+    [navigationView addSubview:middleButton];
+    self.navigationController.navigationBar.topItem.titleView = navigationView;
+        
+    //[defaults setBool:YES forKey:@"hasLaunched"];
+    //[defaults synchronize];
+    
     /*
     [PFCloud callFunctionInBackground:@"reminders"
                        withParameters:@{}
@@ -244,7 +260,7 @@
     
     NSLog(@"===> %d, %lu", [[NSUserDefaults standardUserDefaults] boolForKey:@"hasLaunched"], rk.currentPageIndex);
     
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"hasLaunched"] && rk.currentPageIndex == 1 /* && isReachable */) {
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"hasLaunched"] /* && rk.currentPageIndex == 1 /* && isReachable */) {
         
         xButton.center = CGPointMake(-1000, xButton.center.y);
         checkButton.center = CGPointMake(1300, checkButton.center.y);
@@ -865,7 +881,7 @@
     CGSize maxSize = CGSizeMake (draggableBackground.dragView.subtitle.frame.size.width, 2000);  // a really tall frame
     
     // this will give you the actual size of your string
-    CGSize actualSize = [draggableBackground.dragView.subtitle.text sizeWithFont:draggableBackground.dragView.subtitle.font constrainedToSize:maxSize lineBreakMode:NSLineBreakByTruncatingTail];
+    CGSize actualSize = [draggableBackground.dragView.subtitle.text sizeWithFont:draggableBackground.dragView.subtitle.font constrainedToSize:maxSize lineBreakMode:NSLineBreakByTruncatingTail];ter
     
     if (actualSize.height > 99) // > 6 lines
     {
@@ -1126,7 +1142,7 @@
         //code
                 
         NSArray* friends = [result objectForKey:@"data"];
-        NSLog(@"Found: %lu friends", (unsigned long)friends.count);
+        //NSLog(@"Found: %lu friends", (unsigned long)friends.count);
         
         __block int friendCount = 0;
         
@@ -1146,7 +1162,7 @@
         
         [userQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             
-            NSLog(@"%lu friends interested", (unsigned long)objects.count);
+            //NSLog(@"%lu friends interested", (unsigned long)objects.count);
             
             if (!error) {
                 
@@ -1189,7 +1205,7 @@
                 }
                 
                 if (objects.count == 0) {
-                    NSLog(@"No new friends");
+                    //NSLog(@"No new friends");
                     
                     [self noFriendsAddButton:friendScrollView];
                     
@@ -1918,6 +1934,13 @@
     [self.settingsView setTimeString];
 }
 
+//%%% color of the status bar
+-(UIStatusBarStyle)preferredStatusBarStyle{
+    return UIStatusBarStyleLightContent;
+    
+    //    return UIStatusBarStyleDefault;
+}
+
 /*
 - (void)reachabilityChanged:(NSNotification *)note
 {
@@ -2001,6 +2024,7 @@
         inviteHomies *vc = (inviteHomies *)[[segue destinationViewController] topViewController];
         vc.objectID = draggableBackground.dragView.objectID;
         vc.eventTitle = draggableBackground.dragView.title.text;
+        vc.eventLocation = draggableBackground.dragView.location.text;
         
     } else if ([segue.identifier isEqualToString:@"toTemp"]) {
         

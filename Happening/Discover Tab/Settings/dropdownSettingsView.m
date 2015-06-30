@@ -471,13 +471,16 @@
     
         [[self viewWithTag:99] removeFromSuperview];
         
-    UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleLight];
-    UIVisualEffectView *blurEffectView = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
+        UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleLight];
+        UIVisualEffectView *blurEffectView = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
         blurEffectView.tag = 99;
-    blurEffectView.frame = CGRectMake(0, 0, 320, 45);
+        blurEffectView.frame = CGRectMake(0, 0, 320, 45);
         blurEffectView.alpha = 0;
         
         [self addSubview:blurEffectView];
+        
+        blurEffectView.userInteractionEnabled = YES;
+        [blurEffectView addGestureRecognizer:[[UIGestureRecognizer alloc] initWithTarget:self action:@selector(tap)]];
         
         FBShimmeringView *shimmeringView = [[FBShimmeringView alloc] initWithFrame:blurEffectView.bounds];
         [blurEffectView addSubview:shimmeringView];
@@ -491,21 +494,43 @@
         shimmeringView.shimmeringSpeed = 200;
         shimmeringView.opaque = 1.0;
         
+        loadingLabel.userInteractionEnabled = YES;
+        [loadingLabel addGestureRecognizer:[[UIGestureRecognizer alloc] initWithTarget:self action:@selector(tap)]];
+        
+        shimmeringView.userInteractionEnabled = YES;
+        [shimmeringView addGestureRecognizer:[[UIGestureRecognizer alloc] initWithTarget:self action:@selector(tap)]];
+        
+        UIButton *clearButton = [[UIButton alloc] initWithFrame:blurEffectView.frame];
+        [self addSubview:clearButton];
+        [clearButton addTarget:self action:@selector(tap) forControlEvents:UIControlEventTouchUpInside];
+        clearButton.tag = 99;
+        
         // Start shimmering.
         shimmeringView.shimmering = YES;
         
-        [UIView animateWithDuration:1.0 animations:^{
+        [UIView animateWithDuration:0.6 animations:^{
             blurEffectView.alpha = 1.0;
         }];
     
     } else {
         
         UIVisualEffectView *view = (UIVisualEffectView *)[self viewWithTag:99];
-        [UIView animateWithDuration:1.0 animations:^{
+        [UIView animateWithDuration:0.6 animations:^{
+           
             view.alpha = 0.0;
+            
+        }completion:^(BOOL finished) {
+            
+            [[self viewWithTag:99] removeFromSuperview];
+
         }];
         
     }
+}
+
+- (void)tap {
+    NSLog(@"made it");
+    [delegate dropdownPressed];
 }
 
 /*

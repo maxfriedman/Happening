@@ -12,6 +12,7 @@
 
 @property (assign) NSString *objectID;
 @property (assign) NSString *eventTitle;
+@property (assign) NSString *eventLocation;
 @property (nonatomic, retain) UIView *namesOnBottomView;
 
 @end

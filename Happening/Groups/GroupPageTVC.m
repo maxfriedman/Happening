@@ -8,11 +8,18 @@
 
 #import "GroupPageTVC.h"
 #import "GroupsEventCell.h"
-#import <Parse/Parse.h>
+#import "GroupChatVC.h"
 #import "CupertinoYankee.h"
+#import "AppDelegate.h"
+#import "GroupRSVP.h"
+#import "ExternalProfileTVC.h"
+#import "GroupDetailsTVC.h"
+#import "SVProgressHUD.h"
+#import "CustomConstants.h"
 
 @interface GroupPageTVC ()
 
+@property (strong, nonatomic) IBOutlet UIButton *topButtonView;
 @property (strong, nonatomic) NSMutableDictionary *sections;
 @property (strong, nonatomic) NSArray *sortedDays;
 @property (strong, nonatomic) NSDateFormatter *sectionDateFormatter;
@@ -27,17 +34,40 @@
     NSArray *eventsArray;
     UIView *noEventsView;
     NSUInteger count;
+    
+    NSMutableArray *rsvpYesArray;
+    NSMutableArray *rsvpNoArray;
+    NSMutableArray *rsvpMaybeArray;
+
+    NSMutableArray *allUsers;
+    
+    NSMutableDictionary *sections;
+    NSMutableDictionary *extraSections;
+
+    PFObject *groupEvent;
+    
+    NSString *friendObjectID;
+    
+    RKNotificationHub *chatHub;
 }
 
-@synthesize groupId, locManager, groupName;
+@synthesize groupId, locManager, groupName, chatBubble, conversation, group;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+    //self.navigationController.navigationBar.barTintColor = [UIColor clearColor]; //%%% bartint
+    //[self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"navBar"] forBarMetrics:UIBarMetricsDefault];
+    //self.navigationController.navigationBar.translucent = NO;
+    // self.navigationItem.title = groupName;
     
 }
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:YES];
+    
+    AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+    [appDelegate.mh hideTabBar:NO];
     
     if(locManager && [CLLocationManager locationServicesEnabled]){
         [self.locManager startUpdatingLocation];
@@ -48,12 +78,6 @@
     }
     
     currentUser = [PFUser currentUser];
-
-    self.navigationController.navigationBar.barTintColor = [UIColor clearColor]; //%%% bartint
-    [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"navBar"] forBarMetrics:UIBarMetricsDefault];
-    self.navigationController.navigationBar.translucent = NO;
-    self.navigationItem.title = groupName;
-    
     
     self.sectionDateFormatter = [[NSDateFormatter alloc] init];
     [self.sectionDateFormatter setDateFormat:@"EEEE, MMMM d"];
@@ -64,19 +88,37 @@
     self.sections = [NSMutableDictionary dictionary];
     
     //if (self.segControl.selectedSegmentIndex == 0)
-    [self loadData];
-
+    [chatBubble addTarget:self action:@selector(chatTapped:) forControlEvents:UIControlEventTouchUpInside];
+    allUsers = [NSMutableArray array];
+    allUsers = group[@"user_objects"];
+    
+    [self.topButtonView addTarget:self action:@selector(toGroupDetails:) forControlEvents:UIControlEventTouchUpInside];
+    
+    [self loadChat];
+    
+    if (self.group) {
+        [self loadEventData];
+        if (self.loadTopView)
+            [self loadTopButtonView];
+    } else {
+        [SVProgressHUD show];
+        [self loadGroup];
+    }
+    
 }
 
-- (void)loadData {
+- (void)loadEventData {
     
-    PFQuery *notificationQuery = [PFQuery queryWithClassName:@"Notifications"];
-    [notificationQuery whereKey:@"UserID" equalTo:currentUser.objectId];
-    [notificationQuery whereKey:@"Type" equalTo:@"group"];
-    [notificationQuery whereKey:@"GroupID" equalTo:groupId];
+    rsvpMaybeArray = [NSMutableArray array];
+    rsvpNoArray = [NSMutableArray array];
+    rsvpYesArray = [NSMutableArray array];
+    extraSections = [NSMutableDictionary dictionary];
+
+    PFQuery *groupEventQuery = [PFQuery queryWithClassName:@"Group_Event"];
+    [groupEventQuery whereKey:@"GroupID" equalTo:group.objectId];
     
     PFQuery *eventQuery = [PFQuery queryWithClassName:@"Event"];
-    [eventQuery whereKey:@"objectId" matchesKey:@"EventID" inQuery:notificationQuery];
+    [eventQuery whereKey:@"objectId" matchesKey:@"EventID" inQuery:groupEventQuery];
     [eventQuery whereKey:@"EndTime" greaterThan:[NSDate date]];
     [eventQuery orderByAscending:@"Date"];
     
@@ -85,8 +127,8 @@
     
     [eventQuery findObjectsInBackgroundWithBlock:^(NSArray *events, NSError *error){
         
-       eventsArray = events;
-        NSLog(@"Events Array: %@", events);
+        eventsArray = events;
+        //NSLog(@"Events Array: %@", events);
         
         for (PFObject *event in eventsArray)
         {
@@ -125,10 +167,103 @@
             //[noEventsView removeFromSuperview];
         }
         
+        [SVProgressHUD dismiss];
         [self.tableView reloadData];
 
     }];
     
+    
+#warning dumbest query/logic of all time but it works sadly
+    
+    //[conversation setValue:group[@"name"] forMetadataAtKeyPath:@"title"];
+    
+    [groupEventQuery includeKey:@"users_going"];
+    [groupEventQuery includeKey:@"users_not_going"];
+    [groupEventQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+        
+        for (PFObject *object in objects) {
+
+            NSArray *going = object[@"users_going"];
+            NSArray *notGoing = object[@"users_not_going"];
+
+            NSMutableArray *maybeGoing = [NSMutableArray array];
+            
+            for (PFUser *user in allUsers) {
+                [maybeGoing addObject:user];
+            }
+            for (int i = 0; i < going.count; i++) {
+                PFUser *user1 = going[i];
+                for (int m = 0; m < maybeGoing.count; m++) {
+                    PFUser *user2 = maybeGoing[m];
+                    if ([user2.objectId isEqualToString:user1.objectId])
+                        [maybeGoing removeObject:user2];
+                }
+            }
+            
+            
+            for (int i = 0; i < notGoing.count; i++) {
+                PFUser *user1 = notGoing[i];
+                for (int m = 0; m < maybeGoing.count; m++) {
+                    PFUser *user2 = maybeGoing[m];
+                    if ([user2.objectId isEqualToString:user1.objectId])
+                        [maybeGoing removeObject:user2];
+                }
+            }
+            
+            NSMutableDictionary *extras = [NSMutableDictionary dictionary];
+            
+            if (maybeGoing != nil)
+                [extras setObject:maybeGoing forKey:@"maybe"];
+            else
+                [extras setObject:[NSArray array] forKey:@"maybe"];
+            //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+            if (notGoing != nil)
+                [extras setObject:notGoing forKey:@"no"];
+            else
+                [extras setObject:[NSArray array] forKey:@"no"];
+            //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+            if (going != nil)
+                [extras setObject:going forKey:@"yes"];
+            else
+                [extras setObject:[NSArray array] forKey:@"yes"];
+            //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+            [extras setObject:object.objectId forKey:@"ID"];
+            [extras setObject:object forKey:@"eventObject"];
+            
+            [extraSections setObject:extras forKey:object[@"EventID"]];
+        }
+
+        [self.tableView reloadData];
+        
+    }];
+    
+}
+
+- (void)loadGroup {
+    
+    
+    PFQuery *groupQuery = [PFQuery queryWithClassName:@"Group"];
+    [groupQuery getObjectInBackgroundWithId:[conversation.metadata valueForKey:@"groupId"] block:^(PFObject *ob, NSError *error){
+        
+        if (!error) {
+        
+            NSLog(@"Loading group...");
+            group = ob;
+            allUsers = [NSMutableArray array];
+            allUsers = group[@"user_objects"];
+            
+            NSLog(@"user objects = %@", allUsers);
+            
+            [self loadEventData];
+            [self loadTopButtonView];
+        
+        } else {
+            [SVProgressHUD showErrorWithStatus:@"Something went wrong :("];
+        }
+        
+    }];
+
 }
 
 
@@ -166,7 +301,6 @@
 // %%%%%% Runs through this code every time I scroll in Table
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     
-    NSLog(@"indexp: %ld", (long)indexPath.row);
     
     GroupsEventCell *cell = (GroupsEventCell *)[tableView dequeueReusableCellWithIdentifier:@"groupEvent" forIndexPath:indexPath];
     
@@ -176,10 +310,11 @@
     NSArray *eventsOnThisDay = [self.sections objectForKey:dateRepresentingThisDay];
     
     PFObject *Event = eventsOnThisDay[indexPath.row];
+    cell.eventId = Event.objectId;
     
     [cell.titleLabel setText:[NSString stringWithFormat:@"%@",Event[@"Title"]]];
     
-    [cell.locationLabel setText:[NSString stringWithFormat:@"%@",Event[@"Location"]]];
+    [cell.locationLabel setText:[NSString stringWithFormat:@"at %@",Event[@"Location"]]];
     
     //cell.eventID = Event.objectId;
     
@@ -253,12 +388,184 @@
     } else {
         PFGeoPoint *userLoc = currentUser[@"userLoc"];
         NSNumber *meters = [NSNumber numberWithDouble:([loc distanceInMilesTo:userLoc])];
-        NSString *distance = [NSString stringWithFormat:(@"%.1f mi"), meters.floatValue];
-        cell.distanceLabel.text = distance;
+        
+        if (meters.floatValue >= 100.0) {
+            
+            NSString *distance = [NSString stringWithFormat:(@"100+ mi")];
+            cell.distanceLabel.text = distance;
+            
+        } else if (meters.floatValue >= 10.0) {
+            
+            NSString *distance = [NSString stringWithFormat:(@"%.f mi"), meters.floatValue];
+            cell.distanceLabel.text = distance;
+            
+        } else {
+            
+            NSString *distance = [NSString stringWithFormat:(@"%.1f mi"), meters.floatValue];
+            cell.distanceLabel.text = distance;
+        }
+        
     }
+    
+    [cell.distanceLabel sizeToFit];
+    
+    [[cell viewWithTag:77] removeFromSuperview];
+    UIImageView *locIMV = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"locationPinThickOutline"]];
+    locIMV.frame = CGRectMake(290 - cell.distanceLabel.frame.size.width - 11 - 4, 38, 11, 13);
+    [cell.contentView addSubview:locIMV];
+    locIMV.tag = 77;
     
     //cell.interestedLabel.text = [NSString stringWithFormat:@"%@ interested", Event[@"swipesRight"]];
     
+    NSMutableDictionary *dict = [extraSections objectForKey:Event.objectId];
+    NSArray *maybe = [dict objectForKey:@"maybe"];
+    NSArray *no = [dict objectForKey:@"no"];
+    NSArray *yes = [dict objectForKey:@"yes"];
+    
+    NSUInteger totalCount = allUsers.count;
+    NSString *rsvpCount = [NSString stringWithFormat:@"%lu of %lu", (unsigned long)yes.count, (unsigned long)totalCount];
+    
+    [cell.rsvpButton setTitle:rsvpCount forState:UIControlStateNormal];
+    
+    cell.groupEventId = [dict objectForKey:@"ID"];
+    
+    [cell.chatButton addTarget:self action:@selector(chatTapped:) forControlEvents:UIControlEventTouchUpInside];
+    
+    cell.groupEventObject = [dict objectForKey:@"eventObject"];
+    
+    NSString *invitedByName = cell.groupEventObject[@"invitedByName"];
+    
+    if ([cell.groupEventObject[@"invitedByID"] isEqualToString:currentUser.objectId]) {
+        cell.invitedByLabel.text = @"Invited by you";
+    } else {
+        NSString *firstWord = [[invitedByName componentsSeparatedByString:@" "] objectAtIndex:0];
+        NSString *secondWord = [[invitedByName componentsSeparatedByString:@" "] objectAtIndex:1];
+        cell.invitedByLabel.text = [NSString stringWithFormat:@"Invited by %@ %@.", firstWord, [secondWord substringToIndex:1]];
+    }
+    
+    int userCount = 0;
+    
+    //NSLog(@"YES: %@", yes);
+    //NSLog(@"NO: %@", no);
+    //NSLog(@"MAYBE: %@", maybe);
+
+    
+    for (int i = 0; i < cell.subviews.count; i++) {
+        UIView *view = cell.subviews[i];
+        if (view.tag == 9)
+            [view removeFromSuperview];
+    }
+    
+    
+    for (int i = 0; i < yes.count; i++) {
+        
+        PFUser *user = yes[i];
+        
+        if ([user.objectId isEqualToString:currentUser.objectId]) {
+            cell.cornerImageView.image = [UIImage imageNamed:@"check75"];
+            [cell.checkButton setImage:[UIImage imageNamed:@"checked6green"] forState:UIControlStateNormal];
+            [cell.xButton setImage:[UIImage imageNamed:@"close7"] forState:UIControlStateNormal];
+            cell.checkButton.tag = 1;
+            cell.xButton.tag = 0;
+            
+        } else if (userCount < 2) {
+            
+            UIView *picViewContainer = [[UIView alloc] initWithFrame:CGRectMake(164 + 50*userCount, 92, 40, 40)];
+            FBSDKProfilePictureView *profPic = [[FBSDKProfilePictureView alloc] initWithFrame:picViewContainer.bounds];
+            profPic.profileID = user[@"FBObjectID"];
+            [picViewContainer addSubview:profPic];
+            picViewContainer.tag = 9;
+            
+            profPic.layer.cornerRadius = 20.0;
+            profPic.layer.masksToBounds = YES;
+            
+            UIImageView *cornerImageView = [[UIImageView alloc] initWithFrame:CGRectMake(25, 0, 15, 15)];
+            cornerImageView.image = [UIImage imageNamed:@"check75"];
+            cornerImageView.layer.cornerRadius = 7.5;
+            cornerImageView.layer.borderColor = [UIColor whiteColor].CGColor;
+            cornerImageView.layer.borderWidth = 1.0;
+            [picViewContainer addSubview:cornerImageView];
+            
+            [cell addSubview:picViewContainer];
+            
+            userCount++;
+        }
+        
+    }
+    
+    for (int i = 0; i < maybe.count; i++) {
+        
+        PFUser *user = maybe[i];
+        
+        if ([user.objectId isEqualToString:currentUser.objectId]) {
+            cell.cornerImageView.image = [UIImage imageNamed:@"question"];
+            [cell.checkButton setImage:[UIImage imageNamed:@"checked6"] forState:UIControlStateNormal];
+            [cell.xButton setImage:[UIImage imageNamed:@"close7"] forState:UIControlStateNormal];
+            cell.checkButton.tag = 0;
+            cell.xButton.tag = 0;
+            
+        } else if (userCount < 2) {
+            
+            UIView *picViewContainer = [[UIView alloc] initWithFrame:CGRectMake(164 + 50*userCount, 92, 40, 40)];
+            FBSDKProfilePictureView *profPic = [[FBSDKProfilePictureView alloc] initWithFrame:picViewContainer.bounds];
+            profPic.profileID = user[@"FBObjectID"];
+            [picViewContainer addSubview:profPic];
+            
+            profPic.layer.cornerRadius = 20.0;
+            profPic.layer.masksToBounds = YES;
+            
+            UIImageView *cornerImageView = [[UIImageView alloc] initWithFrame:CGRectMake(25, 0, 15, 15)];
+            cornerImageView.image = [UIImage imageNamed:@"question"];
+            cornerImageView.layer.cornerRadius = 7.5;
+            cornerImageView.layer.borderColor = [UIColor whiteColor].CGColor;
+            cornerImageView.layer.borderWidth = 1.0;
+            [picViewContainer addSubview:cornerImageView];
+            picViewContainer.tag = 9;
+            
+            [cell addSubview:picViewContainer];
+            
+            userCount++;
+        }
+    }
+    
+    for (int i = 0; i < no.count; i++) {
+        
+        PFUser *user = no[i];
+        
+        if ([user.objectId isEqualToString:currentUser.objectId]) {
+            cell.cornerImageView.image = [UIImage imageNamed:@"X"];
+            [cell.checkButton setImage:[UIImage imageNamed:@"checked6"] forState:UIControlStateNormal];
+            [cell.xButton setImage:[UIImage imageNamed:@"close7red"] forState:UIControlStateNormal];
+            cell.xButton.tag = 1;
+            cell.checkButton.tag = 0;
+            
+        } else if (userCount < 2) {
+            
+            UIView *picViewContainer = [[UIView alloc] initWithFrame:CGRectMake(164 + 50*userCount, 92, 40, 40)];
+            FBSDKProfilePictureView *profPic = [[FBSDKProfilePictureView alloc] initWithFrame:picViewContainer.bounds];
+            profPic.profileID = user[@"FBObjectID"];
+            [picViewContainer addSubview:profPic];
+            
+            profPic.layer.cornerRadius = 20.0;
+            profPic.layer.masksToBounds = YES;
+            
+            UIImageView *cornerImageView = [[UIImageView alloc] initWithFrame:CGRectMake(25, 0, 15, 15)];
+            cornerImageView.image = [UIImage imageNamed:@"X"];
+            cornerImageView.layer.cornerRadius = 7.5;
+            cornerImageView.layer.borderColor = [UIColor whiteColor].CGColor;
+            cornerImageView.layer.borderWidth = 1.0;
+            [picViewContainer addSubview:cornerImageView];
+            picViewContainer.tag = 9;
+            
+            [cell addSubview:picViewContainer];
+            
+            userCount++;
+        }
+    }
+    
+    
+    
+
     return cell;
 }
 
@@ -267,7 +574,7 @@
     if (section != 0) {
         return 22;
     }
-    return 40;
+    return 33;
 }
 
 - (IBAction)refreshTable:(id)sender {
@@ -285,7 +592,7 @@
     NSLog(@"refreshing events....");
     
     //self.segControl.selectedSegmentIndex = 0;
-    [self loadData];
+    [self loadEventData];
 }
 
 - (void)tableView:(UITableView *)tableView willDisplayHeaderView:(UIView *)view forSection:(NSInteger)section
@@ -305,10 +612,8 @@
             [view removeFromSuperview];
     }
     
-    
-    
     if ([header.textLabel.text isEqualToString:@"TODAY"]) {
-        UILabel *subDateLabel = [[UILabel alloc] initWithFrame:CGRectMake(67, 16, 100, 20)];
+        UILabel *subDateLabel = [[UILabel alloc] initWithFrame:CGRectMake(67, 16 - 7, 100, 20)];
         subDateLabel.textColor = [UIColor darkTextColor];
         subDateLabel.font = [UIFont fontWithName:@"OpenSans" size:9];
         subDateLabel.tag = 99;
@@ -322,7 +627,7 @@
         
     }  else if ([header.textLabel.text isEqualToString:@"TOMORROW"] && section == 0) {
         
-        UILabel *subDateLabel = [[UILabel alloc] initWithFrame:CGRectMake(107, 16, 100, 20)];
+        UILabel *subDateLabel = [[UILabel alloc] initWithFrame:CGRectMake(107, 16 - 7, 100, 20)];
         subDateLabel.textColor = [UIColor darkTextColor];
         subDateLabel.font = [UIFont fontWithName:@"OpenSans" size:9];
         subDateLabel.tag = 99;
@@ -354,57 +659,309 @@
     // header.contentView.backgroundColor = [UIColor blackColor];
 }
 
+- (void)loadChat {
+    
+    if (conversation.hasUnreadMessages) {
+        chatHub = [[RKNotificationHub alloc]initWithView:(UIView *)chatBubble]; // sets the count to 0
+        
+        //%%% CIRCLE FRAME
+        //[hub setCircleAtFrame:CGRectMake(-10, -10, 30, 30)]; //frame relative to the view you set it to
+        
+        //%%% MOVE FRAME
+        [chatHub moveCircleByX:-6 Y:6]; // moves the circle 5 pixels left and down from its current position
+        
+        //%%% CIRCLE SIZE
+        [chatHub scaleCircleSizeBy:0.2]; // doubles the size of the circle, keeps the same center
+        
+        [chatHub setCircleColor: [UIColor colorWithRed:0 green:176.0/255 blue:255.0/255 alpha:1.0] labelColor:[UIColor whiteColor]];
+        [chatHub increment];
+        [chatHub hideCount];
+        [chatHub pop];
+    }
+    
+}
+
+- (void)chatTapped:(id)sender {
+    
+    [chatBubble setImage:[UIImage imageNamed:@"chat"] forState:UIControlStateNormal];
+    [chatHub decrementBy:chatHub.count];
+
+    AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+    GroupChatVC *controller = [GroupChatVC conversationViewControllerWithLayerClient:appDelegate.layerClient];
+
+    controller.usersArray = allUsers;
+    controller.groupObject = group;
+    controller.conversation = conversation;
+     
+    [self.navigationController pushViewController:controller animated:YES];
+    
+}
+
+- (void)loadTopButtonView {
+    
+    float width = (allUsers.count * 50 + 5);
+    if (width > 280) width = 280;
+    UIView *picView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, width, 50)];
+    picView.center = CGPointMake(self.topButtonView.center.x - 15, self.topButtonView.center.y);
+    picView.userInteractionEnabled = YES;
+    [picView addGestureRecognizer:[[UIGestureRecognizer alloc] initWithTarget:self action:@selector(toGroupDetails:)]];
+    
+    UIButton *moreButton = [[UIButton alloc] initWithFrame:CGRectMake(picView.frame.size.width + 5, 17.5, 15, 15)];
+    [moreButton setImage:[UIImage imageNamed:@"rightArrow"] forState:UIControlStateNormal];
+    [picView addSubview:moreButton];
+    
+    [self.topButtonView addSubview:picView];
+    
+    NSInteger userCount = allUsers.count;
+    if (userCount > 5) userCount = 5;
+    
+    for (int i = 0; i < userCount; i++) {
+                
+        PFUser *user = allUsers[i];
+        
+        FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(5 + 50 * i, 5, 40, 40)]; // initWithProfileID:user[@"FBObjectID"] pictureCropping:FBSDKProfilePictureModeSquare];
+        profPicView.profileID = user[@"FBObjectID"];
+        profPicView.pictureMode = FBSDKProfilePictureModeSquare;
+        
+        profPicView.layer.cornerRadius = 20;
+        profPicView.layer.masksToBounds = YES;
+        profPicView.accessibilityIdentifier = user.objectId;
+        profPicView.userInteractionEnabled = YES;
+        
+        UITapGestureRecognizer *gr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(showFriendProfile:)];
+        [profPicView addGestureRecognizer:gr];
+        
+        [picView addSubview:profPicView];
+        
+        /*
+        
+        UILabel *nameLabel = [[UILabel alloc] init];
+        nameLabel.font = [UIFont fontWithName:@"OpenSans" size:7];
+        nameLabel.textColor = [UIColor blackColor];
+        nameLabel.textAlignment = NSTextAlignmentCenter;
+        nameLabel.text = object[@"firstName"];
+        nameLabel.frame = CGRectMake(5 + (50 * friendCount), 42, 30, 8);
+        [friendScrollView addSubview:nameLabel];
+        
+        friendScrollView.contentSize = CGSizeMake((50 * friendCount) + 40, 50);
+         
+         */
+        
+    }
+    
+    self.loadTopView = NO;
+    
+}
+
+- (void)toGroupDetails:(UIGestureRecognizer *)gr {
+    
+    //GroupPageTVC *vc = [[GroupPageTVC alloc] init];
+    //[self.navigationController pushViewController:vc animated:YES];
+
+    [self performSegueWithIdentifier:@"toDetails" sender:self];
+}
+
+- (IBAction)saveWhosGoing:(id)sender {
+    
+    CGPoint buttonPosition = [sender convertPoint:CGPointZero toView:self.tableView];
+    NSIndexPath *indexPath = [self.tableView indexPathForRowAtPoint:buttonPosition];
+    GroupsEventCell *cell = (GroupsEventCell *)[self.tableView cellForRowAtIndexPath:indexPath];
+    
+    NSMutableDictionary *dict = [extraSections objectForKey:cell.eventId];
+    rsvpMaybeArray = [[NSMutableArray alloc] initWithArray: [dict objectForKey:@"maybe"]];
+    rsvpNoArray = [[NSMutableArray alloc] initWithArray: [dict objectForKey:@"no"]];
+    rsvpYesArray = [[NSMutableArray alloc] initWithArray: [dict objectForKey:@"yes"]];
+    
+    PFObject *rsvpObject = [PFObject objectWithoutDataWithClassName:@"Group_Event" objectId:cell.groupEventId];
+    
+    [rsvpObject fetchInBackgroundWithBlock:^(PFObject *object, NSError *error) {
+        
+        if (object[@"users_going"] != nil) {
+            rsvpYesArray = [[NSMutableArray alloc] initWithArray:object[@"users_going"]];
+        } else {
+            rsvpYesArray = [NSMutableArray array];
+        }
+        
+        if (object[@"users_not_going"] != nil) {
+            rsvpNoArray = [[NSMutableArray alloc] initWithArray:object[@"users_not_going"]];
+        } else {
+            rsvpNoArray = [NSMutableArray array];
+        }
+    
+        if (cell.checkButton.tag == 1) {
+            
+            // ~~~~~~~~~~~ NAMES
+            [rsvpYesArray insertObject:currentUser atIndex:0];
+            
+            for (int i = 0; i < rsvpNoArray.count; i++) {
+                PFObject *user = rsvpNoArray[i];
+                if ([user.objectId isEqualToString:currentUser.objectId])
+                    [rsvpNoArray removeObject:user];
+            }
+            
+            for (int i = 0; i < rsvpMaybeArray.count; i++) {
+                PFObject *user = rsvpMaybeArray[i];
+                if ([user.objectId isEqualToString:currentUser.objectId])
+                    [rsvpMaybeArray removeObject:user];
+            }
+            
+            /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+            
+        } else if (cell.xButton.tag == 1) {
+            
+            // ~~~~~~~~~~~ NAMES
+            [rsvpNoArray insertObject:currentUser atIndex:0];
+            
+            for (int i = 0; i < rsvpYesArray.count; i++) {
+                PFObject *user = rsvpYesArray[i];
+                if ([user.objectId isEqualToString:currentUser.objectId])
+                    [rsvpYesArray removeObject:user];
+            }
+            
+            for (int i = 0; i < rsvpMaybeArray.count; i++) {
+                PFObject *user = rsvpMaybeArray[i];
+                if ([user.objectId isEqualToString:currentUser.objectId])
+                    [rsvpMaybeArray removeObject:user];
+            }
+
+            /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+            
+        } else {
+            
+            // ~~~~~~~~~~ NAMES
+            [rsvpMaybeArray insertObject:currentUser atIndex:0];
+            
+            for (int i = 0; i < rsvpNoArray.count; i++) {
+                PFObject *user = rsvpNoArray[i];
+                if ([user.objectId isEqualToString:currentUser.objectId])
+                    [rsvpNoArray removeObject:user];
+            }
+            
+            for (int i = 0; i < rsvpYesArray.count; i++) {
+                PFObject *user = rsvpYesArray[i];
+                if ([user.objectId isEqualToString:currentUser.objectId])
+                    [rsvpYesArray removeObject:user];
+            }
+            
+        }
+        
+        object[@"users_going"] = rsvpYesArray;
+        object[@"users_not_going"] = rsvpNoArray;
+        [rsvpObject saveInBackgroundWithBlock:^(BOOL success, NSError *error){
+            
+            if (!error && (cell.xButton.tag == 1 || cell.checkButton.tag == 1)) {
+                
+                NSString *messageText = @"";
+                if (cell.checkButton.tag == 1) {
+                    messageText = [NSString stringWithFormat:@"%@ %@ is going to '%@'", currentUser[@"firstName"], currentUser[@"lastName"], cell.titleLabel.text];
+                } else if (cell.xButton.tag == 1) {
+                    messageText = [NSString stringWithFormat:@"%@ %@ is not going to '%@'", currentUser[@"firstName"], currentUser[@"lastName"], cell.titleLabel.text];
+                }
+                
+                NSDictionary *dataDictionary = @{@"message":messageText,
+                                                 @"type":@"RSVP",
+                                                 @"groupId":group.objectId,
+                                                 };
+                NSError *JSONSerializerError;
+                NSData *dataDictionaryJSON = [NSJSONSerialization dataWithJSONObject:dataDictionary options:NSJSONWritingPrettyPrinted error:&JSONSerializerError];
+                LYRMessagePart *dataMessagePart = [LYRMessagePart messagePartWithMIMEType:ATLMimeTypeSystemObject data:dataDictionaryJSON];
+                // Create messagepart with info about cell
+                float actualLineSize = [messageText boundingRectWithSize:CGSizeMake(280, CGFLOAT_MAX)
+                                                                 options:NSStringDrawingUsesLineFragmentOrigin
+                                                              attributes:@{NSFontAttributeName:[UIFont fontWithName:@"OpenSans" size:10.0]}
+                                                                 context:nil].size.height;
+                NSDictionary *cellInfoDictionary = @{@"height": [NSString stringWithFormat:@"%f", actualLineSize]};
+                NSData *cellInfoDictionaryJSON = [NSJSONSerialization dataWithJSONObject:cellInfoDictionary options:NSJSONWritingPrettyPrinted error:&JSONSerializerError];
+                LYRMessagePart *cellInfoMessagePart = [LYRMessagePart messagePartWithMIMEType:ATLMimeTypeSystemCellInfo data:cellInfoDictionaryJSON];
+                // Add message to ordered set.  This ordered set messages will get sent to the participants
+                AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+                LYRMessage *message = [appDelegate.layerClient newMessageWithParts:@[dataMessagePart,cellInfoMessagePart] options:@{LYRMessageOptionsPushNotificationAlertKey: messageText} error:&error];
+                
+                // Sends the specified message
+                BOOL success = [conversation sendMessage:message error:&error];
+                if (success) {
+                    NSLog(@"Message queued to be sent: %@", message);
+                } else {
+                    NSLog(@"Message send failed: %@", error);
+                }
+            }
+            
+        }];
+    
+    }];
+}
+
+- (void)showFriendProfile:(UIGestureRecognizer *)gr {
+    
+    UIView *view = gr.view;
+    friendObjectID = view.accessibilityIdentifier;
+    [self performSegueWithIdentifier:@"toProf" sender:self];
+
+}
+
 - (IBAction)xButtonPressed:(id)sender {
     
     [self dismissViewControllerAnimated:YES completion:^{
         //<#code#>
     }];
-    
+
 }
 
-/*
-// Override to support conditional editing of the table view.
-- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the specified item to be editable.
-    return YES;
-}
-*/
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
 
-/*
-// Override to support editing the table view.
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (editingStyle == UITableViewCellEditingStyleDelete) {
-        // Delete the row from the data source
-        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    } else if (editingStyle == UITableViewCellEditingStyleInsert) {
-        // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-    }   
 }
-*/
 
-/*
-// Override to support rearranging the table view.
-- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath {
-}
-*/
-
-/*
-// Override to support conditional rearranging of the table view.
-- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the item to be re-orderable.
-    return YES;
-}
-*/
-
-/*
 #pragma mark - Navigation
 
 // In a storyboard-based application, you will often want to do a little preparation before navigation
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     // Get the new view controller using [segue destinationViewController].
     // Pass the selected object to the new view controller.
+    
+    if ([segue.identifier isEqualToString:@"toRSVP"]) {
+        
+        CGPoint buttonPosition = [sender convertPoint:CGPointZero toView:self.tableView];
+        NSIndexPath *indexPath = [self.tableView indexPathForRowAtPoint:buttonPosition];
+        GroupsEventCell *cell = (GroupsEventCell *)[self.tableView cellForRowAtIndexPath:indexPath];
+        
+        NSMutableDictionary *dict = [extraSections objectForKey:cell.eventId];
+        rsvpMaybeArray = [dict objectForKey:@"maybe"];
+        rsvpNoArray = [dict objectForKey:@"no"];
+        rsvpYesArray = [dict objectForKey:@"yes"];
+        
+        GroupRSVP *vc = (GroupRSVP *)[[segue destinationViewController] topViewController];
+        vc.yesUsers = [NSMutableArray arrayWithArray:rsvpYesArray];
+        vc.noUsers = [NSMutableArray arrayWithArray:rsvpNoArray];
+        vc.maybeUsers = [NSMutableArray arrayWithArray:rsvpMaybeArray];
+        vc.groupEventId = [dict objectForKey:@"ID"];
+        
+        vc.group = group;
+        vc.titleString = cell.titleLabel.text;
+        vc.convo = conversation;
+
+    } else if ([segue.identifier isEqualToString:@"toChat"]) {
+        
+        GroupChatVC *vc = (GroupChatVC *)[segue destinationViewController];
+        AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+        vc = [GroupChatVC conversationViewControllerWithLayerClient:appDelegate.layerClient];
+        
+    } else if ([segue.identifier isEqualToString:@"toProf"]) {
+        
+        ExternalProfileTVC *vc = (ExternalProfileTVC *)[segue destinationViewController];
+        vc.userID = friendObjectID;
+        
+    } else if ([segue.identifier isEqualToString:@"toDetails"]) {
+        
+        GroupDetailsTVC *vc = (GroupDetailsTVC *)[segue destinationViewController];
+        vc.groupNameString = self.title;
+        vc.group = group;
+        vc.users = allUsers;
+        vc.convo = conversation;
+        
+    }
+    
 }
-*/
+
 
 - (NSDate *)dateAtBeginningOfDayForDate:(NSDate *)inputDate
 {

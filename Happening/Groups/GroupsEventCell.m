@@ -10,7 +10,7 @@
 
 @implementation GroupsEventCell
 
-@synthesize blurView;
+@synthesize blurView, myProfPicView, cornerImageView, checkButton, xButton;
 
 - (void)awakeFromNib {
     // Initialization code
@@ -96,6 +96,76 @@
      
      self.layer.masksToBounds = YES;
      */
+    FBSDKProfilePictureView *profPic = [[FBSDKProfilePictureView alloc] initWithFrame:self.myProfPicView.bounds];
+    [myProfPicView addSubview:profPic];
+    
+    profPic.layer.cornerRadius = 20.0;
+    //profPic.layer.borderColor = [UIColor clearColor].CGColor;
+    profPic.layer.masksToBounds = YES;
+    
+    cornerImageView = [[UIImageView alloc] initWithFrame:CGRectMake(25, 0, 15, 15)];
+    cornerImageView.image = [UIImage imageNamed:@"question"];
+    cornerImageView.layer.cornerRadius = 7.5;
+    cornerImageView.layer.borderColor = [UIColor whiteColor].CGColor;
+    cornerImageView.layer.borderWidth = 1.0;
+    
+    profPic.alpha = 0.8;
+    
+    [myProfPicView addSubview:cornerImageView];
+    
+    self.distanceLabel.minimumScaleFactor = 0.5;
+    
+}
+
+- (IBAction)goingButtonPressed:(id)sender {
+    
+    if (checkButton.tag == 0) {
+        
+        [checkButton setImage:[UIImage imageNamed:@"checked6green"] forState:UIControlStateNormal];
+        checkButton.tag = 1;
+        
+        [xButton setImage:[UIImage imageNamed:@"close7"] forState:UIControlStateNormal];
+        xButton.tag = 0;
+        
+        cornerImageView.image = [UIImage imageNamed:@"check75"];
+        
+    } else {
+        
+        [checkButton setImage:[UIImage imageNamed:@"checked6"] forState:UIControlStateNormal];
+        checkButton.tag = 0;
+        
+        cornerImageView.image = [UIImage imageNamed:@"question"];
+        
+    }
+    
+}
+
+- (IBAction)NOTgoingButtonPressed:(id)sender {
+    
+    if (xButton.tag == 0) {
+        
+        [xButton setImage:[UIImage imageNamed:@"close7red"] forState:UIControlStateNormal];
+        xButton.tag = 1;
+        
+        [checkButton setImage:[UIImage imageNamed:@"checked6"] forState:UIControlStateNormal];
+        checkButton.tag = 0;
+        
+        cornerImageView.image = [UIImage imageNamed:@"X"];
+        
+    } else {
+        
+        [xButton setImage:[UIImage imageNamed:@"close7"] forState:UIControlStateNormal];
+        xButton.tag = 0;
+        
+        cornerImageView.image = [UIImage imageNamed:@"question"];
+        
+    }
+    
+}
+
+- (void)setFrame:(CGRect)frame {
+    
+    [super setFrame:frame];
     
 }
 

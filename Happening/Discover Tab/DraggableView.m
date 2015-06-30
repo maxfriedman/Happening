@@ -130,7 +130,7 @@
 
         //hashtag = [[UILabel alloc]initWithFrame:CGRectMake(15, 240, self.frame.size.width - 30, 100)];
         geoLoc = [[UILabel alloc]initWithFrame:CGRectMake(15, 172, self.frame.size.width - 30, 100)];
-        swipesRight = [[UILabel alloc]initWithFrame:CGRectMake(204, 280, 65, 100)];
+        swipesRight = [[UILabel alloc]initWithFrame:CGRectMake(35, 280, 65, 100)];
         createdBy = [[UILabel alloc]initWithFrame:CGRectMake(15, 322, 160, 30)];
         
         shareButton = [[UIButton alloc] initWithFrame:CGRectMake(self.frame.size.width - 45, 15, 30, 30)];
@@ -185,7 +185,7 @@
         geoPoint = [[PFGeoPoint alloc]init];
         
         locImage = [[UIImageView alloc]initWithFrame:CGRectMake(218, 215, 13, 15)];
-        userImage = [[UIImageView alloc]initWithFrame:CGRectMake(183, 322, 18, 18)];
+        userImage = [[UIImageView alloc]initWithFrame:CGRectMake(15, 322, 18, 18)];
         
         greyLocImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"locationGrey"]];
         greyLocImageView.frame = CGRectMake(216, 186, 14, 18);
@@ -277,7 +277,7 @@
         //[cardView addSubview:hashtag];
         [cardView addSubview:geoLoc];
         [cardView addSubview:swipesRight];
-        [cardView addSubview:createdBy];
+        //[cardView addSubview:createdBy];
         
         //overlayView = [[OverlayView alloc]initWithFrame:CGRectMake(self.frame.size.width/2-100, 0, 100, 100)];
         overlayView = [[OverlayView alloc]initWithFrame:CGRectMake(0, 0, eventImage.frame.size.width, 70)];

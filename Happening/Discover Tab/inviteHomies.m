@@ -12,6 +12,9 @@
 #import "inviteHomiesCell.h"
 #import "NewGroupCreatorVC.h"
 #import "GroupsCell.h"
+#import "AppDelegate.h"
+#import "SVProgressHUD.h"
+#import "CustomConstants.h"
 
 @interface inviteHomies () <UIScrollViewDelegate, UIAlertViewDelegate>
 
@@ -38,7 +41,7 @@
     NSMutableArray *finalUserIDArray;
 }
 
-@synthesize namesOnBottomView, eventTitle;
+@synthesize namesOnBottomView, eventTitle, eventLocation;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -182,6 +185,7 @@
 
             NSMutableArray *blankGroupNamesArray1 = [NSMutableArray array];
             NSMutableArray *blankMemberNamesArray1 = [NSMutableArray array];
+            NSMutableArray *blankGroupImagesArray1 = [NSMutableArray array];
             NSMutableArray *blankIDsArray1 = [NSMutableArray array];
             NSMutableArray *blankTappedArray1 = [NSMutableArray array];
             NSMutableArray *blankNamesArray2 = [NSMutableArray array];
@@ -196,6 +200,7 @@
             
             [blankDict1 setObject:blankGroupNamesArray1 forKey:@"GroupNames"];
             [blankDict1 setObject:blankMemberNamesArray1 forKey:@"MemberNames"];
+            [blankDict1 setObject:blankGroupImagesArray1 forKey:@"GroupImages"];
             [blankDict1 setObject:blankIDsArray1 forKey:@"IDs"];
             [blankDict1 setObject:blankTappedArray1 forKey:@"Tapped"];
             [blankDict2 setObject:blankNamesArray2 forKey:@"Names"];
@@ -215,54 +220,70 @@
             __block BOOL reload = NO;
             
             [groupsQuery findObjectsInBackgroundWithBlock:^(NSArray *array, NSError *error) {
-                
+
                 if (!error) {
-                    
                     NSMutableDictionary *groupsDict = [sections objectForKey:@"GROUPS"];
                     NSMutableArray *groupNamesArray = [groupsDict objectForKey:@"GroupNames"];
+                    NSMutableArray *groupImagesArray = [groupsDict objectForKey:@"GroupImages"];
                     NSMutableArray *memberNamesArray = [groupsDict objectForKey:@"MemberNames"];
                     NSMutableArray *idsArray = [groupsDict objectForKey:@"IDs"];
                     NSMutableArray *tappeddArray = [groupsDict objectForKey:@"Tapped"];
-                    
+
                     for (PFObject *group in array) {
-                        
-                        [groupNamesArray addObject: group[@"name"]];
+
                         NSArray *users = group[@"user_objects"];
                         
-                        NSMutableArray *tempArray = [[NSMutableArray alloc] init];
-                        
-                        for (PFUser *user in users) {
-                            if (![user.objectId isEqualToString: currentUser.objectId]) {
-                                [tempArray addObject:[NSString stringWithFormat:@"%@", user[@"firstName"]]];
+                        NSString *name = group[@"name"];
+                        if ([name isEqualToString:@"_indy_"]) {
+                            
+                            for (PFUser *user in users) {
+                                if (![user.objectId isEqualToString:currentUser.objectId])
+                                    [groupNamesArray addObject:[NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]]];
+                                [memberNamesArray addObject:@""];
                             }
+                            
+                        } else {
+                            
+                            [groupNamesArray addObject: group[@"name"]];
+                        
+                            NSMutableArray *tempArray = [[NSMutableArray alloc] init];
+                            
+                            for (PFUser *user in users) {
+                                if (![user.objectId isEqualToString: currentUser.objectId]) {
+                                    [tempArray addObject:[NSString stringWithFormat:@"%@", user[@"firstName"]]];
+                                }
+                            }
+                            
+                            NSString *memberString = [NSString stringWithFormat:@"With %@", tempArray[0]];
+                            
+                            for (int i = 1; i < tempArray.count - 1; i++) {
+                                memberString = [memberString stringByAppendingString:[NSString stringWithFormat:@", %@", tempArray[i]]];
+                            }
+                            
+                            PFUser *user = users[users.count-1];
+                            if (tempArray.count > 1)
+                                memberString = [memberString stringByAppendingString:[NSString stringWithFormat:@" and %@", user[@"firstName"]]];
+                            
+                            [memberNamesArray addObject:memberString];
                         }
-                        
-                        NSString *memberString = [NSString stringWithFormat:@"With %@", tempArray[0]];
-                        
-                        for (int i = 1; i < tempArray.count - 1; i++) {
-                            memberString = [memberString stringByAppendingString:[NSString stringWithFormat:@", %@", tempArray[i]]];
-                        }
-                        
-                        PFUser *user = users[users.count-1];
-                        if (tempArray.count > 1)
-                            memberString = [memberString stringByAppendingString:[NSString stringWithFormat:@" and %@", user[@"firstName"]]];
-                        
-                        [memberNamesArray addObject:memberString];
                         
                         NSNumber *no = [NSNumber numberWithInt:0];
                         [tappeddArray addObject:no];
                         
                         [idsArray addObject:group.objectId];
-                    
+                        
+                        [groupImagesArray addObject:group[@"avatar"]];
                     }
                     NSLog(@"reload groups");
-                    NSLog(@"sections: %@", sections);
                     
                     if (reload) {
                         [self.tableView reloadData];
                     } else {
                         reload = YES;
                     }
+                } else {
+                    NSLog(@"error");
+                    reload = YES;
                 }
                 
             }];
@@ -326,6 +347,8 @@
                     } else {
                         reload = YES;
                     }
+                } else {
+                    reload = YES;
                 }
                 
             }];
@@ -340,9 +363,6 @@
     
     indexTitles = [[NSArray alloc] init];
     indexTitles = @[@"\u263A", @"√", @"A", @"B", @"C", @"D", @"E", @"F", @"G", @"H", @"I", @"J", @"K", @"L", @"M", @"N", @"O", @"P", @"Q", @"R", @"S", @"T", @"U", @"V", @"W", @"X", @"Y", @"Z"];
-    
-    NSLog(@"%@", indexTitles);
-    NSLog(@"%lu", (unsigned long)indexTitles.count);
     
 }
 
@@ -381,14 +401,14 @@
         NSDictionary *friendsForThisLetter = [sections objectForKey:@"GROUPS"];
         NSArray *namesArray = [friendsForThisLetter objectForKey:@"GroupNames"];
         if (indexPath.row == (namesArray.count)) {
-            return 44;
+            return 40;
         } else {
             return 70;
         }
     }
     
     
-    return 44;
+    return 40;
     
 }
 
@@ -418,14 +438,15 @@
          NSDictionary *friendsForThisLetter = [sections objectForKey:letterRepresentingTheseFriends];
          NSArray *groupNamesArray = [friendsForThisLetter objectForKey:@"GroupNames"];
          NSArray *memberNamesArray = [friendsForThisLetter objectForKey:@"MemberNames"];
+         NSArray *groupImagesArray = [friendsForThisLetter objectForKey:@"GroupImages"];
          NSArray *idsArray = [friendsForThisLetter objectForKey:@"IDs"];
          NSMutableArray *tappedArray = [friendsForThisLetter objectForKey:@"Tapped"];
              
          if (indexPath.row < (groupNamesArray.count)) {
              
-                 GroupsCell *cell = [tableView dequeueReusableCellWithIdentifier:@"groups" forIndexPath:indexPath];
-                 UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleChecking:)];
-                 [cell addGestureRecognizer:tap];
+             GroupsCell *cell = [tableView dequeueReusableCellWithIdentifier:@"groups" forIndexPath:indexPath];
+             UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleChecking:)];
+             [cell addGestureRecognizer:tap];
              
              if ([tappedArray[indexPath.row] isEqualToNumber:[NSNumber numberWithInt:1]]) {
                  
@@ -438,6 +459,15 @@
                  //cell.nameLabel.font = [UIFont fontWithName:@"OpenSans" size:17];
 
              }
+             
+             PFFile *file = groupImagesArray[indexPath.row];
+             [file getDataInBackgroundWithBlock:^(NSData *data, NSError *error) {
+                 
+                 if (!error) {
+                     UIImage *image = [UIImage imageWithData:data];
+                     cell.avatarImageView.image = image;
+                 }
+             }];
              
              cell.nameLabel.text = groupNamesArray[indexPath.row];
              cell.membersLabel.text = memberNamesArray[indexPath.row];
@@ -547,7 +577,7 @@
                     if ([groupNamesArray[i] isEqualToString:theName]) {
                         tappedArray[i] = [NSNumber numberWithInt:0];
                         indexPath1 = [NSIndexPath indexPathForRow:i inSection:0];
-                        [self.tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath1] withRowAnimation: UITableViewRowAnimationLeft];
+                        [self.tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath1] withRowAnimation: UITableViewRowAnimationNone];
                         break;
                     }
                 }
@@ -559,7 +589,7 @@
                     if ([groupNamesArray[i] isEqualToString:theName]) {
                         tappedArray[i] = [NSNumber numberWithInt:1];
                         indexPath1 = [NSIndexPath indexPathForRow:i inSection:0];
-                        [self.tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath1] withRowAnimation: UITableViewRowAnimationLeft];
+                        [self.tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath1] withRowAnimation: UITableViewRowAnimationNone];
                         break;
                     }
                 }
@@ -602,7 +632,7 @@
                     if ([namesArray2[i] isEqualToString:theName]) {
                         tappedArray2[i] = [NSNumber numberWithInt:0];
                         indexPath2 = [NSIndexPath indexPathForRow:i inSection:1];
-                        [self.tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath2] withRowAnimation: UITableViewRowAnimationLeft];
+                        [self.tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath2] withRowAnimation: UITableViewRowAnimationNone];
                         break;
                     }
                 }
@@ -616,7 +646,7 @@
                         tappedArray3[i] = [NSNumber numberWithInt:0];
                         NSUInteger letterIndex = [sortedFriendsLetters indexOfObject:[theName substringToIndex:1]];
                         indexPath3 = [NSIndexPath indexPathForRow:i inSection:letterIndex];
-                        [self.tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath3] withRowAnimation: UITableViewRowAnimationLeft];
+                        [self.tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath3] withRowAnimation: UITableViewRowAnimationNone];
                         break;
                     }
                 }
@@ -631,7 +661,7 @@
                     if ([namesArray2[i] isEqualToString:theName]) {
                         tappedArray2[i] = [NSNumber numberWithInt:1];
                         indexPath2 = [NSIndexPath indexPathForRow:i inSection:1];
-                        [self.tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath2] withRowAnimation: UITableViewRowAnimationLeft];
+                        [self.tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath2] withRowAnimation: UITableViewRowAnimationNone];
                         break;
                     }
                 }
@@ -645,7 +675,7 @@
                         tappedArray3[i] = [NSNumber numberWithInt:1];
                         NSUInteger letterIndex = [sortedFriendsLetters indexOfObject:[theName substringToIndex:1]];
                         indexPath3 = [NSIndexPath indexPathForRow:i inSection:letterIndex];
-                        [self.tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath3] withRowAnimation: UITableViewRowAnimationLeft];
+                        [self.tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath3] withRowAnimation: UITableViewRowAnimationNone];
                         break;
                     }
                 }
@@ -746,6 +776,9 @@
 
 - (void)inviteButtonTapped {
     
+    [SVProgressHUD setViewForExtension:self.view];
+    [SVProgressHUD show];
+    
     BOOL createGroupAlert = NO;
     
     finalUserIDArray = [[NSMutableArray alloc] init];
@@ -795,104 +828,191 @@
     
     // %%%%%%%%%%%%%%%%%% GROUP PUSH %%%%%%%%%%%%%%%%%%%%%%
     
+    __block int saveCount = 0;
+    
     PFQuery *groupQuery = [PFQuery queryWithClassName:@"Group"];
     [groupQuery whereKey:@"objectId" containedIn:finalGroupIDArray];
     [groupQuery includeKey:@"user_objects"];
     [groupQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         
-        for (PFObject *group in objects) {
-           
-            NSArray *users = group[@"user_objects"];
-            
-            int count = (int)(users.count - 1.0);
-            NSString *pushMessage = @"";
-            pushMessage = [NSString stringWithFormat:@"%@ %@ wants to go to %@ with you!", currentUser[@"firstName"], currentUser[@"lastName"], eventTitle];
-            
-            PFObject *notification = [PFObject objectWithClassName:@"Notifications"];
-            notification[@"Type"] = @"group";
-            notification[@"Subtype"] = @"new_group";
-            notification[@"EventID"] = self.objectID;
-            notification[@"UserID"] = currentUser.objectId;  // THIS IS THE DIFFERENCE
-            notification[@"GroupID"] = group.objectId;
-            notification[@"InviterID"] = currentUser.objectId;
-            notification[@"Seen"] = @NO;
-            notification[@"Message"] = pushMessage;
-            //notification[@"AllUserObjects"] = users;
-            [notification saveInBackground];
-            
-            for (PFUser *user in users) {
-                if (![user.objectId isEqualToString:currentUser.objectId]) {
-            
-                    /*
-                     NSString *gender = user[@"gender"];
-                     NSString *genderString = @"";
-                     
-                     if ([gender isEqualToString:@"male"]) {
-                     genderString = @"with him";
-                     } else if ([gender isEqualToString:@"female"]) {
-                     genderString = @"with her";
-                     } else {
-                     genderString = @"together";
-                     } */
-                    
-                    PFQuery *pushQuery = [PFInstallation query];
-                    [pushQuery whereKey:@"userID" equalTo:user.objectId];
-                    
-                    // Send push notification to query
-                    PFPush *push = [[PFPush alloc] init];
-                    [push setQuery:pushQuery]; // Set our Installation query
-                    
-                    NSDictionary *data = @{
-                                           @"alert" : pushMessage,
-                                           @"badge" : @"Increment",
-                                           @"eventID" : self.objectID,
-                                           @"senderID" : currentUser.objectId,
-                                           @"type" : @"Invite"
-                                           };
-                    
-                    [push setData:data];
-                    [push sendPushInBackgroundWithBlock:^(BOOL succeeded, NSError * __nullable error) {
-                        
-                        if (succeeded) {
-                            //[notifyButton setTitle:@"Boom." forState:UIControlStateNormal];
-                            //subLabel.text = [NSString stringWithFormat:@"We just notified %@!", user[@"firstName"]];
-                        } else {
-                            //[notifyButton setTitle:@"Uh-oh." forState:UIControlStateNormal];
-                            //subLabel.text = [NSString stringWithFormat:@"We were unable to notify %@!", user[@"firstName"]];
-                        }
-                        
-                    }];
-                    
-                    NSLog(@"SENT PUSH: %@", pushMessage);
-                    
-                    
-                    ///////////////////// SAVE NOTIFICATIONS DATA /////////////////////////
-                    
-                    PFObject *notification = [PFObject objectWithClassName:@"Notifications"];
-                    notification[@"Type"] = @"group";
-                    notification[@"Subtype"] = @"invite_group";
-                    notification[@"EventID"] = self.objectID;
-                    notification[@"UserID"] = user.objectId;
-                    notification[@"GroupID"] = group.objectId;
-                    notification[@"InviterID"] = currentUser.objectId;
-                    notification[@"Seen"] = @NO;
-                    notification[@"Message"] = pushMessage;
-                    notification[@"AllUserObjects"] = users;
-                    
-                    [notification saveInBackground];
-                    
+        if (!error) {
+        
+            for (PFObject *group in objects) {
+                
+                /*
+                NSString *pushMessage = @"";
+                if (users.count > 2) {
+                    pushMessage = [NSString stringWithFormat:@"\"%@\": %@ %@ wants to go to %@ with you!", group[@"name"], currentUser[@"firstName"], currentUser[@"lastName"], eventTitle];
+                } else {
+                    pushMessage = [NSString stringWithFormat:@"%@ %@ wants to go to %@ with you!", currentUser[@"firstName"], currentUser[@"lastName"], eventTitle];
                 }
                 
-                if (!createGroupAlert) {
-                    [self dismissViewControllerAnimated:YES completion:^{
-                        //
-                    }];
-                }
+                PFObject *notification = [PFObject objectWithClassName:@"Notifications"];
+                notification[@"Type"] = @"group";
+                notification[@"Subtype"] = @"invite_group";
+                notification[@"EventID"] = self.objectID;
+                notification[@"UserID"] = currentUser.objectId;  // THIS IS THE DIFFERENCE
+                notification[@"GroupID"] = group.objectId;
+                notification[@"InviterID"] = currentUser.objectId;
+                notification[@"Seen"] = @NO;
+                notification[@"Message"] = pushMessage;
+                [notification saveInBackground];
+                */
+                
+                PFQuery *eventCheckQuery = [PFQuery queryWithClassName:@"Group_Event"];
+                [eventCheckQuery whereKey:@"EventID" equalTo:self.objectID];
+                [eventCheckQuery whereKey:@"GroupID" equalTo:group.objectId];
+                [eventCheckQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
+                    
+                    if (!error) {
+                        
+                        NSLog(@"Event in group DOES exist!");
+                        
+                        if ([group[@"memberCount"] intValue] == 2) {
+                        
+                            if ([object[@"invitedByID"] isEqualToString:currentUser.objectId]) {
+                                
+                                NSArray *users = group[@"user_objects"];
+                                PFUser *u = [PFUser user];
+                                for (PFUser *user in users) {
+                                    if (![user.objectId isEqualToString:currentUser.objectId])
+                                        u = user;
+                                }
+                                
+                                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Holduppp" message:[NSString stringWithFormat:@"You already invited %@ %@ to this event!", u[@"firstName"], u[@"lastName"]] delegate:self cancelButtonTitle:@"Right on" otherButtonTitles:nil, nil];
+                                [alertView show];
+                                
+                            } else {
+                                
+                                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Oops" message:[NSString stringWithFormat:@"%@ already invited you to this event!", group[@"invitedByName"]] delegate:self cancelButtonTitle:@"Coolio" otherButtonTitles:nil, nil];
+                                [alertView show];
+                                
+                            }
+                            
+                        } else {
+                        
+                            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Not so fast" message:[NSString stringWithFormat:@"\"%@\" was already invited to this event!", group[@"name"]] delegate:self cancelButtonTitle:@"My b" otherButtonTitles:nil, nil];
+                            [alertView show];
+                        }
+                        
+                        saveCount++;
+                        
+                        if (!createGroupAlert && (saveCount == objects.count)) {
+                            
+                            [self dismissViewControllerAnimated:YES completion:^{
+                                
+                                [SVProgressHUD showSuccessWithStatus:@"Boom"];
+                                [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"refreshGroups"];
+                                [[NSUserDefaults standardUserDefaults] synchronize];
+                            }];
+                            
+                        }
+
+                        
+                    } else {
+                        
+                        NSLog(@"Event in group does NOT exist!");
+                        
+                        PFObject *groupEvent = [PFObject objectWithClassName:@"Group_Event"];
+                        groupEvent[@"EventID"] = self.objectID;
+                        groupEvent[@"GroupID"] = group.objectId;
+                        groupEvent[@"invitedByName"] = [NSString stringWithFormat:@"%@ %@", currentUser[@"firstName"], currentUser[@"lastName"]];
+                        groupEvent[@"invitedByID"] = currentUser.objectId;
+                        groupEvent[@"users_going"] = [NSArray arrayWithObject:currentUser];
+                        [groupEvent saveInBackground];
+                        
+                        [self setupConversationWithMessage:[NSString stringWithFormat:@"%@ %@ wants to go to: %@ %@", currentUser[@"firstName"], currentUser[@"lastName"], eventTitle, eventLocation] forGroup:group];
+                        
+                        saveCount++;
+                        
+                        if (!createGroupAlert && (saveCount == (int)objects.count)) {
+                            
+                            [self dismissViewControllerAnimated:YES completion:^{
+                                
+                                [SVProgressHUD showSuccessWithStatus:@"Boom"];
+                                [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"refreshGroups"];
+                                [[NSUserDefaults standardUserDefaults] synchronize];
+                            }];
+                            
+                        }
+                    }
+                    
+                }];
+                
+                /*
+                for (PFUser *user in users) {
+                    if (![user.objectId isEqualToString:currentUser.objectId]) { */
+                
+                        /*
+                         NSString *gender = user[@"gender"];
+                         NSString *genderString = @"";
+                         
+                         if ([gender isEqualToString:@"male"]) {
+                         genderString = @"with him";
+                         } else if ([gender isEqualToString:@"female"]) {
+                         genderString = @"with her";
+                         } else {
+                         genderString = @"together";
+                         } */
+                        /*
+                        PFQuery *pushQuery = [PFInstallation query];
+                        [pushQuery whereKey:@"userID" equalTo:user.objectId];
+                        
+                        // Send push notification to query
+                        PFPush *push = [[PFPush alloc] init];
+                        [push setQuery:pushQuery]; // Set our Installation query
+                        
+                        NSDictionary *data = @{
+                                               @"alert" : pushMessage,
+                                               @"badge" : @"Increment",
+                                               @"eventID" : self.objectID,
+                                               @"senderID" : currentUser.objectId,
+                                               @"type" : @"Invite"
+                                               };
+                        
+                        [push setData:data];
+                        [push sendPushInBackgroundWithBlock:^(BOOL succeeded, NSError * __nullable error) {
+                            
+                            if (succeeded) {
+                                //[notifyButton setTitle:@"Boom." forState:UIControlStateNormal];
+                                //subLabel.text = [NSString stringWithFormat:@"We just notified %@!", user[@"firstName"]];
+                                NSLog(@"successful push to %@ - %@", user[@"firstName"], user.objectId);
+                            } else {
+                                NSLog(@"failed push to %@ - %@ with error: %@", user[@"firstName"], user.objectId, error);
+                                
+                                //[notifyButton setTitle:@"Uh-oh." forState:UIControlStateNormal];
+                                //subLabel.text = [NSString stringWithFormat:@"We were unable to notify %@!", user[@"firstName"]];
+                            }
+                            
+                        }];
+                        
+                        NSLog(@"PUSH MESSAGE: %@", pushMessage);
+                        */
+                        /*
+                        PFObject *notification = [PFObject objectWithClassName:@"Notifications"];
+                        notification[@"Type"] = @"group";
+                        notification[@"Subtype"] = @"invite_group";
+                        notification[@"EventID"] = self.objectID;
+                        notification[@"UserID"] = user.objectId;
+                        notification[@"GroupID"] = group.objectId;
+                        notification[@"InviterID"] = currentUser.objectId;
+                        notification[@"Seen"] = @NO;
+                        notification[@"Message"] = pushMessage;
+                        
+                        [notification saveInBackground];
+                        */
+                /*    }
+                    
+                } */
+                
             }
+            
+        } else {
+            
+            [SVProgressHUD showErrorWithStatus:@"Group creation failed :("];
         }
-     
+        
     }];
-    
     
 }
 
@@ -903,8 +1023,71 @@
         if (buttonIndex == 0) {
         
             NSLog(@"Group invites from button");
-            [self performSegueWithIdentifier:@"toNewGroup" sender:self];
             
+            [SVProgressHUD setViewForExtension:self.view];
+            [SVProgressHUD show];
+            
+            PFUser *cu = [PFUser currentUser];
+            NSMutableArray *tempIDArray = [NSMutableArray arrayWithArray:finalUserIDArray];
+            [tempIDArray addObject:cu[@"FBObjectID"]];
+            tempIDArray = (NSMutableArray *)[tempIDArray sortedArrayUsingSelector:@selector(compare:)];
+            
+            PFQuery *userQuery = [PFUser query];
+            [userQuery whereKey:@"FBObjectID" containedIn:tempIDArray];
+            
+            PFQuery *groupUserQuery = [PFQuery queryWithClassName:@"Group_User"];
+            [groupUserQuery whereKey:@"user_id" matchesKey:@"objectId" inQuery:userQuery];
+            
+            PFQuery *groupQuery = [PFQuery queryWithClassName:@"Group"];
+            [groupQuery whereKey:@"objectId" matchesKey:@"group_id" inQuery:groupUserQuery];
+            [groupQuery whereKey:@"memberCount" equalTo:@(tempIDArray.count)];
+            [groupQuery includeKey:@"user_objects"];
+            
+            [groupQuery findObjectsInBackgroundWithBlock:^(NSArray *groups, NSError *error){
+
+                if (!error) {
+                    
+                    BOOL groupExists = NO;
+                    
+                    for (PFObject *group in groups) {
+                        
+                        NSArray *groupUsers = group[@"user_objects"];
+                        NSMutableArray *tempArray = [NSMutableArray new];
+                        for (PFUser *user in groupUsers) {
+                            [tempArray addObject:user[@"FBObjectID"]];
+                        }
+                        NSLog(@"%@ --- %@", tempIDArray, tempArray);
+                        
+                        tempArray = (NSMutableArray *)[tempArray sortedArrayUsingSelector:@selector(compare:)];
+                        
+                        if ([tempArray isEqualToArray:tempIDArray]) {
+                            groupExists = YES;
+                            NSLog(@"Group exists!");
+                            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Hold your horses" message:[NSString stringWithFormat:@"This group already exists, it's called: \"%@\".", group[@"name"]] delegate:self cancelButtonTitle:@"Ohh yeah!" otherButtonTitles:nil, nil];
+                            [alertView show];
+                            break;
+                        } else { //redundant
+                            groupExists = NO;
+                        }
+                        
+                    }
+                    
+                    if (!groupExists) {
+                        
+                        NSLog(@"Group doesn't exist...");
+                        [self performSegueWithIdentifier:@"toNewGroup" sender:self];
+                    }
+                
+                } else {
+                    
+                    NSLog(@"Group doesn't exist...");
+                    [self performSegueWithIdentifier:@"toNewGroup" sender:self];
+               }
+                
+                [SVProgressHUD dismiss];
+                
+            }];
+             
         } else {
             
             NSLog(@"Individual invites from button");
@@ -920,113 +1103,357 @@
     
     PFUser *currentUser = [PFUser currentUser];
     PFQuery *userQuery = [PFUser query];
+    __block int saveCount = 0;
     [userQuery whereKey:@"FBObjectID" containedIn:finalUserIDArray];
     [userQuery findObjectsInBackgroundWithBlock:^(NSArray *users, NSError *error){
         
         if (!error) {
             
-            for (PFObject *user in users) {
+            for (int i = 0; i < users.count; i++) {
                 
+                PFUser *user = users[i];
+            
                 PFObject *group = [PFObject objectWithClassName:@"Group"];
                 PFObject *cu = (PFObject *)currentUser;
+                
                 NSMutableArray *usersForGroup = [[NSMutableArray alloc] initWithObjects:user, cu, nil];
-                group[@"user_objects"] = usersForGroup;
-                group[@"name"] = @"_indy_"; //[NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]];
-                group[@"memberCount"] = @2;
                 
-                [group saveInBackgroundWithBlock:^(BOOL success, NSError *error){
+                PFQuery *groupUserQuery1 = [PFQuery queryWithClassName:@"Group_User"];
+                [groupUserQuery1 whereKey:@"user_id" equalTo:currentUser.objectId];
                 
-                    PFObject *groupUser1 = [PFObject objectWithClassName:@"Group_User"];
-                    groupUser1[@"user_id"] = currentUser.objectId;
-                    groupUser1[@"group_id"] = group.objectId;
-                    [groupUser1 saveInBackground];
+                PFQuery *groupUserQuery2 = [PFQuery queryWithClassName:@"Group_User"];
+                [groupUserQuery2 whereKey:@"user_id" equalTo:user.objectId];
+                
+                PFQuery *groupQuery = [PFQuery queryWithClassName:@"Group"];
+                [groupQuery whereKey:@"objectId" matchesKey:@"group_id" inQuery:groupUserQuery1];
+                [groupQuery whereKey:@"objectId" matchesKey:@"group_id" inQuery:groupUserQuery2];
+                [groupQuery whereKey:@"memberCount" equalTo:@2];
+                
+                [groupQuery findObjectsInBackgroundWithBlock:^(NSArray *groups, NSError *error){
+                
+                    BOOL newGroupNewEvent = YES;
                     
-                    PFObject *groupUser2 = [PFObject objectWithClassName:@"Group_User"];
-                    groupUser2[@"user_id"] = user.objectId;
-                    groupUser2[@"group_id"] = group.objectId;
-                    [groupUser2 saveInBackground];
-                    
-                    /*
-                     NSString *gender = user[@"gender"];
-                     NSString *genderString = @"";
-                     
-                     if ([gender isEqualToString:@"male"]) {
-                     genderString = @"with him";
-                     } else if ([gender isEqualToString:@"female"]) {
-                     genderString = @"with her";
-                     } else {
-                     genderString = @"together";
-                     } */
-                    
-                    
-                    PFQuery *pushQuery = [PFInstallation query];
-                    [pushQuery whereKey:@"userID" equalTo:user.objectId];
-                    
-                    // Send push notification to query
-                    PFPush *push = [[PFPush alloc] init];
-                    [push setQuery:pushQuery]; // Set our Installation query
-                    
-                    int count = (int)(users.count - 1.0);
-                    NSString *pushMessage = @"";
-                    //if (count == 0) {
-                    pushMessage = [NSString stringWithFormat:@"%@ %@ wants to go to %@ with you!", currentUser[@"firstName"], currentUser[@"lastName"], eventTitle];
-                    /* } else if (count == 1) {
-                     pushMessage = [NSString stringWithFormat:@"%@ %@ wants to go to %@ with you and one other person!", currentUser[@"firstName"], currentUser[@"lastName"], eventTitle];
-                     } else {
-                     pushMessage = [NSString stringWithFormat:@"%@ %@ wants to go to %@ with you and %d others!", currentUser[@"firstName"], currentUser[@"lastName"], eventTitle, count];
-                     } */
-                    
-                    NSDictionary *data = @{
-                                           @"alert" : pushMessage,
-                                           @"badge" : @"Increment",
-                                           @"eventID" : self.objectID,
-                                           @"senderID" : currentUser.objectId,
-                                           @"type" : @"Invite"
-                                           };
-                    
-                    [push setData:data];
-                    [push sendPushInBackgroundWithBlock:^(BOOL succeeded, NSError * __nullable error) {
+                    if (!error) {
                         
-                        if (succeeded) {
-                            //[notifyButton setTitle:@"Boom." forState:UIControlStateNormal];
-                            //subLabel.text = [NSString stringWithFormat:@"We just notified %@!", user[@"firstName"]];
-                            NSLog(@"x");
-                        } else {
-                            //[notifyButton setTitle:@"Uh-oh." forState:UIControlStateNormal];
-                            //subLabel.text = [NSString stringWithFormat:@"We were unable to notify %@!", user[@"firstName"]];
+                        NSLog(@"%lu groups exists between these users, now check if they have a 1-1 group...", (unsigned long)groups.count);
+                        
+                        for (PFObject *group in groups) {
+                            
+                            if ([group[@"memberCount"] intValue] == 2) {
+                                
+                                NSLog(@"1-1 group exists!");
+                                newGroupNewEvent = NO;
+
+                                PFQuery *eventCheckQuery = [PFQuery queryWithClassName:@"Group_Event"];
+                                [eventCheckQuery whereKey:@"EventID" equalTo:self.objectID];
+                                [eventCheckQuery whereKey:@"GroupID" equalTo:group.objectId];
+                                [eventCheckQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
+                                    
+                                    if (!error) {
+                                        
+                                        NSLog(@"Event in group DOES exist!");
+                                        
+                                        if ([object[@"invitedByID"] isEqualToString:currentUser.objectId]) {
+                                        
+                                            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Oops" message:[NSString stringWithFormat:@"You already invited %@ %@ to this event!", user[@"firstName"], user[@"lastName"]] delegate:self cancelButtonTitle:@"Oh yeah" otherButtonTitles:nil, nil];
+                                            [alertView show];
+                                            
+                                        } else {
+                                            
+                                            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Wait a second" message:[NSString stringWithFormat:@"%@ already invited you to this event!", group[@"invitedByName"]] delegate:self cancelButtonTitle:@"Awesome sauce" otherButtonTitles:nil, nil];
+                                            [alertView show];
+                                            
+                                        }
+                                        
+                                        saveCount++;
+                                        
+                                        if (saveCount == users.count) {
+                                            
+                                            [self dismissViewControllerAnimated:YES completion:^{
+                                                
+                                                [SVProgressHUD showSuccessWithStatus:@"Boom"];
+                                                [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"refreshGroups"];
+                                                [[NSUserDefaults standardUserDefaults] synchronize];
+                                            }];
+                                        }
+
+                                        
+                                    } else {
+                                        
+                                        NSLog(@"Event in group does NOT exist!");
+                                        
+                                        PFObject *groupEvent = [PFObject objectWithClassName:@"Group_Event"];
+                                        groupEvent[@"EventID"] = self.objectID;
+                                        groupEvent[@"GroupID"] = group.objectId;
+                                        groupEvent[@"invitedByName"] = [NSString stringWithFormat:@"%@ %@", currentUser[@"firstName"], currentUser[@"lastName"]];
+                                        groupEvent[@"invitedByID"] = currentUser.objectId;
+                                        groupEvent[@"users_going"] = [NSArray arrayWithObject:currentUser];
+                                        [groupEvent saveInBackground];
+                                        
+                                        [self setupConversationWithMessage:[NSString stringWithFormat:@"%@ %@ wants to go to: %@ %@", currentUser[@"firstName"], currentUser[@"lastName"], eventTitle, eventLocation] forGroup:group];
+                                        
+                                        saveCount++;
+                                        
+                                        if (saveCount == users.count) {
+                                            
+                                            [self dismissViewControllerAnimated:YES completion:^{
+                                                
+                                                [SVProgressHUD showSuccessWithStatus:@"Boom"];
+                                                [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"refreshGroups"];
+                                                [[NSUserDefaults standardUserDefaults] synchronize];
+                                            }];
+                                        }
+                                    }
+                                }];
+                            }
                         }
+                    }
+                    
+                    if (newGroupNewEvent) {
                         
-                    }];
-                    
-                    NSLog(@"SENT PUSH: %@", pushMessage);
-                    
-                    
-                    // %%%%%%%%%%%%%%%%%% SAVE NOTIFICATIONS DATA %%%%%%%%%%%%%%%%%%
-                    
-                    PFObject *notification = [PFObject objectWithClassName:@"Notifications"];
-                    notification[@"Type"] = @"group";
-                    notification[@"Subtype"] = @"new_individual";
-                    notification[@"EventID"] = self.objectID;
-                    notification[@"UserID"] = user.objectId;
-                    notification[@"GroupID"] = group.objectId;
-                    notification[@"InviterID"] = currentUser.objectId;
-                    notification[@"Seen"] = @NO;
-                    notification[@"Message"] = pushMessage;
-                    //notification[@"AllUserObjects"] = users;
-                    
-                    [notification saveInBackground];
-                
+                        NSLog(@"users do not have a 1-1 group. Create new group and event!");
+                        
+                        group[@"user_objects"] = usersForGroup;
+                        group[@"name"] = @"_indy_"; //[NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]];
+                        group[@"memberCount"] = @2;
+                        group[@"avatar"] = [PFFile fileWithName:@"image.png" data:UIImagePNGRepresentation([UIImage imageNamed:@"interested_face"])];
+                        
+                        [group saveInBackgroundWithBlock:^(BOOL success, NSError *error){
+                            
+                            if (success) {
+                            
+                                PFObject *groupUser1 = [PFObject objectWithClassName:@"Group_User"];
+                                groupUser1[@"user_id"] = currentUser.objectId;
+                                groupUser1[@"group_id"] = group.objectId;
+                                [groupUser1 saveInBackground];
+                                
+                                PFObject *groupUser2 = [PFObject objectWithClassName:@"Group_User"];
+                                groupUser2[@"user_id"] = user.objectId;
+                                groupUser2[@"group_id"] = group.objectId;
+                                [groupUser2 saveInBackground];
+                                
+                                /*
+                                 NSString *gender = user[@"gender"];
+                                 NSString *genderString = @"";
+                                 
+                                 if ([gender isEqualToString:@"male"]) {
+                                 genderString = @"with him";
+                                 } else if ([gender isEqualToString:@"female"]) {
+                                 genderString = @"with her";
+                                 } else {
+                                 genderString = @"together";
+                                 } */ //gender string formatting
+                                /*
+                                 PFQuery *pushQuery = [PFInstallation query];
+                                 [pushQuery whereKey:@"userID" equalTo:user.objectId];
+                                 
+                                 // Send push notification to query
+                                 PFPush *push = [[PFPush alloc] init];
+                                 [push setQuery:pushQuery]; // Set our Installation query
+                                 
+                                 int count = (int)(users.count - 1.0);
+                                 NSString *pushMessage = @"";
+                                 //if (count == 0) {
+                                 pushMessage = [NSString stringWithFormat:@"%@ %@ wants to go to %@ with you!", currentUser[@"firstName"], currentUser[@"lastName"], eventTitle];
+                                 /* } else if (count == 1) {
+                                 pushMessage = [NSString stringWithFormat:@"%@ %@ wants to go to %@ with you and one other person!", currentUser[@"firstName"], currentUser[@"lastName"], eventTitle];
+                                 } else {
+                                 pushMessage = [NSString stringWithFormat:@"%@ %@ wants to go to %@ with you and %d others!", currentUser[@"firstName"], currentUser[@"lastName"], eventTitle, count];
+                                 } */ //parse push notif
+                                /*
+                                 NSDictionary *data = @{
+                                 @"alert" : pushMessage,
+                                 @"badge" : @"Increment",
+                                 @"eventID" : self.objectID,
+                                 @"senderID" : currentUser.objectId,
+                                 @"type" : @"Invite"
+                                 };
+                                 
+                                 [push setData:data];
+                                 [push sendPushInBackgroundWithBlock:^(BOOL succeeded, NSError * __nullable error) {
+                                 
+                                 if (succeeded) {
+                                 //[notifyButton setTitle:@"Boom." forState:UIControlStateNormal];
+                                 //subLabel.text = [NSString stringWithFormat:@"We just notified %@!", user[@"firstName"]];
+                                 NSLog(@"successful push to %@ - %@", user[@"firstName"], user.objectId);
+                                 } else {
+                                 NSLog(@"failed push to %@ - %@ with error: %@", user[@"firstName"], user.objectId, error);
+                                 
+                                 //[notifyButton setTitle:@"Uh-oh." forState:UIControlStateNormal];
+                                 //subLabel.text = [NSString stringWithFormat:@"We were unable to notify %@!", user[@"firstName"]];
+                                 }
+                                 
+                                 }];
+                                 
+                                 NSLog(@"PUSH MESSAGE: %@", pushMessage);
+                                 */ //more parse push
+                                /*
+                                 PFObject *notification = [PFObject objectWithClassName:@"Notifications"];
+                                 notification[@"Type"] = @"group";
+                                 notification[@"Subtype"] = @"new_individual";
+                                 notification[@"EventID"] = self.objectID;
+                                 notification[@"UserID"] = user.objectId;
+                                 notification[@"GroupID"] = group.objectId;
+                                 notification[@"InviterID"] = currentUser.objectId;
+                                 notification[@"Seen"] = @NO;
+                                 notification[@"Message"] = pushMessage;
+                                 [notification saveInBackground];
+                                 */ //save push notif to parse
+                                
+                                PFObject *groupEvent = [PFObject objectWithClassName:@"Group_Event"];
+                                groupEvent[@"EventID"] = self.objectID;
+                                groupEvent[@"GroupID"] = group.objectId;
+                                groupEvent[@"invitedByName"] = [NSString stringWithFormat:@"%@ %@", currentUser[@"firstName"], currentUser[@"lastName"]];
+                                groupEvent[@"invitedByID"] = currentUser.objectId;
+                                groupEvent[@"users_going"] = [NSArray arrayWithObject:currentUser];
+                                [groupEvent saveInBackground];
+                                
+                                [self setupConversationWithMessage:[NSString stringWithFormat:@"%@ %@ wants to go to: %@ %@", currentUser[@"firstName"], currentUser[@"lastName"], eventTitle, eventLocation] forGroup:group];
+                                
+                                saveCount++;
+                                
+                                if (saveCount == users.count) {
+                                    
+                                    [self dismissViewControllerAnimated:YES completion:^{
+                                        
+                                        [SVProgressHUD showSuccessWithStatus:@"Boom"];
+                                        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"refreshGroups"];
+                                        [[NSUserDefaults standardUserDefaults] synchronize];
+                                    }];
+                                }
+                                
+                            } else {
+                                [SVProgressHUD showErrorWithStatus:@"Something went wrong :("];
+                            }
+                        }];
+                    }
                 }];
             }
+            
+        } else {
+            
+            [SVProgressHUD showErrorWithStatus:@"Something went wrong :("];
         }
-        
-        [self dismissViewControllerAnimated:YES completion:^{
-            //
-        }];
         
     }];
     
 
+}
+
+- (void)setupConversationWithMessage:(NSString *)messageText forGroup:(PFObject *)group {
+    
+    
+    AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+    LYRQuery *query = [LYRQuery queryWithQueryableClass:[LYRConversation class]];
+    
+    LYRConversation *conversation = nil;
+    BOOL shouldCreateNewConvo = YES;
+    
+    NSError *error = nil;
+    NSOrderedSet *conversations = [appDelegate.layerClient executeQuery:query error:&error];
+    if (!error) {
+        
+        NSLog(@"%tu conversations", conversations.count);
+        
+        for (LYRConversation *convo in conversations) {
+            
+            if ([[convo.metadata valueForKey:@"groupId"] isEqualToString:group.objectId]) {
+                
+                NSLog(@"group convo exists");
+                conversation = convo;
+                shouldCreateNewConvo = NO;
+                break;
+            }
+        }
+    }
+    
+    if (shouldCreateNewConvo) {
+        
+        NSArray *userObjects = group[@"user_objects"];
+        NSMutableArray *idArray = [NSMutableArray new];
+        for (PFUser *user in userObjects) {
+            [idArray addObject:user.objectId];
+        }
+        
+        conversation = [appDelegate.layerClient newConversationWithParticipants:[NSSet setWithArray:idArray] options:nil error:&error];
+        [conversation setValue:group[@"name"] forMetadataAtKeyPath:@"title"];
+        [conversation setValue:group.objectId forMetadataAtKeyPath:@"groupId"];
+        
+        group[@"chatId"] = conversation.identifier.absoluteString;
+        [group saveInBackground];
+        
+    }
+    
+    if (!conversation || conversation == nil) {
+        NSLog(@"New Conversation creation failed: %@", error);
+        [SVProgressHUD showErrorWithStatus:@"Something went wrong :("];
+    }
+    
+    //Send messages w data
+    
+    /* %%%%%%%%%%%%%%% System notification message %%%%%%%%%%%%%%%%%% */
+    NSDictionary *dataDictionary = @{@"message":messageText,
+                                     @"type":@"invite",
+                                     @"groupId":group.objectId,
+                                     };
+    NSError *JSONSerializerError;
+    NSData *dataDictionaryJSON = [NSJSONSerialization dataWithJSONObject:dataDictionary options:NSJSONWritingPrettyPrinted error:&JSONSerializerError];
+    LYRMessagePart *dataMessagePart = [LYRMessagePart messagePartWithMIMEType:ATLMimeTypeSystemObject data:dataDictionaryJSON];
+    // Create messagepart with info about cell
+    float actualLineSize = [messageText boundingRectWithSize:CGSizeMake(280, CGFLOAT_MAX)
+                                                     options:NSStringDrawingUsesLineFragmentOrigin
+                                                  attributes:@{NSFontAttributeName:[UIFont fontWithName:@"OpenSans" size:10.0]}
+                                                     context:nil].size.height;
+    NSDictionary *cellInfoDictionary = @{@"height": [NSString stringWithFormat:@"%f", actualLineSize]};
+    NSData *cellInfoDictionaryJSON = [NSJSONSerialization dataWithJSONObject:cellInfoDictionary options:NSJSONWritingPrettyPrinted error:&JSONSerializerError];
+    LYRMessagePart *cellInfoMessagePart = [LYRMessagePart messagePartWithMIMEType:ATLMimeTypeSystemCellInfo data:cellInfoDictionaryJSON];
+    // Add message to ordered set.  This ordered set messages will get sent to the participants
+    LYRMessage *message = [appDelegate.layerClient newMessageWithParts:@[dataMessagePart,cellInfoMessagePart] options:@{LYRMessageOptionsPushNotificationAlertKey: messageText} error:&error];
+    // Sends the specified message
+    
+    BOOL success = [conversation sendMessage:message error:&error];
+    if (success) {
+        NSLog(@"Message queued to be sent: %@", message);
+    } else {
+        NSLog(@"Message send failed: %@", error);
+        
+        [self dismissViewControllerAnimated:YES completion:^{
+            [SVProgressHUD showErrorWithStatus:@"Something went wrong :("];
+            [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"refreshGroups"];
+            [[NSUserDefaults standardUserDefaults] synchronize];
+        }];
+    }
+    
+    
+    /* %%%%%%%%%%%%%%% Embedded RSVP Invite %%%%%%%%%%%%%%%%%% */
+    NSDictionary *dataDictionary2 = @{@"message":messageText,
+                                     @"eventId":self.objectID,
+                                     @"groupId":group.objectId,
+                                     };
+    NSError *JSONSerializerError2;
+    NSData *dataDictionaryJSON2 = [NSJSONSerialization dataWithJSONObject:dataDictionary2 options:NSJSONWritingPrettyPrinted error:&JSONSerializerError2];
+    LYRMessagePart *dataMessagePart2 = [LYRMessagePart messagePartWithMIMEType:ATLMimeTypeCustomObject data:dataDictionaryJSON2];
+    // Create messagepart with info about cell
+    NSDictionary *cellInfoDictionary2 = @{@"height":@"180"};
+    NSData *cellInfoDictionaryJSON2 = [NSJSONSerialization dataWithJSONObject:cellInfoDictionary2 options:NSJSONWritingPrettyPrinted error:&JSONSerializerError2];
+    LYRMessagePart *cellInfoMessagePart2 = [LYRMessagePart messagePartWithMIMEType:ATLMimeTypeCustomCellInfo data:cellInfoDictionaryJSON2];
+    // Add message to ordered set.  This ordered set messages will get sent to the participants
+    LYRMessage *message2 = [appDelegate.layerClient newMessageWithParts:@[dataMessagePart2,cellInfoMessagePart2] options:nil error:&error];
+
+    // Sends the specified message
+    BOOL success2 = [conversation sendMessage:message2 error:&error];
+    if (success2) {
+        NSLog(@"Message queued to be sent: %@", message);
+    } else {
+        NSLog(@"Message send failed: %@", error);
+        
+        [self dismissViewControllerAnimated:YES completion:^{
+            [SVProgressHUD showErrorWithStatus:@"Something went wrong :("];
+            [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"refreshGroups"];
+            [[NSUserDefaults standardUserDefaults] synchronize];
+        }];
+    }
+    
 }
 
 
@@ -1053,14 +1480,12 @@
         
         NewGroupCreatorVC *vc = (NewGroupCreatorVC *)[segue destinationViewController];
         vc.eventId = self.objectID;
-        if (finalUserIDArray.count > 3) {
-            vc.userIdArray = finalUserIDArray;
-            vc.memCount = (int)finalUserIDArray.count + 1;
-        } else {
-            PFUser *currentUser = [PFUser currentUser];
-            vc.userIdArray = [finalUserIDArray arrayByAddingObject:currentUser[@"FBObjectID"]];
-            vc.memCount = (int)vc.userIdArray.count;
-        }
+        PFUser *currentUser = [PFUser currentUser];
+        vc.userIdArray = (NSMutableArray *)[finalUserIDArray arrayByAddingObject:currentUser[@"FBObjectID"]];
+        vc.memCount = (int)vc.userIdArray.count;
+        
+        NSLog(@"%@", vc.userIdArray);
+    
     }
     
 }

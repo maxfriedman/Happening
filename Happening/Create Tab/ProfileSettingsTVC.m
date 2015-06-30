@@ -42,6 +42,7 @@
 
 - (IBAction)dismissButtonTapped:(id)sender {
     
+    
     [self dismissViewControllerAnimated:YES completion:^{
         
         [self.profileVC showNavTitle];

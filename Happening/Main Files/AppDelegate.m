@@ -15,8 +15,8 @@
 #import "MyEventsTVC.h"
 #import "movieLoginVC.h"
 #import "moreDetailFromTable.h"
-
 #import <AVFoundation/AVFoundation.h>
+#import "RKDropdownAlert.h"
 
 #define SYSTEM_VERSION_EQUAL_TO(v)                  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedSame)
 #define SYSTEM_VERSION_GREATER_THAN(v)              ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedDescending)
@@ -67,11 +67,65 @@
         // Yay! It worked!
     }
     
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
+    
+    /*
+    [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationController class], nil] setTitleTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:[UIFont fontWithName:@"OpenSans-Semibold" size:18], NSFontAttributeName, nil] forState:UIControlStateNormal]; */
+    
+    //[UINavigationController setTitleTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:[UIFont fontWithName:@"OpenSans-Semibold" size:18], NSFontAttributeName, nil] forState:UIControlStateNormal];
+
+    
+    [[UINavigationBar appearance] setTitleTextAttributes:
+     [NSDictionary dictionaryWithObjectsAndKeys:
+      [UIFont fontWithName:@"OpenSans-Semibold" size:18.0],
+      NSFontAttributeName,
+      nil]];
+    
+    /*
+    [self.navigationController.navigationBar setTitleTextAttributes:
+     [NSDictionary dictionaryWithObjectsAndKeys:
+      [UIFont fontWithName:@"OpenSans-Semibold" size:18],
+      NSFontAttributeName, nil]];
+    */
+     
+    /*
+    [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
+     setTitleTextAttributes:
+     @{NSForegroundColorAttributeName:[UIColor blackColor],
+       NSShadowAttributeName:shadow,
+       NSFontAttributeName:[UIFont boldSystemFontOfSize:12.0]
+       }
+     forState:UIControlStateNormal]; */
+    
     [ParseCrashReporting enable];
     [Parse setApplicationId:@"olSntgsT5uY3ZZbJtnjNz8yvol4CxwmArTsbkCZa"
                   clientKey:@"xwmrITvs8UaFBNfBupzXcUa6HN3sU515xp1TsGxu"];
     
     [PFAnalytics trackAppOpenedWithLaunchOptions:launchOptions];
+    
+    NSUUID *appID = [[NSUUID alloc] initWithUUIDString:@"337f6c52-0eb7-11e5-b8c8-aa9e2d006589"];
+    self.layerClient = [LYRClient clientWithAppID:appID];
+    
+    if (!self.layerClient.isConnected) {
+        // LayerKit is connected, no need to call connectWithCompletion:
+        [self.layerClient connectWithCompletion:^(BOOL success, NSError *error) {
+            if (!success) {
+                NSLog(@"Failed to connect to Layer: %@", error);
+            } else {
+                PFUser *currentUser = [PFUser currentUser];
+                if (currentUser != nil) {
+                    NSString *userIDString = currentUser.objectId;
+                    // Once connected, authenticate user.
+                    // Check Authenticate step for authenticateLayerWithUserID source
+                    [self authenticateLayerWithUserID:userIDString completion:^(BOOL success, NSError *error) {
+                        if (!success) {
+                            NSLog(@"Failed Authenticating Layer Client with error:%@", error);
+                        }
+                    }];
+                }
+            }
+        }];
+    }
 
     if (SYSTEM_VERSION_LESS_THAN(@"8.0")) {
         
@@ -90,6 +144,8 @@
                                                                                  categories:nil];
         [application registerUserNotificationSettings:settings];
         [application registerForRemoteNotifications];
+        
+        //[self.dev]
         
         if(self.locationManager==nil){
             _locationManager=[[CLLocationManager alloc] init];
@@ -113,8 +169,9 @@
         // User is logged in, do work such as go to next view controller.
         //NSLog(@"User is already logged in!");
         UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
-        rk = [storyboard instantiateViewControllerWithIdentifier:@"rk"];
-        self.window.rootViewController = rk;
+        //rk = [storyboard instantiateViewControllerWithIdentifier:@"rk"];
+        //self.window.rootViewController = rk;
+        //self.window.rootViewController = [storyboard instantiateViewControllerWithIdentifier:@"MH"];;
         
     } else {
         
@@ -296,65 +353,6 @@
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
 }
 
-/*
-// This method will handle ALL the session state changes in the app
-- (void)sessionStateChanged:(FBSession *)session state:(FBSessionState) state error:(NSError *)error
-{
-    // If the session was opened successfully
-    if (!error && state == FBSessionStateOpen){
-        NSLog(@"Session opened");
-        // Show the user the logged-in UI
-        //[self userLoggedIn];
-        return;
-    }
-    if (state == FBSessionStateClosed || state == FBSessionStateClosedLoginFailed){
-        // If the session is closed
-        NSLog(@"Session closed");
-        // Show the user the logged-out UI
-        //[self userLoggedOut];
-    }
-    
-    // Handle errors
-    if (error){
-        NSLog(@"Error");
-        NSString *alertText;
-        NSString *alertTitle;
-        // If the error requires people using an app to make an action outside of the app in order to recover
-        if ([FBErrorUtility shouldNotifyUserForError:error] == YES){
-            alertTitle = @"Something went wrong";
-            alertText = [FBErrorUtility userMessageForError:error];
-            [self showMessage:alertText withTitle:alertTitle];
-        } else {
-            
-            // If the user cancelled login, do nothing
-            if ([FBErrorUtility errorCategoryForError:error] == FBErrorCategoryUserCancelled) {
-                NSLog(@"User cancelled login");
-                
-                // Handle session closures that happen outside of the app
-            } else if ([FBErrorUtility errorCategoryForError:error] == FBErrorCategoryAuthenticationReopenSession){
-                alertTitle = @"Session Error";
-                alertText = @"Your current session is no longer valid. Please log in again.";
-                [self showMessage:alertText withTitle:alertTitle];
-                
-                // For simplicity, here we just show a generic message for all other errors
-                // You can learn how to handle other errors using our guide: https://developers.facebook.com/docs/ios/errors
-            } else {
-                //Get more error information from the error
-                NSDictionary *errorInformation = [[[error.userInfo objectForKey:@"com.facebook.sdk:ParsedJSONResponseKey"] objectForKey:@"body"] objectForKey:@"error"];
-                
-                // Show the user an error message
-                alertTitle = @"Something went wrong";
-                alertText = [NSString stringWithFormat:@"Please retry. \n\n If the problem persists contact us and mention this error code: %@", [errorInformation objectForKey:@"message"]];
-                [self showMessage:alertText withTitle:alertTitle];
-            }
-        }
-        // Clear this token
-        [FBSession.activeSession closeAndClearTokenInformation];
-        // Show the user the logged-out UI
-        //[self userLoggedOut];
-    }
-}
- */
 
 // Show an alert message
 - (void)showMessage:(NSString *)text withTitle:(NSString *)title
@@ -379,62 +377,177 @@
     //PFUser *user = [PFUser currentUser];
     //currentInstallation[@"userID"] = user.objectId;
     [currentInstallation saveInBackground];
+    
+    NSError *error;
+    BOOL success = [self.layerClient updateRemoteNotificationDeviceToken:deviceToken error:&error];
+    if (success) {
+        NSLog(@"Application did register for remote notifications");
+    } else {
+        NSLog(@"Error updating Layer device token for push:%@", error);
+    }
+    
 }
 
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo {
-    [PFPush handlePush:userInfo];
+
+    
+    //[PFPush handlePush:userInfo];
     
     NSLog(@"PUSH NOTIFICATION");
     NSLog(@"Info from push: %@", userInfo);
     
-    if ([userInfo objectForKey:@"eventID"] != nil) {
-    
-        NSString *eventID = [userInfo objectForKey:@"eventID"];
-
-        PFQuery *query = [PFQuery queryWithClassName:@"Event"];
-        [query getObjectInBackgroundWithId:eventID block:^(PFObject *event, NSError *error){
-    
-            if (!error) {
+    UIApplicationState state = [application applicationState];
+    if (state == UIApplicationStateActive)
+    {
         
-                UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
-                moreDetailFromTable *vc = [storyboard instantiateViewControllerWithIdentifier:@"detailView"];
-                UINavigationController *nvc = [[UINavigationController alloc] initWithRootViewController:vc];
-                nvc.navigationBar.tintColor = [UIColor whiteColor];
-                nvc.navigationItem.leftBarButtonItem.tintColor = [UIColor whiteColor];
-                nvc.navigationBar.titleTextAttributes = [NSDictionary dictionaryWithObject:[UIColor whiteColor] forKey:NSForegroundColorAttributeName];
-                nvc.modalPresentationStyle = UIModalTransitionStyleCrossDissolve;
+        if ([userInfo objectForKey:@"layer"] != nil) { // layer notification
             
-                // Pass data
-                vc.eventID = eventID;
-                vc.titleText = event[@"Title"];
-                vc.distanceText = @"0.1 mi";
-                vc.subtitleText = event[@"Description"];
-                vc.locationText = event[@"Location"];
+            NSDictionary *dict = [userInfo objectForKey:@"layer"];
+    
+            LYRQuery *query = [LYRQuery queryWithQueryableClass:[LYRConversation class]];
+            query.predicate = [LYRPredicate predicateWithProperty:@"identifier" predicateOperator:LYRPredicateOperatorIsEqualTo value:[dict objectForKey:@"conversation_identifier"]];
+            LYRConversation *conversation = [[self.layerClient executeQuery:query error:nil] firstObject];
             
-                vc.attendEventVC = nil;
-            
-                PFFile *file = event[@"Image"];
-            
-                    [file getDataInBackgroundWithBlock:^(NSData *data, NSError *error){
+            PFQuery *groupQuery = [PFQuery queryWithClassName:@"Group"];
+            [groupQuery getObjectInBackgroundWithId: [conversation.metadata objectForKey:@"groupId"] block:^(PFObject *group, NSError *error) {
+               
+                NSDictionary *pushDict = [userInfo objectForKey:@"aps"];
                 
-                        vc.image = [UIImage imageWithData:data];
+                if (!error) {
+                    [RKDropdownAlert title:group[@"name"] message:[pushDict objectForKey:@"alert"] backgroundColor:[UIColor colorWithRed:28.0/255 green:73.0/255 blue:134.0/255 alpha:1.0] textColor:[UIColor whiteColor]];
+                }
                 
-                        [rk presentViewController:nvc animated:YES completion:^{
+            }];
+            
+        }
+        
+        
+        
+    }
+    else {
+        // Push Notification received in the background
+        
+        if ([userInfo objectForKey:@"eventID"] != nil) {
+        
+            NSString *eventID = [userInfo objectForKey:@"eventID"];
+
+            PFQuery *query = [PFQuery queryWithClassName:@"Event"];
+            [query getObjectInBackgroundWithId:eventID block:^(PFObject *event, NSError *error){
+        
+                if (!error) {
+            
+                    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+                    moreDetailFromTable *vc = [storyboard instantiateViewControllerWithIdentifier:@"detailView"];
+                    UINavigationController *nvc = [[UINavigationController alloc] initWithRootViewController:vc];
+                    nvc.navigationBar.tintColor = [UIColor whiteColor];
+                    nvc.navigationItem.leftBarButtonItem.tintColor = [UIColor whiteColor];
+                    nvc.navigationBar.titleTextAttributes = [NSDictionary dictionaryWithObject:[UIColor whiteColor] forKey:NSForegroundColorAttributeName];
+                    nvc.modalPresentationStyle = UIModalTransitionStyleCrossDissolve;
+                
+                    // Pass data
+                    vc.eventID = eventID;
+                    vc.titleText = event[@"Title"];
+                    vc.distanceText = @"0.1 mi";
+                    vc.subtitleText = event[@"Description"];
+                    vc.locationText = event[@"Location"];
+                
+                    vc.attendEventVC = nil;
+                
+                    PFFile *file = event[@"Image"];
+                
+                        [file getDataInBackgroundWithBlock:^(NSData *data, NSError *error){
+                    
+                            vc.image = [UIImage imageWithData:data];
+                    
+                            [rk presentViewController:nvc animated:YES completion:^{
+                        
+                            }];
                     
                         }];
                 
-                    }];
-            
-            } else {
-            
-                NSLog(@"ERROR!!!!!!");
-            }
+                } else {
+                
+                    NSLog(@"ERROR!!!!!!");
+                }
 
-        
-        }];
-    
+            
+            }];
+        }
     }
 }
 
+- (void)authenticateLayerWithUserID:(NSString *)userID completion:(void (^)(BOOL success, NSError * error))completion
+{
+    // Check to see if the layerClient is already authenticated.
+    if (self.layerClient.authenticatedUserID) {
+        // If the layerClient is authenticated with the requested userID, complete the authentication process.
+        if ([self.layerClient.authenticatedUserID isEqualToString:userID]){
+            NSLog(@"Layer Authenticated as User %@", self.layerClient.authenticatedUserID);
+            if (completion) completion(YES, nil);
+            return;
+        } else {
+            //If the authenticated userID is different, then deauthenticate the current client and re-authenticate with the new userID.
+            [self.layerClient deauthenticateWithCompletion:^(BOOL success, NSError *error) {
+                if (!error){
+                    [self authenticationTokenWithUserId:userID completion:^(BOOL success, NSError *error) {
+                        if (completion){
+                            completion(success, error);
+                        }
+                    }];
+                } else {
+                    if (completion){
+                        completion(NO, error);
+                    }
+                }
+            }];
+        }
+    } else {
+        // If the layerClient isn't already authenticated, then authenticate.
+        [self authenticationTokenWithUserId:userID completion:^(BOOL success, NSError *error) {
+            if (completion){
+                completion(success, error);
+            }
+        }];
+    }
+}
+
+- (void)authenticationTokenWithUserId:(NSString *)userID completion:(void (^)(BOOL success, NSError* error))completion{
+    
+    /*
+     * 1. Request an authentication Nonce from Layer
+     */
+    [self.layerClient requestAuthenticationNonceWithCompletion:^(NSString *nonce, NSError *error) {
+        if (!nonce) {
+            if (completion) {
+                completion(NO, error);
+            }
+            return;
+        }
+        
+        /*
+         * 2. Acquire identity Token from Layer Identity Service
+         */
+        NSDictionary *parameters = @{@"nonce" : nonce, @"userID" : userID};
+
+        [PFCloud callFunctionInBackground:@"generateToken" withParameters:parameters block:^(id object, NSError *error) {
+            if (!error){
+                
+                NSString *identityToken = (NSString*)object;
+                [self.layerClient authenticateWithIdentityToken:identityToken completion:^(NSString *authenticatedUserID, NSError *error) {
+                    if (authenticatedUserID) {
+                        if (completion) {
+                            completion(YES, nil);
+                        }
+                        NSLog(@"Layer Authenticated as User: %@", authenticatedUserID);
+                    } else {
+                        completion(NO, error);
+                    }
+                }];
+            } else {
+                NSLog(@"Parse Cloud function failed to be called to generate token with error: %@", error);
+            }
+        }];
+    }];
+}
 
 @end

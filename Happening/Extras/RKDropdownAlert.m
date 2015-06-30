@@ -5,9 +5,11 @@
 //  Created by Richard Kim on 8/26/14.
 //  Copyright (c) 2014 Richard Kim. All rights reserved.
 //
-
+//  objective-c objc obj c
 
 #import "RKDropdownAlert.h"
+
+NSString *const RKDropdownAlertDismissAllNotification = @"RKDropdownAlertDismissAllNotification";
 
 //%%% CUSTOMIZE FOR DEFAULT SETTINGS
 // These values specify what the view will look like
@@ -17,7 +19,7 @@ static int X_BUFFER = 10; //buffer distance on each side for the text
 static int Y_BUFFER = 10; //buffer distance on top/bottom for the text
 static int TIME = 3; //default time in seconds before the view is hidden
 static int STATUS_BAR_HEIGHT = 20;
-static int FONT_SIZE = 16;
+static int FONT_SIZE = 14;
 NSString *DEFAULT_TITLE;
 
 @implementation RKDropdownAlert{
@@ -27,12 +29,7 @@ NSString *DEFAULT_TITLE;
 @synthesize defaultTextColor;
 @synthesize defaultViewColor;
 
-//////////////////////////////////////////////////////////
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-//%%%%%%%%%%%%%%%       customizable       %%%%%%%%%%%%%%%
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-//
+#pragma mark CUSTOMIZABLE
 
 //%%% CUSTOMIZE DEFAULT VALUES
 // These are the default value. For example, if you don't specify a color, then
@@ -57,7 +54,7 @@ NSString *DEFAULT_TITLE;
         
         //%%% title setup (the bolded text at the top of the view)
         titleLabel = [[UILabel alloc]initWithFrame:CGRectMake(X_BUFFER, STATUS_BAR_HEIGHT, frame.size.width-2*X_BUFFER, 30)];
-        [titleLabel setFont:[UIFont fontWithName:@"OpenSans" size:FONT_SIZE]];
+        [titleLabel setFont:[UIFont fontWithName:@"OpenSans-Semibold" size:FONT_SIZE]];
         titleLabel.textColor = defaultTextColor;
         titleLabel.textAlignment = NSTextAlignmentCenter;
         [self addSubview:titleLabel];
@@ -65,18 +62,34 @@ NSString *DEFAULT_TITLE;
         //%%% message setup (the regular text below the title)
         messageLabel = [[UILabel alloc]initWithFrame:CGRectMake(X_BUFFER, STATUS_BAR_HEIGHT +Y_BUFFER*2.3, frame.size.width-2*X_BUFFER, 40)];
         messageLabel.textColor = defaultTextColor;
-        [messageLabel setFont:[UIFont fontWithName:@"OpenSans-Light" size:13.0]];
-        messageLabel.font = [messageLabel.font fontWithSize:13.0];
+        [messageLabel setFont:[UIFont fontWithName:@"OpenSans" size:12.0]];
+        messageLabel.font = [messageLabel.font fontWithSize:FONT_SIZE];
         messageLabel.lineBreakMode = NSLineBreakByWordWrapping;
         messageLabel.numberOfLines = 2; // 2 lines ; 0 - dynamic number of lines
         messageLabel.textAlignment = NSTextAlignmentCenter;
         [self addSubview:messageLabel];
         
         [self addTarget:self action:@selector(hideView:) forControlEvents:UIControlEventTouchUpInside];
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(dismissAlertView)
+                                                     name:RKDropdownAlertDismissAllNotification
+                                                   object:nil];
+        self.isShowing = NO;
+     
     }
     return self;
 }
 
+- (void)dismissAlertView {
+    [self hideView:self];
+}
+
+- (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:RKDropdownAlertDismissAllNotification
+                                                  object:nil];
+}
 
 //%%% button method (what happens when you touch the drop down view)
 -(void)viewWasTapped:(UIButton *)alertView
@@ -106,25 +119,18 @@ NSString *DEFAULT_TITLE;
 {
     if (alertView){
         [alertView removeFromSuperview];
+        self.isShowing = NO;
+        if (self.delegate){
+            [self.delegate dropdownAlertWasDismissed];
+        }
     }
 }
 
-//
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-//%%%%%%%%%%%%%%%       customizable        %%%%%%%%%%%%%%
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-//////////////////////////////////////////////////////////
 
 
-//////////////////////////////////////////////////////////
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-//%%%%%%%%%%%%%%%          Ignore          %%%%%%%%%%%%%%%
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-//
+#pragma mark IGNORE THESE
+
 //%%% these are necessary methods that call each other depending on which method you call. Generally shouldn't edit these unless you know what you're doing
-
 
 +(RKDropdownAlert*)alertView {
     RKDropdownAlert *alert = [[self alloc]initWithFrame:CGRectMake(0, -HEIGHT, [[UIScreen mainScreen]bounds].size.width, HEIGHT)];
@@ -231,12 +237,16 @@ NSString *DEFAULT_TITLE;
     [[self alertViewWithDelegate:delegate]title:title message:message backgroundColor:backgroundColor textColor:textColor time:seconds];
 }
 
++(void)dismissAllAlert{
+    [[NSNotificationCenter defaultCenter] postNotificationName:RKDropdownAlertDismissAllNotification object:nil];
+}
+
 -(void)title:(NSString*)title message:(NSString*)message backgroundColor:(UIColor*)backgroundColor textColor:(UIColor*)textColor time:(NSInteger)seconds
 {
     NSInteger time = seconds;
     titleLabel.text = title;
     
-    if (message) {
+    if (message && message.length > 0) {
         messageLabel.text = message;
         if ([self messageTextIsOneLine]) {
             CGRect frame = titleLabel.frame;
@@ -272,6 +282,8 @@ NSString *DEFAULT_TITLE;
             }
     }
     
+    self.isShowing = YES;
+    
     [UIView animateWithDuration:ANIMATION_TIME animations:^{
         CGRect frame = self.frame;
         frame.origin.y = 0;
@@ -296,10 +308,4 @@ NSString *DEFAULT_TITLE;
     return YES;
 }
 
-//
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-//%%%%%%%%%%%%%%%           Ignore          %%%%%%%%%%%%%%
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-//////////////////////////////////////////////////////////
 @end

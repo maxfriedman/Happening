@@ -765,11 +765,15 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     
     
     UIButton *hapLogoButton = [[UIButton alloc] initWithFrame:CGRectMake(15, 247, 46, 46)];
-    [hapLogoButton setImage:[UIImage imageNamed:@"AppLogoButton"] forState:UIControlStateNormal];
+    //[hapLogoButton setImage:[UIImage imageNamed:@"AppLogoButton"] forState:UIControlStateNormal];
+    
+    [hapLogoButton setTitle:@"INVITE" forState:UIControlStateNormal];
+    [hapLogoButton setTitleColor:[UIColor colorWithRed:0 green:176.0/255 blue:242.0/255 alpha:1.0] forState:UIControlStateNormal];
+    hapLogoButton.titleLabel.font = [UIFont fontWithName:@"OpenSans" size:9.0];
     
     hapLogoButton.layer.cornerRadius = 23;
     hapLogoButton.layer.masksToBounds = YES;
-    hapLogoButton.layer.borderColor = [UIColor lightGrayColor].CGColor;
+    hapLogoButton.layer.borderColor = [UIColor colorWithRed:0 green:176.0/255 blue:242.0/255 alpha:1.0].CGColor;
     hapLogoButton.layer.borderWidth = 1;
     hapLogoButton.accessibilityIdentifier = @"hap";
     hapLogoButton.userInteractionEnabled = YES;
@@ -886,7 +890,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 
 - (void)loadFBFriends:(UIScrollView *)friendScrollView withCard:(DraggableView *)card {
     
-    NSLog(@"Loading FB Friends");
+   // NSLog(@"Loading FB Friends");
     
     if ([FBSDKAccessToken currentAccessToken]) {
         
@@ -895,7 +899,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             //code
             
             NSArray* friends = [result objectForKey:@"data"];
-            NSLog(@"Found: %lu friends", (unsigned long)friends.count);
+            //NSLog(@"Found: %lu friends", (unsigned long)friends.count);
             
             __block int friendCount = 0;
             
@@ -915,7 +919,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             
             [userQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
                 
-                NSLog(@"%lu friends interested", (unsigned long)objects.count);
+               // NSLog(@"%lu friends interested", (unsigned long)objects.count);
                 
                 if (!error) {
                     
@@ -958,7 +962,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                     }
                     
                     if (objects.count == 0) {
-                        NSLog(@"No new friends");
+                       // NSLog(@"No new friends");
                         
                         //[self noFriendsAddButton:friendScrollView];
                         

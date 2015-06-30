@@ -94,6 +94,7 @@
     self.eventIDLabel.text = self.eventID;
     self.titleLabel.text = self.titleText;
     self.distanceLabel.text = self.distanceText;
+    self.distanceLabel.minimumScaleFactor = 0.75;
     self.imageView.image = self.image;
     
     self.locationLabel = [[UILabel alloc] initWithFrame:CGRectMake(122, 232, 154, 21)];

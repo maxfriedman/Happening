@@ -51,6 +51,15 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    self.navigationController.navigationBar.barTintColor = [UIColor clearColor]; //%%% bartint
+    [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"navBar"] forBarMetrics:UIBarMetricsDefault];
+    self.navigationController.navigationBar.translucent = NO;
+    
+    [self.navigationController.navigationBar setTitleTextAttributes:
+     [NSDictionary dictionaryWithObjectsAndKeys:
+      [UIFont fontWithName:@"OpenSans-Semibold" size:18],
+      NSFontAttributeName, nil]];
+    
     user = [PFUser currentUser];
     nameLabel.text = [NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]];
     
@@ -264,7 +273,7 @@
     else
         [cell.subtitle setText:[NSString stringWithFormat:@""]];
     
-    [cell.locLabel setText:[NSString stringWithFormat:@"%@",Event[@"Location"]]];
+    [cell.locLabel setText:[NSString stringWithFormat:@"at %@",Event[@"Location"]]];
     
     cell.eventID = Event.objectId;
     
@@ -347,9 +356,34 @@
     } else {
         PFGeoPoint *userLoc = user[@"userLoc"];
         NSNumber *meters = [NSNumber numberWithDouble:([loc distanceInMilesTo:userLoc])];
-        NSString *distance = [NSString stringWithFormat:(@"%.1f mi"), meters.floatValue];
-        cell.distance.text = distance;
+        
+        if (meters.floatValue >= 100.0) {
+            
+            NSString *distance = [NSString stringWithFormat:(@"100+ mi")];
+            cell.distance.text = distance;
+            
+        } else if (meters.floatValue >= 10.0) {
+            
+            NSString *distance = [NSString stringWithFormat:(@"%.f mi"), meters.floatValue];
+            cell.distance.text = distance;
+            
+        } else {
+            
+            NSString *distance = [NSString stringWithFormat:(@"%.1f mi"), meters.floatValue];
+            cell.distance.text = distance;
+        }
+        
     }
+    
+    [cell.distance sizeToFit];
+    
+    [[cell viewWithTag:77] removeFromSuperview];
+    
+    UIImageView *locIMV = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"locationPinThickOutline"]];
+    locIMV.frame = CGRectMake(290 - cell.distance.frame.size.width - 11 - 5, 38, 11, 13);
+    locIMV.tag = 77;
+    [cell.contentView addSubview:locIMV];
+
     
     cell.interestedLabel.text = [NSString stringWithFormat:@"%@ interested", Event[@"swipesRight"]];
     

@@ -20,7 +20,7 @@
 @property (strong, nonatomic) IBOutlet UIBarButtonItem *createButton;
 
 @property (assign) NSString *eventId;
-@property (assign) NSArray *userIdArray;
+@property NSArray *userIdArray;
 @property (assign) int memCount;
 
 @end
