@@ -74,7 +74,7 @@
         CLLocation *currentLocation = locManager.location;
         currentUser[@"userLoc"] = [PFGeoPoint geoPointWithLocation:currentLocation];
         NSLog(@"Current Location is: %@", currentLocation);
-        [currentUser saveInBackground];
+        [currentUser saveEventually];
     }
     
     currentUser = [PFUser currentUser];
@@ -91,6 +91,8 @@
     [chatBubble addTarget:self action:@selector(chatTapped:) forControlEvents:UIControlEventTouchUpInside];
     allUsers = [NSMutableArray array];
     allUsers = group[@"user_objects"];
+    NSLog(@"%lu", allUsers.count);
+
     
     [self.topButtonView addTarget:self action:@selector(toGroupDetails:) forControlEvents:UIControlEventTouchUpInside];
     
@@ -98,8 +100,35 @@
     
     if (self.group) {
         [self loadEventData];
-        if (self.loadTopView)
-            [self loadTopButtonView];
+        if (self.loadTopView) {
+            /*
+            NSArray *usersCopy = [NSArray arrayWithArray:allUsers];
+            
+            for (int i = 0; i < allUsers.count; i++) {
+                
+                PFUser *user = allUsers[i];
+                if (user.isDataAvailable)
+                    [allUsers removeObjectAtIndex:i];
+            }*/
+            
+            [PFObject fetchAllInBackground:allUsers block:^(NSArray *array, NSError *error) {
+                if (!error) {
+
+                    //[allUsers addObjectsFromArray:array];
+                    allUsers = [NSMutableArray arrayWithArray: array];
+                    NSLog(@"%lu", allUsers.count);
+
+                    if (![allUsers containsObject:currentUser]) {
+                        NSLog(@"ADDING CURRENT USER");
+                        [allUsers addObject:currentUser];
+                        group[@"user_objects"] = allUsers;
+                        [group saveEventually];
+                        
+                    }
+                    [self loadTopButtonView];
+                }
+            }];
+        }
     } else {
         [SVProgressHUD show];
         [self loadGroup];
@@ -113,128 +142,126 @@
     rsvpNoArray = [NSMutableArray array];
     rsvpYesArray = [NSMutableArray array];
     extraSections = [NSMutableDictionary dictionary];
-
+    
+    [SVProgressHUD show];
+    
     PFQuery *groupEventQuery = [PFQuery queryWithClassName:@"Group_Event"];
+    //[groupEventQuery fromLocalDatastore];
     [groupEventQuery whereKey:@"GroupID" equalTo:group.objectId];
-    
-    PFQuery *eventQuery = [PFQuery queryWithClassName:@"Event"];
-    [eventQuery whereKey:@"objectId" matchesKey:@"EventID" inQuery:groupEventQuery];
-    [eventQuery whereKey:@"EndTime" greaterThan:[NSDate date]];
-    [eventQuery orderByAscending:@"Date"];
-    
-    count = 0;
-    eventsArray = [[NSArray alloc]init];
-    
-    [eventQuery findObjectsInBackgroundWithBlock:^(NSArray *events, NSError *error){
+    [groupEventQuery findObjectsInBackgroundWithBlock:^(NSArray *events, NSError *error){
         
-        eventsArray = events;
-        //NSLog(@"Events Array: %@", events);
+        NSMutableArray *idArray = [NSMutableArray new];
         
-        for (PFObject *event in eventsArray)
-        {
-            // Reduce event start date to date components (year, month, day)
-            NSDate *dateRepresentingThisDay = [self dateAtBeginningOfDayForDate:event[@"Date"]];
-            if ([dateRepresentingThisDay compare:[NSDate date]] == NSOrderedAscending) {
-                dateRepresentingThisDay = [self dateAtBeginningOfDayForDate:[NSDate date]];
-            }
+        for (PFObject *object in events) {
             
-            // If we don't yet have an array to hold the events for this day, create one
-            NSMutableArray *eventsOnThisDay = [self.sections objectForKey:dateRepresentingThisDay];
-            if (eventsOnThisDay == nil) {
-                eventsOnThisDay = [NSMutableArray array];
-                
-                // Use the reduced date as dictionary key to later retrieve the event list this day
-                [self.sections setObject:eventsOnThisDay forKey:dateRepresentingThisDay];
-            }
-            
-            // Add the event to the list for this day
-            [eventsOnThisDay addObject:event];
-            
-            count++;
-        }
-        
-        // Create a sorted list of days
-        NSArray *unsortedDays = [self.sections allKeys];
-        self.sortedDays = [unsortedDays sortedArrayUsingSelector:@selector(compare:)];
-        
-        if (eventsArray.count == 0) {
-            
-            //[noEventsView removeFromSuperview];
-            //[self noEvents];
-            
-        } else {
-            
-            //[noEventsView removeFromSuperview];
-        }
-        
-        [SVProgressHUD dismiss];
-        [self.tableView reloadData];
-
-    }];
-    
-    
-#warning dumbest query/logic of all time but it works sadly
-    
-    //[conversation setValue:group[@"name"] forMetadataAtKeyPath:@"title"];
-    
-    [groupEventQuery includeKey:@"users_going"];
-    [groupEventQuery includeKey:@"users_not_going"];
-    [groupEventQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-        
-        for (PFObject *object in objects) {
-
-            NSArray *going = object[@"users_going"];
-            NSArray *notGoing = object[@"users_not_going"];
-
-            NSMutableArray *maybeGoing = [NSMutableArray array];
-            
-            for (PFUser *user in allUsers) {
-                [maybeGoing addObject:user];
-            }
-            for (int i = 0; i < going.count; i++) {
-                PFUser *user1 = going[i];
-                for (int m = 0; m < maybeGoing.count; m++) {
-                    PFUser *user2 = maybeGoing[m];
-                    if ([user2.objectId isEqualToString:user1.objectId])
-                        [maybeGoing removeObject:user2];
-                }
-            }
-            
-            
-            for (int i = 0; i < notGoing.count; i++) {
-                PFUser *user1 = notGoing[i];
-                for (int m = 0; m < maybeGoing.count; m++) {
-                    PFUser *user2 = maybeGoing[m];
-                    if ([user2.objectId isEqualToString:user1.objectId])
-                        [maybeGoing removeObject:user2];
-                }
-            }
+            //[object pinInBackground];
             
             NSMutableDictionary *extras = [NSMutableDictionary dictionary];
-            
-            if (maybeGoing != nil)
-                [extras setObject:maybeGoing forKey:@"maybe"];
-            else
-                [extras setObject:[NSArray array] forKey:@"maybe"];
-            //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-            if (notGoing != nil)
-                [extras setObject:notGoing forKey:@"no"];
-            else
-                [extras setObject:[NSArray array] forKey:@"no"];
-            //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-            if (going != nil)
-                [extras setObject:going forKey:@"yes"];
-            else
-                [extras setObject:[NSArray array] forKey:@"yes"];
-            //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
+            [extraSections setObject:extras forKey:object[@"EventID"]];
             [extras setObject:object.objectId forKey:@"ID"];
             [extras setObject:object forKey:@"eventObject"];
+        
+            [idArray addObject:object[@"EventID"]];
             
-            [extraSections setObject:extras forKey:object[@"EventID"]];
+            [extras setObject:allUsers forKey:@"maybe"];
+            [extras setObject:[NSMutableArray array] forKey:@"no"];
+            [extras setObject:[NSMutableArray array] forKey:@"yes"];
+        
         }
+        
+        PFQuery *groupRSVPQuery = [PFQuery queryWithClassName:@"Group_RSVP"];
+        [groupRSVPQuery whereKey:@"EventID" containedIn:idArray];
+        [groupRSVPQuery whereKey:@"GroupID" equalTo:group.objectId];
+        [groupRSVPQuery includeKey:@"User_Object"];
+        [groupRSVPQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error){
+            
+            for (PFObject *rsvpObject in objects) {
+                
+                PFUser *user = rsvpObject[@"User_Object"];
 
-        [self.tableView reloadData];
+                NSMutableDictionary *extras = [extraSections objectForKey:rsvpObject[@"EventID"]];
+                NSMutableArray *yesUsers = [extras objectForKey:@"yes"];
+                NSMutableArray *noUsers = [extras objectForKey:@"no"];
+                NSMutableArray *maybeUsers = [extras objectForKey:@"maybe"];
+                
+                if ([rsvpObject[@"GoingType"] isEqualToString:@"yes"]) {
+                    [yesUsers addObject:user];
+                    [maybeUsers removeObject:user];
+                    [extras setObject:yesUsers forKey:@"yes"];
+                    [extras setObject:maybeUsers forKey:@"maybe"];
+                } else if ([rsvpObject[@"GoingType"] isEqualToString:@"no"]) {
+                    [noUsers addObject:user];
+                    [maybeUsers removeObject:user];
+                    [extras setObject:noUsers forKey:@"no"];
+                    [extras setObject:maybeUsers forKey:@"maybe"];
+                } else if ([rsvpObject[@"GoingType"] isEqualToString:@"maybe"]) {
+                    //[maybeUsers addObject:rsvpObject[@"User_Object"]];
+                }
+             
+                [SVProgressHUD dismiss];
+                [self.tableView reloadData];
+            }
+            
+        }];
+        
+        
+        PFQuery *eventQuery = [PFQuery queryWithClassName:@"Event"];
+        //[eventQuery fromLocalDatastore];
+        [eventQuery whereKey:@"objectId" containedIn:idArray];
+        [eventQuery whereKey:@"EndTime" greaterThan:[NSDate date]];
+        [eventQuery orderByAscending:@"Date"];
+        
+        count = 0;
+        eventsArray = [[NSArray alloc]init];
+        
+        [eventQuery findObjectsInBackgroundWithBlock:^(NSArray *events, NSError *error){
+            
+            eventsArray = events;
+            //NSLog(@"Events Array: %@", events);
+            
+            for (PFObject *event in eventsArray)
+            {
+                //[event pinInBackground];
+                
+                // Reduce event start date to date components (year, month, day)
+                NSDate *dateRepresentingThisDay = [self dateAtBeginningOfDayForDate:event[@"Date"]];
+                if ([dateRepresentingThisDay compare:[NSDate date]] == NSOrderedAscending) {
+                    dateRepresentingThisDay = [self dateAtBeginningOfDayForDate:[NSDate date]];
+                }
+                
+                // If we don't yet have an array to hold the events for this day, create one
+                NSMutableArray *eventsOnThisDay = [self.sections objectForKey:dateRepresentingThisDay];
+                if (eventsOnThisDay == nil) {
+                    eventsOnThisDay = [NSMutableArray array];
+                    
+                    // Use the reduced date as dictionary key to later retrieve the event list this day
+                    [self.sections setObject:eventsOnThisDay forKey:dateRepresentingThisDay];
+                }
+                
+                // Add the event to the list for this day
+                [eventsOnThisDay addObject:event];
+                
+                count++;
+            }
+            
+            // Create a sorted list of days
+            NSArray *unsortedDays = [self.sections allKeys];
+            self.sortedDays = [unsortedDays sortedArrayUsingSelector:@selector(compare:)];
+            
+            if (eventsArray.count == 0) {
+                
+                //[noEventsView removeFromSuperview];
+                //[self noEvents];
+                
+            } else {
+                
+                //[noEventsView removeFromSuperview];
+            }
+         
+            [SVProgressHUD dismiss];
+            [self.tableView reloadData];
+            
+          }];
         
     }];
     
@@ -242,19 +269,18 @@
 
 - (void)loadGroup {
     
-    
     PFQuery *groupQuery = [PFQuery queryWithClassName:@"Group"];
+    [groupQuery includeKey:@"user_objects"];
     [groupQuery getObjectInBackgroundWithId:[conversation.metadata valueForKey:@"groupId"] block:^(PFObject *ob, NSError *error){
         
         if (!error) {
         
             NSLog(@"Loading group...");
             group = ob;
+            [group pinInBackground];
             allUsers = [NSMutableArray array];
             allUsers = group[@"user_objects"];
-            
-            NSLog(@"user objects = %@", allUsers);
-            
+
             [self loadEventData];
             [self loadTopButtonView];
         
@@ -720,16 +746,17 @@
         PFUser *user = allUsers[i];
         
         FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(5 + 50 * i, 5, 40, 40)]; // initWithProfileID:user[@"FBObjectID"] pictureCropping:FBSDKProfilePictureModeSquare];
-        profPicView.profileID = user[@"FBObjectID"];
+        if (user.isDataAvailable || [user.objectId isEqualToString:currentUser.objectId]) {
+            profPicView.profileID = user[@"FBObjectID"];
+            UITapGestureRecognizer *gr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(showFriendProfile:)];
+            [profPicView addGestureRecognizer:gr];
+        }
         profPicView.pictureMode = FBSDKProfilePictureModeSquare;
         
         profPicView.layer.cornerRadius = 20;
         profPicView.layer.masksToBounds = YES;
         profPicView.accessibilityIdentifier = user.objectId;
         profPicView.userInteractionEnabled = YES;
-        
-        UITapGestureRecognizer *gr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(showFriendProfile:)];
-        [profPicView addGestureRecognizer:gr];
         
         [picView addSubview:profPicView];
         
@@ -772,82 +799,38 @@
     rsvpNoArray = [[NSMutableArray alloc] initWithArray: [dict objectForKey:@"no"]];
     rsvpYesArray = [[NSMutableArray alloc] initWithArray: [dict objectForKey:@"yes"]];
     
-    PFObject *rsvpObject = [PFObject objectWithoutDataWithClassName:@"Group_Event" objectId:cell.groupEventId];
+    PFQuery *query = [PFQuery queryWithClassName:@"Group_RSVP"];
+    [query whereKey:@"Group_Event_ID" equalTo:cell.groupEventId];
+    [query fromLocalDatastore];
+    [query getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
+        
+        PFObject *rsvpObject = [PFObject objectWithClassName:@"Group_RSVP"];
     
-    [rsvpObject fetchInBackgroundWithBlock:^(PFObject *object, NSError *error) {
-        
-        if (object[@"users_going"] != nil) {
-            rsvpYesArray = [[NSMutableArray alloc] initWithArray:object[@"users_going"]];
-        } else {
-            rsvpYesArray = [NSMutableArray array];
-        }
-        
-        if (object[@"users_not_going"] != nil) {
-            rsvpNoArray = [[NSMutableArray alloc] initWithArray:object[@"users_not_going"]];
-        } else {
-            rsvpNoArray = [NSMutableArray array];
-        }
-    
-        if (cell.checkButton.tag == 1) {
+        if (!error) {
             
-            // ~~~~~~~~~~~ NAMES
-            [rsvpYesArray insertObject:currentUser atIndex:0];
-            
-            for (int i = 0; i < rsvpNoArray.count; i++) {
-                PFObject *user = rsvpNoArray[i];
-                if ([user.objectId isEqualToString:currentUser.objectId])
-                    [rsvpNoArray removeObject:user];
+            rsvpObject = object;
+            if (cell.checkButton.tag == 1) {
+               object[@"GoingType"] = @"yes";
+            } else if (cell.xButton.tag == 1) {
+                object[@"GoingType"] = @"no";
+            } else {
+                object[@"GoingType"] = @"maybe";
             }
-            
-            for (int i = 0; i < rsvpMaybeArray.count; i++) {
-                PFObject *user = rsvpMaybeArray[i];
-                if ([user.objectId isEqualToString:currentUser.objectId])
-                    [rsvpMaybeArray removeObject:user];
-            }
-            
-            /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-            
-        } else if (cell.xButton.tag == 1) {
-            
-            // ~~~~~~~~~~~ NAMES
-            [rsvpNoArray insertObject:currentUser atIndex:0];
-            
-            for (int i = 0; i < rsvpYesArray.count; i++) {
-                PFObject *user = rsvpYesArray[i];
-                if ([user.objectId isEqualToString:currentUser.objectId])
-                    [rsvpYesArray removeObject:user];
-            }
-            
-            for (int i = 0; i < rsvpMaybeArray.count; i++) {
-                PFObject *user = rsvpMaybeArray[i];
-                if ([user.objectId isEqualToString:currentUser.objectId])
-                    [rsvpMaybeArray removeObject:user];
-            }
-
-            /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
             
         } else {
             
-            // ~~~~~~~~~~ NAMES
-            [rsvpMaybeArray insertObject:currentUser atIndex:0];
-            
-            for (int i = 0; i < rsvpNoArray.count; i++) {
-                PFObject *user = rsvpNoArray[i];
-                if ([user.objectId isEqualToString:currentUser.objectId])
-                    [rsvpNoArray removeObject:user];
-            }
-            
-            for (int i = 0; i < rsvpYesArray.count; i++) {
-                PFObject *user = rsvpYesArray[i];
-                if ([user.objectId isEqualToString:currentUser.objectId])
-                    [rsvpYesArray removeObject:user];
-            }
-            
+            rsvpObject[@"EventID"] = cell.eventId;
+            rsvpObject[@"GroupID"] = group.objectId;
+            rsvpObject[@"Group_Event_ID"] = groupEvent.objectId;
+            rsvpObject[@"UserID"] = currentUser.objectId;
+            rsvpObject[@"User_Object"] = currentUser;
+            rsvpObject[@"GoingType"] = @"yes";
+            [rsvpObject pinInBackground];
+            [rsvpObject saveEventually];
         }
         
-        object[@"users_going"] = rsvpYesArray;
-        object[@"users_not_going"] = rsvpNoArray;
-        [rsvpObject saveInBackgroundWithBlock:^(BOOL success, NSError *error){
+        
+        [rsvpObject saveEventually:^(BOOL success, NSError *error){
             
             if (!error && (cell.xButton.tag == 1 || cell.checkButton.tag == 1)) {
                 
@@ -866,7 +849,7 @@
                 NSData *dataDictionaryJSON = [NSJSONSerialization dataWithJSONObject:dataDictionary options:NSJSONWritingPrettyPrinted error:&JSONSerializerError];
                 LYRMessagePart *dataMessagePart = [LYRMessagePart messagePartWithMIMEType:ATLMimeTypeSystemObject data:dataDictionaryJSON];
                 // Create messagepart with info about cell
-                float actualLineSize = [messageText boundingRectWithSize:CGSizeMake(280, CGFLOAT_MAX)
+                float actualLineSize = [messageText boundingRectWithSize:CGSizeMake(270, CGFLOAT_MAX)
                                                                  options:NSStringDrawingUsesLineFragmentOrigin
                                                               attributes:@{NSFontAttributeName:[UIFont fontWithName:@"OpenSans" size:10.0]}
                                                                  context:nil].size.height;
@@ -880,7 +863,7 @@
                 // Sends the specified message
                 BOOL success = [conversation sendMessage:message error:&error];
                 if (success) {
-                    NSLog(@"Message queued to be sent: %@", message);
+                    //NSLog(@"Message queued to be sent: %@", message);
                 } else {
                     NSLog(@"Message send failed: %@", error);
                 }
@@ -957,7 +940,7 @@
         vc.group = group;
         vc.users = allUsers;
         vc.convo = conversation;
-        
+    
     }
     
 }

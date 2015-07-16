@@ -109,6 +109,9 @@ static CGFloat const ATLButtonHeight = 28.0f;
         self.firstAppearance = NO;
     }
     
+    // set the font for the dummy text view as well
+    self.dummyTextView.font = self.textInputView.font;
+    
     // We layout the views manually since using Auto Layout seems to cause issues in this context (i.e. an auto height resizing text view in an input accessory view) especially with iOS 7.1.
     CGRect frame = self.frame;
     CGRect leftButtonFrame = self.leftAccessoryButton.frame;
@@ -194,10 +197,12 @@ static CGFloat const ATLButtonHeight = 28.0f;
     }
 
     NSMutableAttributedString *attachmentString = [[NSAttributedString attributedStringWithAttachment:mediaAttachment] mutableCopy];
-    [attachmentString addAttribute:NSFontAttributeName value:textView.font range:NSMakeRange(0, attachmentString.length)];
     [attributedString appendAttributedString:attachmentString];
     [attributedString appendAttributedString:lineBreak];
-
+    [attributedString addAttribute:NSFontAttributeName value:textView.font range:NSMakeRange(0, attributedString.length)];
+    if (textView.textColor) {
+        [attributedString addAttribute:NSForegroundColorAttributeName value:textView.textColor range:NSMakeRange(0, attributedString.length)];
+    }
     textView.attributedText = attributedString;
     if ([self.inputToolBarDelegate respondsToSelector:@selector(messageInputToolbarDidType:)]) {
         [self.inputToolBarDelegate messageInputToolbarDidType:self];
@@ -366,6 +371,11 @@ static CGFloat const ATLButtonHeight = 28.0f;
     [self.rightAccessoryButton setTitle:@"Send" forState:UIControlStateNormal];
     [self.rightAccessoryButton setTitleColor:self.rightAccessoryButtonActiveColor forState:UIControlStateNormal];
     [self.rightAccessoryButton setTitleColor:self.rightAccessoryButtonDisabledColor forState:UIControlStateDisabled];
+    if (!self.displaysRightAccessoryImage && !self.textInputView.text.length) {
+        self.rightAccessoryButton.enabled = NO;
+    } else {
+        self.rightAccessoryButton.enabled = YES;
+    }
 }
 
 - (void)configureRightAccessoryButtonForImage

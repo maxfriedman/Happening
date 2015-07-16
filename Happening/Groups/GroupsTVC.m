@@ -17,8 +17,12 @@
 #import "PFObject+ATLAvatarItem.h"
 #import "SVProgressHUD.h"
 #import "CustomConstants.h"
+#import "ConversationCell.h"
+#import "AnonymousUserView.h"
+#import "FXBlurView.h"
+#import "InviteHomiesToGroup.h"
 
-@interface GroupsTVC () <ATLConversationListViewControllerDelegate, ATLConversationListViewControllerDataSource>
+@interface GroupsTVC () <ATLConversationListViewControllerDelegate, ATLConversationListViewControllerDataSource, AnonymousUserViewDelegate, InviteHomiesToGroupDelegate>
 
 @end
 
@@ -36,7 +40,6 @@
     NSString *selectedName;
     
     LYRConversation *selectedConvo;
-
     NSMutableDictionary *groupDict;
 }
 
@@ -49,14 +52,32 @@
     self.navigationController.navigationBar.barTintColor = [UIColor clearColor]; //%%% bartint
     [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"navBar"] forBarMetrics:UIBarMetricsDefault];
     self.navigationController.navigationBar.translucent = NO;
+    self.navigationItem.title = @"Friends";
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"white plus"] style:UIBarButtonItemStylePlain target:self action:@selector(createGroup:)];
+    
+    groupDict = [NSMutableDictionary new];
+    
+    [self setDisplaysAvatarItem:YES];
+    
+    self.tableView.separatorInset = UIEdgeInsetsZero;
+    
+    
+    if ([PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
+        AnonymousUserView *anonView = [[AnonymousUserView alloc] initWithFrame:CGRectMake(0, 64, 320, 519-64)];
+        anonView.delegate = self;
+        anonView.tag = 456;
+        [self.navigationController.view addSubview:anonView];
+        [anonView setImage:[UIImage imageNamed:@"Group Screenshot"]];
+        [anonView setMessage:@"Sign in to create a group and invite your friends to events!"];
+    } else {
+        //[self ];
+    }
+}
 
-    currentUser = [PFUser currentUser];
-    
-    groupDict = [[NSMutableDictionary alloc] init];
-    
-    [self refreshData];
-    
-    //[self setDisplaysAvatarItem:YES];
+- (void)facebookSuccessfulSignup {
+    [[self.view viewWithTag:456] removeFromSuperview];
+    //[self loadFriends];
+    [self.tableView reloadData];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -65,20 +86,46 @@
     [SVProgressHUD dismiss];
     
     currentUser = [PFUser currentUser];
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"refreshGroups"] == YES) {
-        [self refreshData];
-        [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"refreshGroups"];
-        [[NSUserDefaults standardUserDefaults] synchronize];
-    }
     
     AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
     [appDelegate.mh.groupHub decrementBy:appDelegate.mh.groupHub.count];
-}
 
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+    
+    [ATLConversationCollectionViewHeader appearance].participantLabelFont = [UIFont fontWithName:@"OpenSans" size:11.0];
+    
+    [ATLConversationTableViewCell appearance].conversationTitleLabelFont = [UIFont fontWithName:@"OpenSans-Semibold" size:17.0];
+    [ATLConversationTableViewCell appearance].lastMessageLabelFont = [UIFont fontWithName:@"OpenSans" size:12.0];
+    [ATLConversationTableViewCell appearance].dateLabelFont = [UIFont fontWithName:@"OpenSans" size:13.0];
+    [ATLConversationTableViewCell appearance].unreadMessageIndicatorBackgroundColor = [UIColor colorWithRed:0.0 green:176.0/255 blue:242.0/255 alpha:1.0];
+
+    [self.tableView setSeparatorStyle:UITableViewCellSeparatorStyleSingleLine];
+    [self.tableView setSeparatorInset:UIEdgeInsetsZero];
+    
+    // Fetches all LYRConversation objects
+    LYRQuery *query = [LYRQuery queryWithQueryableClass:[LYRConversation class]];
+    NSError *error;
+    NSOrderedSet *conversations = [appDelegate.layerClient executeQuery:query error:&error];
+    if (!error) {
+        NSLog(@"%tu conversations", conversations.count);
+        
+        if (conversations.count == 0 && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
+            [self showNoConvosView];
+        }
+        
+    } else {
+        NSLog(@"Query failed with error %@", error);
+    }
+
 }
+/*
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    ConversationCell *cell = (ConversationCell *)[super tableView:tableView cellForRowAtIndexPath:indexPath];
+    cell.separatorInset = UIEdgeInsetsZero;
+    
+    return cell;
+}*/
+
 
 #pragma mark - ATLConversationListViewControllerDelegate Methods
 
@@ -90,7 +137,74 @@
 
 - (void)conversationListViewController:(ATLConversationListViewController *)conversationListViewController didDeleteConversation:(LYRConversation *)conversation deletionMode:(LYRDeletionMode)deletionMode
 {
-    NSLog(@"Conversation deleted");
+    if (deletionMode == 0 /* LYRDeletionModeLocal */) {
+    
+        NSLog(@"Conversation deleted");
+        NSString *messageText = [NSString stringWithFormat:@"%@ %@ has left the group.", currentUser[@"firstName"], currentUser[@"lastName"]];
+        AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+        
+        //Send message w data
+        NSDictionary *dataDictionary = @{@"message":messageText,
+                                         @"type":@"leave",
+                                         @"groupId":[conversation.metadata objectForKey:@"groupId"]
+                                         };
+        NSError *JSONSerializerError;
+        NSData *dataDictionaryJSON = [NSJSONSerialization dataWithJSONObject:dataDictionary options:NSJSONWritingPrettyPrinted error:&JSONSerializerError];
+        LYRMessagePart *dataMessagePart = [LYRMessagePart messagePartWithMIMEType:ATLMimeTypeSystemObject data:dataDictionaryJSON];
+        // Create messagepart with info about cell
+        float actualLineSize = [messageText boundingRectWithSize:CGSizeMake(270, CGFLOAT_MAX)
+                                                         options:NSStringDrawingUsesLineFragmentOrigin
+                                                      attributes:@{NSFontAttributeName:[UIFont fontWithName:@"OpenSans" size:10.0]}
+                                                         context:nil].size.height;
+        NSDictionary *cellInfoDictionary = @{@"height": [NSString stringWithFormat:@"%f", actualLineSize]};
+        NSData *cellInfoDictionaryJSON = [NSJSONSerialization dataWithJSONObject:cellInfoDictionary options:NSJSONWritingPrettyPrinted error:&JSONSerializerError];
+        LYRMessagePart *cellInfoMessagePart = [LYRMessagePart messagePartWithMIMEType:ATLMimeTypeSystemCellInfo data:cellInfoDictionaryJSON];
+        // Add message to ordered set.  This ordered set messages will get sent to the participants
+        NSError *error = nil;
+        LYRMessage *message = [appDelegate.layerClient newMessageWithParts:@[dataMessagePart,cellInfoMessagePart] options:@{LYRMessageOptionsPushNotificationAlertKey: messageText} error:&error];
+
+        // Sends the specified message
+        BOOL success = [conversation sendMessage:message error:&error];
+        if (success) {
+            NSLog(@"Message queued to be sent: %@", message);
+        } else {
+            NSLog(@"Message send failed: %@", error);
+        }
+        
+        PFQuery *groupUserQuery = [PFQuery queryWithClassName:@"Group_User"];
+        [groupUserQuery whereKey:@"user_id" equalTo:currentUser.objectId];
+        [groupUserQuery whereKey:@"group_id" equalTo:[conversation.metadata objectForKey:@"groupId"]];
+        [groupUserQuery getFirstObjectInBackgroundWithBlock:^(PFObject *groupUser, NSError *error){
+            if (!error)
+                [groupUser deleteEventually];
+        }];
+        
+        PFQuery *groupQuery = [PFQuery queryWithClassName:@"Group"];
+        [groupQuery includeKey:@"user_objects"];
+        [groupQuery getObjectInBackgroundWithId:[conversation.metadata objectForKey:@"groupId"] block:^(PFObject *group, NSError *error) {
+            if (!error) {
+                [group incrementKey:@"memberCount" byAmount:@(-1)];
+                NSMutableArray *users = group[@"user_objects"];
+                for (int i = 0; i < users.count; i++) {
+                    PFUser *user = users[i];
+                    if ([user.objectId isEqualToString:currentUser.objectId]) {
+                        [users removeObject:user];
+                        break;
+                    }
+                }
+                group[@"user_objects"] = users;
+                [group saveEventually];
+            }
+        }];
+        
+        [conversation removeParticipants:[NSSet setWithArray:[NSArray arrayWithObject:currentUser[@"FBObjectID"]]] error:&error];
+    
+    } else if (deletionMode == 2 /* LYRDeletionModeAllParticipants*/) {
+
+        PFObject *group = [PFObject objectWithoutDataWithClassName:@"Group" objectId:[conversation.metadata objectForKey:@"groupId"]];
+        [group deleteEventually];
+        
+    }
 }
 
 - (void)conversationListViewController:(ATLConversationListViewController *)conversationListViewController didFailDeletingConversation:(LYRConversation *)conversation deletionMode:(LYRDeletionMode)deletionMode error:(NSError *)error
@@ -158,98 +272,17 @@
 
 - (id<ATLAvatarItem>)conversationListViewController:(ATLConversationListViewController *)conversationListViewController avatarItemForConversation:(LYRConversation *)conversation {
     
-    //ATLAvatarImageView *imv = [[ATLAvatarImageView alloc] initWithImage:[UIImage imageNamed:@"checked6green"]];
-    //id<ATLAvatarItem> item = nil;
-    
-    PFObject *ob = [groupDict objectForKey:[conversation.metadata valueForKey:@"groupId"]];
-    
+    PFQuery *query = [PFQuery queryWithClassName:@"Group"];
+    [query fromLocalDatastore];
+    PFObject *ob = [query getObjectWithId:[conversation.metadata valueForKey:@"groupId"]];
+    NSLog(@"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
+    if (ob != nil) [groupDict setObject:ob forKey:[conversation.metadata valueForKey:@"groupId"]];
+    else ob = [PFObject objectWithClassName:@"Group"];
+
     return ob;
 }
 
-
-
-- (void)refreshData {
-    
-    NSLog(@"refreshing data...");
-    
-    groupNamesArray = [NSMutableArray array];
-    groupMembersArray = [NSMutableArray array];
-    groupMemCountArray = [NSMutableArray array];
-    groupImagesArray = [NSMutableArray array];
-    groupIDsArray = [NSMutableArray array];
-    groupsArray = [NSArray array];
-    
-    PFQuery *groupsUserQuery = [PFQuery queryWithClassName:@"Group_User"];
-    [groupsUserQuery whereKey:@"user_id" equalTo:currentUser.objectId];
-    
-    PFQuery *groupsQuery = [PFQuery queryWithClassName:@"Group"];
-    [groupsQuery whereKey:@"objectId" matchesKey:@"group_id" inQuery:groupsUserQuery];
-    [groupsQuery includeKey:@"user_objects"];
-    
-    [groupsQuery findObjectsInBackgroundWithBlock:^(NSArray *array, NSError *error) {
-        
-        if (!error) {
-            
-            groupsArray = array;
-            
-            for (PFObject *group in array) {
-                
-                [groupDict setObject:group forKey:group.objectId];
-                
-                PFFile *file = group[@"avatar"];
-                [groupImagesArray addObject:file];
-                
-                NSNumber *memCount = group[@"memberCount"];
-                [groupMemCountArray addObject:memCount];
-                [groupIDsArray addObject:group.objectId];
-                
-                NSArray *users = group[@"user_objects"];
-                NSString *groupName = group[@"name"];
-                
-                if ([groupName isEqualToString:@"_indy_"]) {
-                    for (PFUser *user in users) {
-                        if (![user.objectId isEqualToString: currentUser.objectId]) {
-                            [groupNamesArray addObject:[NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]]];
-                        }
-                    }
-                    
-                    [groupMembersArray addObject: @"No new notifications."];
-                    
-                } else {
-                    
-                    [groupNamesArray addObject:groupName];
-                    
-                    NSMutableArray *tempArray = [[NSMutableArray alloc] init];
-                    
-                    for (PFUser *user in users) {
-                        if (![user.objectId isEqualToString: currentUser.objectId]) {
-                            [tempArray addObject:[NSString stringWithFormat:@"%@", user[@"firstName"]]];
-                        }
-                    }
-                    
-                    NSString *memberString = [NSString stringWithFormat:@"With %@", tempArray[0]];
-                    
-                    for (int i = 1; i < tempArray.count - 1; i++) {
-                        memberString = [memberString stringByAppendingString:[NSString stringWithFormat:@", %@", tempArray[i]]];
-                    }
-                    
-                    PFUser *user = users[users.count-1];
-                    if (tempArray.count > 1)
-                        memberString = [memberString stringByAppendingString:[NSString stringWithFormat:@" and %@", user[@"firstName"]]];
-                    
-                    [groupMembersArray addObject:memberString];
-                    
-                }
-                
-                [self.tableView reloadData];
-                [self setDisplaysAvatarItem:YES];
-            }
-            
-        }
-        
-    }];
-    
-}
 
 - (NSString *)conversationListViewController:(ATLConversationListViewController *)conversationListViewController lastMessageTextForConversation:(LYRConversation *)conversation {
     
@@ -267,6 +300,107 @@
     }
     return nil;
 }
+
+-(void)showNoConvosView {
+    
+    UIView *noConvosView = [[UIView alloc] initWithFrame:CGRectMake(0, 64, 320, 519-64)];
+    
+    noConvosView.backgroundColor = [UIColor clearColor];
+    
+    UIImageView *imv = [[UIImageView alloc] initWithFrame:noConvosView.bounds];
+    imv.image = [UIImage imageNamed:@"Group Screenshot"];
+    [noConvosView addSubview:imv];
+    
+    FXBlurView *blurEffectView = [[FXBlurView alloc] initWithFrame:noConvosView.bounds];
+    blurEffectView.tintColor = [UIColor blackColor];
+    blurEffectView.tag = 77;
+    blurEffectView.blurRadius = 13;
+    blurEffectView.dynamic = NO;
+    
+    [noConvosView addSubview:blurEffectView];
+    //self.tableView.scrollEnabled = NO;
+    
+    UILabel *messageLabel = [[UILabel alloc] init];
+    [messageLabel setText:[NSString stringWithFormat:@"Events are better with friends. Create a group to make it happen!"]];
+    [messageLabel setFont:[UIFont fontWithName:@"OpenSans" size:22.0]];
+    messageLabel.textColor = [UIColor blackColor];
+    
+    [messageLabel setTextAlignment:NSTextAlignmentCenter];
+    [messageLabel setFrame:CGRectMake(40, 120, 240, 150)];
+    messageLabel.numberOfLines = 0;
+    
+    [blurEffectView addSubview:messageLabel];
+    
+    UIButton *createButton = [[UIButton alloc] initWithFrame:CGRectMake(56, 360, 208, 50)];
+    createButton.tag = 3;
+    UIColor *hapBlue = [UIColor colorWithRed:0.0 green:176.0/255 blue:242.0/255 alpha:1.0];
+    [createButton setTitle:@"CREATE GROUP" forState:UIControlStateNormal];
+    [createButton setTitleColor:hapBlue forState:UIControlStateNormal];
+    [createButton setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];
+    [createButton setBackgroundColor:[UIColor whiteColor]];
+    
+    createButton.titleLabel.font = [UIFont fontWithName:@"OpenSans" size:16.0];
+    
+    createButton.layer.masksToBounds = YES;
+    createButton.layer.borderColor = hapBlue.CGColor;
+    createButton.layer.borderWidth = 1.5;
+    createButton.layer.cornerRadius = 50/2;
+    
+    [createButton addTarget:self action:@selector(buttonHighlight:) forControlEvents:UIControlEventTouchDown];
+    [createButton addTarget:self action:@selector(buttonNormal:) forControlEvents:UIControlEventTouchUpInside];
+    [createButton addTarget:self action:@selector(buttonNormal:) forControlEvents:UIControlEventTouchDragExit];
+    //[createButton setImage:[UIImage imageNamed:@"Facebook Login"] forState:UIControlStateNormal];
+    [createButton addTarget:self action:@selector(createGroup:) forControlEvents:UIControlEventTouchUpInside];
+    [noConvosView addSubview:createButton];
+    
+    [self.navigationController.view addSubview:noConvosView];
+
+}
+
+-(void)buttonNormal:(id)sender {
+    UIButton *button = (UIButton *)sender;
+    [button setBackgroundColor:[UIColor whiteColor]];
+}
+
+-(void)buttonHighlight:(id)sender {
+    UIButton *button = (UIButton *)sender;
+    [button setBackgroundColor:[UIColor colorWithRed:0.0 green:176.0/255 blue:242.0/255 alpha:1.0]];
+}
+
+-(void)createGroup:(id)sender {
+    
+    NSLog(@"Create new group");
+    [self performSegueWithIdentifier:@"createGroup" sender:self];
+    
+}
+
+-(void)showBoom {
+    
+    NSLog(@"Boom");
+    
+    [SVProgressHUD setViewForExtension:self.view];
+    [SVProgressHUD setOffsetFromCenter:UIOffsetMake(0, -66)];
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        // time-consuming task
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [SVProgressHUD show];
+            [SVProgressHUD showSuccessWithStatus:@"Boom"];
+            [SVProgressHUD setFont:[UIFont fontWithName:@"OpenSans" size:15.0]];
+        });
+    });
+    
+}
+
+-(void)showError:(NSString *)message {
+    
+}
+
+/*
+-(NSString *)conversationListViewController:(ATLConversationListViewController *)conversationListViewController textForButtonWithDeletionMode:(LYRDeletionMode)deletionMode {
+    
+    return @"Leave";
+} */
 
 /*
 #pragma mark - Table view data source
@@ -335,17 +469,19 @@
         
         vc.group = [groupDict valueForKey:[selectedConvo.metadata valueForKey:@"groupId"]];
         vc.loadTopView = YES;
-        
+
         if (!vc.group) {
             
             NSLog(@"Group hasn't loaded yet. Load in next VC");
         }
         
-        
-        
-        
-        
         //vc.groupName = @"Test";
+    } else if ([segue.identifier isEqualToString:@"createGroup"]) {
+        
+        InviteHomiesToGroup *vc = (InviteHomiesToGroup *)[[segue destinationViewController] topViewController];
+
+        vc.delegate = self;
+
     }
     
 }

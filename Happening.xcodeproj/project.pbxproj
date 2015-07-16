@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		3643E2262081D2E30983F5A1 /* libPods-Happening.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E6810D2094458A29CD1FB352 /* libPods-Happening.a */; };
+		500639431B50990B00D1CD6E /* MatchesWithFriendsTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 500639421B50990B00D1CD6E /* MatchesWithFriendsTVC.m */; };
 		500910EE19C9FBE9006542CA /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 500910ED19C9FBE9006542CA /* AVFoundation.framework */; };
 		500910F019C9FC06006542CA /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 500910EF19C9FC06006542CA /* CoreData.framework */; };
 		500910F219C9FC69006542CA /* GLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 500910F119C9FC69006542CA /* GLKit.framework */; };
@@ -26,16 +27,6 @@
 		50248C8519BBAB2F00329910 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50248C8419BBAB2F00329910 /* Security.framework */; };
 		50248C8919BBAB3D00329910 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50248C8819BBAB3D00329910 /* SystemConfiguration.framework */; };
 		5028636F1AC213F20029BD15 /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 5028636E1AC213F20029BD15 /* Reachability.m */; };
-		502863871AC3FDDE0029BD15 /* Parse.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 502863811AC3FDDE0029BD15 /* Parse.framework */; };
-		502863881AC3FDDE0029BD15 /* ParseCrashReporting.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 502863821AC3FDDE0029BD15 /* ParseCrashReporting.framework */; };
-		5028638A1AC3FDDE0029BD15 /* ParseFacebookUtilsV4.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 502863841AC3FDDE0029BD15 /* ParseFacebookUtilsV4.framework */; };
-		5028638B1AC3FDDE0029BD15 /* ParseUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 502863851AC3FDDE0029BD15 /* ParseUI.framework */; };
-		502863961AC3FFF80029BD15 /* Bolts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 502863901AC3FFF80029BD15 /* Bolts.framework */; };
-		502863971AC3FFF80029BD15 /* FBAudienceNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 502863911AC3FFF80029BD15 /* FBAudienceNetwork.framework */; };
-		502863981AC3FFF80029BD15 /* FBSDKCoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 502863921AC3FFF80029BD15 /* FBSDKCoreKit.framework */; };
-		502863991AC3FFF80029BD15 /* FBSDKLoginKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 502863931AC3FFF80029BD15 /* FBSDKLoginKit.framework */; };
-		5028639A1AC3FFF80029BD15 /* FBSDKMessengerShareKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 502863941AC3FFF80029BD15 /* FBSDKMessengerShareKit.framework */; };
-		5028639B1AC3FFF80029BD15 /* FBSDKShareKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 502863951AC3FFF80029BD15 /* FBSDKShareKit.framework */; };
 		502CA2B01B3A545C00576E82 /* SystemCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 502CA2AF1B3A545C00576E82 /* SystemCollectionViewCell.m */; };
 		502CA2B31B3B4F6B00576E82 /* GroupAddFriendsTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 502CA2B21B3B4F6B00576E82 /* GroupAddFriendsTVC.m */; };
 		5031EBEC1A939489007E3523 /* webViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5031EBEB1A939489007E3523 /* webViewController.m */; };
@@ -103,6 +94,20 @@
 		506DC5471A46014300DD4591 /* OpenSans-SemiboldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50478F221A44DF1500161D01 /* OpenSans-SemiboldItalic.ttf */; };
 		506DFD801A60A94600715079 /* UIImage+ImageEffects.m in Sources */ = {isa = PBXBuildFile; fileRef = 506DFD7F1A60A94600715079 /* UIImage+ImageEffects.m */; };
 		506DFD831A6113CF00715079 /* FXBlurView.m in Sources */ = {isa = PBXBuildFile; fileRef = 506DFD821A6113CF00715079 /* FXBlurView.m */; };
+		5072D85B1B45C20C00518278 /* ExpandedCardVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 5072D85A1B45C20C00518278 /* ExpandedCardVC.m */; };
+		5072D8611B4612FC00518278 /* SwipeableCardVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 5072D8601B4612FC00518278 /* SwipeableCardVC.m */; };
+		5072D8801B49D6DE00518278 /* Bolts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5072D87A1B49D6DE00518278 /* Bolts.framework */; };
+		5072D8811B49D6DE00518278 /* Parse.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5072D87B1B49D6DE00518278 /* Parse.framework */; };
+		5072D8821B49D6DE00518278 /* ParseCrashReporting.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5072D87C1B49D6DE00518278 /* ParseCrashReporting.framework */; };
+		5072D8841B49D6DE00518278 /* ParseFacebookUtilsV4.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5072D87E1B49D6DE00518278 /* ParseFacebookUtilsV4.framework */; };
+		5072D8851B49D6DE00518278 /* ParseUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5072D87F1B49D6DE00518278 /* ParseUI.framework */; };
+		5072D88D1B49D6EB00518278 /* Bolts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5072D8861B49D6EB00518278 /* Bolts.framework */; };
+		5072D88E1B49D6EB00518278 /* FacebookSDKStrings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 5072D8871B49D6EB00518278 /* FacebookSDKStrings.bundle */; };
+		5072D88F1B49D6EB00518278 /* FBAudienceNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5072D8881B49D6EB00518278 /* FBAudienceNetwork.framework */; };
+		5072D8901B49D6EB00518278 /* FBSDKCoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5072D8891B49D6EB00518278 /* FBSDKCoreKit.framework */; };
+		5072D8911B49D6EB00518278 /* FBSDKLoginKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5072D88A1B49D6EB00518278 /* FBSDKLoginKit.framework */; };
+		5072D8921B49D6EB00518278 /* FBSDKMessengerShareKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5072D88B1B49D6EB00518278 /* FBSDKMessengerShareKit.framework */; };
+		5072D8931B49D6EB00518278 /* FBSDKShareKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5072D88C1B49D6EB00518278 /* FBSDKShareKit.framework */; };
 		507677D31A88761100B9F21D /* ProfileTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 507677D21A88761100B9F21D /* ProfileTVC.m */; };
 		5076B5C51A58A0E300B05ABB /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5076B5C41A58A0E300B05ABB /* libsqlite3.dylib */; };
 		508240CD1B2DF433006CBCE8 /* PFObject+ATLAvatarItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 508240CC1B2DF433006CBCE8 /* PFObject+ATLAvatarItem.m */; };
@@ -110,8 +115,14 @@
 		508240D61B2F09C1006CBCE8 /* GroupDetailsTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 508240D51B2F09C1006CBCE8 /* GroupDetailsTVC.m */; };
 		508DD3271AC9AE9A005E2E95 /* AMPopTip.m in Sources */ = {isa = PBXBuildFile; fileRef = 508DD3261AC9AE9A005E2E95 /* AMPopTip.m */; };
 		508FC9A41A8B04A300BF246B /* DragMapViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 508FC9A31A8B04A300BF246B /* DragMapViewController.m */; };
+		5091C9CF1B4F05F300158CB5 /* AnonymousUserView.m in Sources */ = {isa = PBXBuildFile; fileRef = 5091C9CE1B4F05F300158CB5 /* AnonymousUserView.m */; };
+		5091C9D21B4F0FCE00158CB5 /* FlatButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 5091C9D11B4F0FCE00158CB5 /* FlatButton.m */; };
 		509248F71A58819D002BE584 /* EditExtraInfoTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 509248F61A58819D002BE584 /* EditExtraInfoTVC.m */; };
 		50965A641A76A6DB00EDF5FC /* dropdownSettingsView.m in Sources */ = {isa = PBXBuildFile; fileRef = 50965A631A76A6DB00EDF5FC /* dropdownSettingsView.m */; };
+		5099CEB91B4B8BA20064DF85 /* ConversationCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 5099CEB81B4B8BA20064DF85 /* ConversationCell.m */; };
+		5099CEC21B4EB7FE0064DF85 /* CategoryBubbleView.m in Sources */ = {isa = PBXBuildFile; fileRef = 5099CEC11B4EB7FE0064DF85 /* CategoryBubbleView.m */; };
+		5099CEC51B4EB81C0064DF85 /* CustomAPActivityProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 5099CEC41B4EB81C0064DF85 /* CustomAPActivityProvider.m */; };
+		509A8A531B44454000EF6C68 /* HappeningCameraVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 509A8A521B44454000EF6C68 /* HappeningCameraVC.m */; };
 		50A677761A59B67C00E1E12A /* RKDropdownAlert.m in Sources */ = {isa = PBXBuildFile; fileRef = 50A677751A59B67C00E1E12A /* RKDropdownAlert.m */; };
 		50B7071A1B1575BD0080657E /* inviteHomies.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B707191B1575BD0080657E /* inviteHomies.m */; };
 		50B707201B17D2D90080657E /* inviteHomiesCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B7071F1B17D2D90080657E /* inviteHomiesCell.m */; };
@@ -135,6 +146,7 @@
 		50CA89EE1B2A1FFA000AC48D /* MHTabBarSegue.m in Sources */ = {isa = PBXBuildFile; fileRef = 50CA89EC1B2A1FFA000AC48D /* MHTabBarSegue.m */; };
 		50CA89F11B2A200F000AC48D /* PFUser+ATLParticipant.m in Sources */ = {isa = PBXBuildFile; fileRef = 50CA89F01B2A200F000AC48D /* PFUser+ATLParticipant.m */; };
 		50D255A41A6388A10086B7A4 /* OpenSans-Extrabold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50478F1B1A44DF1500161D01 /* OpenSans-Extrabold.ttf */; };
+		50D78E521B555EB70015F88A /* InviteHomiesToGroup.m in Sources */ = {isa = PBXBuildFile; fileRef = 50D78E511B555EB70015F88A /* InviteHomiesToGroup.m */; };
 		50F7DEA51A5643A6008B8C2B /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 50478F101A44DE6900161D01 /* main.m */; };
 		50F7DEA71A5794D6008B8C2B /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50F7DEA61A5794D5008B8C2B /* MessageUI.framework */; };
 		50F7DEAA1A57B4B8008B8C2B /* UICountingLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = 50F7DEA91A57B4B8008B8C2B /* UICountingLabel.m */; };
@@ -153,6 +165,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		500639411B50990B00D1CD6E /* MatchesWithFriendsTVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MatchesWithFriendsTVC.h; path = "Happening/Create Tab/MatchesWithFriendsTVC.h"; sourceTree = SOURCE_ROOT; };
+		500639421B50990B00D1CD6E /* MatchesWithFriendsTVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MatchesWithFriendsTVC.m; path = "Happening/Create Tab/MatchesWithFriendsTVC.m"; sourceTree = SOURCE_ROOT; };
 		500910ED19C9FBE9006542CA /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		500910EF19C9FC06006542CA /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 		500910F119C9FC69006542CA /* GLKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLKit.framework; path = System/Library/Frameworks/GLKit.framework; sourceTree = SDKROOT; };
@@ -174,16 +188,6 @@
 		50248C8819BBAB3D00329910 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		5028636D1AC213F20029BD15 /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Reachability.h; path = Happening/Extras/Reachability.h; sourceTree = SOURCE_ROOT; };
 		5028636E1AC213F20029BD15 /* Reachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Reachability.m; path = Happening/Extras/Reachability.m; sourceTree = SOURCE_ROOT; };
-		502863811AC3FDDE0029BD15 /* Parse.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Parse.framework; path = "Happening/Frameworks/parse-library/Parse.framework"; sourceTree = "<group>"; };
-		502863821AC3FDDE0029BD15 /* ParseCrashReporting.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ParseCrashReporting.framework; path = "Happening/Frameworks/parse-library/ParseCrashReporting.framework"; sourceTree = "<group>"; };
-		502863841AC3FDDE0029BD15 /* ParseFacebookUtilsV4.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ParseFacebookUtilsV4.framework; path = "Happening/Frameworks/parse-library/ParseFacebookUtilsV4.framework"; sourceTree = "<group>"; };
-		502863851AC3FDDE0029BD15 /* ParseUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ParseUI.framework; path = "Happening/Frameworks/parse-library/ParseUI.framework"; sourceTree = "<group>"; };
-		502863901AC3FFF80029BD15 /* Bolts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Bolts.framework; path = Happening/Frameworks/FacebookSDK/Bolts.framework; sourceTree = "<group>"; };
-		502863911AC3FFF80029BD15 /* FBAudienceNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FBAudienceNetwork.framework; path = Happening/Frameworks/FacebookSDK/FBAudienceNetwork.framework; sourceTree = "<group>"; };
-		502863921AC3FFF80029BD15 /* FBSDKCoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FBSDKCoreKit.framework; path = Happening/Frameworks/FacebookSDK/FBSDKCoreKit.framework; sourceTree = "<group>"; };
-		502863931AC3FFF80029BD15 /* FBSDKLoginKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FBSDKLoginKit.framework; path = Happening/Frameworks/FacebookSDK/FBSDKLoginKit.framework; sourceTree = "<group>"; };
-		502863941AC3FFF80029BD15 /* FBSDKMessengerShareKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FBSDKMessengerShareKit.framework; path = Happening/Frameworks/FacebookSDK/FBSDKMessengerShareKit.framework; sourceTree = "<group>"; };
-		502863951AC3FFF80029BD15 /* FBSDKShareKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FBSDKShareKit.framework; path = Happening/Frameworks/FacebookSDK/FBSDKShareKit.framework; sourceTree = "<group>"; };
 		502CA2AE1B3A545C00576E82 /* SystemCollectionViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SystemCollectionViewCell.h; path = Happening/Groups/SystemCollectionViewCell.h; sourceTree = SOURCE_ROOT; };
 		502CA2AF1B3A545C00576E82 /* SystemCollectionViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SystemCollectionViewCell.m; path = Happening/Groups/SystemCollectionViewCell.m; sourceTree = SOURCE_ROOT; };
 		502CA2B11B3B4F6B00576E82 /* GroupAddFriendsTVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GroupAddFriendsTVC.h; path = Happening/Groups/GroupAddFriendsTVC.h; sourceTree = SOURCE_ROOT; };
@@ -306,6 +310,22 @@
 		506DFD7F1A60A94600715079 /* UIImage+ImageEffects.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIImage+ImageEffects.m"; path = "Happening/Extras/UIImage+ImageEffects.m"; sourceTree = SOURCE_ROOT; };
 		506DFD811A6113CF00715079 /* FXBlurView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FXBlurView.h; path = Happening/Extras/FXBlurView.h; sourceTree = SOURCE_ROOT; };
 		506DFD821A6113CF00715079 /* FXBlurView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FXBlurView.m; path = Happening/Extras/FXBlurView.m; sourceTree = SOURCE_ROOT; };
+		5072D8591B45C20C00518278 /* ExpandedCardVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ExpandedCardVC.h; path = "Happening/Discover Tab/ExpandedCardVC.h"; sourceTree = SOURCE_ROOT; };
+		5072D85A1B45C20C00518278 /* ExpandedCardVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ExpandedCardVC.m; path = "Happening/Discover Tab/ExpandedCardVC.m"; sourceTree = SOURCE_ROOT; };
+		5072D85F1B4612FC00518278 /* SwipeableCardVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwipeableCardVC.h; path = "Happening/Discover Tab/SwipeableCardVC.h"; sourceTree = SOURCE_ROOT; };
+		5072D8601B4612FC00518278 /* SwipeableCardVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwipeableCardVC.m; path = "Happening/Discover Tab/SwipeableCardVC.m"; sourceTree = SOURCE_ROOT; };
+		5072D87A1B49D6DE00518278 /* Bolts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Bolts.framework; path = "Happening/Frameworks/parse-library/Bolts.framework"; sourceTree = "<group>"; };
+		5072D87B1B49D6DE00518278 /* Parse.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Parse.framework; path = "Happening/Frameworks/parse-library/Parse.framework"; sourceTree = "<group>"; };
+		5072D87C1B49D6DE00518278 /* ParseCrashReporting.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ParseCrashReporting.framework; path = "Happening/Frameworks/parse-library/ParseCrashReporting.framework"; sourceTree = "<group>"; };
+		5072D87E1B49D6DE00518278 /* ParseFacebookUtilsV4.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ParseFacebookUtilsV4.framework; path = "Happening/Frameworks/parse-library/ParseFacebookUtilsV4.framework"; sourceTree = "<group>"; };
+		5072D87F1B49D6DE00518278 /* ParseUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ParseUI.framework; path = "Happening/Frameworks/parse-library/ParseUI.framework"; sourceTree = "<group>"; };
+		5072D8861B49D6EB00518278 /* Bolts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Bolts.framework; path = Happening/Frameworks/FacebookSDK/Bolts.framework; sourceTree = "<group>"; };
+		5072D8871B49D6EB00518278 /* FacebookSDKStrings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = FacebookSDKStrings.bundle; path = Happening/Frameworks/FacebookSDK/FacebookSDKStrings.bundle; sourceTree = "<group>"; };
+		5072D8881B49D6EB00518278 /* FBAudienceNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FBAudienceNetwork.framework; path = Happening/Frameworks/FacebookSDK/FBAudienceNetwork.framework; sourceTree = "<group>"; };
+		5072D8891B49D6EB00518278 /* FBSDKCoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FBSDKCoreKit.framework; path = Happening/Frameworks/FacebookSDK/FBSDKCoreKit.framework; sourceTree = "<group>"; };
+		5072D88A1B49D6EB00518278 /* FBSDKLoginKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FBSDKLoginKit.framework; path = Happening/Frameworks/FacebookSDK/FBSDKLoginKit.framework; sourceTree = "<group>"; };
+		5072D88B1B49D6EB00518278 /* FBSDKMessengerShareKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FBSDKMessengerShareKit.framework; path = Happening/Frameworks/FacebookSDK/FBSDKMessengerShareKit.framework; sourceTree = "<group>"; };
+		5072D88C1B49D6EB00518278 /* FBSDKShareKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FBSDKShareKit.framework; path = Happening/Frameworks/FacebookSDK/FBSDKShareKit.framework; sourceTree = "<group>"; };
 		507677D11A88761100B9F21D /* ProfileTVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ProfileTVC.h; path = "Happening/Create Tab/ProfileTVC.h"; sourceTree = SOURCE_ROOT; };
 		507677D21A88761100B9F21D /* ProfileTVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ProfileTVC.m; path = "Happening/Create Tab/ProfileTVC.m"; sourceTree = SOURCE_ROOT; };
 		5076B5C41A58A0E300B05ABB /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = usr/lib/libsqlite3.dylib; sourceTree = SDKROOT; };
@@ -319,10 +339,23 @@
 		508DD3261AC9AE9A005E2E95 /* AMPopTip.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AMPopTip.m; path = Happening/Extras/AMPopTip.m; sourceTree = SOURCE_ROOT; };
 		508FC9A21A8B04A300BF246B /* DragMapViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DragMapViewController.h; path = "Happening/Discover Tab/DragMapViewController.h"; sourceTree = SOURCE_ROOT; };
 		508FC9A31A8B04A300BF246B /* DragMapViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DragMapViewController.m; path = "Happening/Discover Tab/DragMapViewController.m"; sourceTree = SOURCE_ROOT; };
+		5091C9CD1B4F05F300158CB5 /* AnonymousUserView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AnonymousUserView.h; path = Happening/Extras/AnonymousUserView.h; sourceTree = SOURCE_ROOT; };
+		5091C9CE1B4F05F300158CB5 /* AnonymousUserView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AnonymousUserView.m; path = Happening/Extras/AnonymousUserView.m; sourceTree = SOURCE_ROOT; };
+		5091C9D01B4F0FCE00158CB5 /* FlatButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlatButton.h; sourceTree = SOURCE_ROOT; };
+		5091C9D11B4F0FCE00158CB5 /* FlatButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlatButton.m; sourceTree = SOURCE_ROOT; };
 		509248F51A58819D002BE584 /* EditExtraInfoTVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = EditExtraInfoTVC.h; path = "Happening/Create Tab/EditExtraInfoTVC.h"; sourceTree = SOURCE_ROOT; };
 		509248F61A58819D002BE584 /* EditExtraInfoTVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = EditExtraInfoTVC.m; path = "Happening/Create Tab/EditExtraInfoTVC.m"; sourceTree = SOURCE_ROOT; };
 		50965A621A76A6DB00EDF5FC /* dropdownSettingsView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = dropdownSettingsView.h; path = "Happening/Discover Tab/Settings/dropdownSettingsView.h"; sourceTree = SOURCE_ROOT; };
 		50965A631A76A6DB00EDF5FC /* dropdownSettingsView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = dropdownSettingsView.m; path = "Happening/Discover Tab/Settings/dropdownSettingsView.m"; sourceTree = SOURCE_ROOT; };
+		5099CEB71B4B8BA20064DF85 /* ConversationCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ConversationCell.h; path = Happening/Groups/ConversationCell.h; sourceTree = SOURCE_ROOT; };
+		5099CEB81B4B8BA20064DF85 /* ConversationCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ConversationCell.m; path = Happening/Groups/ConversationCell.m; sourceTree = SOURCE_ROOT; };
+		5099CEC01B4EB7FE0064DF85 /* CategoryBubbleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CategoryBubbleView.h; path = "Happening/Discover Tab/CategoryBubbleView.h"; sourceTree = SOURCE_ROOT; };
+		5099CEC11B4EB7FE0064DF85 /* CategoryBubbleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CategoryBubbleView.m; path = "Happening/Discover Tab/CategoryBubbleView.m"; sourceTree = SOURCE_ROOT; };
+		5099CEC31B4EB81C0064DF85 /* CustomAPActivityProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CustomAPActivityProvider.h; path = Happening/Extras/CustomAPActivityProvider.h; sourceTree = SOURCE_ROOT; };
+		5099CEC41B4EB81C0064DF85 /* CustomAPActivityProvider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CustomAPActivityProvider.m; path = Happening/Extras/CustomAPActivityProvider.m; sourceTree = SOURCE_ROOT; };
+		509A8A511B44454000EF6C68 /* HappeningCameraVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HappeningCameraVC.h; path = Happening/Extras/HappeningCameraVC.h; sourceTree = SOURCE_ROOT; };
+		509A8A521B44454000EF6C68 /* HappeningCameraVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = HappeningCameraVC.m; path = Happening/Extras/HappeningCameraVC.m; sourceTree = SOURCE_ROOT; };
+		509A8A541B446DFB00EF6C68 /* Happening.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = Happening.entitlements; path = Happening/Happening.entitlements; sourceTree = SOURCE_ROOT; };
 		50A677741A59B67C00E1E12A /* RKDropdownAlert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RKDropdownAlert.h; path = Happening/Extras/RKDropdownAlert.h; sourceTree = SOURCE_ROOT; };
 		50A677751A59B67C00E1E12A /* RKDropdownAlert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RKDropdownAlert.m; path = Happening/Extras/RKDropdownAlert.m; sourceTree = SOURCE_ROOT; };
 		50B707181B1575BD0080657E /* inviteHomies.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = inviteHomies.h; path = "Happening/Discover Tab/inviteHomies.h"; sourceTree = SOURCE_ROOT; };
@@ -369,6 +402,8 @@
 		50CA89EF1B2A200F000AC48D /* PFUser+ATLParticipant.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "PFUser+ATLParticipant.h"; path = "Happening/Groups/PFUser+ATLParticipant.h"; sourceTree = SOURCE_ROOT; };
 		50CA89F01B2A200F000AC48D /* PFUser+ATLParticipant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "PFUser+ATLParticipant.m"; path = "Happening/Groups/PFUser+ATLParticipant.m"; sourceTree = SOURCE_ROOT; };
 		50D252DD1A6385DC0086B7A4 /* HappeningTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HappeningTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		50D78E501B555EB70015F88A /* InviteHomiesToGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = InviteHomiesToGroup.h; path = Happening/Groups/InviteHomiesToGroup.h; sourceTree = SOURCE_ROOT; };
+		50D78E511B555EB70015F88A /* InviteHomiesToGroup.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = InviteHomiesToGroup.m; path = Happening/Groups/InviteHomiesToGroup.m; sourceTree = SOURCE_ROOT; };
 		50F7DEA61A5794D5008B8C2B /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		50F7DEA81A57B4B8008B8C2B /* UICountingLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UICountingLabel.h; path = Happening/Extras/UICountingLabel.h; sourceTree = SOURCE_ROOT; };
 		50F7DEA91A57B4B8008B8C2B /* UICountingLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = UICountingLabel.m; path = Happening/Extras/UICountingLabel.m; sourceTree = SOURCE_ROOT; };
@@ -387,40 +422,41 @@
 			buildActionMask = 2147483647;
 			files = (
 				50248C8919BBAB3D00329910 /* SystemConfiguration.framework in Frameworks */,
-				5028639B1AC3FFF80029BD15 /* FBSDKShareKit.framework in Frameworks */,
 				505F9FBC1A98C33B00CE5C7E /* EventKit.framework in Frameworks */,
+				5072D8911B49D6EB00518278 /* FBSDKLoginKit.framework in Frameworks */,
+				5072D8821B49D6DE00518278 /* ParseCrashReporting.framework in Frameworks */,
 				505F9FBD1A98C33B00CE5C7E /* EventKitUI.framework in Frameworks */,
 				505CDD5D1A65B5DF005876DC /* libstdc++.6.0.9.dylib in Frameworks */,
-				5028639A1AC3FFF80029BD15 /* FBSDKMessengerShareKit.framework in Frameworks */,
 				505CDD5B1A65B5D0005876DC /* libsqlite3.0.dylib in Frameworks */,
+				5072D8851B49D6DE00518278 /* ParseUI.framework in Frameworks */,
 				505CDD591A65B5BF005876DC /* Social.framework in Frameworks */,
 				505CDD571A65B5BA005876DC /* Accounts.framework in Frameworks */,
 				5076B5C51A58A0E300B05ABB /* libsqlite3.dylib in Frameworks */,
-				502863871AC3FDDE0029BD15 /* Parse.framework in Frameworks */,
+				5072D8931B49D6EB00518278 /* FBSDKShareKit.framework in Frameworks */,
 				50F7DEA71A5794D6008B8C2B /* MessageUI.framework in Frameworks */,
 				50594CD01A2FAD1B00749B49 /* AddressBook.framework in Frameworks */,
+				5072D8811B49D6DE00518278 /* Parse.framework in Frameworks */,
 				50248C8319BBAB2800329910 /* QuartzCore.framework in Frameworks */,
 				500910FA19C9FCCD006542CA /* OpenGLES.framework in Frameworks */,
 				500910F819C9FCB4006542CA /* libicucore.dylib in Frameworks */,
 				500910F619C9FCA9006542CA /* libc++.dylib in Frameworks */,
-				502863961AC3FFF80029BD15 /* Bolts.framework in Frameworks */,
-				5028638B1AC3FDDE0029BD15 /* ParseUI.framework in Frameworks */,
+				5072D8841B49D6DE00518278 /* ParseFacebookUtilsV4.framework in Frameworks */,
+				5072D88F1B49D6EB00518278 /* FBAudienceNetwork.framework in Frameworks */,
+				5072D8921B49D6EB00518278 /* FBSDKMessengerShareKit.framework in Frameworks */,
 				500910F419C9FC8D006542CA /* ImageIO.framework in Frameworks */,
-				502863971AC3FFF80029BD15 /* FBAudienceNetwork.framework in Frameworks */,
-				502863981AC3FFF80029BD15 /* FBSDKCoreKit.framework in Frameworks */,
+				5072D8801B49D6DE00518278 /* Bolts.framework in Frameworks */,
 				500910F219C9FC69006542CA /* GLKit.framework in Frameworks */,
 				500910F019C9FC06006542CA /* CoreData.framework in Frameworks */,
 				500910EE19C9FBE9006542CA /* AVFoundation.framework in Frameworks */,
-				502863881AC3FDDE0029BD15 /* ParseCrashReporting.framework in Frameworks */,
+				5072D8901B49D6EB00518278 /* FBSDKCoreKit.framework in Frameworks */,
 				50248C8519BBAB2F00329910 /* Security.framework in Frameworks */,
 				50248C8119BBAB2000329910 /* MobileCoreServices.framework in Frameworks */,
 				50248C7F19BBAB1300329910 /* libz.dylib in Frameworks */,
 				50248C7D19BBAB0A00329910 /* CoreLocation.framework in Frameworks */,
 				50248C7B19BBAB0300329910 /* CoreGraphics.framework in Frameworks */,
 				50248C7919BBAAF800329910 /* CFNetwork.framework in Frameworks */,
-				502863991AC3FFF80029BD15 /* FBSDKLoginKit.framework in Frameworks */,
+				5072D88D1B49D6EB00518278 /* Bolts.framework in Frameworks */,
 				50248C7719BBAAE000329910 /* AudioToolbox.framework in Frameworks */,
-				5028638A1AC3FDDE0029BD15 /* ParseFacebookUtilsV4.framework in Frameworks */,
 				3643E2262081D2E30983F5A1 /* libPods-Happening.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -493,6 +529,18 @@
 		50248C7519BBAAB500329910 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				5072D8861B49D6EB00518278 /* Bolts.framework */,
+				5072D8871B49D6EB00518278 /* FacebookSDKStrings.bundle */,
+				5072D8881B49D6EB00518278 /* FBAudienceNetwork.framework */,
+				5072D8891B49D6EB00518278 /* FBSDKCoreKit.framework */,
+				5072D88A1B49D6EB00518278 /* FBSDKLoginKit.framework */,
+				5072D88B1B49D6EB00518278 /* FBSDKMessengerShareKit.framework */,
+				5072D88C1B49D6EB00518278 /* FBSDKShareKit.framework */,
+				5072D87A1B49D6DE00518278 /* Bolts.framework */,
+				5072D87B1B49D6DE00518278 /* Parse.framework */,
+				5072D87C1B49D6DE00518278 /* ParseCrashReporting.framework */,
+				5072D87E1B49D6DE00518278 /* ParseFacebookUtilsV4.framework */,
+				5072D87F1B49D6DE00518278 /* ParseUI.framework */,
 				505F9FBA1A98C33B00CE5C7E /* EventKit.framework */,
 				505F9FBB1A98C33B00CE5C7E /* EventKitUI.framework */,
 				505CDD5C1A65B5DF005876DC /* libstdc++.6.0.9.dylib */,
@@ -501,16 +549,6 @@
 				505CDD561A65B5BA005876DC /* Accounts.framework */,
 				503483081A65AF4F00249594 /* libdyld.dylib */,
 				5076B5C41A58A0E300B05ABB /* libsqlite3.dylib */,
-				502863901AC3FFF80029BD15 /* Bolts.framework */,
-				502863911AC3FFF80029BD15 /* FBAudienceNetwork.framework */,
-				502863921AC3FFF80029BD15 /* FBSDKCoreKit.framework */,
-				502863931AC3FFF80029BD15 /* FBSDKLoginKit.framework */,
-				502863941AC3FFF80029BD15 /* FBSDKMessengerShareKit.framework */,
-				502863951AC3FFF80029BD15 /* FBSDKShareKit.framework */,
-				502863811AC3FDDE0029BD15 /* Parse.framework */,
-				502863821AC3FDDE0029BD15 /* ParseCrashReporting.framework */,
-				502863841AC3FDDE0029BD15 /* ParseFacebookUtilsV4.framework */,
-				502863851AC3FDDE0029BD15 /* ParseUI.framework */,
 				50F7DEA61A5794D5008B8C2B /* MessageUI.framework */,
 				50594CCF1A2FAD1B00749B49 /* AddressBook.framework */,
 				500910F919C9FCCD006542CA /* OpenGLES.framework */,
@@ -688,6 +726,7 @@
 		50478F0C1A44DE5C00161D01 /* Main Files */ = {
 			isa = PBXGroup;
 			children = (
+				509A8A541B446DFB00EF6C68 /* Happening.entitlements */,
 				50478F0D1A44DE6900161D01 /* AppDelegate.h */,
 				50478F0E1A44DE6900161D01 /* AppDelegate.m */,
 				50478F0F1A44DE6900161D01 /* Info.plist */,
@@ -700,6 +739,8 @@
 		50512F061ABB44F200118FD9 /* Navigation & Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				509A8A511B44454000EF6C68 /* HappeningCameraVC.h */,
+				509A8A521B44454000EF6C68 /* HappeningCameraVC.m */,
 				50CA89E91B2A1FFA000AC48D /* MHCustomTabBarController.h */,
 				50CA89EA1B2A1FFA000AC48D /* MHCustomTabBarController.m */,
 				50BF2CE41A758D8300160B5E /* RKSwipeBetweenViewControllers.h */,
@@ -713,6 +754,10 @@
 		50512F071ABB453200118FD9 /* UI & Class Overrides */ = {
 			isa = PBXGroup;
 			children = (
+				5091C9D01B4F0FCE00158CB5 /* FlatButton.h */,
+				5091C9D11B4F0FCE00158CB5 /* FlatButton.m */,
+				5099CEC31B4EB81C0064DF85 /* CustomAPActivityProvider.h */,
+				5099CEC41B4EB81C0064DF85 /* CustomAPActivityProvider.m */,
 				503ECF651A506815009D30F1 /* MFActivityIndicatorView.h */,
 				503ECF661A506815009D30F1 /* MFActivityIndicatorView.m */,
 				50478ED91A44DD6C00161D01 /* CustomCalendarActivity.h */,
@@ -757,6 +802,8 @@
 				50512F161ABB6E9100118FD9 /* NotificationsTVC.m */,
 				50512F1B1ABB714000118FD9 /* PrivacyTVC.h */,
 				50512F1C1ABB714000118FD9 /* PrivacyTVC.m */,
+				500639411B50990B00D1CD6E /* MatchesWithFriendsTVC.h */,
+				500639421B50990B00D1CD6E /* MatchesWithFriendsTVC.m */,
 			);
 			name = Settings;
 			sourceTree = "<group>";
@@ -840,12 +887,12 @@
 				50B8511A1B2749F700C1C8FB /* GroupChatVC.m */,
 				50CA89EF1B2A200F000AC48D /* PFUser+ATLParticipant.h */,
 				50CA89F01B2A200F000AC48D /* PFUser+ATLParticipant.m */,
-				508240CB1B2DF433006CBCE8 /* PFObject+ATLAvatarItem.h */,
-				508240CC1B2DF433006CBCE8 /* PFObject+ATLAvatarItem.m */,
 				505529DD1B30C4C5007A2F00 /* InviteCollectionViewCell.h */,
 				505529DE1B30C4C5007A2F00 /* InviteCollectionViewCell.m */,
 				502CA2AE1B3A545C00576E82 /* SystemCollectionViewCell.h */,
 				502CA2AF1B3A545C00576E82 /* SystemCollectionViewCell.m */,
+				5099CEB71B4B8BA20064DF85 /* ConversationCell.h */,
+				5099CEB81B4B8BA20064DF85 /* ConversationCell.m */,
 			);
 			name = Chat;
 			sourceTree = "<group>";
@@ -853,6 +900,10 @@
 		506961F81A8F11CD009CB5DB /* Draggables */ = {
 			isa = PBXGroup;
 			children = (
+				5072D85F1B4612FC00518278 /* SwipeableCardVC.h */,
+				5072D8601B4612FC00518278 /* SwipeableCardVC.m */,
+				5072D8591B45C20C00518278 /* ExpandedCardVC.h */,
+				5072D85A1B45C20C00518278 /* ExpandedCardVC.m */,
 				50478EDB1A44DD6C00161D01 /* DraggableView.h */,
 				50478EDC1A44DD6C00161D01 /* DraggableView.m */,
 				50478EDD1A44DD6C00161D01 /* DraggableViewBackground.h */,
@@ -861,6 +912,8 @@
 				50478EE01A44DD6C00161D01 /* DragViewController.m */,
 				508FC9A21A8B04A300BF246B /* DragMapViewController.h */,
 				508FC9A31A8B04A300BF246B /* DragMapViewController.m */,
+				5099CEC01B4EB7FE0064DF85 /* CategoryBubbleView.h */,
+				5099CEC11B4EB7FE0064DF85 /* CategoryBubbleView.m */,
 			);
 			name = Draggables;
 			sourceTree = "<group>";
@@ -873,15 +926,13 @@
 				50478EE31A44DD6C00161D01 /* moreDetailFromCard.h */,
 				50478EE41A44DD6C00161D01 /* moreDetailFromCard.m */,
 				50478EE51A44DD6C00161D01 /* OverlayView.h */,
-				506961FB1A8F122C009CB5DB /* ExternalProfileTVC.m */,
 				50478EE61A44DD6C00161D01 /* OverlayView.m */,
 				50FA6B871A7ECC35009AA6A0 /* TutorialDragView.h */,
 				50FA6B881A7ECC35009AA6A0 /* TutorialDragView.m */,
 				506961FA1A8F122C009CB5DB /* ExternalProfileTVC.h */,
-				50B707181B1575BD0080657E /* inviteHomies.h */,
-				50B707191B1575BD0080657E /* inviteHomies.m */,
-				50B7071E1B17D2D90080657E /* inviteHomiesCell.h */,
-				50B7071F1B17D2D90080657E /* inviteHomiesCell.m */,
+				506961FB1A8F122C009CB5DB /* ExternalProfileTVC.m */,
+				5091C9CD1B4F05F300158CB5 /* AnonymousUserView.h */,
+				5091C9CE1B4F05F300158CB5 /* AnonymousUserView.m */,
 				5028636A1AC1B2980029BD15 /* unused */,
 			);
 			name = Other;
@@ -891,6 +942,8 @@
 			isa = PBXGroup;
 			children = (
 				505529E01B30C4D7007A2F00 /* Chat */,
+				508240CB1B2DF433006CBCE8 /* PFObject+ATLAvatarItem.h */,
+				508240CC1B2DF433006CBCE8 /* PFObject+ATLAvatarItem.m */,
 				50B8510A1B2147FA00C1C8FB /* NewGroupCreatorVC.h */,
 				50B8510B1B2147FA00C1C8FB /* NewGroupCreatorVC.m */,
 				50B851071B21152800C1C8FB /* GroupsEventCell.h */,
@@ -909,6 +962,12 @@
 				508240D51B2F09C1006CBCE8 /* GroupDetailsTVC.m */,
 				502CA2B11B3B4F6B00576E82 /* GroupAddFriendsTVC.h */,
 				502CA2B21B3B4F6B00576E82 /* GroupAddFriendsTVC.m */,
+				50B707181B1575BD0080657E /* inviteHomies.h */,
+				50B707191B1575BD0080657E /* inviteHomies.m */,
+				50B7071E1B17D2D90080657E /* inviteHomiesCell.h */,
+				50B7071F1B17D2D90080657E /* inviteHomiesCell.m */,
+				50D78E501B555EB70015F88A /* InviteHomiesToGroup.h */,
+				50D78E511B555EB70015F88A /* InviteHomiesToGroup.m */,
 			);
 			name = Groups;
 			sourceTree = "<group>";
@@ -995,6 +1054,9 @@
 							com.apple.Maps.iOS = {
 								enabled = 0;
 							};
+							com.apple.SafariKeychain = {
+								enabled = 1;
+							};
 						};
 					};
 					50D252DC1A6385DC0086B7A4 = {
@@ -1034,6 +1096,7 @@
 				506DC5411A46014300DD4591 /* OpenSans-ExtraBoldItalic.ttf in Resources */,
 				506DC5421A46014300DD4591 /* OpenSans-Italic.ttf in Resources */,
 				506DC5431A46014300DD4591 /* OpenSans-Light.ttf in Resources */,
+				5072D88E1B49D6EB00518278 /* FacebookSDKStrings.bundle in Resources */,
 				506DC5441A46014300DD4591 /* OpenSans-LightItalic.ttf in Resources */,
 				50B8510F1B23AC7400C1C8FB /* SVProgressHUD.bundle in Resources */,
 				506DC5451A46014300DD4591 /* OpenSans-Regular.ttf in Resources */,
@@ -1095,9 +1158,11 @@
 				506961FC1A8F122C009CB5DB /* ExternalProfileTVC.m in Sources */,
 				507677D31A88761100B9F21D /* ProfileTVC.m in Sources */,
 				50512F251ABB719700118FD9 /* SVIndefiniteAnimatedView.m in Sources */,
+				500639431B50990B00D1CD6E /* MatchesWithFriendsTVC.m in Sources */,
 				509248F71A58819D002BE584 /* EditExtraInfoTVC.m in Sources */,
 				50478EEB1A44DD6C00161D01 /* FlippedDVB.m in Sources */,
 				50478ED71A44DD2400161D01 /* MyEventsTVC.m in Sources */,
+				50D78E521B555EB70015F88A /* InviteHomiesToGroup.m in Sources */,
 				50B851151B264F6300C1C8FB /* GroupRSVP.m in Sources */,
 				50512F171ABB6E9100118FD9 /* NotificationsTVC.m in Sources */,
 				50CA89F11B2A200F000AC48D /* PFUser+ATLParticipant.m in Sources */,
@@ -1115,6 +1180,7 @@
 				50C35E081ADB166400389EF4 /* tempProfile.m in Sources */,
 				50478EBD1A44DBCC00161D01 /* InitialLocationSearch.m in Sources */,
 				50478EBE1A44DBCC00161D01 /* LogInExistingUser.m in Sources */,
+				5099CEC21B4EB7FE0064DF85 /* CategoryBubbleView.m in Sources */,
 				50478ED31A44DD2400161D01 /* EditEventTVC.m in Sources */,
 				50478F0A1A44DE1F00161D01 /* CupertinoYankee.m in Sources */,
 				50478ED61A44DD2400161D01 /* LocationSearching.m in Sources */,
@@ -1124,6 +1190,8 @@
 				50478EEA1A44DD6C00161D01 /* DragViewController.m in Sources */,
 				50478EBB1A44DBCC00161D01 /* ChoosingLocation.m in Sources */,
 				50A677761A59B67C00E1E12A /* RKDropdownAlert.m in Sources */,
+				5099CEC51B4EB81C0064DF85 /* CustomAPActivityProvider.m in Sources */,
+				5091C9D21B4F0FCE00158CB5 /* FlatButton.m in Sources */,
 				50478F001A44DE0500161D01 /* AttendEvent.m in Sources */,
 				5031EBEC1A939489007E3523 /* webViewController.m in Sources */,
 				5028636F1AC213F20029BD15 /* Reachability.m in Sources */,
@@ -1131,8 +1199,11 @@
 				502CA2B01B3A545C00576E82 /* SystemCollectionViewCell.m in Sources */,
 				50478ED51A44DD2400161D01 /* ExtraInfoTVC.m in Sources */,
 				50478EF81A44DDE300161D01 /* LeftToRightSegue.m in Sources */,
+				5091C9CF1B4F05F300158CB5 /* AnonymousUserView.m in Sources */,
 				50478F181A44DE6900161D01 /* TabBarViewController.m in Sources */,
 				50478EE71A44DD6C00161D01 /* CustomCalendarActivity.m in Sources */,
+				5099CEB91B4B8BA20064DF85 /* ConversationCell.m in Sources */,
+				5072D8611B4612FC00518278 /* SwipeableCardVC.m in Sources */,
 				50BF2CE31A75531B00160B5E /* movieLoginVC.m in Sources */,
 				505529E31B30EDEE007A2F00 /* CustomConstants.m in Sources */,
 				50478EE81A44DD6C00161D01 /* DraggableView.m in Sources */,
@@ -1155,6 +1226,7 @@
 				50478EED1A44DD6C00161D01 /* OverlayView.m in Sources */,
 				50478F0B1A44DE1F00161D01 /* SearchBar.m in Sources */,
 				50478EEC1A44DD6C00161D01 /* moreDetailFromCard.m in Sources */,
+				509A8A531B44454000EF6C68 /* HappeningCameraVC.m in Sources */,
 				508240D61B2F09C1006CBCE8 /* GroupDetailsTVC.m in Sources */,
 				50478ED41A44DD2400161D01 /* EventTVC.m in Sources */,
 				50478F011A44DE0500161D01 /* AttendTableCell.m in Sources */,
@@ -1169,6 +1241,7 @@
 				50B707201B17D2D90080657E /* inviteHomiesCell.m in Sources */,
 				50478EBC1A44DBCC00161D01 /* FirstTimeScreen.m in Sources */,
 				50B7071A1B1575BD0080657E /* inviteHomies.m in Sources */,
+				5072D85B1B45C20C00518278 /* ExpandedCardVC.m in Sources */,
 				50F7DEA51A5643A6008B8C2B /* main.m in Sources */,
 				50512F051AB389B600118FD9 /* UIButton+Extensions.m in Sources */,
 				506DFD801A60A94600715079 /* UIImage+ImageEffects.m in Sources */,
@@ -1287,12 +1360,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_ENTITLEMENTS = Happening/Happening.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Happening/Frameworks/FacebookSDK",
 					"$(PROJECT_DIR)/Happening/Frameworks/parse-library",
+					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/Happening/Main Files/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
@@ -1313,12 +1388,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
-				CODE_SIGN_IDENTITY = "iPhone Distribution";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
+				CODE_SIGN_ENTITLEMENTS = Happening/Happening.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Happening/Frameworks/FacebookSDK",
 					"$(PROJECT_DIR)/Happening/Frameworks/parse-library",
+					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/Happening/Main Files/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;

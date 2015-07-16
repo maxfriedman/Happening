@@ -13,6 +13,7 @@
 #import <EventKit/EventKit.h>
 #import <EventKitUI/EventKitUI.h>
 #import <FBSDKCoreKit/FBSDKCoreKit.h>
+#import "DraggableView.h"
 
 @protocol DragViewControllerDelegate <NSObject>
 
@@ -71,13 +72,3 @@
 -(void)stopPanning;
 
 @end
-
-#import "DraggableView.h"
-@interface APActivityProvider : UIActivityItemProvider <UIActivityItemSource>
-@property (nonatomic, strong)DraggableView *APdragView;
-@end
-
-@interface APActivityIcon : UIActivity
-@end
-
-

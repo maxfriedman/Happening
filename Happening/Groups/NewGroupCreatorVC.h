@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import <FBSDKCoreKit/FBSDKCoreKit.h>
+#import <Parse/Parse.h>
 
 @interface NewGroupCreatorVC : UIViewController
 
@@ -18,9 +19,11 @@
 @property (strong, nonatomic) IBOutlet UILabel *numberLabel;
 @property (strong, nonatomic) IBOutlet UITextField *textField;
 @property (strong, nonatomic) IBOutlet UIBarButtonItem *createButton;
+@property PFObject *event;
 
 @property (assign) NSString *eventId;
 @property NSArray *userIdArray;
 @property (assign) int memCount;
+@property (assign) BOOL fromGroupsTab;
 
 @end

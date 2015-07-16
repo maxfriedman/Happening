@@ -320,7 +320,7 @@
         CLLocation *currentLocation = locManager.location;
         user[@"userLoc"] = [PFGeoPoint geoPointWithLocation:currentLocation];
         NSLog(@"Current Location is: %@", currentLocation);
-        [user saveInBackground];
+        [user saveEventually];
     }
     
     PFGeoPoint *loc = Event[@"GeoLoc"];
@@ -487,7 +487,7 @@
             bestFriendsArray = [NSMutableArray array];
         [bestFriendsArray addObject:user[@"FBObjectID"]];
         currentUser[@"BestFriends"] = bestFriendsArray;
-        [currentUser saveInBackground];
+        [currentUser saveEventually];
         
     } else {
         [starButton setImage:[UIImage imageNamed: @"star gray"] forState:UIControlStateNormal];
@@ -495,7 +495,7 @@
         NSMutableArray *bestFriendsArray = currentUser[@"BestFriends"];
         [bestFriendsArray removeObject:user[@"FBObjectID"]];
         currentUser[@"BestFriends"] = bestFriendsArray;
-        [currentUser saveInBackground];
+        [currentUser saveEventually];
     }
         
 }

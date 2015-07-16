@@ -14,8 +14,9 @@
 #import <CoreText/CoreText.h>
 #import "SVProgressHUD.h"
 #import "AppDelegate.h"
+#import "CategoryBubbleView.h"
 
-@interface DraggableViewBackground()
+@interface DraggableViewBackground() <UIScrollViewDelegate>
 
 @property (nonatomic, strong) EKEventStore *eventStore;
 
@@ -38,6 +39,8 @@
     
     int evCount;
     
+    NSArray *bestFriendIds;
+    NSArray *events;
 }
 //this makes it so only two cards are loaded at a time to
 //avoid performance and memory costs
@@ -45,32 +48,16 @@ static const int MAX_BUFFER_SIZE = 2; //%%% max number of cards loaded at any gi
 static const float CARD_HEIGHT = 350; //%%% height of the draggable card
 static const float CARD_WIDTH = 284; //%%% width of the draggable card
 
-@synthesize exampleCardLabels; //%%% all the labels I'm using as example data at the moment
 @synthesize allCards;//%%% all the cards
 
-@synthesize titleArray;
-@synthesize subtitleArray;
-@synthesize locationArray;
 @synthesize dateArray;
-@synthesize timeArray;
-@synthesize hashtagArray;
-@synthesize someArray;
-@synthesize geoLocArray;
 @synthesize locManager;
-@synthesize objectIDs;
-@synthesize swipesRightArray;
-@synthesize swipes;
-@synthesize imageArray;
-@synthesize createdByArray;
 @synthesize storedIndex;
-@synthesize URLArray;
-@synthesize ticketLinkArray;
 @synthesize calDayArray, calDayOfWeekArray, calMonthArray, calTimeArray;
 
 @synthesize dragView; //CURRENT CARD!
 @synthesize eventStore;
 @synthesize blurView;
-
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -93,6 +80,8 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         
         PFUser *user = [PFUser currentUser];
         
+        bestFriendIds = [[NSArray alloc] initWithArray:user[@"BestFriends"]];
+        
         evCount = 0;
         
         if(locManager && [CLLocationManager locationServicesEnabled]) {
@@ -100,25 +89,10 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             CLLocation *currentLocation = locManager.location;
             user[@"userLoc"] = [PFGeoPoint geoPointWithLocation:currentLocation];
             NSLog(@"Current Location is: %@", currentLocation);
-            [user saveInBackground];
+            [user saveEventually];
         }
         
-        exampleCardLabels = [[NSMutableArray alloc]initWithObjects: nil];
-        someArray = [[NSArray alloc]init];
-        titleArray = [[NSMutableArray alloc]init];
-        subtitleArray = [[NSMutableArray alloc]init];
-        locationArray = [[NSMutableArray alloc]init];
         dateArray = [[NSMutableArray alloc]init];
-        //timeArray = [[NSMutableArray alloc]init];
-        hashtagArray = [[NSMutableArray alloc]init];
-        geoLocArray = [[NSMutableArray alloc]init];
-        objectIDs = [[NSMutableArray alloc]init];
-        swipesRightArray = [[NSMutableArray alloc]init];
-        imageArray = [[NSMutableArray alloc]init];
-        swipes = [[NSMutableArray alloc]init];
-        createdByArray = [[NSMutableArray alloc]init];
-        URLArray = [[NSMutableArray alloc]init];
-        ticketLinkArray = [[NSMutableArray alloc]init];
         calTimeArray = [[NSMutableArray alloc]init];
         calMonthArray = [[NSMutableArray alloc]init];
         calDayOfWeekArray = [[NSMutableArray alloc]init];
@@ -140,7 +114,6 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             NSLog(@"today");
             
             [eventQuery whereKey:@"EndTime" greaterThan:[NSDate dateWithTimeIntervalSinceNow:1800]]; // show today's events, must be at least 30 minutes left in the event (END)
-            NSLog(@"%@", [NSDate dateWithTimeIntervalSinceNow:1800]);
             if (shouldLimit) {
                 [eventQuery whereKey:@"Date" lessThan:[[NSDate date]endOfDay]];
             }
@@ -220,14 +193,14 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         NSInteger radius = [defaults integerForKey:@"sliderValue"];
         
         
-        if (shouldLimit && [[NSUserDefaults standardUserDefaults] boolForKey:@"today"]) {
+        if (shouldLimit && ([[NSUserDefaults standardUserDefaults] boolForKey:@"today"])) {
             //[eventQuery addDescendingOrder:@"swipesRight"];
             
             NSLog(@"LIMIT");
             
             PFQuery *yesQuery = [PFQuery queryWithClassName:@"Swipes"];
             yesQuery.limit = 1000;
-            [yesQuery whereKey:@"UserID" containsString:user.objectId];
+            [yesQuery whereKey:@"UserID" equalTo:user.objectId];
             [yesQuery whereKey:@"swipedAgain" equalTo:@YES];
             
             [finalQuery whereKey:@"objectId" doesNotMatchKey:@"EventID" inQuery:yesQuery];
@@ -240,7 +213,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             
             PFQuery *didUserSwipe = [PFQuery queryWithClassName:@"Swipes"];
             didUserSwipe.limit = 1000;
-            [didUserSwipe whereKey:@"UserID" containsString:user.objectId];
+            [didUserSwipe whereKey:@"UserID" equalTo:user.objectId];
             [finalQuery whereKey:@"objectId" doesNotMatchKey:@"EventID" inQuery:didUserSwipe];
             
         }
@@ -289,14 +262,11 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         
         finalQuery.limit = 10;
          
-        //whereKey:withinGeoBoxFromSouthwest:toNortheast:
-
         NSLog(@"=======  1  ========");
 
         [finalQuery findObjectsInBackgroundWithBlock:^(NSArray *eventObjects, NSError *error) {
 
             NSLog(@"=======  2  ========");
-            
             evCount = (unsigned)(long)eventObjects.count;
             
             if (eventObjects.count == 0 && shouldLimit) {
@@ -315,17 +285,6 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             for (int i = 0; i < eventObjects.count; i++) {
 
                 PFObject *eventObject = eventObjects[i];
-                [objectIDs addObject:eventObject.objectId];
-
-                [titleArray addObject:eventObject[@"Title"]];
-                
-                if (eventObject[@"Description"])
-                    [subtitleArray addObject:eventObject[@"Description"]];
-                else
-                    [subtitleArray addObject:@""];
-                
-                NSString *locationString = [NSString stringWithFormat:@"at %@", eventObject[@"Location"]];
-                [locationArray addObject:locationString];
                 
                 NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
                 
@@ -333,7 +292,6 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                 NSDate *eventDate = [[NSDate alloc]init];
                 
                 eventDate = eventObject[@"Date"];
-                
                 
                 NSString *finalString;
                 BOOL funkyDates = NO;
@@ -455,39 +413,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                     eventTimeString = [NSString stringWithFormat:@"%@", startTimeString];
                 }
                  */
-                //NSLog(@"%@ to %@", startTimeString, endTimeString);
-                //[timeArray addObject:@"Delete this"];
-                //NSString *tagString = [NSString stringWithFormat:@"tags: %@", eventObject[@"Hashtag"]];
-                NSString *tagString = [NSString stringWithFormat:@"%@", eventObject[@"Hashtag"]];
-                [hashtagArray addObject:tagString];
-                [geoLocArray addObject:eventObject[@"GeoLoc"]];
 
-                NSNumber *swipe = eventObject[@"swipesRight"];
-                NSString *swipeString = [NSString stringWithFormat:@"%@ interested", [swipe stringValue]];
-                
-                [swipesRightArray addObject:swipeString];
-
-                if (eventObject[@"Image"] != nil) {
-                    [imageArray addObject:eventObject[@"Image"]];
-                } else {
-                    [imageArray addObject:eventObject[@"Hashtag"]];
-                }
-                
-                NSString *name = eventObject[@"CreatedByName"];
-                //NSString *fullName = [NSString stringWithFormat:@"%@", name];
-                [createdByArray addObject:name];
-                
-                NSString *urlString = eventObject[@"URL"];
-                if (urlString == nil || [urlString isEqualToString:@""])
-                    [URLArray addObject:@""];
-                else
-                    [URLArray addObject:urlString];
-
-                NSString *ticketLinkString = eventObject[@"TicketLink"];
-                if (ticketLinkString == nil || [ticketLinkString isEqualToString:@""])
-                    [ticketLinkArray addObject:@""];
-                else
-                    [ticketLinkArray addObject:ticketLinkString];
             
             }
             
@@ -495,6 +421,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                 loadedCards = [[NSMutableArray alloc] init];
                 allCards = [[NSMutableArray alloc] init];
                 cardsLoadedIndex = 0;
+                events = [NSArray arrayWithArray:eventObjects];
                 [self loadCards];
             } else {
                 NSLog(@"Error--- perform action");
@@ -553,222 +480,246 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 -(DraggableView *)createDraggableViewWithDataAtIndex:(NSInteger)index
 {
     DraggableView *draggableView = [[DraggableView alloc]initWithFrame:CGRectMake(0, 0, CARD_WIDTH, CARD_HEIGHT)];
-    //[draggableView.activityView startAnimating];
-    draggableView.userInteractionEnabled = NO;
-    self.userInteractionEnabled = NO;
     
     self.myViewController.checkButton.userInteractionEnabled = NO;
     self.myViewController.xButton.userInteractionEnabled = NO;
+
+    PFObject *event = events[index];
+    draggableView.eventObject = event;
+    draggableView.objectID = event.objectId;
+    NSString *titleString = event[@"Title"];
+    if (titleString.length > 33) {
+        draggableView.title.numberOfLines = 2;
+        draggableView.title.font = [UIFont fontWithName:@"OpenSans-Bold" size:18];
+        draggableView.title.minimumScaleFactor = 0.6;
+    }
+    draggableView.title.text = titleString;
     
-    // &&& Adds image cards from array
+    if (event[@"Description"])
+        draggableView.subtitle.text = event[@"Description"];
+    else
+        draggableView.subtitle.text = @"";
+    
     PFQuery *query = [PFQuery queryWithClassName:@"Event"];
-    //[query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-        //NSLog(@"%@", objects[index]);
-        //NSLog(objectIDs[index]);
-
-        draggableView.objectID = objectIDs[index];
+    [query fromLocalDatastore];
+    [query getObjectInBackgroundWithId:event.objectId block:^(PFObject *object, NSError *error){
         
-        NSString *titleString = titleArray[index];
-        
-        if (titleString.length > 33) {
-            draggableView.title.numberOfLines = 2;
-            draggableView.title.font = [UIFont fontWithName:@"OpenSans-Bold" size:18];
-            draggableView.title.minimumScaleFactor = 0.6;
-
+        if (!error && [object.objectId isEqualToString:event.objectId]) {
+            
+            CategoryBubbleView *stillInterestedView = [[CategoryBubbleView alloc] initWithText:@"Still Interested?" type:@"repeat"];
+            [draggableView.cardView addSubview:stillInterestedView];
+            [draggableView arrangeCornerViews];
         }
         
-        draggableView.title.text = titleString;
-        
-        draggableView.subtitle.text = subtitleArray[index];
-        [draggableView.subtitle sizeToFit];
-        draggableView.location.text = locationArray[index];
-        draggableView.date.text = dateArray[index];
-        //draggableView.time.text = timeArray[index];
-        //draggableView.hashtag.text = hashtagArray[index];
-        draggableView.swipesRight.text = swipesRightArray[index];
-        draggableView.URL = URLArray[index];
-        draggableView.ticketLink = ticketLinkArray[index];
-        
-        draggableView.eventImage.image = [UIImage imageNamed:hashtagArray[index]];
-        
-        // Only allow interaction once all data is loaded
-        draggableView.userInteractionEnabled = YES;
-        self.userInteractionEnabled = YES;
-        self.myViewController.checkButton.userInteractionEnabled = YES;
-        self.myViewController.xButton.userInteractionEnabled = YES;
+    }];
+    
+    if (event[@"Hashtag"]) {
+        draggableView.hashtag.text = [NSString stringWithFormat:@"%@", event[@"Hashtag"]];
+        CategoryBubbleView *catView  = [[CategoryBubbleView alloc] initWithText:event[@"Hashtag"] type:@"normal"];
+        [draggableView.cardView addSubview:catView];
+    } else {
+        draggableView.hashtag.text = @"";
+    }
+    
+    NSString *createdByString = event[@"CreatedByName"];
+    if (createdByString == nil || [createdByString isEqualToString:@""])
+        draggableView.createdBy.text = @"";
+    else
+        draggableView.createdBy.text = createdByString;
+    
+    NSString *urlString = event[@"URL"];
+    if (urlString == nil || [urlString isEqualToString:@""])
+        draggableView.URL = @"";
+    else
+        draggableView.URL = urlString;
+    
+    NSString *ticketLinkString = event[@"TicketLink"];
+    if (ticketLinkString == nil || [ticketLinkString isEqualToString:@""])
+        draggableView.ticketLink = @"";
+    else
+        draggableView.ticketLink = ticketLinkString;
+    
+    NSString *locationString = [NSString stringWithFormat:@"at %@", event[@"Location"]];
+    if (locationString == nil || [locationString isEqualToString:@""])
+        draggableView.location.text = @"";
+    else
+        draggableView.location.text = locationString;
+    
+    NSNumber *swipe = event[@"swipesRight"];
+    draggableView.swipesRight.text = [NSString stringWithFormat:@"%@ interested", [swipe stringValue]];
+    
+    draggableView.date.text = dateArray[index];
+    
+    draggableView.eventImage.image = [UIImage imageNamed:event[@"Hashtag"]];
+    
+    // Only allow interaction once all data is loaded
+    draggableView.userInteractionEnabled = YES;
+    self.userInteractionEnabled = YES;
+    self.myViewController.checkButton.userInteractionEnabled = YES;
+    self.myViewController.xButton.userInteractionEnabled = YES;
+    
+    NSNumber *lowPriceNumber = event[@"lowest_price"];
+    if (![lowPriceNumber isKindOfClass:[NSNull class]]) {
+        draggableView.startPriceNumLabel.text = [NSString stringWithFormat:@"$%d", [lowPriceNumber intValue]];
+    } else {
+        draggableView.startPriceNumLabel.text = @"";
+    }
+    
+    
+    NSNumber *avePriceNumber = event[@"average_price"];
+    if (![avePriceNumber isKindOfClass:[NSNull class]]) {
+        draggableView.avePriceNumLabel.text = [NSString stringWithFormat:@"$%d", [avePriceNumber intValue]];
+    } else {
+        draggableView.avePriceNumLabel.text = @"";
+    }
+    
 
-        NSMutableAttributedString *attString = [[NSMutableAttributedString alloc] initWithString:createdByArray[index]];
-        [attString addAttribute:(NSString*)kCTUnderlineStyleAttributeName
-                          value:[NSNumber numberWithInt:kCTUnderlineStyleSingle]
-                          range:(NSRange){0,[attString length]}];
-        draggableView.createdBy.attributedText = attString;
-        [draggableView.createdBy sizeToFit];
-        if (draggableView.createdBy.frame.size.width > 160) {
-            draggableView.createdBy.frame = CGRectMake(draggableView.createdBy.frame.origin.x, draggableView.createdBy.frame.origin.y, 160, draggableView.createdBy.frame.size.height);
-        }
+    /*
+    NSMutableAttributedString *attString = [[NSMutableAttributedString alloc] initWithString:event[@"CreatedByName"]];
+    [attString addAttribute:(NSString*)kCTUnderlineStyleAttributeName
+                      value:[NSNumber numberWithInt:kCTUnderlineStyleSingle]
+                      range:(NSRange){0,[attString length]}];
+    draggableView.createdBy.attributedText = attString;
+    [draggableView.createdBy sizeToFit];
+    if (draggableView.createdBy.frame.size.width > 160) {
+        draggableView.createdBy.frame = CGRectMake(draggableView.createdBy.frame.origin.x, draggableView.createdBy.frame.origin.y, 160, draggableView.createdBy.frame.size.height);
+    } */
 
-        PFGeoPoint *loc = geoLocArray[index];
-        draggableView.geoPoint = loc;
-        if (loc.latitude == 0) {
-            draggableView.geoLoc.text = @"";
-            draggableView.locImage.image = nil;
+    PFGeoPoint *loc = event[@"GeoLoc"];
+    draggableView.geoPoint = loc;
+    if (loc.latitude == 0) {
+        draggableView.geoLoc.text = @"";
+        draggableView.locImage.image = nil;
+    } else {
+        PFUser *user = [PFUser currentUser];
+        PFGeoPoint *userLoc = user[@"userLoc"];
+        NSNumber *miles = [NSNumber numberWithDouble:([loc distanceInMilesTo:userLoc])];
+        if ([miles integerValue] > 10) {
+            NSString *distance = [NSString stringWithFormat:(@"%ld mi"), (long)miles.integerValue];
+            draggableView.geoLoc.text = distance;
         } else {
-            PFUser *user = [PFUser currentUser];
-            PFGeoPoint *userLoc = user[@"userLoc"];
-            NSNumber *miles = [NSNumber numberWithDouble:([loc distanceInMilesTo:userLoc])];
-            if ([miles integerValue] > 10) {
-                NSString *distance = [NSString stringWithFormat:(@"%ld mi"), (long)miles.integerValue];
-                draggableView.geoLoc.text = distance;
-            } else {
             NSString *distance = [NSString stringWithFormat:(@"%.1f mi"), miles.floatValue];
             draggableView.geoLoc.text = distance;
-            }
-            
-            draggableView.locImage.image = [UIImage imageNamed:@"locationGrey"];
         }
-        
-        /*
-         @"#Nightlife",@"#Sports",@"#Music", @"#Shopping", @"#Freebies", @"#HappyHour", @"#Dining", @"#Entertainment", @"#Fundraiser", @"#Other", @"#Meetup"
-         NSString *img = [NSString stringWithFormat:(hashtagArray[index])];
-         img = [img stringByAppendingString:@".jpg"];
-         draggableView.eventImage.image = [UIImage imageNamed:img];
-         */
-        
-        UIImageView *im = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"noButton"]];
-        im.center = CGPointMake(68, 168);
-        //[self addSubview:im];
-        
-        UIImageView *im1 = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"noButton"]];
-        im1.center = CGPointMake(142, 150);
-        //[draggableView addSubview:im1];
-        
-        UIImageView *im2 = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"noButton"]];
-        im2.center = CGPointMake(234, 150);
-        //[draggableView addSubview:im2];
-        
-        if ([imageArray[index] isKindOfClass:[PFFile class]]) {
-            
-            PFFile *imageFile = imageArray[index];
-        
-            [imageFile getDataInBackgroundWithBlock:^(NSData *imageData, NSError *error) {
-                if (!error) {
-                    
-                    //draggableView.eventImage.contentMode = UIViewContentModeScaleAspectFill;
-                    
-                    /*
-                    draggableView.eventImage.autoresizingMask =
-                    ( UIViewAutoresizingFlexibleBottomMargin
-                     | UIViewAutoresizingFlexibleHeight
-                     | UIViewAutoresizingFlexibleLeftMargin
-                     | UIViewAutoresizingFlexibleRightMargin
-                     | UIViewAutoresizingFlexibleTopMargin
-                     | UIViewAutoresizingFlexibleWidth );
-                    */
+    }
 
-                    draggableView.eventImage.image = [UIImage imageWithData:imageData];
-                    
-                    //[draggableView.cardView insertSubview:draggableView.transpBackground belowSubview:draggableView.locImage];
-                    
-
-                    CAGradientLayer *l = [CAGradientLayer layer];
-                    l.frame = draggableView.eventImage.bounds;
-                    l.colors = [NSArray arrayWithObjects:(id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:0.0] CGColor], (id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:0.1] CGColor], (id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:0.5] CGColor], (id)[[UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.9] CGColor], nil];
-                    
-                    //l.startPoint = CGPointMake(0.0, 0.7f);
-                    //l.endPoint = CGPointMake(0.0f, 1.0f);
-                    l.locations = [NSArray arrayWithObjects:[NSNumber numberWithFloat:0.0], [NSNumber numberWithFloat:0.2],
-                    [NSNumber numberWithFloat:0.5],
-                    //[NSNumber numberWithFloat:0.9],
-                    [NSNumber numberWithFloat:1.0], nil];
-                    
-                    [draggableView.eventImage.layer insertSublayer:l atIndex:0];
-                    
-                    //blurView.layer.mask = l;
-                    
-
-                    //UIImage *blurredImage = [draggableView.eventImage.image applyLightEffect];
-                    /*
-                     CGRect clippedRect  = CGRectMake(0, 240, 480, 140);
-                     CGImageRef imageRef = CGImageCreateWithImageInRect([draggableView CGImage], clippedRect);
-                    UIImage *newImage   = [UIImage imageWithCGImage:imageRef];
-                     CGImageRelease(imageRef);
-                
-                     //UIImage *blurImage = draggableView.eventImage.image;
-                     UIImageView *imView = [[UIImageView alloc]initWithImage:[newImage applyLightEffect]];
-                     imView.frame = CGRectMake(0, 120, 290, 70);
-                     [draggableView.eventImage addSubview:imView];
-                     */
-                
-                } else {
-                
-                    NSLog(@"Error retrieving image");
-                }
-            
-                storedIndex = index;
-            }];
-            
-        } else {
-         
-            // Use default image
-        }
-
-        draggableView.userImage.image = [UIImage imageNamed:@"interested_face"];
-                
-        //draggableView.transpBackground.backgroundColor = [UIColor blackColor];
-        //draggableView.transpBackground.backgroundColor = [UIColor colorWithHue:1.0 saturation:0.0 brightness:0 alpha:0.5];
-        
-        
-        UIImage *calImage = [UIImage imageNamed:@"calendar light grey"]; //[DraggableViewBackground drawText:calMonthArray[index] inImage:[UIImage imageNamed:@"calendar light grey"] atPoint:CGPointMake(20, 20) withColor:[UIColor blackColor] withFont:[UIFont fontWithName:@"OpenSans" size:10.0]];
-        // calImage = [DraggableViewBackground drawText:calDayArray[index] inImage:[UIImage imageNamed:@"calendar light grey"] atPoint:CGPointMake(40, 40) withColor:[UIColor blackColor] withFont:[UIFont fontWithName:@"OpenSans" size:12.0]];
-        
-        draggableView.calImageView.image = calImage;
-        
-        draggableView.calMonthLabel.text = calMonthArray[index];
-        draggableView.calDayLabel.text = calDayArray[index];
-        draggableView.calDayOfWeekLabel.text = calDayOfWeekArray[index];
-        [draggableView.calDayOfWeekLabel sizeToFit];
-        draggableView.calTimeLabel.text = calTimeArray[index];
-        [draggableView.calTimeLabel sizeToFit];
-        
-        UIGestureRecognizer *gr1 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(checkEventStoreAccessForCalendar)];
-        [draggableView.calImageView addGestureRecognizer:gr1];
-        UIGestureRecognizer *gr2 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(checkEventStoreAccessForCalendar)];
-        [draggableView.calMonthLabel addGestureRecognizer:gr2];
-        UIGestureRecognizer *gr3 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(checkEventStoreAccessForCalendar)];
-        [draggableView.calDayLabel addGestureRecognizer:gr3];
-        UIGestureRecognizer *gr4 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(checkEventStoreAccessForCalendar)];
-        [draggableView.calDayOfWeekLabel addGestureRecognizer:gr4];
-        UIGestureRecognizer *gr5 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(checkEventStoreAccessForCalendar)];
-        [draggableView.calTimeLabel addGestureRecognizer:gr5];
-        
-        
-        //UIGestureRecognizer *tgr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(subtitleTap)];
-        //[draggableView.subtitle addGestureRecognizer:tgr];
-        UIGestureRecognizer *tgr2 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(moreButtonTap)];
-        [draggableView.moreButton addGestureRecognizer:tgr2];
-        
-        
-        [draggableView.shareButton addTarget:self action:@selector(shareAction:) forControlEvents:UIControlEventTouchUpInside];
-        
-        UITapGestureRecognizer *createdByTapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(createdByTap)];
-        [draggableView.createdBy addGestureRecognizer:createdByTapRecognizer];
-        
-        [self sendSubviewToBack:dragView.cardBackground];
-        //[draggableView.activityView stopAnimating];
-        
-    //}];
     
-    UIScrollView *friendScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(15 + 46 + 10, 250, 254 - 46 - 10, 50)];
+    if (event[@"Image"] != nil) {
+        
+        PFFile *imageFile = event[@"Image"];
+    
+        [imageFile getDataInBackgroundWithBlock:^(NSData *imageData, NSError *error) {
+            if (!error) {
+                
+                //draggableView.eventImage.contentMode = UIViewContentModeScaleAspectFill;
+                
+                /*
+                draggableView.eventImage.autoresizingMask =
+                ( UIViewAutoresizingFlexibleBottomMargin
+                 | UIViewAutoresizingFlexibleHeight
+                 | UIViewAutoresizingFlexibleLeftMargin
+                 | UIViewAutoresizingFlexibleRightMargin
+                 | UIViewAutoresizingFlexibleTopMargin
+                 | UIViewAutoresizingFlexibleWidth );
+                */
+
+                draggableView.eventImage.image = [UIImage imageWithData:imageData];
+                
+                //[draggableView.cardView insertSubview:draggableView.transpBackground belowSubview:draggableView.locImage];
+                
+
+                CAGradientLayer *l = [CAGradientLayer layer];
+                l.frame = draggableView.eventImage.bounds;
+                l.colors = [NSArray arrayWithObjects:(id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:0.0] CGColor], (id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:0.1] CGColor], (id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:0.5] CGColor], (id)[[UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.9] CGColor], nil];
+                
+                //l.startPoint = CGPointMake(0.0, 0.7f);
+                //l.endPoint = CGPointMake(0.0f, 1.0f);
+                l.locations = [NSArray arrayWithObjects:[NSNumber numberWithFloat:0.0], [NSNumber numberWithFloat:0.2],
+                [NSNumber numberWithFloat:0.5],
+                //[NSNumber numberWithFloat:0.9],
+                [NSNumber numberWithFloat:1.0], nil];
+                
+                [draggableView.eventImage.layer insertSublayer:l atIndex:0];
+                
+                //blurView.layer.mask = l;
+                
+
+                //UIImage *blurredImage = [draggableView.eventImage.image applyLightEffect];
+                /*
+                 CGRect clippedRect  = CGRectMake(0, 240, 480, 140);
+                 CGImageRef imageRef = CGImageCreateWithImageInRect([draggableView CGImage], clippedRect);
+                UIImage *newImage   = [UIImage imageWithCGImage:imageRef];
+                 CGImageRelease(imageRef);
+            
+                 //UIImage *blurImage = draggableView.eventImage.image;
+                 UIImageView *imView = [[UIImageView alloc]initWithImage:[newImage applyLightEffect]];
+                 imView.frame = CGRectMake(0, 120, 290, 70);
+                 [draggableView.eventImage addSubview:imView];
+                 */
+            
+            } else {
+            
+                NSLog(@"Error retrieving image");
+            }
+        
+            storedIndex = index;
+        }];
+        
+    } else {
+     
+        // Use default image
+    }
+
+    //draggableView.transpBackground.backgroundColor = [UIColor blackColor];
+    //draggableView.transpBackground.backgroundColor = [UIColor colorWithHue:1.0 saturation:0.0 brightness:0 alpha:0.5];
+    
+    /*
+    UIImage *calImage = [UIImage imageNamed:@"calendar light grey"];
+    draggableView.calImageView.image = calImage;
+    draggableView.calMonthLabel.text = calMonthArray[index];
+    draggableView.calDayLabel.text = calDayArray[index];
+    draggableView.calDayOfWeekLabel.text = calDayOfWeekArray[index];
+    [draggableView.calDayOfWeekLabel sizeToFit];
+    draggableView.calTimeLabel.text = calTimeArray[index];
+    [draggableView.calTimeLabel sizeToFit];
+    
+    UIGestureRecognizer *gr1 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(checkEventStoreAccessForCalendar)];
+    [draggableView.calImageView addGestureRecognizer:gr1];
+    UIGestureRecognizer *gr2 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(checkEventStoreAccessForCalendar)];
+    [draggableView.calMonthLabel addGestureRecognizer:gr2];
+    UIGestureRecognizer *gr3 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(checkEventStoreAccessForCalendar)];
+    [draggableView.calDayLabel addGestureRecognizer:gr3];
+    UIGestureRecognizer *gr4 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(checkEventStoreAccessForCalendar)];
+    [draggableView.calDayOfWeekLabel addGestureRecognizer:gr4];
+    UIGestureRecognizer *gr5 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(checkEventStoreAccessForCalendar)];
+    [draggableView.calTimeLabel addGestureRecognizer:gr5];
+     */
+
+
+    UIGestureRecognizer *tgr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(moreButtonTap)];
+    [draggableView.moreButton addGestureRecognizer:tgr];
+    
+    [draggableView.shareButton addTarget:self action:@selector(shareAction:) forControlEvents:UIControlEventTouchUpInside];
+    
+    UITapGestureRecognizer *createdByTapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(createdByTap)];
+    [draggableView.createdBy addGestureRecognizer:createdByTapRecognizer];
+    
+    [self sendSubviewToBack:dragView.cardBackground];
+    
+    UIScrollView *friendScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(15 + 46 + 10, 255, 254 - 46 - 10, 50)];
     friendScrollView.scrollEnabled = YES;
     friendScrollView.showsHorizontalScrollIndicator = NO;
     [draggableView.cardView addSubview:friendScrollView];
+    friendScrollView.delegate = self;
+    [self loadFBFriends:friendScrollView withCard:draggableView];
+    friendScrollView.tag = 33;
     
-    
-    UIButton *hapLogoButton = [[UIButton alloc] initWithFrame:CGRectMake(15, 247, 46, 46)];
+    UIButton *hapLogoButton = [[UIButton alloc] initWithFrame:CGRectMake(15, 252, 46, 46)];
     //[hapLogoButton setImage:[UIImage imageNamed:@"AppLogoButton"] forState:UIControlStateNormal];
     
     [hapLogoButton setTitle:@"INVITE" forState:UIControlStateNormal];
     [hapLogoButton setTitleColor:[UIColor colorWithRed:0 green:176.0/255 blue:242.0/255 alpha:1.0] forState:UIControlStateNormal];
+    [hapLogoButton setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];
     hapLogoButton.titleLabel.font = [UIFont fontWithName:@"OpenSans" size:9.0];
     
     hapLogoButton.layer.cornerRadius = 23;
@@ -779,15 +730,10 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     hapLogoButton.userInteractionEnabled = YES;
     [draggableView.cardView addSubview:hapLogoButton];
     
-    UITapGestureRecognizer *gr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(inviteHomies)];
-    [hapLogoButton addGestureRecognizer:gr];
-
-    
-    [self loadFBFriends:friendScrollView withCard:draggableView];
-    //[draggableView.cardView addSubview:friendScrollView];
-    friendScrollView.tag = 3;
-
-    
+    [hapLogoButton addTarget:self action:@selector(inviteHomies) forControlEvents:UIControlEventTouchUpInside];
+    [hapLogoButton addTarget:self action:@selector(buttonHighlight:) forControlEvents:UIControlEventTouchDown];
+    [hapLogoButton addTarget:self action:@selector(buttonNormal:) forControlEvents:UIControlEventTouchUpInside];
+    [hapLogoButton addTarget:self action:@selector(buttonNormal:) forControlEvents:UIControlEventTouchDragExit];
     
     draggableView.delegate = self;
     return draggableView;
@@ -890,7 +836,8 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 
 - (void)loadFBFriends:(UIScrollView *)friendScrollView withCard:(DraggableView *)card {
     
-   // NSLog(@"Loading FB Friends");
+    card.interestedNames = [NSMutableArray new];
+    card.interestedIds = [NSMutableArray new];
     
     if ([FBSDKAccessToken currentAccessToken]) {
         
@@ -923,7 +870,18 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                 
                 if (!error) {
                     
+                    NSMutableArray *orderedObjects = [NSMutableArray arrayWithArray:objects];
+                    
                     for (PFObject *object in objects) {
+                        
+                        if ([bestFriendIds containsObject:object[@"FBObjectID"]]) {
+                            [orderedObjects removeObject:object];
+                            [orderedObjects insertObject:object atIndex:0];
+                        }
+                        
+                    }
+                    
+                    for (PFObject *object in orderedObjects) {
                         
                         FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(50 * friendCount, 0, 40, 40)]; // initWithProfileID:user[@"FBObjectID"] pictureCropping:FBSDKProfilePictureModeSquare];
                         profPicView.profileID = object[@"FBObjectID"];
@@ -950,6 +908,17 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                         
                         //[self friendsUpdateFrameBy:50];
                         
+                        if ([bestFriendIds containsObject:object[@"FBObjectID"]]) {
+                            
+                            UIImageView *starImageView = [[UIImageView alloc] initWithFrame:CGRectMake(50 * friendCount + 25, 0, 15, 15)];
+                            starImageView.image = [UIImage imageNamed:@"star-blue-bordered"];
+                            [friendScrollView addSubview:starImageView];
+                        }
+                        
+                        [card.interestedIds addObject:object[@"FBObjectID"]];
+                        [card.interestedNames addObject:[NSString stringWithFormat:@"%@ %@", object[@"firstName"], object[@"lastName"]]];
+                        //[interestedPics addObject:profPicView];
+                        
                         friendCount++;
                         
                         if (friendCount == 1) {
@@ -958,7 +927,11 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                             card.friendsInterested.text = [NSString stringWithFormat:@"%d friends interested", friendCount - 1];
                         }
                         
+                    }
+                    
+                    if (objects.count > 4) {
                         
+                        card.friendArrow.alpha = 1;
                     }
                     
                     if (objects.count == 0) {
@@ -998,21 +971,21 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 {
     //do whatever you want with the card that was swiped
     DraggableView *c = (DraggableView *)card;
-    PFQuery *query = [PFQuery queryWithClassName:@"Event"];
-    [query getObjectInBackgroundWithId:c.objectID block:^(PFObject *object, NSError *error) {
-        
-        [object incrementKey:@"swipesLeft"];
-        [object saveInBackground];
-        
-        if (!error) {
-            NSLog(@"Swipe saved successfully!");
-        } else {
-            NSLog(@"Parse error: %@", error);
-        }
-        
-    }];
+    
+    [c.eventObject unpinInBackground];
+    [c.eventObject incrementKey:@"swipesLeft"];
+    [c.eventObject saveEventually];
     
     PFUser *user = [PFUser currentUser];
+    
+    [PFCloud callFunctionInBackground:@"swipeAnalytics"
+                       withParameters:@{@"userID":user.objectId, @"eventID":dragView.objectID, @"swiped":@"left"}
+                                block:^(NSString *result, NSError *error) {
+                                    if (!error) {
+                                        // result is @"Hello world!"
+                                        //NSLog(@"%@", result);
+                                    }
+                                }];
     
     PFQuery *swipesQuery = [PFQuery queryWithClassName:@"Swipes"];
     [swipesQuery whereKey:@"EventID" equalTo:dragView.objectID];
@@ -1038,8 +1011,10 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                         
                         if (succeeded) {
                             
-                            [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"noMoreEvents"];
-                            [[NSUserDefaults standardUserDefaults] synchronize];
+                            if (!shouldLimit || events.count != 10) {
+                                [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"noMoreEvents"];
+                                [[NSUserDefaults standardUserDefaults] synchronize];
+                            }
                             [self.myViewController refreshData];
                         }
                         
@@ -1059,7 +1034,9 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             NSLog(@"FIRST time Swiping");
             
             swipesObject[@"UserID"] = user.objectId;
-            swipesObject[@"username"] = user.username;
+            if (![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
+                swipesObject[@"username"] = user.username;
+            }
             swipesObject[@"EventID"] = c.objectID;
             swipesObject[@"swipedRight"] = @NO;
             swipesObject[@"swipedLeft"] = @YES;
@@ -1068,7 +1045,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             swipesObject[@"swipedAgain"] = @YES;
  
             
-            if ([[NSUserDefaults standardUserDefaults] boolForKey:@"socialMode"]) {
+            if ([[NSUserDefaults standardUserDefaults] boolForKey:@"socialMode"] && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
                 swipesObject[@"FBObjectID"] = user[@"FBObjectID"];
             }
          
@@ -1078,8 +1055,10 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                     
                     if (succeeded) {
                         
-                        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"noMoreEvents"];
-                        [[NSUserDefaults standardUserDefaults] synchronize];
+                        if (!shouldLimit || events.count != 10) {
+                            [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"noMoreEvents"];
+                            [[NSUserDefaults standardUserDefaults] synchronize];
+                        }
                         [self.myViewController refreshData];
                     }
                     
@@ -1093,7 +1072,6 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         
     }];
 
-    
     [loadedCards removeObjectAtIndex:0]; //%%% card was swiped, so it's no longer a "loaded card"
     
     if (cardsLoadedIndex < [allCards count]) { //%%% if we haven't reached the end of all cards, put another into the loaded cards
@@ -1101,15 +1079,15 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         cardsLoadedIndex++;//%%% loaded a card, so have to increment count
         [self insertSubview:[loadedCards objectAtIndex:(MAX_BUFFER_SIZE-1)] belowSubview:[loadedCards objectAtIndex:(MAX_BUFFER_SIZE-2)]];
     }
- 
-    dragView = [loadedCards firstObject]; // Make dragView the current card
-    [dragView.cardBackground removeFromSuperview];
 
     if (expandedBool == YES) {
         self.myViewController.userSwipedFromExpandedView = YES;
         [self.myViewController expandCurrentView];
     } else
         self.myViewController.userSwipedFromExpandedView = NO;
+    
+    dragView = [loadedCards firstObject]; // Make dragView the current card
+    [dragView.cardBackground removeFromSuperview];
     
     //[self.myViewController updateMainTixButton];
 }
@@ -1123,44 +1101,49 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     
     PFUser *user = [PFUser currentUser];
     
-    PFQuery *query = [PFQuery queryWithClassName:@"Event"];
-    [query getObjectInBackgroundWithId:c.objectID block:^(PFObject *object, NSError *error) {
-        
-        [object incrementKey:@"swipesRight"];
-        [object saveInBackground];
-        
-        NSString *tag = [NSString stringWithFormat:@"%@", object[@"Hashtag"]];
-        if ([tag isEqualToString:@"Happy Hour"]) {
-            [user incrementKey:@"HappyHour"];
-        } else {
-            [user incrementKey:tag];
-        }
-        
-        [user saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
-            if (!error) {
-                // The currentUser saved successfully.
-            } else {
-                // There was an error saving the currentUser.
-                NSString *errorString = [error userInfo][@"error"];
-                NSLog(@"Parse error: %@", errorString);
-            }
-        }];
-        
+    [c.eventObject pinInBackground];
+    [c.eventObject incrementKey:@"swipesRight"];
+    [c.eventObject saveEventually];
+    
+    NSString *tag = [NSString stringWithFormat:@"%@", c.eventObject[@"Hashtag"]];
+    if ([tag isEqualToString:@"Happy Hour"]) {
+        [user incrementKey:@"HappyHour"];
+    } else {
+        [user incrementKey:tag];
+    }
+    
+    [user saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
         if (!error) {
-            NSLog(@"Swipe saved successfully!");
+            // The currentUser saved successfully.
         } else {
-            NSLog(@"Parse error: %@", error);
-              }
+            // There was an error saving the currentUser.
+            NSString *errorString = [error userInfo][@"error"];
+            NSLog(@"Parse error: %@", errorString);
+        }
     }];
+    
+    if (![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
 
-    [PFCloud callFunctionInBackground:@"swipeRight"
-                       withParameters:@{@"user":user.objectId, @"event":dragView.objectID, @"fbID":user[@"FBObjectID"], @"fbToken":[FBSDKAccessToken currentAccessToken].tokenString, @"title":dragView.title.text, @"loc":dragView.location.text}
+        [PFCloud callFunctionInBackground:@"swipeRight"
+                           withParameters:@{@"user":user.objectId, @"event":dragView.objectID, @"fbID":user[@"FBObjectID"], @"fbToken":[FBSDKAccessToken currentAccessToken].tokenString, @"title":dragView.title.text, @"loc":dragView.location.text}
+                                    block:^(NSString *result, NSError *error) {
+                                        if (!error) {
+                                            // result is @"Hello world!"
+                                            //NSLog(@"%@", result);
+                                        }
+                                    }];
+    }
+    
+    [PFCloud callFunctionInBackground:@"swipeAnalytics"
+                       withParameters:@{@"userID":user.objectId, @"eventID":dragView.objectID, @"swiped":@"right"}
                                 block:^(NSString *result, NSError *error) {
                                     if (!error) {
                                         // result is @"Hello world!"
                                         NSLog(@"%@", result);
                                     }
                                 }];
+    
+    //swipeAnalytics(userID,eventID,swiped)
     
     //PFObject *analyticsObject = [PFObject objectWithClassName:@"Analytics"];
     //analyticsObject[@"Age"] = user[@"]
@@ -1189,8 +1172,10 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                             
                             if (succeeded) {
                                 
-                                [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"noMoreEvents"];
-                                [[NSUserDefaults standardUserDefaults] synchronize];
+                                if (!shouldLimit || events.count != 10) {
+                                    [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"noMoreEvents"];
+                                    [[NSUserDefaults standardUserDefaults] synchronize];
+                                }
                                 [self.myViewController refreshData];
                             }
                             
@@ -1210,7 +1195,9 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                 
                 PFObject *swipesObject = [PFObject objectWithClassName:@"Swipes"];
                 swipesObject[@"UserID"] = user.objectId;
-                swipesObject[@"username"] = user.username;
+                if (![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
+                    swipesObject[@"username"] = user.username;
+                }
                 swipesObject[@"EventID"] = c.objectID;
                 swipesObject[@"swipedRight"] = @YES;
                 swipesObject[@"swipedLeft"] = @NO;
@@ -1219,7 +1206,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                     swipesObject[@"swipedAgain"] = @YES;
                 }
                 
-                if ([[NSUserDefaults standardUserDefaults] boolForKey:@"socialMode"]) {
+                if ([[NSUserDefaults standardUserDefaults] boolForKey:@"socialMode"] && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
                     swipesObject[@"FBObjectID"] = user[@"FBObjectID"];
                 }
                 
@@ -1229,8 +1216,10 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                         
                         if (succeeded) {
                             
-                            [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"noMoreEvents"];
-                            [[NSUserDefaults standardUserDefaults] synchronize];
+                            if (!shouldLimit || events.count != 10) {
+                                [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"noMoreEvents"];
+                                [[NSUserDefaults standardUserDefaults] synchronize];
+                            }
                             [self.myViewController refreshData];
                         }
                         
@@ -1309,8 +1298,6 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 -(void)cardTap
 {
     NSLog(@"Card tapped");
-    
-    
     
     PFGeoPoint *loc = self.dragView.geoPoint;
     self.mapLocation = [[CLLocation alloc]initWithLatitude:loc.latitude longitude:loc.longitude];
@@ -1519,6 +1506,43 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     
     
     return categories;
+}
+
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    
+    if (scrollView.tag == 33) {
+        
+       // NSLog(@"contentOffset.x: %f", scrollView.contentOffset.x);
+        //NSLog(@"contentSize.width: %f", scrollView.contentSize.width);
+        //NSLog(@"frame.size.width: %f", scrollView.frame.size.width);
+        
+        //NSLog(@"math: %f", (scrollView.contentSize.width - scrollView.frame.size.width));
+
+        
+        if (scrollView.contentOffset.x >= (scrollView.contentSize.width - scrollView.frame.size.width)) {
+            
+            dragView.friendArrow.alpha = 0;
+            
+        } else {
+            
+            dragView.friendArrow.alpha = 1;
+
+        }
+        
+    }
+    
+}
+
+-(void)buttonNormal:(id)sender {
+    UIButton *button = (UIButton *)sender;
+    dragView.panGestureRecognizer.enabled = YES;
+    [button setBackgroundColor:[UIColor whiteColor]];
+}
+
+-(void)buttonHighlight:(id)sender {
+    UIButton *button = (UIButton *)sender;
+    dragView.panGestureRecognizer.enabled = NO;
+    [button setBackgroundColor:[UIColor colorWithRed:0.0 green:176.0/255 blue:242.0/255 alpha:1.0]];
 }
 
 /*

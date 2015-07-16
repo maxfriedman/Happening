@@ -39,5 +39,7 @@
 
 @property (nonatomic) LYRClient *layerClient;
 
+- (void)authenticateLayerWithUserID:(NSString *)userID completion:(void (^)(BOOL success, NSError * error))completion;
+
 @end
 

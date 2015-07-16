@@ -231,8 +231,8 @@
 
             [defaults synchronize];
             
-            [user saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
-                if (succeeded) {
+            [user saveEventually]; //:^(BOOL succeeded, NSError *error) {
+               // if (succeeded) {
                     
                     NSLog(@"Saved user");
                     
@@ -253,8 +253,8 @@
                         }];
                     }
                     
-                }
-            }];
+                //}
+            //}];
             
         } else if (indexPath.row == 2) {
             
@@ -266,8 +266,8 @@
             
             [defaults synchronize];
             
-            [user saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
-                if (succeeded) {
+            [user saveEventually]; //:^(BOOL succeeded, NSError *error) {
+                //if (succeeded) {
                     
                     NSLog(@"Saved user");
                     
@@ -286,8 +286,8 @@
                             [delegate refreshSettings];
                         }];
                     }
-                }
-            }];
+                //}
+            //}];
             
         }
         
@@ -319,7 +319,7 @@
         PFGeoPoint *loc = [PFGeoPoint geoPointWithLocation:userLocation.placemark.location];
         user[@"userLoc"] = loc;
     
-        [user saveInBackground];
+        [user saveEventually];
         [defaults synchronize];
         [delegate refreshSettings];
         
@@ -406,8 +406,8 @@
         PFGeoPoint *loc = [PFGeoPoint geoPointWithLocation:locManager.location];
         user[@"userLoc"] = loc;
         user[@"userLocTitle"] = @"Current Location";
-        [user saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
-            if (succeeded) {
+        [user saveEventually]; //:^(BOOL succeeded, NSError *error) {
+            //if (succeeded) {
                 
                 NSLog(@"Saved user");
                 
@@ -435,8 +435,8 @@
                     }];
                 }
                 
-            }
-        }];
+            //}
+        //}];
     }
     
 }

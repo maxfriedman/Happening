@@ -474,7 +474,7 @@
         UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleLight];
         UIVisualEffectView *blurEffectView = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
         blurEffectView.tag = 99;
-        blurEffectView.frame = CGRectMake(0, 0, 320, 45);
+        blurEffectView.frame = CGRectMake(0, 0, 320, 44);
         blurEffectView.alpha = 0;
         
         [self addSubview:blurEffectView];

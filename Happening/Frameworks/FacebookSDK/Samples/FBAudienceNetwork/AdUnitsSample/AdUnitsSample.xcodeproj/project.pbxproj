@@ -18,13 +18,13 @@
 		58D92C9C18C751FA0090E7E2 /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 58D92C9618C751FA0090E7E2 /* Default@2x.png */; };
 		58D92C9D18C751FA0090E7E2 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 58D92C9718C751FA0090E7E2 /* Default-568h@2x.png */; };
 		58D92C9F18C7525A0090E7E2 /* AdSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 58D92C9E18C7525A0090E7E2 /* AdSupport.framework */; };
+		737A56221A5F446200AF33D4 /* FBAudienceNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 737A561E1A5F420C00AF33D4 /* FBAudienceNetwork.framework */; };
 		90CEE4B31A1BF50A0076D191 /* MainStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 90CEE4B21A1BF50A0076D191 /* MainStoryboard.storyboard */; };
 		90CEE4B61A1BF8E60076D191 /* BannerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 90CEE4B51A1BF8E60076D191 /* BannerViewController.m */; };
 		90E8740F1A1BF90A00153004 /* MediumRectViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 90E8740E1A1BF90A00153004 /* MediumRectViewController.m */; };
 		90E874121A1BF91800153004 /* InterstitialViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 90E874111A1BF91800153004 /* InterstitialViewController.m */; };
 		90F041071A2D29FE00F061BB /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 90F041061A2D29FE00F061BB /* LaunchScreen.xib */; };
 		EE8F50CD19EC90D900295348 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EE8F50CC19EC90D900295348 /* Images.xcassets */; };
-		EEFC6BE118FF3169004FE2E6 /* FBAudienceNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EEFC6BE018FF3169004FE2E6 /* FBAudienceNetwork.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -45,6 +45,11 @@
 		58D92C9618C751FA0090E7E2 /* Default@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default@2x.png"; sourceTree = "<group>"; };
 		58D92C9718C751FA0090E7E2 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		58D92C9E18C7525A0090E7E2 /* AdSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdSupport.framework; path = System/Library/Frameworks/AdSupport.framework; sourceTree = SDKROOT; };
+		737A561E1A5F420C00AF33D4 /* FBAudienceNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FBAudienceNetwork.framework; path = ../../src/build/FBAudienceNetwork.framework; sourceTree = "<group>"; };
+		73E6A2C71A94145E00938B52 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		73E6A2CB1A94148400938B52 /* CoreTelephony.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreTelephony.framework; path = System/Library/Frameworks/CoreTelephony.framework; sourceTree = SDKROOT; };
+		73E6A2CF1A9414B500938B52 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		73F881F41A6F242B0015DC5C /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		90CEE4B21A1BF50A0076D191 /* MainStoryboard.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = MainStoryboard.storyboard; sourceTree = "<group>"; };
 		90CEE4B41A1BF8E60076D191 /* BannerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BannerViewController.h; sourceTree = "<group>"; };
 		90CEE4B51A1BF8E60076D191 /* BannerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BannerViewController.m; sourceTree = "<group>"; };
@@ -53,8 +58,10 @@
 		90E874101A1BF91800153004 /* InterstitialViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InterstitialViewController.h; sourceTree = "<group>"; };
 		90E874111A1BF91800153004 /* InterstitialViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = InterstitialViewController.m; sourceTree = "<group>"; };
 		90F041061A2D29FE00F061BB /* LaunchScreen.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = LaunchScreen.xib; sourceTree = "<group>"; };
+		99684CC61ADB9B390068D5F5 /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
+		9995321A1AA502290033D3B4 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
+		99D0C12E1AAF6ABE00B66D23 /* libc++.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libc++.dylib"; path = "usr/lib/libc++.dylib"; sourceTree = SDKROOT; };
 		EE8F50CC19EC90D900295348 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
-		EEFC6BE018FF3169004FE2E6 /* FBAudienceNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FBAudienceNetwork.framework; path = ../../../../../Documents/FacebookSDK/FBAudienceNetwork.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -62,11 +69,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				737A56221A5F446200AF33D4 /* FBAudienceNetwork.framework in Frameworks */,
 				582290BC18E2159000A0CBAC /* StoreKit.framework in Frameworks */,
 				58CDF85918CA84AA00790465 /* CoreMotion.framework in Frameworks */,
 				58D92C9F18C7525A0090E7E2 /* AdSupport.framework in Frameworks */,
 				58D92C4A18C750E10090E7E2 /* CoreGraphics.framework in Frameworks */,
-				EEFC6BE118FF3169004FE2E6 /* FBAudienceNetwork.framework in Frameworks */,
 				58D92C4C18C750E10090E7E2 /* UIKit.framework in Frameworks */,
 				58D92C4818C750E10090E7E2 /* Foundation.framework in Frameworks */,
 			);
@@ -97,7 +104,14 @@
 		58D92C4618C750E10090E7E2 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				EEFC6BE018FF3169004FE2E6 /* FBAudienceNetwork.framework */,
+				99684CC61ADB9B390068D5F5 /* MediaPlayer.framework */,
+				99D0C12E1AAF6ABE00B66D23 /* libc++.dylib */,
+				9995321A1AA502290033D3B4 /* CoreMedia.framework */,
+				73E6A2CF1A9414B500938B52 /* SystemConfiguration.framework */,
+				73E6A2CB1A94148400938B52 /* CoreTelephony.framework */,
+				73E6A2C71A94145E00938B52 /* AVFoundation.framework */,
+				73F881F41A6F242B0015DC5C /* libz.dylib */,
+				737A561E1A5F420C00AF33D4 /* FBAudienceNetwork.framework */,
 				582290BB18E2159000A0CBAC /* StoreKit.framework */,
 				58CDF85818CA84AA00790465 /* CoreMotion.framework */,
 				58D92C9E18C7525A0090E7E2 /* AdSupport.framework */,
@@ -253,7 +267,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -286,7 +300,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;

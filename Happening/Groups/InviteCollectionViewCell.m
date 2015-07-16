@@ -284,6 +284,7 @@
     
     
     PFQuery *groupEventQuery = [PFQuery queryWithClassName:@"Group_Event"];
+    //[groupEventQuery fromLocalDatastore];
     [groupEventQuery whereKey:@"EventID" equalTo:[json objectForKey:@"eventId"]];
     [groupEventQuery whereKey:@"GroupID" equalTo:[json objectForKey:@"groupId"]];
     [groupEventQuery includeKey:@"users_going"];
@@ -552,7 +553,7 @@
                 NSData *dataDictionaryJSON = [NSJSONSerialization dataWithJSONObject:dataDictionary options:NSJSONWritingPrettyPrinted error:&JSONSerializerError];
                 LYRMessagePart *dataMessagePart = [LYRMessagePart messagePartWithMIMEType:ATLMimeTypeSystemObject data:dataDictionaryJSON];
                 // Create messagepart with info about cell
-                float actualLineSize = [messageText boundingRectWithSize:CGSizeMake(280, CGFLOAT_MAX)
+                float actualLineSize = [messageText boundingRectWithSize:CGSizeMake(270, CGFLOAT_MAX)
                                                                  options:NSStringDrawingUsesLineFragmentOrigin
                                                               attributes:@{NSFontAttributeName:[UIFont fontWithName:@"OpenSans" size:10.0]}
                                                                  context:nil].size.height;

@@ -230,7 +230,7 @@
     PFGeoPoint *loc = [PFGeoPoint geoPointWithLocation:locManager.location];
     user[@"userLoc"] = loc;
     user[@"userLocTitle"] = @"Current Location";
-    [user saveInBackground];
+    [user saveEventually];
     
     // Peace out!
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];

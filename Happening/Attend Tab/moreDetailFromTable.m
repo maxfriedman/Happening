@@ -1252,7 +1252,7 @@ clickedButtonAtIndex:(NSInteger)buttonIndex{
         
         DragMapViewController *vc = (DragMapViewController *)[segue destinationViewController];
         //vc.mapView = mapView;
-        vc.objectID = self.eventID;
+        //vc.event = self.eventObject;
         vc.locationTitle = annotation.title;
         vc.locationSubtitle = annotation.subtitle;
         
@@ -1307,7 +1307,7 @@ clickedButtonAtIndex:(NSInteger)buttonIndex{
     NSLog(@"%@", shareText);
     
     [user addObject:eventObject.objectId forKey:@"sharedEvents"];
-    [user saveInBackground];
+    [user saveEventually];
     
     if ( [activityType isEqualToString:UIActivityTypePostToTwitter] ) {
         shareText = [NSString stringWithFormat:@"Check this out: %@ at %@ on %@ %@", title, loc, dateString, eventTimeString];

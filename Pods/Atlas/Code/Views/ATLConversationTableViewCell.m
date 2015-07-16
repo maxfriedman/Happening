@@ -82,11 +82,11 @@ static CGFloat const ATLChevronIconViewRightPadding = 14.0f;
 {
     // UIAppearance Proxy Defaults
     ATLConversationTableViewCell *proxy = [self appearance];
-    proxy.conversationTitleLabelFont = ATLBoldFont(17.0); //[UIFont boldSystemFontOfSize:17];
+    proxy.conversationTitleLabelFont = [UIFont boldSystemFontOfSize:17];
     proxy.conversationTitleLabelColor = [UIColor blackColor];
-    proxy.lastMessageLabelFont =  ATLMediumFont(12.0); //[UIFont systemFontOfSize:15];
+    proxy.lastMessageLabelFont = [UIFont systemFontOfSize:15];
     proxy.lastMessageLabelColor = [UIColor grayColor];
-    proxy.dateLabelFont =  ATLMediumFont(13.0); //[UIFont systemFontOfSize:15];
+    proxy.dateLabelFont = [UIFont systemFontOfSize:15];
     proxy.dateLabelColor = [UIColor grayColor];
     proxy.unreadMessageIndicatorBackgroundColor = ATLBlueColor();
     proxy.cellBackgroundColor = [UIColor whiteColor];

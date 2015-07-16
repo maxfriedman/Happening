@@ -8,6 +8,9 @@
 
 #import "movieLoginVC.h"
 #import "RKSwipeBetweenViewControllers.h"
+#import "Reachability.h"
+#import "AppDelegate.h"
+#import <TTTAttributedLabel/TTTAttributedLabel.h>
 
 #define SYSTEM_VERSION_EQUAL_TO(v)                  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedSame)
 #define SYSTEM_VERSION_GREATER_THAN(v)              ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedDescending)
@@ -17,7 +20,7 @@
 
 #define IS_WIDESCREEN ( [ [ UIScreen mainScreen ] bounds ].size.height >= 568 )
 
-@interface movieLoginVC ()
+@interface movieLoginVC () <TTTAttributedLabelDelegate>
 
 @end
 
@@ -31,23 +34,15 @@
     
 }
 
-/*
-- (void)viewWillAppear:(BOOL)animated {
-        
-    if ([FBSDKAccessToken currentAccessToken]) {
-     
-        [self performSelector:@selector(yourNewFunction) withObject:nil afterDelay:0.0];
-    }
-    
-}
-*/
 
 - (void)viewDidLoad {
+    
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
     self.fbButton.alpha = 0;
     self.questionButton.alpha = 0;
+    self.noAccountButton.alpha = 0;
     
     imv = [[UIImageView alloc] initWithFrame:self.view.frame];
     
@@ -68,18 +63,21 @@
 - (void)viewDidAppear:(BOOL)animated {
     
     [super viewDidAppear:animated];
-    
-    if ([FBSDKAccessToken currentAccessToken]) {
-        
+
+    if ([FBSDKAccessToken currentAccessToken] && [[NSUserDefaults standardUserDefaults] boolForKey:@"hasLoggedIn"]  /* && (ReachableViaWiFi | ReachableViaWWAN) */) {
+
         PFUser *user = [PFUser currentUser];
         user[@"fbToken"] = [FBSDKAccessToken currentAccessToken].tokenString;
-        [user saveInBackground];
-        
-        //[self performSegueWithIdentifier:@"toMain" sender:self];
+        [user saveEventually];
+
+        [self performSegueWithIdentifier:@"toMainTabBar" sender:self];
+
+    } else if ([PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]] && [[NSUserDefaults standardUserDefaults] boolForKey:@"hasLoggedIn"]) {
+                
         [self performSegueWithIdentifier:@"toMainTabBar" sender:self];
         
     } else {
-        
+    
         NSString *stringPath = [[NSBundle mainBundle] pathForResource:@"Happening Intro vid" ofType:@"mp4"];
         NSURL *url = [NSURL fileURLWithPath:stringPath];
         
@@ -97,7 +95,7 @@
         player.scalingMode = MPMovieScalingModeAspectFill;
         [player prepareToPlay];
         
-        parseUser = [PFUser user];
+        parseUser = [PFUser currentUser];
         
         activityView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
         activityView.frame = CGRectMake(0, 0, 50, 50);
@@ -109,14 +107,48 @@
         
         [self.view insertSubview:player.view belowSubview:imv];
         
+        TTTAttributedLabel *label = [[TTTAttributedLabel alloc] initWithFrame:CGRectMake(20, 470, 280, 45)];
+        label.textAlignment = NSTextAlignmentCenter;
+        label.font = [UIFont fontWithName:@"OpenSans" size:9.0];
+        label.textColor = [UIColor whiteColor];
+        label.numberOfLines = 2;
+        label.alpha = 0;
+        
+        // If you're using a simple `NSString` for your text,
+        // assign to the `text` property last so it can inherit other label properties.
+        NSString *text = @"We will never post without your permission.\nBy signing in you agree to our terms of service.";
+        [label setText:text afterInheritingLabelAttributesAndConfiguringWithBlock:^ NSMutableAttributedString *(NSMutableAttributedString *mutableAttributedString) {
+            NSRange underlinedRange = [[mutableAttributedString string] rangeOfString:@"terms of service." options:NSCaseInsensitiveSearch];
+            
+            // Core Text APIs use C functions without a direct bridge to UIFont. See Apple's "Core Text Programming Guide" to learn how to configure string attributes.
+            UIColor *blueColor = [UIColor colorWithRed:0 green:102.0/255 blue:1.0 alpha:1.0];
+            [mutableAttributedString addAttribute:(NSString *)NSForegroundColorAttributeName value:blueColor range:underlinedRange];
+            
+            return mutableAttributedString;
+        }];
+        
+        label.enabledTextCheckingTypes = NSTextCheckingTypeLink; // Automatically detect links when the label text is subsequently changed
+        label.delegate = self; // Delegate methods are called when the user taps on a link (see `TTTAttributedLabelDelegate` protocol)
+        
+        label.linkAttributes = @{ (id)kCTForegroundColorAttributeName: [UIColor colorWithRed:0 green:102.0/255 blue:1.0 alpha:1.0], (id)kCTUnderlineStyleAttributeName : [NSNumber numberWithInt:NSUnderlineStyleSingle]};
+        
+        NSRange range = [label.text rangeOfString:@"terms of service"];
+        [label addLinkToURL:[NSURL URLWithString:@"http://www.happening.city/terms"] withRange:range]; // Embedding a custom link in a substring
+        
         [UIView animateWithDuration:0.5 animations:^{
-            imv.alpha = 0.1;
+            imv.alpha = 0.2;
             self.fbButton.alpha = 1;
-            self.questionButton.alpha = 1;
+            self.noAccountButton.alpha = 1;
+            label.alpha = 1;
+            //self.questionButton.alpha = 1;
         } completion:^(BOOL finished) {
             //code
             [self.view bringSubviewToFront:self.fbButton];
             [self.view bringSubviewToFront:self.questionButton];
+            [self.view addSubview:label];
+            [self.view bringSubviewToFront:label];
+            [self.view bringSubviewToFront:self.noAccountButton];
+            [self.view sendSubviewToBack:player.view];
         }];
         
         //[_fbLoginView setReadPermissions:@[@"public_profile", @"email", @"user_friends", @"user_location", @"user_birthday"]];
@@ -124,7 +156,29 @@
         
         [player play];
         
+        UIView *maskView = [[UIView alloc] initWithFrame:self.view.frame];
+        maskView.backgroundColor = [UIColor clearColor];
+        
+        CAGradientLayer *l = [CAGradientLayer layer];
+        l.frame = player.view.bounds;
+        l.colors = [NSArray arrayWithObjects:(id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:0.0] CGColor], (id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:0.1] CGColor], (id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:0.5] CGColor], (id)[[UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.9] CGColor], nil];
+        
+        //l.startPoint = CGPointMake(0.0, 0.7f);
+        //l.endPoint = CGPointMake(0.0f, 1.0f);
+        l.locations = [NSArray arrayWithObjects:[NSNumber numberWithFloat:0.0], [NSNumber numberWithFloat:0.2],
+                       [NSNumber numberWithFloat:0.5],
+                       //[NSNumber numberWithFloat:0.9],
+                       [NSNumber numberWithFloat:1.0], nil];
+        
+        [maskView.layer insertSublayer:l atIndex:0];
+        [player.view addSubview:maskView];
+        
     }
+}
+
+- (void)attributedLabel:(TTTAttributedLabel *)label didSelectLinkWithURL:(NSURL *)url {
+    
+    NSLog(@"%@", url);
 }
 
 - (void)yourNewFunction
@@ -138,8 +192,7 @@
 
 - (IBAction)fbButtonAction:(id)sender {
 
-    self.fbButton.alpha = 0.8;
-    self.fbButton.userInteractionEnabled = NO;
+    [self enableButtons:NO];
     [activityView startAnimating];
     
     FBSDKLoginManager *loginManager = [[FBSDKLoginManager alloc] init];
@@ -153,8 +206,7 @@
         if (error) {
             // Process error
             NSLog(@"error");
-            self.fbButton.alpha = 1.0;
-            self.fbButton.userInteractionEnabled = YES;
+            [self enableButtons:YES];
             [activityView stopAnimating];
             // An error occurred, we need to handle the error
             // See: https://developers.facebook.com/docs/ios/errors
@@ -190,8 +242,7 @@
             
             NSLog(@"fb login cancelled");
             [activityView stopAnimating];
-            self.fbButton.alpha = 1.0;
-            self.fbButton.userInteractionEnabled = YES;
+            [self enableButtons:YES];
             [player play];
             
         } else { //success ?
@@ -288,99 +339,177 @@
                      parseUser[@"radius"] = @50;
                      parseUser[@"fbToken"] = [FBSDKAccessToken currentAccessToken].tokenString;
                      //parseUser[@"userLoc"] = [PFGeoPoint geoPointWithLatitude:38.907192 longitude:-77.036871];
-            
-                     [parseUser signUpInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
-                         if (!error) {
-                             NSLog(@"New user successfully signed up.");
-                    
-                             // Hooray! Let them use the app now.
-                             NSLog(@"New user: %@", parseUser.username);
-                    
-                             if (parseUser) {
-                                 
-                                 
-                                 NSString *name = @"";
-                                 if ([user objectForKey:@"first_name"] != nil)
-                                     name = [user objectForKey:@"first_name"];
-                                 
-                                 if ([user objectForKey:@"last_name"] != nil)
-                                     name = [NSString stringWithFormat:@"%@ %@", name, [user objectForKey:@"last_name"]];
-                                 
-                                 NSLog(@"%@", name);
-                                 
-                                 [PFCloud callFunctionInBackground:@"newUser"
-                                                    withParameters:@{@"user":parseUser.objectId, @"name":name, @"fbID":parseUser[@"FBObjectID"], @"fbToken":[FBSDKAccessToken currentAccessToken].tokenString}
-                                                             block:^(NSString *result, NSError *error) {
-                                                                 if (!error) {
-                                                                     // result is @"Hello world!"
-                                                                     NSLog(@"%@", result);
-                                                                 }
-                                                             }];
+                     
+                     if ([PFUser currentUser].isAuthenticated) {
                         
-                                 if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0")) {
+                         [parseUser saveEventually];
+                         
+                         [PFUser logInWithUsernameInBackground:parseUser.username password:parseUser.password block:^(PFUser *user, NSError *error) {
+                             
+                             if (user) {
+                                 // Do stuff after successful login.
+                                 [user pinInBackground];
                                  
-                                     UIRemoteNotificationType types = [[UIApplication sharedApplication] isRegisteredForRemoteNotifications];
+                                 AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+                                 
+                                 [appDelegate.layerClient connectWithCompletion:^(BOOL success, NSError *error) {
+                                     
+                                     // Once connected, authenticate user.
+                                     // Check Authenticate step for authenticateLayerWithUserID source
+                                     [appDelegate authenticateLayerWithUserID:user.objectId completion:^(BOOL success, NSError *error) {
+                                         if (!success) {
+                                             NSLog(@"Failed Authenticating Layer Client with error:%@", error);
+                                         } else {
+                                             [activityView stopAnimating];
+                                             [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"hasLoggedIn"];
+                                             [[NSUserDefaults standardUserDefaults] synchronize];
+                                             [self performSegueWithIdentifier:@"toMain" sender:self];
+                                         }
+                                     }];
+                                     
+                                 }];
+                                 
+                             } else {
+                                 // The login failed. Check error to see why.
+                                 [self enableButtons:YES];
+                                 [activityView stopAnimating];
+                                 NSLog(@"%@", error);
+                                 [player play];
+                             }
+                         }];
+                     
+                     } else {
+                     
+                         [parseUser signUpInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+                             if (!error) {
+                                 NSLog(@"New user successfully signed up.");
+                        
+                                 // Hooray! Let them use the app now.
+                                 NSLog(@"New user: %@", parseUser.username);
+                        
+                                 if (parseUser) {
+                                     
+                                     [parseUser pinInBackground];
+                                     
+                                     NSString *name = @"";
+                                     if ([user objectForKey:@"first_name"] != nil)
+                                         name = [user objectForKey:@"first_name"];
+                                     
+                                     if ([user objectForKey:@"last_name"] != nil)
+                                         name = [NSString stringWithFormat:@"%@ %@", name, [user objectForKey:@"last_name"]];
+                                     
+                                     NSLog(@"%@", name);
+                                     
+                                     [PFCloud callFunctionInBackground:@"newUser"
+                                                        withParameters:@{@"user":parseUser.objectId, @"name":name, @"fbID":parseUser[@"FBObjectID"], @"fbToken":[FBSDKAccessToken currentAccessToken].tokenString}
+                                                                 block:^(NSString *result, NSError *error) {
+                                                                     if (!error) {
+                                                                         // result is @"Hello world!"
+                                                                         NSLog(@"%@", result);
+                                                                     }
+                                                                 }];
+                            
+                                     if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0")) {
+                                     
+                                         UIRemoteNotificationType types = [[UIApplication sharedApplication] isRegisteredForRemoteNotifications];
 
-                                     if (types) {
+                                         if (types) {
 
+                                             PFInstallation *currentInstallation = [PFInstallation currentInstallation];
+                                     
+                                             NSLog(@"Saving notification ID");
+                                         
+                                             // Associate the device with a user
+                                             currentInstallation.channels = @[@"global", @"reminders", @"matches", @"friendJoined", @"popularEvents", @"allGroups", @"bestFriends"];
+                                             currentInstallation[@"matchCount"] = @5;
+                                             currentInstallation[@"userID"] = parseUser.objectId;
+                                         
+                                             [currentInstallation saveEventually];
+                                         }
+                                     } else if ([PFInstallation currentInstallation] != nil) {
+                                         
                                          PFInstallation *currentInstallation = [PFInstallation currentInstallation];
-                                 
+                                         
                                          NSLog(@"Saving notification ID");
-                                     
+                                         
                                          // Associate the device with a user
-                                         currentInstallation.channels = @[@"global", @"reminders", @"matches", @"friendJoined", @"popularEvents", @"matchesInApp", @"friendPush"];
+                                         currentInstallation.channels = @[@"global", @"reminders", @"matches", @"friendJoined", @"popularEvents", @"allGroups", @"bestFriends"];
+                                         currentInstallation[@"matchCount"] = @5;
                                          currentInstallation[@"userID"] = parseUser.objectId;
-                                     
-                                         [currentInstallation saveInBackground];
+                                         
+                                         [currentInstallation saveEventually];
+                                         
                                      }
-                                 } else if ([PFInstallation currentInstallation] != nil) {
                                      
-                                     PFInstallation *currentInstallation = [PFInstallation currentInstallation];
+                                     AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
                                      
-                                     NSLog(@"Saving notification ID");
-                                     
-                                     // Associate the device with a user
-                                     currentInstallation.channels = @[@"global", @"reminders", @"matches", @"friendJoined", @"popularEvents", @"matchesInApp", @"friendPush"];
-                                     currentInstallation[@"userID"] = parseUser.objectId;
-                                     
-                                     [currentInstallation saveInBackground];
-                                     
+                                     [appDelegate.layerClient connectWithCompletion:^(BOOL success, NSError *error) {
+                                         if (!success) {
+                                             NSLog(@"Failed to connect to Layer: %@", error);
+                                         } else {
+                                             // Once connected, authenticate user.
+                                             // Check Authenticate step for authenticateLayerWithUserID source
+                                             [appDelegate authenticateLayerWithUserID:parseUser.objectId completion:^(BOOL success, NSError *error) {
+                                                 if (!success) {
+                                                     NSLog(@"Failed Authenticating Layer Client with error:%@", error);
+                                                 } else {
+                                                     [activityView stopAnimating];
+                                                     [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"hasLoggedIn"];
+                                                     [[NSUserDefaults standardUserDefaults] synchronize];
+                                                     [self performSegueWithIdentifier:@"toMain" sender:self];
+                                                 }
+                                             }];
+                                         }
+                                     }];
                                  }
                                  
-                                 //self.fbButton.alpha = 1.0;
-                                 //self.fbButton.userInteractionEnabled = YES;
-                                 [activityView stopAnimating];
-                                 [self performSegueWithIdentifier:@"toMain" sender:self];
-                    }
-                } else {
-                    
-                    NSLog(@"User exists.");
-                    
-                    if (parseUser) {
+                             } else {
                         
-                        [PFUser logInWithUsernameInBackground:parseUser.username password:parseUser.password
-                                                        block:^(PFUser *user, NSError *error) {
-                                                            if (user) {
-                                                                // Do stuff after successful login.
-                                                                [activityView stopAnimating];
-                                                                [self performSegueWithIdentifier:@"toMain" sender:self];
-                                                            } else {
-                                                                // The login failed. Check error to see why.
-                                                                self.fbButton.alpha = 1.0;
-                                                                self.fbButton.userInteractionEnabled = YES;
-                                                                [activityView stopAnimating];
-                                                                NSLog(@"%@", error);
-                                                                [player play];
-                                                            }
-                                                       }];
-                    }
-                }
-            }];
+                                 NSLog(@"User exists.");
+                        
+                                 if (parseUser) {
+                            
+                                     [PFUser logInWithUsernameInBackground:parseUser.username password:parseUser.password
+                                                            block:^(PFUser *user, NSError *error) {
+                                                                if (user) {
+                                                                    // Do stuff after successful login.
+                                                                    [user pinInBackground];
+                                                                    
+                                                                    AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+                                                                    
+                                                                    [appDelegate.layerClient connectWithCompletion:^(BOOL success, NSError *error) {
+                                                                        
+                                                                        // Once connected, authenticate user.
+                                                                        // Check Authenticate step for authenticateLayerWithUserID source
+                                                                        [appDelegate authenticateLayerWithUserID:user.objectId completion:^(BOOL success, NSError *error) {
+                                                                            if (!success) {
+                                                                                NSLog(@"Failed Authenticating Layer Client with error:%@", error);
+                                                                            } else {
+                                                                                [activityView stopAnimating];
+                                                                                [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"hasLoggedIn"];
+                                                                                [[NSUserDefaults standardUserDefaults] synchronize];
+                                                                                [self performSegueWithIdentifier:@"toMain" sender:self];
+                                                                            }
+                                                                        }];
+                                                                        
+                                                                    }];
+                                                                    
+                                                                } else {
+                                                                    // The login failed. Check error to see why.
+                                                                    [self enableButtons:YES];
+                                                                    [activityView stopAnimating];
+                                                                    NSLog(@"%@", error);
+                                                                    [player play];
+                                                                }
+                                                           }];
+                                 }
+                             }
+                         }];
+                     }
+                 }
+             }];
         }
     }];
-        }
-        }];
-        
     
     /*
         
@@ -506,6 +635,92 @@
     };
     
      */
+    
+}
+
+-(void)enableButtons: (BOOL)shouldEnable {
+    
+    self.fbButton.enabled = shouldEnable;
+    self.noAccountButton.enabled = shouldEnable;
+    
+}
+
+- (IBAction)noAccountButtonPressed:(id)sender {
+    
+    [self enableButtons:NO];
+    [activityView startAnimating];
+    
+    // Defaults
+    //[PFUser enableAutomaticUser];
+    
+    [PFAnonymousUtils logInWithBlock:^(PFUser *user, NSError *error) {
+        if (error) {
+            NSLog(@"Anonymous login failed.");
+            [self enableButtons:YES];
+            
+        } else {
+            NSLog(@"Anonymous user logged in.");
+            user[@"radius"] = @50;
+            [user pinInBackground];
+            
+            if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0")) {
+                
+                UIRemoteNotificationType types = [[UIApplication sharedApplication] isRegisteredForRemoteNotifications];
+                
+                if (types) {
+                    
+                    PFInstallation *currentInstallation = [PFInstallation currentInstallation];
+                    
+                    NSLog(@"Saving notification ID");
+                    
+                    // Associate the device with a user
+                    currentInstallation.channels = @[@"global", @"reminders", @"matches", @"friendJoined", @"popularEvents", @"allGroups", @"bestFriends"];
+                    currentInstallation[@"matchCount"] = @5;
+                    currentInstallation[@"userID"] = user.objectId;
+                    
+                    [currentInstallation saveEventually];
+                }
+            } else if ([PFInstallation currentInstallation] != nil) {
+                
+                PFInstallation *currentInstallation = [PFInstallation currentInstallation];
+                
+                NSLog(@"Saving notification ID");
+                
+                // Associate the device with a user
+                currentInstallation.channels = @[@"global", @"reminders", @"matches", @"friendJoined", @"popularEvents", @"allGroups", @"bestFriends"];
+                currentInstallation[@"matchCount"] = @5;
+                currentInstallation[@"userID"] = user.objectId;
+                
+                [currentInstallation saveEventually];
+                
+            }
+            
+            AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+            
+            [appDelegate.layerClient connectWithCompletion:^(BOOL success, NSError *error) {
+                if (!success) {
+                    NSLog(@"Failed to connect to Layer: %@", error);
+                    [self enableButtons:YES];
+
+                } else {
+                    // Once connected, authenticate user.
+                    // Check Authenticate step for authenticateLayerWithUserID source
+                    [appDelegate authenticateLayerWithUserID:user.objectId completion:^(BOOL success, NSError *error) {
+                        if (!success) {
+                            NSLog(@"Failed Authenticating Layer Client with error:%@", error);
+                        } else {
+                            [activityView stopAnimating];
+                            [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"hasLoggedIn"];
+                            [[NSUserDefaults standardUserDefaults] synchronize];
+                            [self performSegueWithIdentifier:@"toMain" sender:self];
+                        }
+                        [self enableButtons:YES];
+
+                    }];
+                }
+            }];
+        }
+    }];
     
 }
 
@@ -676,14 +891,22 @@
 }
 */
 
-/*
+
 #pragma mark - Navigation
 
 // In a storyboard-based application, you will often want to do a little preparation before navigation
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     // Get the new view controller using [segue destinationViewController].
     // Pass the selected object to the new view controller.
+    
+    if ([segue.identifier isEqualToString:@"toMainTabBar"]) {
+        
+        MHCustomTabBarController *mh = [segue destinationViewController];
+        if (self.eventIdFromNotification != nil) {
+            mh.eventIdForSegue = self.eventIdFromNotification;
+        }
+    }
 }
-*/
+
 
 @end

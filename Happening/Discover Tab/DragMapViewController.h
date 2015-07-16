@@ -9,14 +9,16 @@
 #import <UIKit/UIKit.h>
 #import <CoreLocation/CoreLocation.h>
 #import <MapKit/MapKit.h>
+#import <Parse/Parse.h>
 
 @interface DragMapViewController : UIViewController
 
-@property (assign) NSString *objectID;
 @property (assign) NSString *locationTitle;
 @property (assign) NSString *locationSubtitle;
 
 @property (nonatomic, strong) IBOutlet MKMapView *mapView;
-@property (strong, nonatomic) IBOutlet UIButton *directionsButton;
+@property (nonatomic, strong) IBOutlet UIButton *directionsButton;
+
+@property (nonatomic, strong) PFObject *event;
 
 @end

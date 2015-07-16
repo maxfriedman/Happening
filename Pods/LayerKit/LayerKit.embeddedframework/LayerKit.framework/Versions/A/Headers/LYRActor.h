@@ -13,7 +13,6 @@
 /**
  @abstract The `LYRActor` class represents a message sender as either an authenticated user or a platform message.
  */
-
 @interface LYRActor : NSObject
 
 /**

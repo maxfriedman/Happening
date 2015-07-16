@@ -277,7 +277,7 @@
             CLLocation *currentLocation = locManager.location;
             user[@"userLoc"] = [PFGeoPoint geoPointWithLocation:currentLocation];
             NSLog(@"Current Location is: %@", currentLocation);
-            [user saveInBackground];
+            [user saveEventually];
         }
         
         PFGeoPoint *loc = Event[@"GeoLoc"];

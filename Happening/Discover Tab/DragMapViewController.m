@@ -7,7 +7,7 @@
 //
 
 #import "DragMapViewController.h"
-#import <Parse/Parse.h>
+#import <Button/Button.h>
 
 @interface DragMapViewController () <CLLocationManagerDelegate, MKMapViewDelegate>
 
@@ -17,7 +17,7 @@
     MKPointAnnotation *annotation;
 }
 
-@synthesize mapView, directionsButton;
+@synthesize mapView, directionsButton, event;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -25,35 +25,47 @@
     
     mapView.delegate = self;
     
-    PFQuery *query = [PFQuery queryWithClassName:@"Event"];
-    [query getObjectInBackgroundWithId:self.objectID block:^(PFObject *object, NSError *error) {
-        
-        PFGeoPoint *loc = object[@"GeoLoc"];
-        CLLocation *mapLocation = [[CLLocation alloc]initWithLatitude:loc.latitude longitude:loc.longitude];
-        
-        annotation = [[MKPointAnnotation alloc]init];
-        [annotation setCoordinate:mapLocation.coordinate];
-        [annotation setTitle:self.locationTitle];
-        [annotation setSubtitle:self.locationSubtitle];
-        
-        [mapView addAnnotation:annotation];
-        [mapView viewForAnnotation:annotation];
-        [mapView selectAnnotation:annotation animated:YES];
-        
-        MKCoordinateRegion region = MKCoordinateRegionMakeWithDistance(mapLocation.coordinate, 1250, 1250);
-        [mapView setRegion:region animated:NO];
-        //[mapView setUserTrackingMode:MKUserTrackingModeFollow];
-        [mapView regionThatFits:region];
-        
-    }];
+    PFGeoPoint *geoPoint = event[@"GeoLoc"];
     
+    CLLocation *mapLocation = [[CLLocation alloc]initWithLatitude:geoPoint.latitude longitude:geoPoint.longitude];
+    
+    annotation = [[MKPointAnnotation alloc]init];
+    [annotation setCoordinate:mapLocation.coordinate];
+    [annotation setTitle:self.locationTitle];
+    [annotation setSubtitle:self.locationSubtitle];
+    
+    [mapView addAnnotation:annotation];
+    [mapView viewForAnnotation:annotation];
+    [mapView selectAnnotation:annotation animated:YES];
+    
+    MKCoordinateRegion region = MKCoordinateRegionMakeWithDistance(mapLocation.coordinate, 1250, 1250);
+    [mapView setRegion:region animated:NO];
+    //[mapView setUserTrackingMode:MKUserTrackingModeFollow];
+    [mapView regionThatFits:region];
 
     directionsButton.layer.cornerRadius = 3.0;
     directionsButton.reversesTitleShadowWhenHighlighted = YES;
     directionsButton.layer.masksToBounds = YES;
     
+    BTNDropinButton *uberBTN =[[BTNDropinButton alloc] initWithButtonId:@"btn-0acf02149a673eb6"];
+    
+    NSString *locationText = [NSString stringWithString:self.locationTitle];
+    locationText = [locationText stringByReplacingOccurrencesOfString:@"at " withString:@""];
+    
+    BTNVenue *venue = [BTNVenue venueWithId:@"abc123" venueName:locationText latitude:geoPoint.latitude longitude:geoPoint.longitude];
+    
+    [uberBTN setFrame:CGRectMake(0, 0, 175, 30)];
+    uberBTN.center = CGPointMake(self.view.center.x, directionsButton.center.y + 45);
+    
+    [[BTNDropinButton appearance] setBorderColor:[UIColor blackColor]];
+    
+    [uberBTN prepareForDisplayWithVenue:venue completion:^(BOOL isDisplayable) {
+        if (isDisplayable) {
+            [self.view addSubview:uberBTN];
+        }
+    }];
+    
 }
-
 
 - (MKAnnotationView *)mapView:(MKMapView *)mapView viewForAnnotation:(id <MKAnnotation>)anno
 {
@@ -112,7 +124,9 @@
 
 
 - (IBAction)xButtonPress:(id)sender {
-    
+
+    [[BTNDropinButton appearance] setBorderColor:[UIColor clearColor]];
+
     [self dismissViewControllerAnimated:YES completion:^{
         
     }];

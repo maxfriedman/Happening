@@ -23,9 +23,26 @@
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLIconFile</key>
+			<string></string>
+			<key>CFBundleURLName</key>
+			<string>com.happening</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>fb670930332992069</string>
+				<string>happening</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.happening</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>happening</string>
 			</array>
 		</dict>
 	</array>

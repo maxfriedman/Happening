@@ -53,7 +53,7 @@ CGFloat const ATLConversationViewHeaderEmptyHeight = 1;
 {
     ATLConversationCollectionViewHeader *proxy = [self appearance];
     proxy.participantLabelTextColor = [UIColor grayColor];
-    proxy.participantLabelFont = [UIFont fontWithName:@"OpenSans" size:11.0];  //[UIFont systemFontOfSize:11];
+    proxy.participantLabelFont = [UIFont systemFontOfSize:11];
 }
 
 - (id)initWithFrame:(CGRect)frame
@@ -85,6 +85,7 @@ CGFloat const ATLConversationViewHeaderEmptyHeight = 1;
     self.participantLabel.font = _participantLabelFont;
     self.participantLabel.textColor = _participantLabelTextColor;
     self.participantLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    self.participantLabel.accessibilityLabel = ATLConversationViewHeaderIdentifier;
     [self addSubview:self.participantLabel];
     
     [self configureDateLabelConstraints];

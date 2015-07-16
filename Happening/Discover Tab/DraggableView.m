@@ -22,6 +22,7 @@
 #import "UIImage+ImageEffects.h"
 #import <CoreText/CoreText.h>
 #import "UIButton+Extensions.h"
+#import "CategoryBubbleView.h"
 
 
 @implementation DraggableView {
@@ -55,7 +56,7 @@
 @synthesize swipesRight;
 
 @synthesize locImage, userImage, shareButton;
-@synthesize activityView, cardBackground, cardView, greyLocImageView, calImageView, calDayLabel, calDayOfWeekLabel, calMonthLabel, calTimeLabel, moreButton;
+@synthesize activityView, cardBackground, cardView, greyLocImageView, calImageView, calDayLabel, calDayOfWeekLabel, calMonthLabel, calTimeLabel, moreButton, friendArrow, startPriceNumLabel, avePriceNumLabel;
 
 @synthesize xButton, checkButton, eventStore, blurEffectView;
 
@@ -119,7 +120,7 @@
         
         title = [[UILabel alloc]initWithFrame:CGRectMake(15, 103, eventImage.frame.size.width - 30, 100)];
         
-        subtitle = [[UILabel alloc]initWithFrame:CGRectMake(15, 300, self.frame.size.width - 30, 33)];
+        subtitle = [[UILabel alloc]initWithFrame:CGRectMake(15, 355 + 35, self.frame.size.width - 30, 33)];
         location = [[UILabel alloc]initWithFrame:CGRectMake(15, 150, self.frame.size.width - 30, 100)];
         
         date = [[UILabel alloc]initWithFrame:CGRectMake(15, 172, self.frame.size.width - 100, 100)];
@@ -184,8 +185,11 @@
         objectID = [[NSString alloc]init];
         geoPoint = [[PFGeoPoint alloc]init];
         
-        locImage = [[UIImageView alloc]initWithFrame:CGRectMake(218, 215, 13, 15)];
+        locImage = [[UIImageView alloc]initWithFrame:CGRectMake(219, 215, 12, 15)];
         userImage = [[UIImageView alloc]initWithFrame:CGRectMake(15, 322, 18, 18)];
+        
+        locImage.image = [UIImage imageNamed:@"locationGrey"];
+        userImage.image = [UIImage imageNamed:@"interested_face"];
         
         greyLocImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"locationGrey"]];
         greyLocImageView.frame = CGRectMake(216, 186, 14, 18);
@@ -335,31 +339,74 @@
         [moreButton setTitleColor:[UIColor blueColor] forState:UIControlStateNormal];
         moreButton.titleLabel.font = [UIFont fontWithName:@"OpenSans" size:11.0];
         
-        NSMutableAttributedString *attString = [[NSMutableAttributedString alloc] initWithString:@"more"];
+        NSMutableAttributedString *attString = [[NSMutableAttributedString alloc] initWithString:@"more info >>"];
         [attString addAttribute:(NSString*)kCTUnderlineStyleAttributeName
                           value:[NSNumber numberWithInt:kCTUnderlineStyleSingle]
                           range:(NSRange){0,[attString length]}];
         [attString addAttribute:NSForegroundColorAttributeName value:[UIColor colorWithRed:41.0/255 green:181.0/255 blue:1.0 alpha:1.0] range:NSMakeRange(0, [attString length])];
         
         [moreButton setAttributedTitle:attString forState:UIControlStateNormal];
+        [moreButton sizeToFit];
         
         
-        NSMutableAttributedString *attString2 = [[NSMutableAttributedString alloc] initWithString:@"more"];
+        NSMutableAttributedString *attString2 = [[NSMutableAttributedString alloc] initWithString:@"more info >>"];
         [attString2 addAttribute:(NSString*)kCTUnderlineStyleAttributeName
                           value:[NSNumber numberWithInt:kCTUnderlineStyleSingle]
                           range:(NSRange){0,[attString2 length]}];
         [attString2 addAttribute:NSForegroundColorAttributeName value:[UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:1.0] range:NSMakeRange(0, [attString2 length])];
         
         [moreButton setAttributedTitle:attString2 forState:UIControlStateHighlighted];
-
         
         moreButton.alpha = 0;
         
         [cardView addSubview:moreButton];
 
+        
+        friendArrow = [[UIImageView alloc] initWithFrame:CGRectMake(268, 270, 10, 10)];
+        friendArrow.image = [UIImage imageNamed:@"rightArrow"];
+        friendArrow.alpha = 0;
+        [cardView addSubview:friendArrow];
+        
+        
+        startPriceNumLabel = [[UILabel alloc] init];
+        startPriceNumLabel.textAlignment = NSTextAlignmentCenter;
+        startPriceNumLabel.font = [UIFont fontWithName:@"OpenSans-Light" size:13.0];
+        startPriceNumLabel.textColor = [UIColor grayColor];
+        //startPriceNumLabel.text = @"Starting";
+        startPriceNumLabel.tag = 3;
+        
+        avePriceNumLabel = [[UILabel alloc] init];
+        avePriceNumLabel.textAlignment = NSTextAlignmentCenter;
+        avePriceNumLabel.font = [UIFont fontWithName:@"OpenSans-Light" size:13.0];
+        avePriceNumLabel.textColor = [UIColor grayColor];
+        //avePriceNumLabel.text = @"Avg";
+        avePriceNumLabel.tag = 3;
+        
     }
     
     return self;
+}
+
+-(void)arrangeCornerViews {
+    
+    NSMutableArray *views = [NSMutableArray array];
+    for (UIView *view in self.cardView.subviews) {
+        if (view.tag == 123) {
+            [views addObject:view];
+        }
+    }
+    
+    if (views.count == 2) {
+        
+        for (CategoryBubbleView *view in views) {
+            
+            if ([view.bubbleType isEqualToString:@"normal"]) {
+                
+                view.center = CGPointMake(view.center.x, view.frame.size.height + view.center.y + 5);
+                
+            }
+        }
+    }
 }
 
 -(void)swipeLeft {
@@ -572,8 +619,6 @@
 
     //self.superview.superview.superview.userInteractionEnabled = NO; // BE CAREFUL... disables UI during button click
     [self setEnabledSidewaysScrolling:NO];
-
-    
     
     CGPoint finishPoint = CGPointMake(900, self.center.y);
     [UIView animateWithDuration:0.5 delay:0.3 options:UIViewAnimationOptionCurveEaseInOut animations:^{

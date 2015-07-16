@@ -17,7 +17,7 @@ PF_ASSUME_NONNULL_BEGIN
 
 @class PFGeoPoint;
 
-typedef void(^PFGeoPointResultBlock)(PFGeoPoint * __nullable geoPoint, NSError * __nullable error);
+typedef void(^PFGeoPointResultBlock)(PFGeoPoint *PF_NULLABLE_S geoPoint, NSError *PF_NULLABLE_S error);
 
 /*!
  `PFGeoPoint` may be used to embed a latitude / longitude point as the value for a key in a <PFObject>.
@@ -60,10 +60,10 @@ typedef void(^PFGeoPointResultBlock)(PFGeoPoint * __nullable geoPoint, NSError *
 /*!
  @abstract Fetches the current device location and executes a block with a new `PFGeoPoint` object.
 
- @param geoPointHandler A block which takes the newly created `PFGeoPoint` as an argument.
+ @param resultBlock A block which takes the newly created `PFGeoPoint` as an argument.
  It should have the following argument signature: `^(PFGeoPoint *geoPoint, NSError *error)`
  */
-+ (void)geoPointForCurrentLocationInBackground:(PF_NULLABLE PFGeoPointResultBlock)geoPointHandler;
++ (void)geoPointForCurrentLocationInBackground:(PF_NULLABLE PFGeoPointResultBlock)resultBlock;
 
 ///--------------------------------------
 /// @name Controlling Position

@@ -16,6 +16,7 @@
 #import "LYRQuery.h"
 #import "LYRQueryController.h"
 #import "LYRObjectChange.h"
+#import "LYRAnnouncement.h"
 
 /**
  @abstract Returns the version of the Layer SDK as a string.

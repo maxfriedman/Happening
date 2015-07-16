@@ -17,6 +17,11 @@
 #import "moreDetailFromTable.h"
 #import <AVFoundation/AVFoundation.h>
 #import "RKDropdownAlert.h"
+#import <Hoko/Hoko.h>
+#import <Hoko/HOKNavigation.h>
+#import <Button/Button.h>
+#import "SwipeableCardVC.h"
+#import <Bolts/Bolts.h>
 
 #define SYSTEM_VERSION_EQUAL_TO(v)                  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedSame)
 #define SYSTEM_VERSION_GREATER_THAN(v)              ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedDescending)
@@ -32,29 +37,6 @@
 
 @synthesize locationManager = _locationManager, item, userLocation, locSubtitle, rk;
 
--(void)locationManager:(CLLocationManager *)manager didUpdateToLocation:(CLLocation *)newLocation fromLocation:(CLLocation *)oldLocation{
-    NSDate* eventDate = newLocation.timestamp;
-    NSTimeInterval howRecent = [eventDate timeIntervalSinceNow];
-    if (abs(howRecent) < 15.0)
-    //Location timestamp is within the last 15.0 seconds, let's use it!
-        if(newLocation.horizontalAccuracy < 35.0){
-            //Location seems pretty accurate, let's use it!
-            NSLog(@"latitude %+.6f, longitude %+.6f\n",
-                  newLocation.coordinate.latitude,
-                  newLocation.coordinate.longitude);
-            NSLog(@"Horizontal Accuracy:%f", newLocation.horizontalAccuracy);
-            
-            //Optional: turn off location services once we've gotten a good location
-            
-            PFUser *user = [PFUser currentUser];
-            PFGeoPoint *loc = [PFGeoPoint geoPointWithLocation:manager.location];
-            user[@"userLoc"] = loc;
-            
-            [manager stopUpdatingLocation];
-        }
-}
-
-
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
     
@@ -69,25 +51,12 @@
     
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
     
-    /*
-    [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationController class], nil] setTitleTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:[UIFont fontWithName:@"OpenSans-Semibold" size:18], NSFontAttributeName, nil] forState:UIControlStateNormal]; */
-    
-    //[UINavigationController setTitleTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:[UIFont fontWithName:@"OpenSans-Semibold" size:18], NSFontAttributeName, nil] forState:UIControlStateNormal];
-
-    
     [[UINavigationBar appearance] setTitleTextAttributes:
      [NSDictionary dictionaryWithObjectsAndKeys:
       [UIFont fontWithName:@"OpenSans-Semibold" size:18.0],
       NSFontAttributeName,
       nil]];
     
-    /*
-    [self.navigationController.navigationBar setTitleTextAttributes:
-     [NSDictionary dictionaryWithObjectsAndKeys:
-      [UIFont fontWithName:@"OpenSans-Semibold" size:18],
-      NSFontAttributeName, nil]];
-    */
-     
     /*
     [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
      setTitleTextAttributes:
@@ -98,34 +67,36 @@
      forState:UIControlStateNormal]; */
     
     [ParseCrashReporting enable];
+    [Parse enableLocalDatastore];
     [Parse setApplicationId:@"olSntgsT5uY3ZZbJtnjNz8yvol4CxwmArTsbkCZa"
                   clientKey:@"xwmrITvs8UaFBNfBupzXcUa6HN3sU515xp1TsGxu"];
-    
     [PFAnalytics trackAppOpenedWithLaunchOptions:launchOptions];
+    [PFUser enableAutomaticUser];
     
-    NSUUID *appID = [[NSUUID alloc] initWithUUIDString:@"337f6c52-0eb7-11e5-b8c8-aa9e2d006589"];
+    NSURL *appID = [NSURL URLWithString:@"layer:///apps/staging/337f6c52-0eb7-11e5-b8c8-aa9e2d006589"];
     self.layerClient = [LYRClient clientWithAppID:appID];
     
-    if (!self.layerClient.isConnected) {
-        // LayerKit is connected, no need to call connectWithCompletion:
-        [self.layerClient connectWithCompletion:^(BOOL success, NSError *error) {
-            if (!success) {
-                NSLog(@"Failed to connect to Layer: %@", error);
-            } else {
-                PFUser *currentUser = [PFUser currentUser];
-                if (currentUser != nil) {
-                    NSString *userIDString = currentUser.objectId;
-                    // Once connected, authenticate user.
-                    // Check Authenticate step for authenticateLayerWithUserID source
-                    [self authenticateLayerWithUserID:userIDString completion:^(BOOL success, NSError *error) {
-                        if (!success) {
-                            NSLog(@"Failed Authenticating Layer Client with error:%@", error);
-                        }
-                    }];
-                }
-            }
-        }];
-    }
+    [Hoko setupWithToken:@"b649dec47382a7b855b46077d2cfbb6968e7e81b"];
+    
+    [[Button sharedButton] configureWithApplicationId:@"app-070dce57d47ec28b" completion:NULL];
+    [BTNLocationManager allowButtonToRequestLocationPermission:YES];
+
+    //[[BTNDropinButton appearance] setContentInsets:UIEdgeInsetsMake(0, -1, 0.0, 0)];
+    [[BTNDropinButton appearance] setContentInsets:UIEdgeInsetsMake(0, 6, 0.0, 0)];
+    [[BTNDropinButton appearance] setIconSize:20.0];
+    [[BTNDropinButton appearance] setIconLabelSpacing:8.0];
+    [[BTNDropinButton appearance] setFont:[UIFont fontWithName:@"OpenSans" size:14.0]];
+    [[BTNDropinButton appearance] setTextColor:[UIColor darkTextColor]];
+    
+    [[BTNDropinButton appearance] setBackgroundColor:[UIColor groupTableViewBackgroundColor]];
+    //[[BTNDropinButton appearance] setIconColor:[UIColor blackColor] ];
+    
+    [[BTNDropinButton appearance] setCornerRadius:7.0];
+    [[BTNDropinButton appearance] setBorderColor:[UIColor groupTableViewBackgroundColor]];
+    [[BTNDropinButton appearance] setBorderWidth:1.0];
+    
+    [[BTNDropinButton appearance] setHighlightedBackgroundColor:[UIColor grayColor]];
+    [[BTNDropinButton appearance] setNormalBackgroundColor:[UIColor groupTableViewBackgroundColor]];
 
     if (SYSTEM_VERSION_LESS_THAN(@"8.0")) {
         
@@ -144,9 +115,7 @@
                                                                                  categories:nil];
         [application registerUserNotificationSettings:settings];
         [application registerForRemoteNotifications];
-        
-        //[self.dev]
-        
+
         if(self.locationManager==nil){
             _locationManager=[[CLLocationManager alloc] init];
             
@@ -159,69 +128,77 @@
         if([CLLocationManager locationServicesEnabled]){
             [self.locationManager startUpdatingLocation];
         }
-        
-    }
-    
-    [FBSDKLoginButton class];
-    
-    
-    if ([FBSDKAccessToken currentAccessToken]) {
-        // User is logged in, do work such as go to next view controller.
-        //NSLog(@"User is already logged in!");
-        UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
-        //rk = [storyboard instantiateViewControllerWithIdentifier:@"rk"];
-        //self.window.rootViewController = rk;
-        //self.window.rootViewController = [storyboard instantiateViewControllerWithIdentifier:@"MH"];;
-        
-    } else {
-        
-        //NSLog(@"User is not logged in!");
-        UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
-        movieLoginVC *vc = [storyboard instantiateViewControllerWithIdentifier:@"movieLogin"];
-        self.window.rootViewController = vc;
-    }
 
+    }
     
-    PFUser *currentUser = [PFUser currentUser];
-    //NSLog(@"current user: %@", currentUser);
+    //[PFObject unpinAllObjects];
+
+    [FBSDKLoginButton class];
     
     // Tells the ViewController.m to refresh the cards in DraggableViewBackground
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     
-    if ([defaults boolForKey:@"hasLaunched"])
+    if ([defaults boolForKey:@"hasLoggedIn"] == YES)
     {
         // app already launched
         // [defaults setBool:YES forKey:@"refreshData"];
-    }
-    else
-    {
+        
+        if (!self.layerClient.isConnected) {
+            // LayerKit is connected, no need to call connectWithCompletion:
+            [self.layerClient connectWithCompletion:^(BOOL success, NSError *error) {
+                if (!success) {
+                    NSLog(@"Failed to connect to Layer: %@", error);
+                } else {
+                    PFUser *currentUser = [PFUser currentUser];
+                    if (currentUser != nil) {
+                        NSString *userIDString = currentUser.objectId;
+                        // Once connected, authenticate user.
+                        // Check Authenticate step for authenticateLayerWithUserID source
+                        [self authenticateLayerWithUserID:userIDString completion:^(BOOL success, NSError *error) {
+                            if (!success) {
+                                NSLog(@"Failed Authenticating Layer Client with error:%@", error);
+                            }
+                        }];
+                    }
+                }
+            }];
+        }
+
+    } else {
+        
         NSLog(@"First launch ever!");
         
+        //[PFObject unpinAllObjects];
+        
+        PFUser *currentUser = [PFUser currentUser];
+        
         // THIS IS CRUCIAL TO MAKE CHANGES DOWN THE ROAD
-        [defaults setFloat:1.03 forKey:@"version"];
+        [defaults setFloat:2.0 forKey:@"version"];
+        currentUser[@"version"] = @"2.0";
         ///////////////////////////////////////////////
         
         [defaults setBool:NO forKey:@"refreshData"];
-        
         [defaults setBool:NO forKey:@"hasLaunched"];
-        
         [defaults setBool:NO forKey:@"hasSwipedRight"];
-        
         [defaults setBool:NO forKey:@"hasCreatedEvent"];
         
         [defaults setBool:YES forKey:@"socialMode"];
+        currentUser[@"socialMode"] = @YES;
         
         [defaults setInteger:0 forKey:@"categoryIndex"];
         [defaults setValue:@"Most Popular" forKey:@"categoryName"];
         
         [defaults setObject:@"" forKey:@"userLocTitle"];
         [defaults setObject:@"" forKey:@"userLocSubtitle"];
+        currentUser[@"userLocTitle"] = @"";
+        currentUser[@"userLocSubtitle"] = @"";
         
         [defaults setBool:YES forKey:@"today"];
         [defaults setBool:NO forKey:@"tomorrow"];
         [defaults setBool:NO forKey:@"thisWeekend"];
         
         [defaults setInteger:50 forKey:@"sliderValue"];
+        currentUser[@"radius"] = @50;
         
         [defaults setBool:YES forKey:@"mostPopular"];
         [defaults setBool:NO forKey:@"bestDeals"];
@@ -237,65 +214,58 @@
         [defaults setBool:YES forKey:@"meetup"];
         [defaults setBool:YES forKey:@"freebies"];
         [defaults setBool:YES forKey:@"other"];
+        NSMutableArray *categories = [NSMutableArray arrayWithObjects:@"mostPopular",/* @"bestDeals",*/ @"nightlife", @"entertainment", @"music", @"dining", @"happyHour", @"sports", @"shopping", @"fundraiser", @"meetup", @"freebies", @"other", nil];
+        currentUser[@"categories"] = categories;
         
         [defaults setBool:NO forKey:@"noMoreEvents"];
         [defaults setBool:YES forKey:@"today"];
-
         
+        [defaults setBool:NO forKey:@"hasLoggedIn"];
+           
         [defaults synchronize];
         // This is the first launch ever
     }
-   
+    NSLog(@"3");
+
+    //self.mh.eventIdForSegue = eventID;
+    //[self.mh performSegueWithIdentifier:@"toSwipeVC" sender:self.mh];
+    
+    
+    //NSLog(@"User is not logged in!");
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+    movieLoginVC *vc = [storyboard instantiateViewControllerWithIdentifier:@"movieLogin"];
+    self.window.rootViewController = vc;
+    //vc.eventIdFromNotification = @"wKhr50fk50";
+    
+    [[Hoko deeplinking] mapRoute:@"events/:EventID"
+                        toTarget:^(HOKDeeplink *deeplink) {
+                            // Do something when deeplink is opened
+                            
+                            NSLog(@"%@", deeplink);
+                            UINavigationController *nvc = [storyboard instantiateViewControllerWithIdentifier:@"SwipeVCNav"];
+                            SwipeableCardVC *vc = (SwipeableCardVC *)[nvc topViewController];
+                            vc.eventID = deeplink.routeParameters[@"EventID"];
+                            [HOKNavigation presentViewController:nvc animated:YES];
+                        }];
+    
     // Extract the notification data
     NSDictionary *notificationPayload = launchOptions[UIApplicationLaunchOptionsRemoteNotificationKey];
+    if (notificationPayload != nil) {
     
-    // Create a pointer to the Photo object
-    if ([notificationPayload objectForKey:@"eventID"] != nil) {
+        NSLog(@"Launching with notification");
         
-        NSString *eventID = [notificationPayload objectForKey:@"eventID"];
+        if ([notificationPayload objectForKey:@"eventID"] != nil) {
+            
+            NSString *eventID = [notificationPayload objectForKey:@"eventID"];
+            vc.eventIdFromNotification = eventID;
+            
+        }
         
-        PFQuery *query = [PFQuery queryWithClassName:@"Event"];
-        [query getObjectInBackgroundWithId:eventID block:^(PFObject *event, NSError *error){
-            
-            if (!error) {
-                
-                UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
-                moreDetailFromTable *vc = [storyboard instantiateViewControllerWithIdentifier:@"detailView"];
-                UINavigationController *nvc = [[UINavigationController alloc] initWithRootViewController:vc];
-                nvc.navigationBar.tintColor = [UIColor whiteColor];
-                nvc.navigationItem.leftBarButtonItem.tintColor = [UIColor whiteColor];
-                nvc.navigationBar.titleTextAttributes = [NSDictionary dictionaryWithObject:[UIColor whiteColor] forKey:NSForegroundColorAttributeName];
-                nvc.modalPresentationStyle = UIModalTransitionStyleCrossDissolve;
-                
-                // Pass data
-                vc.eventID = eventID;
-                vc.titleText = event[@"Title"];
-                vc.distanceText = @"0.1 mi";
-                vc.subtitleText = event[@"Description"];
-                vc.locationText = event[@"Location"];
-                
-                vc.attendEventVC = nil;
-                
-                PFFile *file = event[@"Image"];
-                
-                [file getDataInBackgroundWithBlock:^(NSData *data, NSError *error){
-                    
-                    vc.image = [UIImage imageWithData:data];
-                    
-                    [rk presentViewController:nvc animated:YES completion:^{
-                        
-                    }];
-                    
-                }];
-                
-            } else {
-                
-                NSLog(@"ERROR!!!!!!");
-            }
-            
-            
-        }];
-        
+    }
+    
+    UILocalNotification *localNotification = launchOptions[UIApplicationLaunchOptionsLocalNotificationKey];
+    if ([[Button sharedButton] handleLocalNotification:localNotification]) {
+        [[Button sharedButton] handleLocalNotification:localNotification];
     }
     
     return [[FBSDKApplicationDelegate sharedInstance] application:application
@@ -317,10 +287,6 @@
 - (void)applicationDidEnterBackground:(UIApplication *)application {
     // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
-    
-    //[[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"noMoreEvents"];
-    //[[NSUserDefaults standardUserDefaults] synchronize];
-    
 }
 
 - (void)applicationWillEnterForeground:(UIApplication *)application {
@@ -333,11 +299,13 @@
     
     [FBSDKAppEvents activateApp];
     
-    PFInstallation *currentInstallation = [PFInstallation currentInstallation];
-    if (currentInstallation.badge != 0) {
-        currentInstallation.badge = 0;
-        [currentInstallation saveEventually];
-    }
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        PFInstallation *currentInstallation = [PFInstallation currentInstallation];
+        if (currentInstallation.badge != 0) {
+            currentInstallation.badge = 0;
+            [currentInstallation saveEventually];
+        }
+    });
     
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     if ([defaults boolForKey:@"hasLaunched"])
@@ -347,6 +315,150 @@
         //[defaults setBool:YES forKey:@"refreshData"];
         //[defaults synchronize];
     }
+    
+    if ([FBSDKAccessToken currentAccessToken] && [[NSUserDefaults standardUserDefaults] boolForKey:@"hasLoggedIn"] && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]] /* && (ReachableViaWiFi | ReachableViaWWAN) */) {
+        
+        [[[FBSDKGraphRequest alloc] initWithGraphPath:@"/me/friends?limit=1000" parameters:nil] startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
+            //code
+            
+            NSArray* friends = [result objectForKey:@"data"];
+            NSMutableArray *friendObjectIds = [NSMutableArray new];
+            
+            for (int i = 0; i < friends.count; i ++) {
+                [friendObjectIds addObject:[friends[i] objectForKey:@"id"]];
+            }
+            
+            PFQuery *query = [PFUser query];
+            [query whereKey:@"FBObjectID" containedIn:friendObjectIds];
+            query.limit = 1000;
+            [query findObjectsInBackgroundWithBlock:^(NSArray *users, NSError *error) {
+                
+                NSMutableArray *array = [NSMutableArray array];
+                
+                for (PFUser *user in users) {
+                
+                    NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+                        
+                    [dict setObject:user.objectId forKey:@"parseId"];
+                    [dict setObject:[NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]] forKey:@"name"];
+                    [dict setObject:user[@"FBObjectID"] forKey:@"id"];
+
+                    if ([user.objectId isEqualToString:@"LpWYk0PzFC"]) {
+                        
+                        NSLog(@"%@ --------- %@", dict, user);
+                    }
+                    
+                    [array addObject:dict];
+                }
+                
+                [PFUser currentUser][@"friends"] = array;
+                [[PFUser currentUser] saveEventually];
+            }];
+            
+        }];
+        
+    } else {
+        
+        NSLog(@"no token......");
+    }
+
+    
+    PFQuery *eventQuery = [PFQuery queryWithClassName:@"Event"];
+    [eventQuery fromLocalDatastore];
+    [eventQuery whereKey:@"Date" lessThan:[NSDate dateWithTimeInterval:-604800 sinceDate:[NSDate date]]];
+    [eventQuery findObjectsInBackgroundWithBlock:^(NSArray *events1, NSError *error){
+        [PFObject unpinAllInBackground:events1 withName:@"Event" block:^(BOOL success, NSError *error){
+            if (success) {
+                NSLog(@"successfully unpinned %lu events", events1.count);
+                
+                PFQuery *localEventQuery = [PFQuery queryWithClassName:@"Event"];
+                [localEventQuery fromLocalDatastore];
+                
+                [localEventQuery findObjectsInBackgroundWithBlock:^(NSArray *events2, NSError *error){
+                    
+                    NSMutableArray *idsArray = [NSMutableArray new];
+                    for (PFObject *event in events2) {
+                        [idsArray addObject:event.objectId];
+                    }
+                    
+                    [PFObject fetchAllInBackground:events2 block:^(NSArray *events3, NSError *error) {
+                        
+                        if (!error) {
+                            
+                            [PFObject pinAllInBackground:events3 block:^(BOOL success, NSError *error){
+                                    
+                                    if (success) {
+                                        NSLog(@"successfully updated and pinned %lu events", events3.count);
+                                    } else {
+                                        NSLog(@"failed to update and pin events with error: %@", error);
+                                        
+                                    }
+                                    
+                                }];
+                        } else {
+                            NSLog(@"No objects to update or ERROR");
+                        }
+                        
+                    }];
+                    
+                }];
+                
+            } else {
+                
+                NSLog(@"failed to unpin events with error: %@", error);
+                
+            }
+        }];
+    }];
+    
+    PFQuery *userQuery = [PFQuery queryWithClassName:@"User"];
+    [userQuery fromLocalDatastore];
+    [userQuery whereKey:@"Date" lessThan:[NSDate dateWithTimeInterval:-604800 sinceDate:[NSDate date]]];
+    [userQuery findObjectsInBackgroundWithBlock:^(NSArray *users1, NSError *error){
+        [PFObject unpinAllInBackground:users1 withName:@"Event" block:^(BOOL success, NSError *error){
+            if (success) {
+                NSLog(@"successfully unpinned %lu events", users1.count);
+                
+                PFQuery *localUserQuery = [PFQuery queryWithClassName:@"User"];
+                [localUserQuery fromLocalDatastore];
+                
+                [localUserQuery findObjectsInBackgroundWithBlock:^(NSArray *users2, NSError *error){
+                    
+                    NSMutableArray *idsArray = [NSMutableArray new];
+                    for (PFUser *user in users2) {
+                        [idsArray addObject:user.objectId];
+                    }
+                    
+                    [PFObject fetchAllInBackground:users2 block:^(NSArray *users3, NSError *error) {
+                        
+                        if (!error) {
+                            
+                            [PFObject pinAllInBackground:users3 block:^(BOOL success, NSError *error){
+                                
+                                if (success) {
+                                    NSLog(@"successfully updated and pinned %lu events", users3.count);
+                                } else {
+                                    NSLog(@"failed to update and pin events with error: %@", error);
+                                    
+                                }
+                                
+                            }];
+                        } else {
+                            NSLog(@"No objects to update or ERROR");
+                        }
+                        
+                    }];
+                    
+                }];
+                
+            } else {
+                
+                NSLog(@"failed to unpin events with error: %@", error);
+                
+            }
+        }];
+    }];
+    
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application {
@@ -369,14 +481,21 @@
     
     NSLog(@"User registered for push notifications!");
     
-    PFInstallation *currentInstallation = [PFInstallation currentInstallation];
-    [currentInstallation setDeviceTokenFromData:deviceToken];
-    currentInstallation.channels = @[ @"global", @"reminders", @"matches", @"friendJoined", @"popularEvents", @"matchesInApp", @"friendPush"];
-    
-    // Associate the device with a user
-    //PFUser *user = [PFUser currentUser];
-    //currentInstallation[@"userID"] = user.objectId;
-    [currentInstallation saveInBackground];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        
+        if ([PFInstallation currentInstallation] == nil) {
+            PFInstallation *currentInstallation = [PFInstallation currentInstallation];
+            [currentInstallation setDeviceTokenFromData:deviceToken];
+            currentInstallation.channels = @[@"global", @"reminders", @"matches", @"friendJoined", @"popularEvents", @"allGroups", @"bestFriends"];
+            currentInstallation[@"matchCount"] = @5;
+            [currentInstallation saveEventually];
+        } else {
+            PFInstallation *currentInstallation = [PFInstallation currentInstallation];
+            [currentInstallation setDeviceTokenFromData:deviceToken];
+            [currentInstallation saveEventually];
+        }
+    });
+
     
     NSError *error;
     BOOL success = [self.layerClient updateRemoteNotificationDeviceToken:deviceToken error:&error];
@@ -413,7 +532,7 @@
                
                 NSDictionary *pushDict = [userInfo objectForKey:@"aps"];
                 
-                if (!error) {
+                if (!error && ![[pushDict objectForKey:@"alert"] isEqualToString:@""]) {
                     [RKDropdownAlert title:group[@"name"] message:[pushDict objectForKey:@"alert"] backgroundColor:[UIColor colorWithRed:28.0/255 green:73.0/255 blue:134.0/255 alpha:1.0] textColor:[UIColor whiteColor]];
                 }
                 
@@ -473,6 +592,14 @@
             
             }];
         }
+    }
+}
+
+- (void)application:(UIApplication *)application
+didReceiveLocalNotification:(UILocalNotification *)notification {
+    
+    if ([[Button sharedButton] handleLocalNotification:notification]) {
+        [[Button sharedButton] handleLocalNotification:notification];
     }
 }
 
@@ -548,6 +675,23 @@
             }
         }];
     }];
+}
+
+-(void)locationManager:(CLLocationManager *)manager didUpdateToLocation:(CLLocation *)newLocation fromLocation:(CLLocation *)oldLocation{
+    NSDate* eventDate = newLocation.timestamp;
+    NSTimeInterval howRecent = [eventDate timeIntervalSinceNow];
+    if (abs((int)howRecent) < 15.0) {
+        //Location timestamp is within the last 15.0 seconds, let's use it!
+        if(newLocation.horizontalAccuracy < 35.0){
+            
+            PFUser *user = [PFUser currentUser];
+            PFGeoPoint *loc = [PFGeoPoint geoPointWithLocation:manager.location];
+            user[@"userLoc"] = loc;
+            [user saveEventually];
+            
+            [manager stopUpdatingLocation];
+        }
+    }
 }
 
 @end

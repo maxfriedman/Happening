@@ -40,11 +40,11 @@ NS_REQUIRES_PROPERTY_DEFINITIONS
     // Every time a save is started, a new dictionary is added to the end.
     // Whenever a save completes, the new data is put into fetchedData, and
     // a dictionary is removed from the start.
-    NSMutableArray * __nullable operationSetQueue;
+    NSMutableArray *PF_NULLABLE_S operationSetQueue;
 
     // Our best estimate as to what the current data is, based on
     // the last fetch from the server, and the set of pending operations.
-    NSMutableDictionary * __nullable estimatedData;
+    NSMutableDictionary *PF_NULLABLE_S estimatedData;
 }
 
 ///--------------------------------------

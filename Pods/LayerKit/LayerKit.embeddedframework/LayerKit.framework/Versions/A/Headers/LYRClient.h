@@ -12,6 +12,7 @@
 #import "LYRConversation.h"
 #import "LYRMessage.h"
 #import "LYRMessagePart.h"
+#import "LYRAnnouncement.h"
 #import "LYRConstants.h"
 #import "LYRPolicy.h"
 #import "LYRProgress.h"
@@ -277,11 +278,12 @@ extern NSString *const LYRClientContentTransferProgressUserInfoKey;
 
 /**
  @abstract Creates and returns a new Layer client instance.
+ @param appID An app id url obtained from the Layer Developer Portal. https://developer.layer.com/projects
  @return Returns a newly created Layer client object.
  @warning Throws `NSInternalInconsistencyException` when creating another Layer Client instance with the same `appID` value under the same process (application).
  However multiple instances of Layer Client with the same `appID` are allowed if running the code under Unit Tests.
  */
-+ (instancetype)clientWithAppID:(NSUUID *)appID;
++ (instancetype)clientWithAppID:(NSURL *)appID;
 
 /**
  @abstract The object that acts as the delegate of the receiving client.
@@ -291,7 +293,7 @@ extern NSString *const LYRClientContentTransferProgressUserInfoKey;
 /**
  @abstract The app key.
  */
-@property (nonatomic, copy, readonly) NSUUID *appID;
+@property (nonatomic, copy, readonly) NSURL *appID;
 
 ///--------------------------------
 /// @name Managing Connection State
@@ -394,10 +396,11 @@ extern NSString *const LYRClientContentTransferProgressUserInfoKey;
 
 /**
  @abstract Creates a new Conversation with the given set of participants.
- @discussion This method will create a new `LYRConversation` instance, creating new message instances with a new `LYRConversation` object instance and sending them will also result in creation of a new conversation for other participants. If you wish to ensure that only one Conversation exists for a set of participants then query for an existing Conversation using `conversationsForParticipants:` first.
+ @discussion This method will create a new `LYRConversation` instance, creating new message instances with a new `LYRConversation` object instance and sending them will also result in creation of a new conversation for other participants. If you wish to ensure that only one Conversation exists for a set of participants then set the value for the `LYRConversationOptionsDistinctByParticipantsKey` key to true in the `options` parameter.
  @param participants A set of participants with which to initialize the new Conversation.
  @param options A dictionary of options to apply to the conversation.
- @return The newly created Conversation.
+ @param error A pointer to an error that upon failure is set to an error object describing why execution failed.
+ @return The newly created Conversation or `nil` if an attempt is made to create a conversation with a distinct participants list, but one already exists. The existing conversation will be set as the value for the `LYRExistingDistinctConversationKey` in the `userInfo` dictionary of the error parameter.
  */
 - (LYRConversation *)newConversationWithParticipants:(NSSet *)participants options:(NSDictionary *)options error:(NSError **)error;
 

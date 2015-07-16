@@ -120,7 +120,7 @@
     
     PFUser *user = [PFUser currentUser];
     user[@"userLoc"] = loc;
-    [user saveInBackground];
+    [user saveEventually];
 
     /*
     AppDelegate *appDelegate=(AppDelegate *)[UIApplication sharedApplication].delegate;

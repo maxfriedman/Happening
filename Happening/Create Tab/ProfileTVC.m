@@ -15,6 +15,7 @@
 #import <FBSDKCoreKit/FBSDKCoreKit.h>
 #import "AppDelegate.h"
 #import "ProfileSettingsTVC.h"
+#import "ExpandedCardVC.h"
 
 #define SYSTEM_VERSION_EQUAL_TO(v)                  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedSame)
 #define SYSTEM_VERSION_GREATER_THAN(v)              ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedDescending)
@@ -76,8 +77,17 @@
         
     }
     
+    self.tableView.delaysContentTouches = NO;
+    self.tableView.canCancelContentTouches = YES;
+    
     FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(120, 24, 80, 80)]; // initWithProfileID:user[@"FBObjectID"] pictureCropping:FBSDKProfilePictureModeSquare];
-    profPicView.profileID = user[@"FBObjectID"];
+    
+    if (![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
+        profPicView.profileID = user[@"FBObjectID"];
+    } else {
+        profPicView.profileID = nil;
+        nameLabel.text = @"Anonymous User";
+    }
     profPicView.pictureMode = FBSDKProfilePictureModeSquare;
     profPicView.layer.cornerRadius = 10;
     profPicView.layer.masksToBounds = YES;
@@ -158,13 +168,15 @@
     
     user = [PFUser currentUser];
     
+    /*
     PFQuery *swipesQuery = [PFQuery queryWithClassName:@"Swipes"];
     [swipesQuery whereKey:@"UserID" equalTo:user.objectId];
     [swipesQuery whereKey:@"swipedRight" equalTo:@YES];
-    swipesQuery.limit = 1000;
+    swipesQuery.limit = 1000; */
     
     PFQuery *eventQuery = [PFQuery queryWithClassName:@"Event"];
-    [eventQuery whereKey:@"objectId" matchesKey:@"EventID" inQuery:swipesQuery];
+    [eventQuery fromLocalDatastore];
+    //[eventQuery whereKey:@"objectId" matchesKey:@"EventID" inQuery:swipesQuery];
     [eventQuery whereKey:@"EndTime" greaterThan:[NSDate dateWithTimeIntervalSinceNow:1800]]; // show today's events, must be at least 30 minutes left in the event (END)
     [eventQuery orderByAscending:@"Date"];
     eventQuery.limit = 1000;
@@ -214,7 +226,13 @@
             //[noEventsView removeFromSuperview];
         }
         
-        [self.tableView reloadData];
+        [noEventsView removeFromSuperview];
+        
+        if (eventsArray.count > 0) {
+            [self.tableView reloadData];
+        } else {
+            [self noEvents];
+        }
         
     }];
     
@@ -259,12 +277,12 @@
     
     AttendTableCell *cell = (AttendTableCell *)[tableView dequeueReusableCellWithIdentifier:@"tag" forIndexPath:indexPath];
     
-    [noEventsView removeFromSuperview];
-    
     NSDate *dateRepresentingThisDay = [self.sortedDays objectAtIndex:indexPath.section];
     NSArray *eventsOnThisDay = [self.sections objectForKey:dateRepresentingThisDay];
     
     PFObject *Event = eventsOnThisDay[indexPath.row];
+    
+    cell.eventObject = Event;
     
     [cell.titleLabel setText:[NSString stringWithFormat:@"%@",Event[@"Title"]]];
     
@@ -346,7 +364,7 @@
         CLLocation *currentLocation = locManager.location;
         user[@"userLoc"] = [PFGeoPoint geoPointWithLocation:currentLocation];
         NSLog(@"Current Location is: %@", currentLocation);
-        [user saveInBackground];
+        [user saveEventually];
     }
     
     PFGeoPoint *loc = Event[@"GeoLoc"];
@@ -380,7 +398,7 @@
     [[cell viewWithTag:77] removeFromSuperview];
     
     UIImageView *locIMV = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"locationPinThickOutline"]];
-    locIMV.frame = CGRectMake(290 - cell.distance.frame.size.width - 11 - 5, 38, 11, 13);
+    locIMV.frame = CGRectMake(290 - cell.distance.frame.size.width - 11 - 5, 38, 10.4, 13);
     locIMV.tag = 77;
     [cell.contentView addSubview:locIMV];
 
@@ -482,6 +500,54 @@
     // header.contentView.backgroundColor = [UIColor blackColor];
 }
 
+- (void)noEvents {
+    
+    noEventsView = [[UIView alloc] initWithFrame: CGRectMake(0, 202, self.view.frame.size.width, 519-66-202)];
+    //noEventsView.backgroundColor = [UIColor redColor];
+
+    [self.tableView addSubview:noEventsView];
+    
+    /*
+    UILabel *topTextLabel = [[UILabel alloc] init];
+    topTextLabel.text = @"Uh oh!";
+    topTextLabel.font = [UIFont fontWithName:@"OpenSans" size:18.0];
+    topTextLabel.textColor = [UIColor colorWithRed:153.0/255 green:154.0/255 blue:155.0/255 alpha:1.0];
+    [topTextLabel sizeToFit];
+    topTextLabel.center = CGPointMake(self.view.center.x, 75);
+    [noEventsView addSubview:topTextLabel];
+    */
+    
+    UILabel *bottomTextLabel = [[UILabel alloc] init];
+    bottomTextLabel.text = @"You haven't saved any events.";
+    bottomTextLabel.font = [UIFont fontWithName:@"OpenSans" size:18.0];
+    bottomTextLabel.textColor = [UIColor colorWithRed:153.0/255 green:154.0/255 blue:155.0/255 alpha:1.0];
+    [bottomTextLabel sizeToFit];
+    bottomTextLabel.center = CGPointMake(self.view.center.x, 30);
+    [noEventsView addSubview:bottomTextLabel];
+    
+    
+    UIButton *createEventButton = [[UIButton alloc] initWithFrame:CGRectMake(95.2, 130, 129.6, 40)];
+    [createEventButton setImage:[UIImage imageNamed:@"discoverButton"] forState:UIControlStateNormal];
+    [createEventButton setImage:[UIImage imageNamed:@"discover pressed"] forState:UIControlStateHighlighted];
+    [createEventButton addTarget:self action:@selector(discoverButtonTapped) forControlEvents:UIControlEventTouchUpInside];
+    //[noEventsView addSubview:createEventButton];
+    
+    
+    UIImageView *imv = [[UIImageView alloc] initWithFrame:CGRectMake(135, 70, 150, 150)];
+    imv.center = CGPointMake(self.view.center.x, noEventsView.frame.size.height / 2 + 8);
+    imv.image = [UIImage imageNamed:@"right swipe"];
+    [noEventsView addSubview:imv];
+    
+    UILabel *lastLabel = [[UILabel alloc] init];
+    lastLabel.text = @"Swipe right to save an event";
+    lastLabel.font = [UIFont fontWithName:@"OpenSans-Light" size:14.0];
+    lastLabel.textColor = [UIColor colorWithRed:153.0/255 green:154.0/255 blue:155.0/255 alpha:1.0];
+    [lastLabel sizeToFit];
+    lastLabel.center = CGPointMake(self.view.center.x, noEventsView.frame.size.height - 20);
+    [noEventsView addSubview:lastLabel];
+    
+}
+
 - (IBAction)segControl:(UISegmentedControl *)sender {
     
     if (sender.selectedSegmentIndex == 0) { // Upcoming events
@@ -550,6 +616,12 @@
     
 }
 
+-(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    [self performSegueWithIdentifier:@"toExpandedView" sender:self];
+    
+}
+
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     // Get the new view controller using [segue destinationViewController].
     // Pass the selected object to the new view controller.
@@ -578,6 +650,18 @@
         ProfileSettingsTVC *vc = (ProfileSettingsTVC *)([navController topViewController]);
         
         vc.profileVC = self;
+        
+    } else if ([segue.identifier isEqualToString:@"toExpandedView"]) {
+        
+        NSIndexPath *selectedIndexPath = [self.tableView indexPathForSelectedRow];
+        AttendTableCell *cell = (AttendTableCell *)[self.tableView cellForRowAtIndexPath:selectedIndexPath];
+        
+        ExpandedCardVC *vc = (ExpandedCardVC *)[segue destinationViewController];
+        vc.event = cell.eventObject;
+        vc.image = cell.eventImageView.image;
+        vc.eventID = cell.eventID;
+        vc.distanceString = cell.distance.text;
+        
     }
     
 }

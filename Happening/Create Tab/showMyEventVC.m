@@ -459,7 +459,7 @@
     NSLog(@"%@", shareText);
     
     [user addObject:eventObject.objectId forKey:@"sharedEvents"];
-    [user saveInBackground];
+    [user saveEventually];
     
     if ( [activityType isEqualToString:UIActivityTypePostToTwitter] ) {
         shareText = [NSString stringWithFormat:@"Check out this event: %@ at %@ on %@ %@", title, loc, dateString, eventTimeString];

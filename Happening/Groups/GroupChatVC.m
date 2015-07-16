@@ -263,13 +263,13 @@
         // Grab the height value from the JSON
         
         NSString *text =  [json objectForKey:@"message"];
-        NSUInteger actualLineSize = [text boundingRectWithSize:CGSizeMake(280, CGFLOAT_MAX)
+        NSUInteger actualLineSize = [text boundingRectWithSize:CGSizeMake(270, CGFLOAT_MAX)
                                                        options:NSStringDrawingUsesLineFragmentOrigin
                                                     attributes:@{NSFontAttributeName:[UIFont fontWithName:@"OpenSans" size:10.0]}
                                                        context:nil].size.height;
         
         /* useful if I ever want to calculate actual # of lines
-        NSUInteger singleLineSize = [@"single line" boundingRectWithSize:CGSizeMake(280, CGFLOAT_MAX)
+        NSUInteger singleLineSize = [@"single line" boundingRectWithSize:CGSizeMake(270, CGFLOAT_MAX)
                                                                  options:NSStringDrawingUsesLineFragmentOrigin
                                                               attributes:@{NSFontAttributeName:[UIFont fontWithName:@"OpenSans" size:10.0]}
                                                                  context:nil].size.height;

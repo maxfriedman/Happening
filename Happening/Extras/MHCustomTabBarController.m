@@ -25,6 +25,7 @@
 #import "MHTabBarSegue.h"
 #import "GroupsTVC.h"
 #import "DragViewController.h"
+#import "SwipeableCardVC.h"
 
 NSString *const MHCustomTabBarControllerViewControllerChangedNotification = @"MHCustomTabBarControllerViewControllerChangedNotification";
 NSString *const MHCustomTabBarControllerViewControllerAlreadyVisibleNotification = @"MHCustomTabBarControllerViewControllerAlreadyVisibleNotification";
@@ -34,6 +35,7 @@ NSString *const MHCustomTabBarControllerViewControllerAlreadyVisibleNotification
 @property (nonatomic, strong) NSMutableDictionary *viewControllersByIdentifier;
 @property (strong, nonatomic) NSString *destinationIdentifier;
 @property (nonatomic) IBOutletCollection(UIButton) NSArray *buttons;
+@property (nonatomic) IBOutletCollection(UIImageView) NSArray *imageViews;
 @property (strong, nonatomic) IBOutlet UIView *tabBarContainerView;
 
 @end
@@ -41,6 +43,8 @@ NSString *const MHCustomTabBarControllerViewControllerAlreadyVisibleNotification
 @implementation MHCustomTabBarController {
     
     BOOL viewLoaded;
+    NSArray *bluePics;
+    NSArray *grayPics;
 }
 
 @synthesize groupHub, profileHub;
@@ -50,6 +54,10 @@ NSString *const MHCustomTabBarControllerViewControllerAlreadyVisibleNotification
     
     self.viewControllersByIdentifier = [NSMutableDictionary dictionary];
     viewLoaded = YES;
+    
+    bluePics = [NSArray arrayWithObjects:[UIImage imageNamed:@"groups_tab_pressed"], [UIImage imageNamed:@"cards_tab_pressed"], [UIImage imageNamed:@"profile_tab_pressed"], nil];
+    
+    grayPics = [NSArray arrayWithObjects:[UIImage imageNamed:@"groups_tab"], [UIImage imageNamed:@"cards_tab"], [UIImage imageNamed:@"profile_tab"], nil];
 
 }
 
@@ -59,17 +67,19 @@ NSString *const MHCustomTabBarControllerViewControllerAlreadyVisibleNotification
     AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
     appDelegate.mh = self;
     
-    
     if (self.childViewControllers.count < 1) {
         [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"refreshData"];
         [[NSUserDefaults standardUserDefaults] synchronize];
         [self performSegueWithIdentifier:@"viewController2" sender:[self.buttons objectAtIndex:1]];
     }
     
+    if (self.eventIdForSegue != nil) {
+        NSLog(@"TO SWIPE VC");
+        [self performSegueWithIdentifier:@"toSwipeVC" sender:self];
+    }
+    
     // Fetches all LYRConversation objects
     LYRQuery *query = [LYRQuery queryWithQueryableClass:[LYRConversation class]];
-    //query.predicate = [LYRPredicate predicateWithProperty:@"participants" predicateOperator:LYRPredicateOperatorIsIn value:[PFUser currentUser].objectId];
-    
     NSError *error;
     NSOrderedSet *conversations = [appDelegate.layerClient executeQuery:query error:&error];
     if (!error) {
@@ -91,10 +101,10 @@ NSString *const MHCustomTabBarControllerViewControllerAlreadyVisibleNotification
             //[hub setCircleAtFrame:CGRectMake(-10, -10, 30, 30)]; //frame relative to the view you set it to
             
             //%%% MOVE FRAME
-            [groupHub moveCircleByX:-10 Y:10]; // moves the circle 5 pixels left and down from its current position
+            [groupHub moveCircleByX:-17 Y:10]; // moves the circle 5 pixels left and down from its current position
             
             //%%% CIRCLE SIZE
-            [groupHub scaleCircleSizeBy:0.75]; // doubles the size of the circle, keeps the same center
+            [groupHub scaleCircleSizeBy:0.65]; // doubles the size of the circle, keeps the same center
             
             [groupHub setCircleColor:[UIColor colorWithRed:0 green:176.0/255 blue:242.0/255 alpha:1.0] labelColor:[UIColor whiteColor]];
             [groupHub incrementBy:notiNumber];
@@ -131,7 +141,17 @@ NSString *const MHCustomTabBarControllerViewControllerAlreadyVisibleNotification
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     
     if (![segue isKindOfClass:[MHTabBarSegue class]]) {
-        [super prepareForSegue:segue sender:sender];
+        
+        if ([segue.identifier isEqualToString:@"toSwipeVC"]) {
+            
+            SwipeableCardVC *vc = (SwipeableCardVC *)[[segue destinationViewController] topViewController];
+            NSLog(@"%@", self.eventIdForSegue);
+            vc.eventID = [NSString stringWithString:self.eventIdForSegue];
+            self.eventIdForSegue = nil;
+            
+        } else {
+            [super prepareForSegue:segue sender:sender];
+        }
         return;
     }
     
@@ -143,8 +163,9 @@ NSString *const MHCustomTabBarControllerViewControllerAlreadyVisibleNotification
     }
     
     [self.buttons setValue:@NO forKeyPath:@"selected"];
-    [sender setSelected:YES];
+    //[sender setSelected:YES];
     self.selectedIndex = [self.buttons indexOfObject:sender];
+    [self selectedButton];
 
     self.destinationIdentifier = segue.identifier;
     self.destinationViewController = [self.viewControllersByIdentifier objectForKey:self.destinationIdentifier];
@@ -159,6 +180,8 @@ NSString *const MHCustomTabBarControllerViewControllerAlreadyVisibleNotification
             
             if (tvc.layerClient == nil) {
                 tvc.layerClient = appDelegate.layerClient;
+                tvc.navigationItem.title = @"Friends";
+                //tvc.deletionModes = [NSArray arrayWithObjects:[NSNumber numberWithUnsignedInteger:LYRDeletionModeLocal], nil];
             }
         }
     } else if ([segue.identifier isEqualToString:@"viewController2"]) {
@@ -167,6 +190,7 @@ NSString *const MHCustomTabBarControllerViewControllerAlreadyVisibleNotification
             DragViewController *vc = (DragViewController *)[[segue destinationViewController] topViewController];
             
         }
+        
     }
 }
 
@@ -178,6 +202,31 @@ NSString *const MHCustomTabBarControllerViewControllerAlreadyVisibleNotification
     }
     
     return YES;
+}
+
+-(void)selectedButton {
+    
+    for (int i = 0; i < self.buttons.count; i++) {
+        
+        UIButton *button = self.buttons[i];
+        UIImageView *imv = self.imageViews[i];
+        UIColor *hapBlue = [UIColor colorWithRed:0 green:176.0/255 blue:242.0/255 alpha:1.0];
+        UIColor *gray = [UIColor colorWithRed:190.0/255 green:190.0/255 blue:190.0/255 alpha:1.0];
+        
+        if (i == self.selectedIndex) {
+            
+            imv.image = bluePics[i];
+            [button setTitleColor:hapBlue forState:UIControlStateNormal];
+            
+        } else {
+            
+            imv.image = grayPics[i];
+            [button setTitleColor:gray forState:UIControlStateNormal];
+            
+        }
+        
+    }
+    
 }
 
 #pragma mark - Memory Warning

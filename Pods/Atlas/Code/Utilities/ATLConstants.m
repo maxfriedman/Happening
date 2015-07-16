@@ -42,16 +42,16 @@ UIColor *ATLRedColor()
 
 UIFont *ATLLightFont(CGFloat size)
 {
-    return [UIFont fontWithName:@"OpenSans-Light" size:size];
+    return [UIFont fontWithName:@"HelveticaNeue-Light" size:size];
 }
 
 UIFont *ATLMediumFont(CGFloat size)
 {
-    return [UIFont fontWithName:@"OpenSans" size:size];
+    return [UIFont fontWithName:@"HelveticaNeue" size:size];
 }
 
 UIFont *ATLBoldFont(CGFloat size)
 {
-    return [UIFont fontWithName:@"OpenSans-Semibold" size:size];
+    return [UIFont fontWithName:@"HelveticaNeue-Medium" size:size];
 }
 

@@ -1,17 +1,58 @@
 PODS:
-  - Atlas (1.0.8):
-    - LayerKit (>= 0.13.3)
-  - LayerKit (0.13.3)
-  - RKNotificationHub (2.0.0)
+  - Atlas (1.0.10):
+    - LayerKit (>= 0.14.2)
+  - Button (3.3.0)
+  - FastttCamera (0.3.1):
+    - FastttCamera/Default (= 0.3.1)
+  - FastttCamera/Default (0.3.1)
+  - Hoko (2.0.2)
+  - LayerKit (0.15.0)
+  - pop (1.0.7)
+  - POP+MCAnimate (2.0.1):
+    - pop (~> 1.0)
+    - POP+MCAnimate/Animations (= 2.0.1)
+    - POP+MCAnimate/Group (= 2.0.1)
+    - POP+MCAnimate/Internal (= 2.0.1)
+    - POP+MCAnimate/Shorthand (= 2.0.1)
+    - POP+MCAnimate/Velocity (= 2.0.1)
+  - POP+MCAnimate/Animations (2.0.1):
+    - pop (~> 1.0)
+    - POP+MCAnimate/Group
+    - POP+MCAnimate/Internal
+    - POP+MCAnimate/Shorthand
+    - POP+MCAnimate/Velocity
+  - POP+MCAnimate/Group (2.0.1):
+    - pop (~> 1.0)
+  - POP+MCAnimate/Internal (2.0.1):
+    - pop (~> 1.0)
+  - POP+MCAnimate/Shorthand (2.0.1):
+    - pop (~> 1.0)
+  - POP+MCAnimate/Velocity (2.0.1):
+    - pop (~> 1.0)
+    - POP+MCAnimate/Internal
+  - RKNotificationHub (2.0.1)
+  - TTTAttributedLabel (1.13.4)
 
 DEPENDENCIES:
   - Atlas
+  - Button (~> 3)
+  - FastttCamera
+  - Hoko (~> 2.0.1)
   - LayerKit
+  - pop (~> 1.0)
+  - POP+MCAnimate (~> 2.0)
   - RKNotificationHub
+  - TTTAttributedLabel
 
 SPEC CHECKSUMS:
-  Atlas: 8ded03b20e8f2ffc3383983468a304d4ceb50d6b
-  LayerKit: 212b87bdaa7e3592b7188952e2211404a2f59614
-  RKNotificationHub: 4aa3f0579c90caf96c4c0d7ab8e3f5ef5ad90b87
+  Atlas: ea8e1559810405c4eaa45eef80b813a12235527c
+  Button: 3db2c3685113134008d757ca0f2f8b495847d4da
+  FastttCamera: dfcec6e490be93130123309fdecc7cf444081470
+  Hoko: 58ee691440205d5af9f6661a56de5f284939e0b7
+  LayerKit: ac8c5c227a06e2ea5e042303b80e931a8ffe3568
+  pop: 628ffc631644601567ee8bfaaaea493ebd7d0923
+  POP+MCAnimate: a99e209148c602512de487f1160a44bf78572024
+  RKNotificationHub: d80905a948c79c11673345f807133a0bfd17e320
+  TTTAttributedLabel: 0a2ac7b2dd726d32a070dafb01446026b11e624f
 
 COCOAPODS: 0.37.2

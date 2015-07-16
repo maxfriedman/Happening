@@ -32,6 +32,17 @@ extern NSString *const LYRConversationOptionsMetadataKey;
  */
 extern NSString *const LYRConversationOptionsDeliveryReceiptsEnabledKey;
 
+/**
+ @abstract The option key for configuring whether or not Conversations are created such that they are guaranteed to be a single distinctive Conversation among the set of participants.
+ @discussion Because Layer supports offline use-cases and sets of users may attempt to communicate among identical groups concurrently, it is possible to inadvertently create Conversations that
+ from the end-user perspective appear as separate threads where they were expecting a single one to exist. This behavior can be addressed by requesting Layer to create a Conversation that is distinct
+ among the set of participants via the `LYRConversationOptionsDistinctByParticipantsKey` option key. When `YES`, Layer will guarantee that among the initial set of participants there will exist one (and only one)
+ distinct Conversation. This guarantee will persist until the participants list is modified as the mutation may result in an overlap with existing Conversations. When `NO`, the distinctive guarantee is not requested
+ and a new Conversation will be created among the set of participants without regard for any existing Conversations
+ (distinct or otherwise).
+ */
+extern NSString *const LYRConversationOptionsDistinctByParticipantsKey;
+
 //------------------------------------------------------------
 
 /**
@@ -78,6 +89,13 @@ extern NSString *const LYRConversationOptionsDeliveryReceiptsEnabledKey;
  @discussion The `hasUnreadMessages` property is queryable via the `LYRPredicateOperatorIsEqualTo` and `LYRPredicateOperatorIsNotEqualTo` predicate operators.
  */
 @property (nonatomic, readonly) BOOL hasUnreadMessages LYR_QUERYABLE_PROPERTY;
+
+/**
+ @abstract Returns a Boolean value that indicates whether or not the conversation is a distinct conversation by its participant list. If YES, the Layer service gurantees that there will only be one conversation created between the current set of participants.
+ @discussion The `isDistinct` property is queryable via the `LYRPredicateOperatorIsEqualTo` and `LYRPredicateOperatorIsNotEqualTo` predicate operators.
+ @default YES.
+ */
+@property (nonatomic, readonly) BOOL isDistinct LYR_QUERYABLE_PROPERTY;
 
 /**
  @abstract Returns a Boolean value that indicates if the receiver has been deleted.

@@ -9,13 +9,16 @@
 #import "NotificationsTVC.h"
 #import <Parse/Parse.h>
 
-@interface NotificationsTVC ()
+@interface NotificationsTVC () 
 
 @end
 
-@implementation NotificationsTVC
+@implementation NotificationsTVC {
+    
+    PFInstallation *currentInstallation;
+}
 
-@synthesize inAppMatches, popular, pushMatches, reminders, friendJoined, friendPush;
+@synthesize matchesOffOnLabel, popular, reminders, friendJoined, allGroups;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -24,16 +27,24 @@
     [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"navBar"] forBarMetrics:UIBarMetricsDefault];
     self.navigationController.navigationBar.translucent = NO;
     
-    PFInstallation *currentInstallation = [PFInstallation currentInstallation];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    
+    currentInstallation = [PFInstallation currentInstallation];
     
     NSArray *channels = currentInstallation.channels;
     
-    inAppMatches.on = [channels containsObject:@"matchesInApp"];
+    if ([channels containsObject:@"matches"])
+        matchesOffOnLabel.text = @"On";
+    else
+        matchesOffOnLabel.text = @"Off";
+    
     popular.on = [channels containsObject:@"popularEvents"];
-    pushMatches.on = [channels containsObject:@"matches"];
     friendJoined.on = [channels containsObject:@"friendJoined"];
     reminders.on = [channels containsObject:@"reminders"];
-    friendPush.on = [channels containsObject:@"friendPush"];
+    allGroups.on = [channels containsObject:@"allGroups"];
     
 }
 
@@ -42,41 +53,7 @@
     // Dispose of any resources that can be recreated.
 }
 
-
-- (IBAction)inAppMatchesSwitch:(UISwitch *)sender {
-    
-    
-    PFInstallation *currentInstallation = [PFInstallation currentInstallation];
-    
-    if (sender.on) {
-        [currentInstallation addObject:@"matchesInApp" forKey:@"channels"];
-    } else {
-        [currentInstallation removeObject:@"matchesInApp" forKey:@"channels"];
-    }
-    
-    [currentInstallation saveInBackground];
-    
-}
-
-- (IBAction)pushMatchesSwitch:(UISwitch *)sender {
-    
-    
-    PFInstallation *currentInstallation = [PFInstallation currentInstallation];
-    
-    if (sender.on) {
-        [currentInstallation addObject:@"matches" forKey:@"channels"];
-    } else {
-        [currentInstallation removeObject:@"matches" forKey:@"channels"];
-    }
-    
-    [currentInstallation saveInBackground];
-    
-}
-
 - (IBAction)pushPopularSwitch:(UISwitch *)sender {
-    
-    
-    PFInstallation *currentInstallation = [PFInstallation currentInstallation];
     
     if (sender.on) {
         [currentInstallation addObject:@"popularEvents" forKey:@"channels"];
@@ -84,14 +61,11 @@
         [currentInstallation removeObject:@"popularEvents" forKey:@"channels"];
     }
     
-    [currentInstallation saveInBackground];
+    [currentInstallation saveEventually];
     
 }
 
 - (IBAction)pushFriendJoinedSwitch:(UISwitch *)sender {
-    
-    
-    PFInstallation *currentInstallation = [PFInstallation currentInstallation];
     
     if (sender.on) {
         [currentInstallation addObject:@"friendJoined" forKey:@"channels"];
@@ -99,14 +73,11 @@
         [currentInstallation removeObject:@"friendJoined" forKey:@"channels"];
     }
     
-    [currentInstallation saveInBackground];
+    [currentInstallation saveEventually];
     
 }
 
 - (IBAction)pushRemindersSwitch:(UISwitch *)sender {
-    
-    
-    PFInstallation *currentInstallation = [PFInstallation currentInstallation];
     
     if (sender.on) {
         [currentInstallation addObject:@"reminders" forKey:@"channels"];
@@ -114,21 +85,19 @@
         [currentInstallation removeObject:@"reminders" forKey:@"channels"];
     }
     
-    [currentInstallation saveInBackground];
+    [currentInstallation saveEventually];
     
 }
 
-- (IBAction)friendPushSwitch:(UISwitch *)sender {
-    
-    PFInstallation *currentInstallation = [PFInstallation currentInstallation];
+- (IBAction)allGroupsSwitch:(UISwitch *)sender {
     
     if (sender.on) {
-        [currentInstallation addObject:@"friendPush" forKey:@"channels"];
+        [currentInstallation addObject:@"allGroups" forKey:@"channels"];
     } else {
-        [currentInstallation removeObject:@"friendPush" forKey:@"channels"];
+        [currentInstallation removeObject:@"allGroups" forKey:@"channels"];
     }
     
-    [currentInstallation saveInBackground];
+    [currentInstallation saveEventually];
     
 }
 

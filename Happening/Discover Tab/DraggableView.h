@@ -83,15 +83,26 @@
 @property (nonatomic,strong)UILabel* calDayOfWeekLabel;
 @property (nonatomic,strong)UILabel* calTimeLabel;
 
+@property (nonatomic, strong)UIImageView *friendArrow;
+
+@property (nonatomic,strong)UILabel* startPriceNumLabel;
+@property (nonatomic,strong)UILabel* avePriceNumLabel;
+
 @property (assign) NSString *URL;
 @property (assign) NSString *ticketLink;
 
 @property (assign)int actionMargin;
 @property (assign)int swipeDownMargin;
 
+@property (nonatomic, strong) NSMutableArray *interestedIds;
+@property (nonatomic, strong) NSMutableArray *interestedNames;
+
+@property PFObject *eventObject;
+
 -(void)leftClickAction;
 -(void)rightClickAction;
 - (BOOL) colorOfPointIsWhite:(CGPoint)point;
+- (void)arrangeCornerViews;
 
 -(void)cardExpanded:(BOOL)b;
 

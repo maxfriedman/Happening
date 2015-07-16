@@ -110,7 +110,7 @@ extern NSString *const LYRMessageOptionsPushNotificationSoundNameKey;
  @abstract The date and time that the message was originally sent.
  @discussion The `sentAt` property is queryable using all predicate operators.
  */
-@property (nonatomic, readonly) NSDate *sentAt LYR_QUERYABLE_PROPERTY;
+@property (nonatomic, readonly) NSDate *sentAt LYR_QUERYABLE_PROPERTY LYR_QUERYABLE_FROM(LYRConversation);
 
 /**
  @abstract The date and time that the message was received by the authenticated user.

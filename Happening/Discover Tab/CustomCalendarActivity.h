@@ -16,6 +16,7 @@
 
 @property (nonatomic, strong) EKEventStore *eventStore;
 @property (nonatomic, strong) DraggableView *draggableView;
+@property (nonatomic, strong) PFObject *eventObject;
 @property (nonatomic, strong) DragViewController *myViewController;
 
 @end

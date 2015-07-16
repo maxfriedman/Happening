@@ -33,15 +33,19 @@ static NSString *const ATLGIFMIMETypePlaceholderText = @"Attachment: GIF";
 @property (nonatomic) LYRQueryController *searchQueryController;
 @property (nonatomic) LYRConversation *conversationToDelete;
 @property (nonatomic) LYRConversation *conversationSelectedBeforeContentChange;
-@property (nonatomic, readwrite) UISearchDisplayController *searchController;
 @property (nonatomic) UISearchBar *searchBar;
 @property (nonatomic) BOOL hasAppeared;
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+@property (nonatomic, readwrite) UISearchDisplayController *searchController;
+#pragma GCC diagnostic pop
 
 @end
 
 @implementation ATLConversationListViewController
 
-NSString *const ATLConversationListViewControllerTitle = @"Friends";
+NSString *const ATLConversationListViewControllerTitle = @"Messages";
 NSString *const ATLConversationTableViewAccessibilityLabel = @"Conversation Table View";
 NSString *const ATLConversationTableViewAccessibilityIdentifier = @"Conversation Table View Identifier";
 
@@ -51,8 +55,9 @@ NSString *const ATLConversationTableViewAccessibilityIdentifier = @"Conversation
     return [[self alloc] initWithLayerClient:layerClient];
 }
 
-- (id)initWithLayerClient:(LYRClient *)layerClient
+- (instancetype)initWithLayerClient:(LYRClient *)layerClient
 {
+    NSAssert(layerClient, @"Layer Client cannot be nil");
     self = [super initWithStyle:UITableViewStylePlain];
     if (self)  {
         _layerClient = layerClient;
@@ -113,7 +118,10 @@ NSString *const ATLConversationTableViewAccessibilityIdentifier = @"Conversation
     self.searchBar.delegate = self;
     self.tableView.tableHeaderView = self.searchBar;
     
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     self.searchController = [[UISearchDisplayController alloc] initWithSearchBar:self.searchBar contentsController:self];
+#pragma GCC diagnostic pop
     self.searchController.delegate = self;
     self.searchController.searchResultsDelegate = self;
     self.searchController.searchResultsDataSource = self;
@@ -176,7 +184,7 @@ NSString *const ATLConversationTableViewAccessibilityIdentifier = @"Conversation
 - (void)setDisplaysAvatarItem:(BOOL)displaysAvatarItem
 {
     if (self.hasAppeared) {
-        //@throw [NSException exceptionWithName:NSInternalInconsistencyException reason:@"Cannot change conversation image display after the view has been presented" userInfo:nil];
+        @throw [NSException exceptionWithName:NSInternalInconsistencyException reason:@"Cannot change conversation image display after the view has been presented" userInfo:nil];
     }
     _displaysAvatarItem = displaysAvatarItem;
 }

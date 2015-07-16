@@ -16,4 +16,9 @@
 
 @property (strong, nonatomic) IBOutlet UIImageView *avatarImageView;
 
+@property (strong, nonatomic) IBOutlet UIView *checkView;
+@property (strong, nonatomic) IBOutlet UIImageView *checkImageView;
+
+@property (assign) NSIndexPath *indexPath;
+
 @end

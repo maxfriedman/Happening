@@ -25,6 +25,8 @@ typedef NS_ENUM(NSUInteger, LYRError) {
     LYRErrorMessagePartContentInlined               = 1009,
     LYRErrorConversationAlreadyDeleted              = 1010,
     LYRErrorUserNotAParticipantInConversation       = 1011, 
+    LYRErrorImmutableParticipantsList               = 1012,
+    LYRErrorDistinctConversationExists              = 1013,
     
     // Validation Errors
     LYRErrorInvalidKey                              = 2000,
@@ -75,3 +77,8 @@ typedef NS_ENUM(NSUInteger, LYRClientError) {
 
 extern NSString *const LYRErrorAuthenticatedUserIDUserInfoKey;
 extern NSString *const LYRErrorUnderlyingErrorsKey;
+
+/**
+ @abstract A key into the `userInfo` dictionary of an error returned when attempting to create a new distinct conversation. That key's value represents an existing distinct conversation object.
+ */
+extern NSString *const LYRExistingDistinctConversationKey;

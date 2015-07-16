@@ -7,8 +7,10 @@
 #import <Foundation/Foundation.h>
 
 #if TARGET_OS_IPHONE
+#import <Parse/PFNullability.h>
 #import <Parse/PFObject.h>
 #else
+#import <ParseOSX/PFNullability.h>
 #import <ParseOSX/PFObject.h>
 #endif
 
@@ -62,13 +64,6 @@ PF_ASSUME_NONNULL_BEGIN
 ///--------------------------------------
 /// @name Methods for Subclasses
 ///--------------------------------------
-
-/*!
- @abstract Designated initializer for subclasses.
- This method can only be called on subclasses which conform to <PFSubclassing>.
- This method should not be overridden.
- */
-- (instancetype)init;
 
 /*!
  @abstract Creates an instance of the registered subclass with this class's <parseClassName>.

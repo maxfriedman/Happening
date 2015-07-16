@@ -15,6 +15,9 @@
 @property (strong, nonatomic) IBOutlet FBSDKProfilePictureView *fbProfPicView;
 @property (strong, nonatomic) IBOutlet UIImageView *checkButton;
 @property (assign) BOOL pictureLoaded;
+@property (assign) NSIndexPath *indexPath;
 
+@property (strong, nonatomic) IBOutlet UIView *checkView;
+@property (strong, nonatomic) IBOutlet UIImageView *checkImageView;
 
 @end

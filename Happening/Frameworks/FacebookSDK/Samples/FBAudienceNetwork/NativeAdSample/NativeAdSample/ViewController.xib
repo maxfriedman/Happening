@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="6250" systemVersion="14B25" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="6751" systemVersion="14D136" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6244"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6736"/>
         <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
     </dependencies>
@@ -11,7 +11,7 @@
             <connections>
                 <outlet property="adBodyLabel" destination="GKx-Wh-B9Y" id="71W-p7-x1J"/>
                 <outlet property="adCallToActionButton" destination="ZDS-DN-w18" id="Y8Y-SX-yfX"/>
-                <outlet property="adCoverImageView" destination="3N8-Y5-Q9P" id="Igd-aI-VbK"/>
+                <outlet property="adCoverMediaView" destination="3N8-Y5-Q9P" id="Uda-6q-sEW"/>
                 <outlet property="adIconImageView" destination="CJg-JY-Ymc" id="wov-WA-Gjq"/>
                 <outlet property="adSocialContextLabel" destination="iqp-ac-Djc" id="tlD-lS-HLT"/>
                 <outlet property="adStarRatingView" destination="lke-hk-ZP4" id="gbm-7V-IkX"/>
@@ -69,9 +69,9 @@
                             <fontDescription key="fontDescription" type="boldSystem" pointSize="16"/>
                             <nil key="highlightedColor"/>
                         </label>
-                        <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="3N8-Y5-Q9P">
+                        <view userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="3N8-Y5-Q9P" customClass="FBMediaView">
                             <rect key="frame" x="8" y="53" width="300" height="157"/>
-                        </imageView>
+                        </view>
                         <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" preferredMaxLayoutWidth="191" translatesAutoresizingMaskIntoConstraints="NO" id="GKx-Wh-B9Y">
                             <rect key="frame" x="8" y="235" width="191" height="50"/>
                             <fontDescription key="fontDescription" type="system" pointSize="14"/>
@@ -160,18 +160,36 @@
                         <action selector="loadNativeAdInTableViewTapped:" destination="-1" eventType="touchUpInside" id="p2F-4k-OLf"/>
                     </connections>
                 </button>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="TpV-vo-xeZ">
+                    <rect key="frame" x="182" y="532" width="237" height="45"/>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="45" id="z0Z-0y-SJE"/>
+                    </constraints>
+                    <fontDescription key="fontDescription" type="boldSystem" pointSize="15"/>
+                    <state key="normal" title="Load Native Ad Scroll View">
+                        <color key="titleColor" red="0.21960784310000001" green="0.3294117647" blue="0.52941176469999995" alpha="1" colorSpace="calibratedRGB"/>
+                        <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                    </state>
+                    <connections>
+                        <action selector="loadNativeAdInScrollViewTapped:" destination="-1" eventType="touchUpInside" id="MDI-sj-2l1"/>
+                    </connections>
+                </button>
             </subviews>
             <color key="backgroundColor" red="0.89211697052565198" green="0.89608012769043455" blue="0.90796959918478259" alpha="1" colorSpace="calibratedRGB"/>
             <constraints>
                 <constraint firstItem="bPq-kn-zvF" firstAttribute="top" secondItem="LHQ-3w-hul" secondAttribute="bottom" constant="8" symbolic="YES" id="4fx-qj-KZs"/>
                 <constraint firstItem="bPq-kn-zvF" firstAttribute="centerX" secondItem="LHQ-3w-hul" secondAttribute="centerX" id="F28-8O-gCS"/>
                 <constraint firstItem="F1E-w5-y8P" firstAttribute="top" secondItem="bPq-kn-zvF" secondAttribute="bottom" constant="8" symbolic="YES" id="PPV-SW-23a"/>
+                <constraint firstItem="TpV-vo-xeZ" firstAttribute="leading" secondItem="EEu-FO-Z1H" secondAttribute="leading" id="UsR-BQ-3CU"/>
                 <constraint firstItem="F1E-w5-y8P" firstAttribute="leading" secondItem="EEu-FO-Z1H" secondAttribute="leading" id="XSz-KA-VhU"/>
                 <constraint firstItem="EEu-FO-Z1H" firstAttribute="top" secondItem="F1E-w5-y8P" secondAttribute="bottom" constant="8" symbolic="YES" id="baW-ze-GUN"/>
                 <constraint firstItem="F1E-w5-y8P" firstAttribute="centerX" secondItem="bPq-kn-zvF" secondAttribute="centerX" id="bbm-Jh-qz6"/>
+                <constraint firstItem="TpV-vo-xeZ" firstAttribute="trailing" secondItem="EEu-FO-Z1H" secondAttribute="trailing" id="dAA-rO-38c"/>
                 <constraint firstItem="F1E-w5-y8P" firstAttribute="centerX" secondItem="1" secondAttribute="centerX" id="dL1-6D-NOx"/>
                 <constraint firstItem="EEu-FO-Z1H" firstAttribute="trailing" secondItem="F1E-w5-y8P" secondAttribute="trailing" id="fF1-xA-9oO"/>
                 <constraint firstItem="LHQ-3w-hul" firstAttribute="top" secondItem="1" secondAttribute="top" constant="75" id="jQu-AH-zqc"/>
+                <constraint firstItem="TpV-vo-xeZ" firstAttribute="top" secondItem="EEu-FO-Z1H" secondAttribute="bottom" constant="8" symbolic="YES" id="ttc-gu-B4U"/>
             </constraints>
             <point key="canvasLocation" x="347" y="454"/>
         </view>

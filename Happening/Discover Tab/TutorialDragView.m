@@ -20,6 +20,7 @@
 #import "UIImage+ImageEffects.h"
 #import "RKDropdownAlert.h"
 #import "AppDelegate.h"
+#import <POP+MCAnimate/POP+MCAnimate.h>
 
 @interface TutorialDragView()
 
@@ -64,7 +65,7 @@
 //this makes it so only two cards are loaded at a time to
 //avoid performance and memory costs
 static const int MAX_BUFFER_SIZE = 2; //%%% max number of cards loaded at any given time, must be greater than 1
-static const float CARD_HEIGHT = 310; //%%% height of the draggable card
+static const float CARD_HEIGHT = 350; //%%% height of the draggable card
 static const float CARD_WIDTH = 284; //%%% width of the draggable card
 
 @synthesize exampleCardLabels; //%%% all the labels I'm using as example data at the moment
@@ -103,7 +104,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         self.allowCardSwipe = YES;
         
         cardBackground = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"cardBackground"]];
-        cardBackground.frame = CGRectMake(7, 308, 270, cardBackground.image.size.height - 5);
+        cardBackground.frame = CGRectMake(7, 349, 270, cardBackground.image.size.height - 5);
         [self addSubview:cardBackground];
         
         // %%%%   LOAD TUTORIAL IMAGES   %%%%%%
@@ -170,14 +171,14 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 
     if (index == 0) {
         
-        UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 40, CARD_WIDTH, 100)];
+        UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 30, CARD_WIDTH, 100)];
         [label setText:@"Swipe right to"];
         [label setFont:[UIFont fontWithName:@"OpenSans-Bold" size:26.0]];
         [label setTextColor:color];
         [label setTextAlignment:NSTextAlignmentCenter];
         [tutorialView addSubview:label];
         
-        UILabel *label2 = [[UILabel alloc] initWithFrame:CGRectMake(0, 70, CARD_WIDTH, 100)];
+        UILabel *label2 = [[UILabel alloc] initWithFrame:CGRectMake(0, 60, CARD_WIDTH, 100)];
         [label2 setText:@"save an event"];
         [label2 setFont:[UIFont fontWithName:@"OpenSans-Bold" size:26.0]];
         [label2 setTextColor:color];
@@ -186,19 +187,38 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         
         UIImageView *imv = [[UIImageView alloc] init]; //WithFrame:CGRectMake(30, 200, 224, 55.6)];
         imv = imageArray[index];
-        imv.frame = CGRectMake(30, 190, 224, 55.6);
+        imv.frame = CGRectMake(30, 180, 224, 55.6);
         [tutorialView addSubview:imv];
+        
+        UILabel *label3 = [[UILabel alloc] initWithFrame:CGRectMake(15, 270, CARD_WIDTH - 30, 100)];
+        [label3 setText:@"We'll notify you before the event starts and when your friends swipe right as well."];
+        [label3 setFont:[UIFont fontWithName:@"OpenSans" size:12.0]];
+        [label3 setNumberOfLines:0];
+        [label3 setTextColor:color];
+        [label3 setTextAlignment:NSTextAlignmentCenter];
+        [tutorialView addSubview:label3];
+        
+        /*
+        UIImageView *imv2 = [[UIImageView alloc] initWithFrame:self.bounds];
+        imv2.image = [UIImage imageNamed:@"Card Screenshot"];
+        [tutorialView insertSubview:imv2 atIndex:0];
+        imv2.alpha = 0.1;
+        
+        UIView *maskView = [[UIView alloc] initWithFrame:imv2.bounds];
+        maskView.backgroundColor = [UIColor blackColor];
+        maskView.alpha = 0.6;
+        [imv2 addSubview:maskView]; */
         
     } else if (index == 1) {
         
-        UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 40, CARD_WIDTH, 100)];
+        UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 30, CARD_WIDTH, 100)];
         [label setText:@"Swipe left if"];
         [label setFont:[UIFont fontWithName:@"OpenSans-Bold" size:24.0]];
         [label setTextColor:color];
         [label setTextAlignment:NSTextAlignmentCenter];
         [tutorialView addSubview:label];
         
-        UILabel *label2 = [[UILabel alloc] initWithFrame:CGRectMake(0, 70, CARD_WIDTH, 100)];
+        UILabel *label2 = [[UILabel alloc] initWithFrame:CGRectMake(0, 60, CARD_WIDTH, 100)];
         [label2 setText:@"you're not interested"];
         [label2 setFont:[UIFont fontWithName:@"OpenSans-Bold" size:24.0]];
         [label2 setTextColor:color];
@@ -207,8 +227,16 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         
         UIImageView *imv = [[UIImageView alloc] init]; //WithFrame:CGRectMake(30, 200, 224, 55.6)];
         imv = imageArray[index];
-        imv.frame = CGRectMake(30, 190, 224, 55.6);
+        imv.frame = CGRectMake(30, 180, 224, 55.6);
         [tutorialView addSubview:imv];
+        
+        UILabel *label3 = [[UILabel alloc] initWithFrame:CGRectMake(15, 270, CARD_WIDTH - 30, 100)];
+        [label3 setText:@"This permanently removes the event. Over time, we'll recommend events based on your swipes!"];
+        [label3 setFont:[UIFont fontWithName:@"OpenSans" size:11.0]];
+        [label3 setNumberOfLines:0];
+        [label3 setTextColor:color];
+        [label3 setTextAlignment:NSTextAlignmentCenter];
+        [tutorialView addSubview:label3];
         
     } else if (index == 2) {
         
@@ -238,15 +266,23 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         imv.frame = CGRectMake(118.7, 190, 46.6, 90);
         [tutorialView addSubview:imv];
         
+        tutorialView.tag = 123;
+        
     } else if (index == 3) {
         
-        UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 50, CARD_WIDTH, 100)];
-        [label setText:@"Tap the card!"];
-        [label setFont:[UIFont fontWithName:@"OpenSans-Bold" size:25.0]];
+        UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 40, CARD_WIDTH, 100)];
+        [label setText:@"Tap the card"];
+        [label setFont:[UIFont fontWithName:@"OpenSans-Bold" size:26.0]];
         [label setTextColor:color];
         [label setTextAlignment:NSTextAlignmentCenter];
-        label.tag = 3;
         [tutorialView addSubview:label];
+        
+        UILabel *label2 = [[UILabel alloc] initWithFrame:CGRectMake(0, 70, CARD_WIDTH, 100)];
+        [label2 setText:@"for more information"];
+        [label2 setFont:[UIFont fontWithName:@"OpenSans-Bold" size:26.0]];
+        [label2 setTextColor:color];
+        [label2 setTextAlignment:NSTextAlignmentCenter];
+        [tutorialView addSubview:label2];
         
         UIImageView *imv = [[UIImageView alloc] initWithFrame:CGRectMake(121.5, 160, 40, 40)];
         imv.image = [UIImage imageNamed:@"click"];
@@ -587,10 +623,11 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     
     [loadedCards removeObjectAtIndex:0]; //%%% card was swiped, so it's no longer a "loaded card"
     
+    
     if (cardsLoadedIndex < [allCards count]) { //%%% if we haven't reached the end of all cards, put another into the loaded cards
         [loadedCards addObject:[allCards objectAtIndex:cardsLoadedIndex]];
         cardsLoadedIndex++;//%%% loaded a card, so have to increment count
-        [self insertSubview:[loadedCards objectAtIndex:(MAX_BUFFER_SIZE-1)] belowSubview:[loadedCards objectAtIndex:(MAX_BUFFER_SIZE-2)]];
+        //[self insertSubview:[loadedCards objectAtIndex:(MAX_BUFFER_SIZE-1)] belowSubview:[loadedCards objectAtIndex:(MAX_BUFFER_SIZE-2)]];
     }
     
     dragView = [loadedCards firstObject]; // Make dragView the current card
@@ -602,6 +639,8 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     } else {
         [self setEnabledSidewaysScrolling:YES];
     }
+    
+    [cardBackground removeFromSuperview];
     
 }
 
@@ -795,7 +834,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             shouldSwipe = NO;
             //view.center = CGPointMake(self.originalPoint.x, self.originalPoint.y);
         }
-    } else if (view.tag == 2) {
+    } else if (view.tag == 2 || view.tag == 123) {
         if (yFromCenter < 0) {
             shouldSwipe = NO;
             //view.center = CGPointMake(self.originalPoint.x, self.originalPoint.y);
@@ -892,7 +931,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         
         self.swipeDownMargin = 1000;
         
-    } else if (card.tag == 2) {
+    } else if (card.tag == 2 || card.tag == 123) {
         
         self.swipeDownMargin = 100;
         self.actionMargin = 1000;
@@ -947,6 +986,9 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         [self didChooseCurrentLoc];
     } */
     
+    AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+    //appDelegate
+    
     CGPoint finishPoint = CGPointMake(500, 2*yFromCenter +self.originalPoint.y);
     [UIView animateWithDuration:0.3
                      animations:^{
@@ -956,6 +998,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                          
                          if (card.tag == 50 || card.tag == 3) {
                              NSLog(@"Last card swiped");
+
                              [self.myViewController dropdownPressedFromTut:YES];
                              [self.myViewController dropdownPressed];
                          }
@@ -977,13 +1020,10 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                          card.center = finishPoint;
                      }completion:^(BOOL complete){
                          [card removeFromSuperview];
-                         
-                         if (card.tag == 50 || card.tag == 3) {
-                             NSLog(@"Last card swiped");
-                             [self.myViewController dropdownPressedFromTut:YES];
-                             [self.myViewController dropdownPressed];
-                         }
                      }];
+     
+                         
+                         
     
     [self cardSwipedLeft:card fromExpandedView:NO];
     
@@ -1000,11 +1040,55 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                      }completion:^(BOOL complete){
                          [card removeFromSuperview];
                          
-                         if (card.tag == 50 || card.tag == 3) {
+                         if (card.tag == 123) {
+                             
                              NSLog(@"Last card swiped");
-                             [self.myViewController dropdownPressedFromTut:YES];
-                             [self.myViewController dropdownPressed];
+                             
+                             UILabel *boomLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 320, 100)];
+                             boomLabel.center = CGPointMake(-self.center.x, self.center.y - 100);
+                             
+                             boomLabel.font = [UIFont fontWithName:@"OpenSans-Extrabold" size:30.0];
+                             boomLabel.textColor = [UIColor colorWithRed:70.0/255 green:70.0/255 blue:70.0/255 alpha:1.0];
+                             [self addSubview:boomLabel];
+                             boomLabel.text = @"Boom";
+                             boomLabel.textAlignment = NSTextAlignmentCenter;
+                             
+                             UILabel *simpleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 320, 100)];
+                             simpleLabel.center = CGPointMake(self.center.x * 3, self.center.y - 50);
+                             simpleLabel.font = [UIFont fontWithName:@"OpenSans" size:25.0];
+                             simpleLabel.textColor = [UIColor colorWithRed:70.0/255 green:70.0/255 blue:70.0/255 alpha:1.0];
+                             [self addSubview:simpleLabel];
+                             simpleLabel.text = @"It's that simple.";
+                             simpleLabel.textAlignment = NSTextAlignmentCenter;
+                             
+                             
+                             [UIView animateWithDuration:1.0 delay:0 usingSpringWithDamping:0.9 initialSpringVelocity:0.67 options:UIViewAnimationOptionTransitionNone animations:^{
+                                 
+                                 boomLabel.center = CGPointMake(self.center.x - 18, self.center.y - 100);
+                                 simpleLabel.center = CGPointMake(self.center.x - 18, self.center.y - 50);
+                                 
+                             } completion:^(BOOL finished) {
+                                 
+                                 [UIView animateWithDuration:0.5 delay:1.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+                                     
+                                     boomLabel.center = CGPointMake(self.center.x*3, self.center.y - 100);
+                                     simpleLabel.center = CGPointMake(-self.center.x, self.center.y - 50);
+                                     
+                                 } completion:^(BOOL finished) {
+                                     
+                                     [self.myViewController dropdownPressedFromTut:YES];
+                                     [self.myViewController dropdownPressed];
+                                 }];
+                                 
+                             }];
                          }
+                         
+                         /*
+                          if (card.tag == 50 || card.tag == 3) {
+                          NSLog(@"Last card swiped");
+                          [self.myViewController dropdownPressedFromTut:YES];
+                          [self.myViewController dropdownPressed];
+                          }*/
                      }];
     
     [self checkEventStoreAccessForCalendar];
@@ -1056,7 +1140,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     PFGeoPoint *loc = [PFGeoPoint geoPointWithLocation:locManager.location];
     user[@"userLoc"] = loc;
     user[@"userLocTitle"] = @"Current Location";
-    [user saveInBackground];
+    [user saveEventually];
      
     // Peace out!
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];

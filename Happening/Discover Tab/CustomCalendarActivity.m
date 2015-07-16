@@ -11,7 +11,7 @@
 
 @implementation CustomCalendarActivity
 
-@synthesize eventStore, draggableView;
+@synthesize eventStore, draggableView, eventObject;
 
 - (NSString *)activityType
 {
@@ -115,33 +115,31 @@
 -(void)accessGrantedForCalendar
 {
     
-    PFQuery *query = [PFQuery queryWithClassName:@"Event"];
-    PFObject *object = [query getObjectWithId:draggableView.objectID];
-    
     EKEvent *event = [EKEvent eventWithEventStore:eventStore];
     
     event.title = draggableView.title.text;
     NSLog(@"Added %@ to calendar. Object ID: %@", draggableView.title.text, draggableView.objectID);
     
-    NSDate *startDate = object[@"Date"];
-    NSDate *endDate = object[@"EndTime"];
+    NSDate *startDate = eventObject[@"Date"];
+    NSDate *endDate = eventObject[@"EndTime"];
     
     //get address REMINDER 76597869876
-    PFGeoPoint *geoPoint = object[@"GeoLoc"];
+    PFGeoPoint *geoPoint = eventObject[@"GeoLoc"];
     CLLocation *eventLocation = [[CLLocation alloc]initWithLatitude:geoPoint.latitude longitude:geoPoint.longitude];
     
     
-    NSString *ticketLink = object[@"TicketLink"];
+    NSString *ticketLink = eventObject[@"TicketLink"];
     NSString *description = draggableView.subtitle.text;
+    NSString *location = [draggableView.location.text stringByReplacingOccurrencesOfString:@"at " withString:@""];
     
     if ((description == nil || [description isEqualToString:@""]) && (ticketLink == nil || [ticketLink isEqualToString:@""])) {
-        event.notes = [NSString stringWithFormat:@"Venue name: %@", draggableView.location.text];
+        event.notes = [NSString stringWithFormat:@"Venue name: %@", location];
     } else if (ticketLink == nil || [ticketLink isEqualToString:@""]) {
-        event.notes = [NSString stringWithFormat:@"Venue name: %@ // %@", draggableView.location.text, description];
+        event.notes = [NSString stringWithFormat:@"Venue name: %@ // %@", location, description];
     } else if (description == nil || [description isEqualToString:@""]) {
-        event.notes = [NSString stringWithFormat:@"Venue name: %@ // Get tickets at: %@", draggableView.location.text, ticketLink];
+        event.notes = [NSString stringWithFormat:@"Venue name: %@ // Get tickets at: %@",location, ticketLink];
     } else {
-        event.notes = [NSString stringWithFormat:@"Venue name: %@ // Get tickets at: %@ // %@", draggableView.location.text, ticketLink, description];
+        event.notes = [NSString stringWithFormat:@"Venue name: %@ // Get tickets at: %@ // %@", location, ticketLink, description];
     }
     
     

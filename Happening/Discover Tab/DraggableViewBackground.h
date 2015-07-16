@@ -33,34 +33,15 @@
 -(void)swipeRight;
 -(void)swipeDown;
 
-@property (retain,nonatomic)NSMutableArray* exampleCardLabels; //%%% the labels the cards
 @property (retain,nonatomic)NSMutableArray* allCards; //%%% the labels the cards
 
-@property (retain,nonatomic)NSMutableArray* titleArray;
-@property (retain,nonatomic)NSMutableArray* subtitleArray;
-@property (retain,nonatomic)NSMutableArray* locationArray;
 @property (retain,nonatomic)NSMutableArray* dateArray;
-@property (retain,nonatomic)NSMutableArray* timeArray;
-@property (retain,nonatomic)NSMutableArray* hashtagArray;
-@property (retain,nonatomic)NSArray* someArray;
-@property (retain,nonatomic)NSMutableArray* geoLocArray;
 @property (retain,nonatomic)CLLocationManager* locManager;
-@property (retain,nonatomic)NSMutableArray* objectIDs;
-@property (retain,nonatomic)NSMutableArray* swipesRightArray;
-@property (retain,nonatomic)NSMutableArray* swipes;
-@property (retain,nonatomic)NSMutableArray* imageArray;
-@property (retain,nonatomic)NSMutableArray* createdByArray;
-@property (retain,nonatomic)NSMutableArray* createdByUserIDArray;
-@property (retain,nonatomic)NSMutableArray* URLArray;
-@property (retain,nonatomic)NSMutableArray* ticketLinkArray;
-
 
 @property (retain,nonatomic)NSMutableArray* calMonthArray;
 @property (retain,nonatomic)NSMutableArray* calDayArray;
 @property (retain,nonatomic)NSMutableArray* calDayOfWeekArray;
 @property (retain,nonatomic)NSMutableArray* calTimeArray;
-
-
 
 @property (retain, nonatomic)CLLocation *mapLocation;
 

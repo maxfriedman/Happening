@@ -38,6 +38,8 @@ extern NSString *const MHCustomTabBarControllerViewControllerAlreadyVisibleNotif
 @property (strong, nonatomic) RKNotificationHub *groupHub;
 @property (strong, nonatomic) RKNotificationHub *profileHub;
 
+@property (strong, nonatomic) NSString *eventIdForSegue;
+
 - (void)hideTabBar:(BOOL)shouldHide;
 
 @end

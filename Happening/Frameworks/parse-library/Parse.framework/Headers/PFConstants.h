@@ -16,7 +16,7 @@
 /// @name Version
 ///--------------------------------------
 
-#define PARSE_VERSION @"1.7.0"
+#define PARSE_VERSION @"1.7.5"
 
 extern NSInteger const PARSE_API_VERSION;
 
@@ -374,16 +374,16 @@ typedef NS_ENUM(NSInteger, PFErrorCode) {
 /// @name Blocks
 ///--------------------------------------
 
-typedef void (^PFBooleanResultBlock)(BOOL succeeded, NSError * __nullable error);
-typedef void (^PFIntegerResultBlock)(int number, NSError * __nullable error);
-typedef void (^PFArrayResultBlock)(NSArray * __nullable objects, NSError * __nullable error);
-typedef void (^PFObjectResultBlock)(PFObject * __nullable object, NSError * __nullable error);
-typedef void (^PFSetResultBlock)(NSSet * __nullable channels, NSError * __nullable error);
-typedef void (^PFUserResultBlock)(PFUser * __nullable user, NSError * __nullable error);
-typedef void (^PFDataResultBlock)(NSData * __nullable data, NSError * __nullable error);
-typedef void (^PFDataStreamResultBlock)(NSInputStream * __nullable stream, NSError * __nullable error);
-typedef void (^PFStringResultBlock)(NSString * __nullable string, NSError * __nullable error);
-typedef void (^PFIdResultBlock)(PF_NULLABLE_S id object, NSError * __nullable error);
+typedef void (^PFBooleanResultBlock)(BOOL succeeded, NSError *PF_NULLABLE_S error);
+typedef void (^PFIntegerResultBlock)(int number, NSError *PF_NULLABLE_S error);
+typedef void (^PFArrayResultBlock)(NSArray *PF_NULLABLE_S objects, NSError *PF_NULLABLE_S error);
+typedef void (^PFObjectResultBlock)(PFObject *PF_NULLABLE_S object,  NSError *PF_NULLABLE_S error);
+typedef void (^PFSetResultBlock)(NSSet *PF_NULLABLE_S channels, NSError *PF_NULLABLE_S error);
+typedef void (^PFUserResultBlock)(PFUser *PF_NULLABLE_S user, NSError *PF_NULLABLE_S error);
+typedef void (^PFDataResultBlock)(NSData *PF_NULLABLE_S data, NSError *PF_NULLABLE_S error);
+typedef void (^PFDataStreamResultBlock)(NSInputStream *PF_NULLABLE_S stream, NSError *PF_NULLABLE_S error);
+typedef void (^PFStringResultBlock)(NSString *PF_NULLABLE_S string, NSError *PF_NULLABLE_S error);
+typedef void (^PFIdResultBlock)(PF_NULLABLE_S id object, NSError *PF_NULLABLE_S error);
 typedef void (^PFProgressBlock)(int percentDone);
 
 ///--------------------------------------
@@ -398,6 +398,26 @@ typedef void (^PFProgressBlock)(int percentDone);
 #      define PARSE_DEPRECATED(_MSG) __attribute__((deprecated))
 #    else
 #      define PARSE_DEPRECATED(_MSG)
+#    endif
+#  endif
+#endif
+
+///--------------------------------------
+/// @name Extensions Macros
+///--------------------------------------
+
+#ifndef PF_EXTENSION_UNAVAILABLE
+#  if PARSE_IOS_ONLY
+#    ifdef NS_EXTENSION_UNAVAILABLE_IOS
+#      define PF_EXTENSION_UNAVAILABLE(_msg) NS_EXTENSION_UNAVAILABLE_IOS(_msg)
+#    else
+#      define PF_EXTENSION_UNAVAILABLE(_msg)
+#    endif
+#  else
+#    ifdef NS_EXTENSION_UNAVAILABLE_MAC
+#      define PF_EXTENSION_UNAVAILABLE(_msg) NS_EXTENSION_UNAVAILABLE_MAC(_msg)
+#    else
+#      define PF_EXTENSION_UNAVAILABLE(_msg)
 #    endif
 #  endif
 #endif
