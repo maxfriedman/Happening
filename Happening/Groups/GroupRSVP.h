@@ -21,9 +21,13 @@
 @property (strong, nonatomic) NSMutableArray *noUsers;
 @property (strong, nonatomic) NSMutableArray *maybeUsers;
 
-@property (assign) NSString *groupEventId;
 @property PFObject *group;
+@property PFObject *groupEventObject;
+@property PFObject *eventObject;
+
 @property NSString *titleString;
 @property LYRConversation *convo;
+
+@property (assign) NSArray *userDicts;
 
 @end

@@ -215,8 +215,8 @@
     } else {
         // peace out
         // Never show this again
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"hasLaunched"];
-        [[NSUserDefaults standardUserDefaults] synchronize];
+        user[@"hasLaunched"] = @YES;
+        [user saveEventually];
         [self dismissViewControllerAnimated:YES completion:nil];
     }
     
@@ -231,16 +231,6 @@
     user[@"userLoc"] = loc;
     user[@"userLocTitle"] = @"Current Location";
     [user saveEventually];
-    
-    // Peace out!
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    [defaults setBool:YES forKey:@"hasLaunched"];
-    [defaults setObject:@"Current Location" forKey:@"userLocTitle"];
-    [defaults setObject:@"" forKey:@"userLocSubtitle"];
-    
-    // Never show this again
-    //[defaults setBool:YES forKey:@"hasLaunched"];
-    [defaults synchronize];
     
     [self dismissViewControllerAnimated:YES completion:nil];
 }

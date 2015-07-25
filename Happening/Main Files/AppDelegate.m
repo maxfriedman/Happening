@@ -78,6 +78,20 @@
     
     [Hoko setupWithToken:@"b649dec47382a7b855b46077d2cfbb6968e7e81b"];
     
+    BOOL locEnabled = NO;
+    if (SYSTEM_VERSION_LESS_THAN(@"8.0")) {
+        NSLog(@" ====== iOS 7 ====== ");
+        if ([CLLocationManager authorizationStatus] == kCLAuthorizationStatusAuthorized) locEnabled = YES;
+    } else {
+        NSLog(@" ====== iOS 8 ====== ");
+        if ([CLLocationManager authorizationStatus] == kCLAuthorizationStatusAuthorizedAlways || [CLLocationManager authorizationStatus] == kCLAuthorizationStatusAuthorizedWhenInUse) locEnabled = YES;
+    }
+    
+    if (locEnabled) {
+        NSLog(@"Initializing Location Kit...");
+        [[LocationKit sharedInstance] startWithApiToken:@"48ced72017ecb03b" andDelegate:self];
+    }
+    
     [[Button sharedButton] configureWithApplicationId:@"app-070dce57d47ec28b" completion:NULL];
     [BTNLocationManager allowButtonToRequestLocationPermission:YES];
 
@@ -98,24 +112,33 @@
     [[BTNDropinButton appearance] setHighlightedBackgroundColor:[UIColor grayColor]];
     [[BTNDropinButton appearance] setNormalBackgroundColor:[UIColor groupTableViewBackgroundColor]];
 
+    PFUser *currentUser = [PFUser currentUser];
+    
     if (SYSTEM_VERSION_LESS_THAN(@"8.0")) {
         
         NSLog(@" ====== iOS 7 ====== ");
         
-        [[UIApplication sharedApplication] registerForRemoteNotificationTypes: (UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound | UIRemoteNotificationTypeAlert)];
+        UIRemoteNotificationType enabledTypes = [[UIApplication sharedApplication] enabledRemoteNotificationTypes];
+        
+        if (enabledTypes) {
+            [[UIApplication sharedApplication] registerForRemoteNotificationTypes: (UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound | UIRemoteNotificationTypeAlert)];
+        }
         
     } else {
         
         NSLog(@" ====== iOS 8 ====== ");
         
-        UIUserNotificationType userNotificationTypes = (UIUserNotificationTypeAlert |
-                                                        UIUserNotificationTypeBadge |
-                                                        UIUserNotificationTypeSound);
-        UIUserNotificationSettings *settings = [UIUserNotificationSettings settingsForTypes:userNotificationTypes
-                                                                                 categories:nil];
-        [application registerUserNotificationSettings:settings];
-        [application registerForRemoteNotifications];
+        if ([application isRegisteredForRemoteNotifications]) {
 
+            UIUserNotificationType userNotificationTypes = (UIUserNotificationTypeAlert |
+                                                            UIUserNotificationTypeBadge |
+                                                            UIUserNotificationTypeSound);
+            UIUserNotificationSettings *settings = [UIUserNotificationSettings settingsForTypes:userNotificationTypes
+                                                                                     categories:nil];
+            [application registerUserNotificationSettings:settings];
+            [application registerForRemoteNotifications];
+        }
+        
         if(self.locationManager==nil){
             _locationManager=[[CLLocationManager alloc] init];
             
@@ -138,7 +161,7 @@
     // Tells the ViewController.m to refresh the cards in DraggableViewBackground
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     
-    if ([defaults boolForKey:@"hasLoggedIn"] == YES)
+    if ([currentUser[@"hasLoggedIn"] boolValue] == YES && currentUser.isAuthenticated)
     {
         // app already launched
         // [defaults setBool:YES forKey:@"refreshData"];
@@ -166,70 +189,15 @@
 
     } else {
         
-        NSLog(@"First launch ever!");
-        
         //[PFObject unpinAllObjects];
         
-        PFUser *currentUser = [PFUser currentUser];
-        
-        // THIS IS CRUCIAL TO MAKE CHANGES DOWN THE ROAD
-        [defaults setFloat:2.0 forKey:@"version"];
-        currentUser[@"version"] = @"2.0";
-        ///////////////////////////////////////////////
-        
-        [defaults setBool:NO forKey:@"refreshData"];
-        [defaults setBool:NO forKey:@"hasLaunched"];
-        [defaults setBool:NO forKey:@"hasSwipedRight"];
-        [defaults setBool:NO forKey:@"hasCreatedEvent"];
-        
-        [defaults setBool:YES forKey:@"socialMode"];
-        currentUser[@"socialMode"] = @YES;
-        
-        [defaults setInteger:0 forKey:@"categoryIndex"];
-        [defaults setValue:@"Most Popular" forKey:@"categoryName"];
-        
-        [defaults setObject:@"" forKey:@"userLocTitle"];
-        [defaults setObject:@"" forKey:@"userLocSubtitle"];
-        currentUser[@"userLocTitle"] = @"";
-        currentUser[@"userLocSubtitle"] = @"";
-        
-        [defaults setBool:YES forKey:@"today"];
-        [defaults setBool:NO forKey:@"tomorrow"];
-        [defaults setBool:NO forKey:@"thisWeekend"];
-        
-        [defaults setInteger:50 forKey:@"sliderValue"];
-        currentUser[@"radius"] = @50;
-        
-        [defaults setBool:YES forKey:@"mostPopular"];
-        [defaults setBool:NO forKey:@"bestDeals"];
-        
-        [defaults setBool:YES forKey:@"nightlife"];
-        [defaults setBool:YES forKey:@"entertainment"];
-        [defaults setBool:YES forKey:@"music"];
-        [defaults setBool:YES forKey:@"dining"];
-        [defaults setBool:YES forKey:@"happyHour"];
-        [defaults setBool:YES forKey:@"sports"];
-        [defaults setBool:YES forKey:@"shopping"];
-        [defaults setBool:YES forKey:@"fundraiser"];
-        [defaults setBool:YES forKey:@"meetup"];
-        [defaults setBool:YES forKey:@"freebies"];
-        [defaults setBool:YES forKey:@"other"];
-        NSMutableArray *categories = [NSMutableArray arrayWithObjects:@"mostPopular",/* @"bestDeals",*/ @"nightlife", @"entertainment", @"music", @"dining", @"happyHour", @"sports", @"shopping", @"fundraiser", @"meetup", @"freebies", @"other", nil];
-        currentUser[@"categories"] = categories;
-        
-        [defaults setBool:NO forKey:@"noMoreEvents"];
-        [defaults setBool:YES forKey:@"today"];
-        
-        [defaults setBool:NO forKey:@"hasLoggedIn"];
-           
-        [defaults synchronize];
         // This is the first launch ever
     }
-    NSLog(@"3");
 
     //self.mh.eventIdForSegue = eventID;
     //[self.mh performSegueWithIdentifier:@"toSwipeVC" sender:self.mh];
     
+    [PFUser currentUser][@"latestVersion"] = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
     
     //NSLog(@"User is not logged in!");
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
@@ -287,6 +255,8 @@
 - (void)applicationDidEnterBackground:(UIApplication *)application {
     // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+    
+    [[PFUser currentUser] saveEventually];
 }
 
 - (void)applicationWillEnterForeground:(UIApplication *)application {
@@ -299,24 +269,65 @@
     
     [FBSDKAppEvents activateApp];
     
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        PFInstallation *currentInstallation = [PFInstallation currentInstallation];
-        if (currentInstallation.badge != 0) {
-            currentInstallation.badge = 0;
-            [currentInstallation saveEventually];
-        }
-    });
+    //[PFObject unpinAllObjects];
     
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    if ([defaults boolForKey:@"hasLaunched"])
+    if ([[PFUser currentUser][@"hasLoggedIn"] boolValue] == YES)
     {
         NSLog(@"not first launch");
-        // app already launched
-        //[defaults setBool:YES forKey:@"refreshData"];
-        //[defaults synchronize];
+    
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        
+            PFInstallation *currentInstallation = [PFInstallation currentInstallation];
+            if (currentInstallation.badge != 0) {
+                currentInstallation.badge = 0;
+                [currentInstallation saveEventually];
+            }
+            
+            [self loadFriends];
+            
+            [self loadEvents];
+            
+            [self loadGroups];
+            
+            /*
+            PFQuery *localUserQuery = [PFUser query];
+            [localUserQuery fromLocalDatastore];
+            [localUserQuery findObjectsInBackgroundWithBlock:^(NSArray *users1, NSError *error){
+                
+                for (PFUser *user in users1) {
+                    NSLog(@"%@", user.objectId);
+                }
+                
+                [PFObject fetchAllInBackground:users1 block:^(NSArray *users2, NSError *error) {
+                    
+                    if (!error) {
+                        
+                        [PFObject pinAllInBackground:users2 block:^(BOOL success, NSError *error){
+                            
+                            if (success) {
+                                NSLog(@"successfully updated and pinned %lu users", users2.count);
+                            } else {
+                                NSLog(@"failed to update and pin users with error: %@", error);
+                                
+                            }
+                            
+                        }];
+                    } else {
+                        NSLog(@"No objects to update or ERROR");
+                    }
+                    
+                }];
+                
+            }]; */
+            
+        });
     }
     
-    if ([FBSDKAccessToken currentAccessToken] && [[NSUserDefaults standardUserDefaults] boolForKey:@"hasLoggedIn"] && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]] /* && (ReachableViaWiFi | ReachableViaWWAN) */) {
+}
+
+- (void)loadFriends {
+    
+    if ([FBSDKAccessToken currentAccessToken] && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]] /* && (ReachableViaWiFi | ReachableViaWWAN) */) {
         
         [[[FBSDKGraphRequest alloc] initWithGraphPath:@"/me/friends?limit=1000" parameters:nil] startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
             //code
@@ -336,17 +347,12 @@
                 NSMutableArray *array = [NSMutableArray array];
                 
                 for (PFUser *user in users) {
-                
+                    
                     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-                        
+                    
                     [dict setObject:user.objectId forKey:@"parseId"];
                     [dict setObject:[NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]] forKey:@"name"];
                     [dict setObject:user[@"FBObjectID"] forKey:@"id"];
-
-                    if ([user.objectId isEqualToString:@"LpWYk0PzFC"]) {
-                        
-                        NSLog(@"%@ --------- %@", dict, user);
-                    }
                     
                     [array addObject:dict];
                 }
@@ -361,7 +367,10 @@
         
         NSLog(@"no token......");
     }
+        
+}
 
+-(void)loadEvents {
     
     PFQuery *eventQuery = [PFQuery queryWithClassName:@"Event"];
     [eventQuery fromLocalDatastore];
@@ -376,16 +385,13 @@
                 
                 [localEventQuery findObjectsInBackgroundWithBlock:^(NSArray *events2, NSError *error){
                     
-                    NSMutableArray *idsArray = [NSMutableArray new];
-                    for (PFObject *event in events2) {
-                        [idsArray addObject:event.objectId];
-                    }
-                    
-                    [PFObject fetchAllInBackground:events2 block:^(NSArray *events3, NSError *error) {
+                    if (events2.count > 0 && !error) {
                         
-                        if (!error) {
+                        [PFObject fetchAllInBackground:events2 block:^(NSArray *events3, NSError *error) {
                             
-                            [PFObject pinAllInBackground:events3 block:^(BOOL success, NSError *error){
+                            if (!error) {
+                                
+                                [PFObject pinAllInBackground:events3 block:^(BOOL success, NSError *error){
                                     
                                     if (success) {
                                         NSLog(@"successfully updated and pinned %lu events", events3.count);
@@ -395,12 +401,13 @@
                                     }
                                     
                                 }];
-                        } else {
-                            NSLog(@"No objects to update or ERROR");
-                        }
-                        
-                    }];
-                    
+                            } else {
+                                
+                                NSLog(@"No objects to update or ERROR: %@", error);
+                            }
+                            
+                        }];
+                    }
                 }];
                 
             } else {
@@ -411,54 +418,89 @@
         }];
     }];
     
-    PFQuery *userQuery = [PFQuery queryWithClassName:@"User"];
-    [userQuery fromLocalDatastore];
-    [userQuery whereKey:@"Date" lessThan:[NSDate dateWithTimeInterval:-604800 sinceDate:[NSDate date]]];
-    [userQuery findObjectsInBackgroundWithBlock:^(NSArray *users1, NSError *error){
-        [PFObject unpinAllInBackground:users1 withName:@"Event" block:^(BOOL success, NSError *error){
-            if (success) {
-                NSLog(@"successfully unpinned %lu events", users1.count);
+}
+
+- (void)loadGroups {
+    
+    NSMutableArray *array = [NSMutableArray array];
+    
+    LYRQuery *query = [LYRQuery queryWithQueryableClass:[LYRConversation class]];
+    NSError *error;
+    NSOrderedSet *conversations = [self.layerClient executeQuery:query error:&error];
+    if (!error) {
+        
+        for (LYRConversation *convo in conversations) {
+            
+            [array addObject: [convo.metadata valueForKey:@"groupId"]];
+        }
+        
+    } else {
+        
+        NSLog(@"Query failed with error %@", error);
+    }
+    
+    NSLog(@"Loading %lu groups...", array.count);
+    
+    if (array.count > 0) {
+        
+        PFQuery *localQuery = [PFQuery queryWithClassName:@"Group"];
+        [localQuery fromLocalDatastore];
+        [localQuery includeKey:@"user_objects"];
+        [localQuery findObjectsInBackgroundWithBlock:^(NSArray *groups1, NSError *error) {
+            
+            PFQuery *query = [PFQuery queryWithClassName:@"Group"];
+            [query whereKey:@"objectId" containedIn:array];
+            [query includeKey:@"user_objects"];
+            [query findObjectsInBackgroundWithBlock:^(NSArray *groups2, NSError *error) {
                 
-                PFQuery *localUserQuery = [PFQuery queryWithClassName:@"User"];
-                [localUserQuery fromLocalDatastore];
-                
-                [localUserQuery findObjectsInBackgroundWithBlock:^(NSArray *users2, NSError *error){
+                if (!error) {
                     
-                    NSMutableArray *idsArray = [NSMutableArray new];
-                    for (PFUser *user in users2) {
-                        [idsArray addObject:user.objectId];
-                    }
+                    //NSLog(@"%@", groups1);
                     
-                    [PFObject fetchAllInBackground:users2 block:^(NSArray *users3, NSError *error) {
+                   // NSLog(@"&&&&&&&&&&&&&&&&&&&&&&&");
+                    
+                    //NSLog(@"%@", groups2);
+                    
+                    [PFObject unpinAllInBackground:groups1];
+                    
+                    [PFObject pinAllInBackground:groups2 block:^(BOOL success, NSError *error){
+                        
+                        if (success) {
+                            NSLog(@"successfully updated and pinned %lu groups", groups2.count);
+                        } else {
+                            NSLog(@"failed to update and pin groups with error: %@", error);
+                            
+                        }
+                        
+                    }];
+                    
+                    /*
+                    [PFObject fetchAllInBackground:users block:^(NSArray *users, NSError *error) {
                         
                         if (!error) {
                             
-                            [PFObject pinAllInBackground:users3 block:^(BOOL success, NSError *error){
-                                
+                            [PFObject pinAllInBackground:users block:^(BOOL success, NSError *error){
                                 if (success) {
-                                    NSLog(@"successfully updated and pinned %lu events", users3.count);
+                                    NSLog(@"successfully updated and pinned %lu users in groups", users.count);
                                 } else {
-                                    NSLog(@"failed to update and pin events with error: %@", error);
+                                    NSLog(@"failed to update and pin users with error: %@", error);
                                     
                                 }
-                                
                             }];
+                            
                         } else {
-                            NSLog(@"No objects to update or ERROR");
+                            NSLog(@"No users from group to update or ERROR: %@", error);
                         }
-                        
-                    }];
+                    }];*/
                     
-                }];
+                } else {
+                    NSLog(@"No objects to update or ERROR: %@", error);
+                }
                 
-            } else {
-                
-                NSLog(@"failed to unpin events with error: %@", error);
-                
-            }
+            }];
         }];
-    }];
-    
+    }
+
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application {
@@ -487,8 +529,10 @@
             PFInstallation *currentInstallation = [PFInstallation currentInstallation];
             [currentInstallation setDeviceTokenFromData:deviceToken];
             currentInstallation.channels = @[@"global", @"reminders", @"matches", @"friendJoined", @"popularEvents", @"allGroups", @"bestFriends"];
-            currentInstallation[@"matchCount"] = @5;
+            currentInstallation[@"userID"] = [PFUser currentUser].objectId;
+            currentInstallation[@"matchCount"] = @3;
             [currentInstallation saveEventually];
+            
         } else {
             PFInstallation *currentInstallation = [PFInstallation currentInstallation];
             [currentInstallation setDeviceTokenFromData:deviceToken];
@@ -496,6 +540,9 @@
         }
     });
 
+    [[NSNotificationCenter defaultCenter]
+     postNotificationName:@"didRegister"
+     object:nil];
     
     NSError *error;
     BOOL success = [self.layerClient updateRemoteNotificationDeviceToken:deviceToken error:&error];
@@ -506,6 +553,16 @@
     }
     
 }
+
+-(void)application:(UIApplication *)application didFailToRegisterForRemoteNotificationsWithError:(NSError *)error {
+    
+    NSLog(@"Error registering for push notifications: %@", error);
+
+    [[NSNotificationCenter defaultCenter]
+     postNotificationName:@"didRegister"
+     object:nil];
+}
+
 
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo {
 
@@ -539,7 +596,6 @@
             }];
             
         }
-        
         
         
     }
@@ -675,6 +731,13 @@ didReceiveLocalNotification:(UILocalNotification *)notification {
             }
         }];
     }];
+}
+
+- (void)locationKit:(LocationKit *)locationKit didUpdateLocation:(CLLocation *)location {
+    NSLog(@"The user has moved and their location is now (%.6f, %.6f)",
+          location.coordinate.latitude,
+          location.coordinate.longitude);
+    [PFUser currentUser][@"userLoc"] = [PFGeoPoint geoPointWithLocation:location];
 }
 
 -(void)locationManager:(CLLocationManager *)manager didUpdateToLocation:(CLLocation *)newLocation fromLocation:(CLLocation *)oldLocation{

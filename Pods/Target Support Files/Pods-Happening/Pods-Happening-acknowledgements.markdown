@@ -479,6 +479,12 @@ If You comply with this agreement, You have the rights below.
   b. claims for breach of contract, breach of warranty, guarantee or condition, strict liability, negligence, or other tort to the extent permitted by applicable law.
 
 
+## LocationKit
+
+You are agreeing to the LocationKit license by using this SDK.
+See http://cdn.socialradar.com/sdk/locationkit-license.pdf for SocialRadar's LocationKit licensing information.
+Copyright (c) 2014-2015 SocialRadar. All rights reserved.
+
 ## POP+MCAnimate
 
 The MIT License (MIT)

@@ -29,6 +29,8 @@
 #import <Button/Button.h>
 #import "CustomAPActivityProvider.h"
 #import <Hoko/Hoko.h>
+#import "ChecklistModalVC.h"
+#import "UIImage+ImageEffects.h"
 
 #define MCANIMATE_SHORTHAND
 #import <POP+MCAnimate.h>
@@ -117,7 +119,14 @@
                                     }
                                 }];
     */
-    if (![defaults boolForKey:@"hasLaunched"]) {
+    
+    UIImageView *imv = [[UIImageView alloc] initWithFrame:CGRectMake(0, -40, self.view.frame.size.width, self.view.frame.size.height)];
+    UIImage *im = [[UIImage imageNamed:@"party"] applyBlurWithRadius:10.0 tintColor:[UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:0.2] saturationDeltaFactor:1.6 maskImage:nil];
+    imv.image = im; //[[UIImage imageNamed:@"party"] applyLightEffect];
+    
+    [[self.view viewWithTag:32] insertSubview:imv belowSubview:scrollView];
+    
+    if ([[PFUser currentUser][@"hasLaunched"] boolValue] == NO) {
         showTut = YES;
     }
     
@@ -216,17 +225,18 @@
     //[defaults setBool:YES forKey:@"hasLaunched"];
     //[defaults synchronize];
     // Refresh only if there was a change in preferences or the app has loaded for the first time.
-    
-    if (![defaults boolForKey:@"hasLaunched"]) {
+    if ([[PFUser currentUser][@"hasLaunched"] boolValue] == NO) {
         
         if (showTut) {
             tutorialScreens = [[TutorialDragView alloc] initWithFrame:CGRectMake(18, 18 + 8 + 45, 284, 350)];
             tutorialScreens.myViewController = self;
             [scrollView addSubview:tutorialScreens];
     
+            /*
             UITapGestureRecognizer *singleFingerTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tutorialCardTapped:)];
             singleFingerTap.cancelsTouchesInView = NO;
             [tutorialScreens addGestureRecognizer:singleFingerTap];
+            */
             
             settingsView.userInteractionEnabled = NO;
             tutIsShown = YES;
@@ -263,9 +273,9 @@
     //UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
     //rk = [storyboard instantiateViewControllerWithIdentifier:@"rk"];
     
-    NSLog(@"===> %d, %lu", [[NSUserDefaults standardUserDefaults] boolForKey:@"hasLaunched"], rk.currentPageIndex);
+   // NSLog(@"===> %d, %lu", [[PFUser currentUser][@"hasLaunched"] isEqualToNumber:@NO]/*,rk.currentPageIndex */);
     
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"hasLaunched"] /* && rk.currentPageIndex == 1 /* && isReachable */) {
+    if ([[PFUser currentUser][@"hasLaunched"] boolValue] == YES /* && rk.currentPageIndex == 1 /* && isReachable */) {
         
         xButton.center = CGPointMake(-1000, xButton.center.y);
         checkButton.center = CGPointMake(1300, checkButton.center.y);
@@ -355,10 +365,10 @@
         //NSLog(@"card view subviews: %@", cardView.subviews);
         
         
-    } else if (!isReachable && [defaults boolForKey:@"hasLaunched"] && rk.currentPageIndex == 1) {
+    }/* else if (!isReachable && [defaults boolForKey:@"hasLaunched"] && rk.currentPageIndex == 1) {
         
         //[RKDropdownAlert title:@"Something went wrong :(" message:@"Please check your internet connection\nand try again" backgroundColor:[UIColor redColor] textColor:[UIColor whiteColor]];
-    }
+    }*/
     
     //refreshingData = NO;
     
@@ -470,6 +480,16 @@
 
 }
 
+- (void)swipeDown:(UIView *)card {
+    
+    DraggableView *c = (DraggableView *)card;
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+    ChecklistModalVC *controller = [storyboard instantiateViewControllerWithIdentifier:@"checklist"];
+    controller.event = c.eventObject;
+    [self mh_presentSemiModalViewController:controller animated:YES];
+    
+}
+
 - (void)turnOnButtonInteraction {
     
     xButton.userInteractionEnabled = YES;
@@ -481,7 +501,7 @@
     //scrollView.delaysContentTouches = NO;
 
     
-    if (self.frontViewIsVisible == YES) {
+    if (self.frontViewIsVisible == YES && draggableBackground.isLoaded) {
         
         extraDescHeight = [self moreButtonUpdateFrame];
         
@@ -530,9 +550,11 @@
             draggableBackground.dragView.cardView.layer.masksToBounds = NO;
             
         }];
-    
-    
-    } else {
+        
+        self.frontViewIsVisible =! self.frontViewIsVisible;
+
+        
+    } else if (draggableBackground.isLoaded) {
         
         [UIView animate:^{
             [scrollView viewWithTag:90].alpha = 0;
@@ -589,9 +611,10 @@
             
         }];
 
+        
+        self.frontViewIsVisible =! self.frontViewIsVisible;
+
     }
-    
-    self.frontViewIsVisible =! self.frontViewIsVisible;
     
     /*
     NSLog(@"VC CODE");
@@ -1554,8 +1577,10 @@
 
     tutIsShown = var;
     //[self dropdownPressed];
-    [defaults setBool:!var forKey:@"hasLaunched"];
-    [defaults synchronize];
+    
+    BOOL hasLaunched = !var;
+    [PFUser currentUser][@"hasLaunched"] = @(hasLaunched);
+    [[PFUser currentUser] saveEventually];
     
     settingsView.userInteractionEnabled = YES;
     
@@ -1909,6 +1934,20 @@
 }
 
 -(void)showError:(NSString *)message {
+    
+    NSLog(@"Error");
+    
+    [SVProgressHUD setViewForExtension:self.view];
+    [SVProgressHUD setOffsetFromCenter:UIOffsetMake(0, -66)];
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        // time-consuming task
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [SVProgressHUD show];
+            [SVProgressHUD showErrorWithStatus:message];
+            [SVProgressHUD setFont:[UIFont fontWithName:@"OpenSans" size:15.0]];
+        });
+    });
     
 }
  

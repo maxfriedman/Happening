@@ -33,6 +33,8 @@
     UIImage *groupImage;
     UIButton *chooseImageButton;
     UIButton *changeButton;
+    
+    BOOL isDefaultImage;
 
 }
 
@@ -41,6 +43,8 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
+    
+    isDefaultImage = YES;
     
     avatarContainerView.layer.cornerRadius = 90;
     avatarContainerView.layer.masksToBounds = YES;
@@ -82,9 +86,6 @@
     
     [avatarContainerView addSubview:changeButton];
     
-    _fastCamera = [FastttCamera new];
-    self.fastCamera.delegate = self;
-    
     groupImage = [UIImage imageNamed:@"userImage"];
     
 }
@@ -110,6 +111,9 @@
 
     switch (buttonIndex) {
         case 0: { // Take Photo
+            
+            _fastCamera = [FastttCamera new];
+            self.fastCamera.delegate = self;
             
             [self.fastCamera removeFromParentViewController];
             [self fastttAddChildViewController:self.fastCamera];
@@ -188,7 +192,8 @@
             [imv addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(changeImage:)]];
             [self.view addSubview:imv];
             groupImage = imv.image;
-            
+            isDefaultImage = YES;
+
             [textField becomeFirstResponder];
             
         }
@@ -325,6 +330,7 @@ didFinishScalingCapturedImage:(FastttCapturedImage *)capturedImage
     [self.view addSubview:imv];
     
     groupImage = capturedImage.scaledImage;
+    isDefaultImage = NO;
     
     if ([textField.text isEqualToString:@""]) {
         [textField becomeFirstResponder];
@@ -407,9 +413,28 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
             group[@"name"] = textField.text;
             group[@"memberCount"] = [NSNumber numberWithInt:memCount];
             
+            NSMutableArray *userDictsArray = [NSMutableArray array];
+            NSMutableArray *parseArray = [NSMutableArray array];
+            NSMutableArray *fbArray = [NSMutableArray array];
+            for (PFUser *user in users) {
+                [parseArray addObject:user.objectId];
+                [fbArray addObject:user[@"FBObjectID"]];
+                
+                NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+                
+                [dict setObject:user.objectId forKey:@"parseId"];
+                [dict setObject:[NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]] forKey:@"name"];
+                [dict setObject:user[@"FBObjectID"] forKey:@"id"];
+                [userDictsArray addObject:dict];
+            }
+            
+            group[@"user_parse_ids"]= parseArray;
+            group[@"user_dicts"] = userDictsArray;
+            
             NSData *imageData = UIImagePNGRepresentation(groupImage);
             PFFile *imageFile = [PFFile fileWithName:@"image.png" data:imageData];
             group[@"avatar"] = imageFile;
+            group[@"isDefaultImage"] = @(isDefaultImage);
             
             [group saveInBackgroundWithBlock:^(BOOL success, NSError *error){
                 
@@ -434,7 +459,6 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
                         groupEvent[@"GroupID"] = group.objectId;
                         groupEvent[@"invitedByName"] = [NSString stringWithFormat:@"%@ %@", currentUser[@"firstName"], currentUser[@"lastName"]];
                         groupEvent[@"invitedByID"] = currentUser.objectId;
-                        groupEvent[@"users_going"] = [NSArray arrayWithObject:currentUser];
                         [event pinInBackground];
                         [groupEvent saveEventually:^(BOOL success, NSError *error) {
                             
@@ -444,6 +468,7 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
                             rsvpObject[@"Group_Event_ID"] = groupEvent.objectId;
                             rsvpObject[@"UserID"] = currentUser.objectId;
                             rsvpObject[@"User_Object"] = currentUser;
+                            rsvpObject[@"UserFBID"] = currentUser[@"FBObjectID"];
                             rsvpObject[@"GoingType"] = @"yes";
                             [rsvpObject pinInBackground];
                             [rsvpObject saveEventually];
@@ -497,6 +522,8 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
                     
                     for (PFObject *user in users) {
                         
+                        [user pinInBackground];
+                        
                         if (![user.objectId isEqualToString:currentUser.objectId]) {
                         
                             PFObject *groupUser = [PFObject objectWithClassName:@"Group_User"];
@@ -509,7 +536,9 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
                 
                     [self dismissViewControllerAnimated:YES completion:^{
                         
-                        [SVProgressHUD showSuccessWithStatus:@"Boom"];
+                        if (self.fromGroupsTab) [self.inviteHomiesToGroup.delegate showBoom];
+                        else [self.inviteHomies.delegate showBoom];
+                        
                         [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"refreshGroups"];
                         [[NSUserDefaults standardUserDefaults] synchronize];
                         
@@ -696,6 +725,7 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
         }
         
         groupImage = imageToUse;
+        isDefaultImage = NO;
         
         UIImageView *imv = [[UIImageView alloc] initWithFrame:snapshotView.bounds];
         imv.tag = 99;

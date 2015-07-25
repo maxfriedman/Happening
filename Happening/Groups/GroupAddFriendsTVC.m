@@ -14,6 +14,10 @@
 #import "AppDelegate.h"
 #import "SVProgressHUD.h"
 #import "CustomConstants.h"
+#import "UIButton+Extensions.h"
+
+#define MCANIMATE_SHORTHAND
+#import <POP+MCAnimate.h>
 
 @interface GroupAddFriendsTVC () <UIScrollViewDelegate, UIAlertViewDelegate>
 
@@ -23,13 +27,14 @@
 
 @implementation GroupAddFriendsTVC {
     
-    NSMutableArray *headerList;
     NSMutableArray *friendsArray;
     NSArray *sortedFriends;
     NSMutableArray *uniqueFriendsByLetter;
     NSMutableDictionary *sections;
     NSArray *sortedFriendsLetters;
-    NSMutableArray *selectedRowsArray;
+    NSMutableArray *selectedImagesArray;
+    NSMutableArray *selectedNamesArray;
+    
     NSMutableArray *selectedIDs;
     
     UILabel *friendsLabel;
@@ -39,6 +44,15 @@
     NSArray *indexTitles;
     
     NSMutableArray *finalUserIDArray;
+    NSMutableArray *finalGroupIDArray;
+    
+    NSMutableDictionary *selectedDict;
+    NSArray *bestFriendsIds;
+    
+    NSMutableArray *fbIds;
+    
+    BOOL wasDefaultName;
+
 }
 
 @synthesize namesOnBottomView, convo, group;
@@ -50,14 +64,21 @@
     [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"navBar"] forBarMetrics:UIBarMetricsDefault];
     self.navigationController.navigationBar.translucent = NO;
     
-    headerList = [[NSMutableArray alloc] initWithObjects:@"GROUPS", @"INTERESTED", @"", /*@"NOT INTERESTED",*/ nil];
     friendsArray = [[NSMutableArray alloc] init];
-    selectedRowsArray = [[NSMutableArray alloc] init];
+    selectedNamesArray = [[NSMutableArray alloc] init];
+    selectedImagesArray = [[NSMutableArray alloc] init];
     selectedIDs = [[NSMutableArray alloc] init];
-    
+    finalUserIDArray = [[NSMutableArray alloc] init];
+    finalGroupIDArray = [[NSMutableArray alloc] init];
     
     namesOnBottomView = [[UIView alloc] initWithFrame:CGRectMake(0, 568 - 64, 320, 50)];
-    namesOnBottomView.backgroundColor = [UIColor colorWithRed:0.0/255 green:176.0/255 blue:242.0/255 alpha:1.0];
+    //namesOnBottomView.backgroundColor = [UIColor colorWithRed:0.0/255 green:176.0/255 blue:242.0/255 alpha:1.0];
+    namesOnBottomView.backgroundColor = [UIColor groupTableViewBackgroundColor];
+    
+    UIView *lineView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 1)];
+    lineView.backgroundColor = [UIColor lightGrayColor];
+    [namesOnBottomView addSubview:lineView];
+    
     [self.view addSubview:namesOnBottomView];
     
     friendScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, 260, 50)];
@@ -71,121 +92,126 @@
     [friendScrollView addSubview:friendsLabel];
     
     sendInvitesButton = [[UIButton alloc] initWithFrame:CGRectMake(275, 9, 32, 32)];
-    [sendInvitesButton setImage:[UIImage imageNamed:@"arrowRightThick"] forState:UIControlStateNormal];
+    [sendInvitesButton setImage:[UIImage imageNamed:@"Right_arrow"] forState:UIControlStateNormal];
     [sendInvitesButton addTarget:self action:@selector(inviteButtonTapped) forControlEvents:UIControlEventTouchUpInside];
+    [sendInvitesButton setHitTestEdgeInsets:UIEdgeInsetsMake(-10, -10, -10, -10)];
     [namesOnBottomView addSubview:sendInvitesButton];
+    
+    selectedDict = [[NSMutableDictionary alloc] init];
+    
+    if ([group[@"isDefaultName"] boolValue] == YES) wasDefaultName = YES;
+    else wasDefaultName = NO;
     
     [self loadFriends];
 }
 
 - (void)loadFriends {
     
-    if ([FBSDKAccessToken currentAccessToken]) {
-        
-        [[[FBSDKGraphRequest alloc] initWithGraphPath:@"/me/friends?limit=1000" parameters:nil] startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
-            //code
-            
-            NSArray* friends = [result objectForKey:@"data"];
-            NSLog(@"Found: %lu friends", (unsigned long)friends.count);
-            
-            __block int friendCount = 1;
-            
-            NSMutableArray *names = [[NSMutableArray alloc] init];
-            
-            NSMutableArray *friendObjectIDs = [[NSMutableArray alloc] init];
-            for (int i = 0; i < friends.count; i ++) {
-                NSDictionary *friend = friends[i];
-                [friendObjectIDs addObject:[friend objectForKey:@"id"]];
-                [names addObject:[friend objectForKey:@"name"]];
-            }
-            
-            NSMutableArray *p = [NSMutableArray arrayWithCapacity:names.count];
-            for (NSUInteger i = 0 ; i != names.count ; i++) {
-                [p addObject:[NSNumber numberWithInteger:i]];
-            }
-            [p sortWithOptions:0 usingComparator:^NSComparisonResult(id obj1, id obj2) {
-                // Modify this to use [first objectAtIndex:[obj1 intValue]].name property
-                NSString *lhs = [names objectAtIndex:[obj1 intValue]];
-                // Same goes for the next line: use the name
-                NSString *rhs = [names objectAtIndex:[obj2 intValue]];
-                return [lhs compare:rhs];
-            }];
-            NSMutableArray *sortedFirst = [NSMutableArray arrayWithCapacity:names.count];
-            NSMutableArray *sortedSecond = [NSMutableArray arrayWithCapacity:friendObjectIDs.count];
-            [p enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                NSUInteger pos = [obj intValue];
-                [sortedFirst addObject:[names objectAtIndex:pos]];
-                [sortedSecond addObject:[friendObjectIDs objectAtIndex:pos]];
-            }];
-            
-            names = sortedFirst;
-            friendObjectIDs = sortedSecond;
-            
-            sortedFriends = [names sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
-            
-            sections = [[NSMutableDictionary alloc] init];
-            
-            for (int i = 0; i < names.count; i++) {
-                
-                NSString *letter = [[names objectAtIndex: i] substringToIndex:1];
-                NSMutableDictionary *letterDict = [sections objectForKey:letter];
-                if (letterDict == nil) {
-                    letterDict = [NSMutableDictionary dictionary];
-                }
-                
-                [sections setObject:letterDict forKey:letter];
-                
-                
-                NSMutableArray *namesArray = [letterDict objectForKey:@"Names"];
-                if (namesArray == nil) {
-                    namesArray = [NSMutableArray array];
-                }
-                
-                [letterDict setObject:namesArray forKey:@"Names"];
-                [namesArray addObject:names[i]];
-                
-                
-                NSMutableArray *idsArray = [letterDict objectForKey:@"IDs"];
-                if (idsArray == nil) {
-                    idsArray = [NSMutableArray array];
-                }
-                
-                [letterDict setObject:idsArray forKey:@"IDs"];
-                
-                FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(10, 5, 30, 30)];
-                profPicView.layer.cornerRadius = 15;
-                profPicView.layer.masksToBounds = YES;
-                profPicView.profileID = friendObjectIDs[i];
-                profPicView.tag = 9;
-                
-                [idsArray addObject:profPicView];
-                
-                NSMutableArray *tappedArray = [letterDict objectForKey:@"Tapped"];
-                if (tappedArray == nil) {
-                    tappedArray = [NSMutableArray array];
-                }
-                
-                [letterDict setObject:tappedArray forKey:@"Tapped"];
-                NSNumber *no = [NSNumber numberWithInt:0];
-                [tappedArray addObject:no];
-                
-            }
-            
-            NSArray *unsortedFriendsLetters = [sections allKeys];
-            sortedFriendsLetters = [unsortedFriendsLetters sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
-           
-            
-            [self.tableView reloadData];
-        }];
-         
-    } else {
-        
-        NSLog(@"no token......");
-    }
+    sections = [[NSMutableDictionary alloc] init];
     
     indexTitles = [[NSArray alloc] init];
-    indexTitles = @[ /*@"\u263A",*/ @"A", @"B", @"C", @"D", @"E", @"F", @"G", @"H", @"I", @"J", @"K", @"L", @"M", @"N", @"O", @"P", @"Q", @"R", @"S", @"T", @"U", @"V", @"W", @"X", @"Y", @"Z"];
+    indexTitles = @[@"A", @"B", @"C", @"D", @"E", @"F", @"G", @"H", @"I", @"J", @"K", @"L", @"M", @"N", @"O", @"P", @"Q", @"R", @"S", @"T", @"U", @"V", @"W", @"X", @"Y", @"Z"];
     
+    if ([[PFUser currentUser] objectForKey:@"BestFriends"] != nil)
+        bestFriendsIds = [[PFUser currentUser] objectForKey:@"BestFriends"];
+    else
+        bestFriendsIds = [NSArray new];
+    
+    NSArray *friends = [PFUser currentUser][@"friends"];
+    
+    NSMutableArray *names = [[NSMutableArray alloc] init];
+    NSMutableArray *friendObjectIDs = [[NSMutableArray alloc] init];
+    
+    for (NSDictionary *dict in friends) {
+        [friendObjectIDs addObject:[dict objectForKey:@"id"]];
+        [names addObject:[dict objectForKey:@"name"]];
+    }
+    
+    NSMutableArray *p = [NSMutableArray arrayWithCapacity:names.count];
+    for (NSUInteger i = 0 ; i != names.count ; i++) {
+        [p addObject:[NSNumber numberWithInteger:i]];
+    }
+    [p sortWithOptions:0 usingComparator:^NSComparisonResult(id obj1, id obj2) {
+        // Modify this to use [first objectAtIndex:[obj1 intValue]].name property
+        NSString *lhs = [names objectAtIndex:[obj1 intValue]];
+        // Same goes for the next line: use the name
+        NSString *rhs = [names objectAtIndex:[obj2 intValue]];
+        return [lhs compare:rhs];
+    }];
+    NSMutableArray *sortedFirst = [NSMutableArray arrayWithCapacity:names.count];
+    NSMutableArray *sortedSecond = [NSMutableArray arrayWithCapacity:friendObjectIDs.count];
+    [p enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        NSUInteger pos = [obj intValue];
+        [sortedFirst addObject:[names objectAtIndex:pos]];
+        [sortedSecond addObject:[friendObjectIDs objectAtIndex:pos]];
+    }];
+    
+    names = sortedFirst;
+    friendObjectIDs = sortedSecond;
+    
+    sortedFriends = [names sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
+    
+    for (int i = 0; i < names.count; i++) {
+        
+        NSString *letter = [[names objectAtIndex: i] substringToIndex:1];
+        NSMutableDictionary *letterDict = [sections objectForKey:letter];
+        if (letterDict == nil) {
+            letterDict = [NSMutableDictionary dictionary];
+        }
+        
+        [sections setObject:letterDict forKey:letter];
+        
+        NSMutableArray *namesArray = [letterDict objectForKey:@"Names"];
+        if (namesArray == nil) {
+            namesArray = [NSMutableArray array];
+        }
+        
+        [letterDict setObject:namesArray forKey:@"Names"];
+        [namesArray addObject:names[i]];
+        
+        
+        NSMutableArray *idsArray = [letterDict objectForKey:@"IDs"];
+        if (idsArray == nil) {
+            idsArray = [NSMutableArray array];
+        }
+        [letterDict setObject:idsArray forKey:@"IDs"];
+        [idsArray addObject:friendObjectIDs[i]];
+        
+        
+        NSMutableArray *imagesArray = [letterDict objectForKey:@"Images"];
+        if (imagesArray == nil) {
+            imagesArray = [NSMutableArray array];
+        }
+        [letterDict setObject:imagesArray forKey:@"Images"];
+        FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(10, 5, 30, 30)];
+        profPicView.layer.cornerRadius = 15;
+        profPicView.layer.masksToBounds = YES;
+        profPicView.profileID = friendObjectIDs[i];
+        profPicView.tag = 9;
+        [imagesArray addObject:profPicView];
+        
+        
+        NSMutableArray *tappedArray = [letterDict objectForKey:@"Tapped"];
+        if (tappedArray == nil) {
+            tappedArray = [NSMutableArray array];
+        }
+        
+        [letterDict setObject:tappedArray forKey:@"Tapped"];
+        NSNumber *no = [NSNumber numberWithInt:0];
+        [tappedArray addObject:no];
+        
+    }
+    
+    NSArray *unsortedFriendsLetters = [sections allKeys];
+    sortedFriendsLetters = [unsortedFriendsLetters sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
+    
+    fbIds = [NSMutableArray array];
+    for (NSDictionary *dict in group[@"user_dicts"]) {
+        [fbIds addObject:[dict valueForKey:@"id"]];
+    }
+    
+    [self.tableView reloadData];
+
 }
 
 - (IBAction)xButtonPressed:(id)sender {
@@ -208,11 +234,7 @@
     NSString *letterRepresentingTheseFriends = [sortedFriendsLetters objectAtIndex:section];
     NSDictionary *friendsForThisLetter = [sections objectForKey:letterRepresentingTheseFriends];
     NSArray *namesArray = [NSArray array];
-    if (section == 0) {
-        namesArray = [friendsForThisLetter objectForKey:@"GroupNames"];
-        return namesArray.count + 1;
-    } else
-        namesArray = [friendsForThisLetter objectForKey:@"Names"];
+    namesArray = [friendsForThisLetter objectForKey:@"Names"];
     
     return namesArray.count;
 }
@@ -242,8 +264,9 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     
     [self.tableView bringSubviewToFront:namesOnBottomView];
-            inviteHomiesCell *cell = [tableView dequeueReusableCellWithIdentifier:@"homies" forIndexPath:indexPath];
-        
+    
+    inviteHomiesCell *cell = [tableView dequeueReusableCellWithIdentifier:@"homies" forIndexPath:indexPath];
+    cell.indexPath = indexPath;
     UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleChecking:)];
     
     [cell addGestureRecognizer:tap];
@@ -252,19 +275,35 @@
     NSDictionary *friendsForThisLetter = [sections objectForKey:letterRepresentingTheseFriends];
     NSArray *namesArray = [friendsForThisLetter objectForKey:@"Names"];
     NSArray *idsArray = [friendsForThisLetter objectForKey:@"IDs"];
+    NSArray *imagesArray = [friendsForThisLetter objectForKey:@"Images"];
     NSMutableArray *tappedArray = [friendsForThisLetter objectForKey:@"Tapped"];
     
     
-    if ([tappedArray[indexPath.row] isEqualToNumber:[NSNumber numberWithInt:1]]) {
+    BOOL isGroupMember = [fbIds containsObject:idsArray[indexPath.row]];
+    
+    if (isGroupMember) {
         
-        cell.checkButton.image = [UIImage imageNamed:@"check"];
+        [cell.checkView removeFromSuperview];
+        cell.userInteractionEnabled = NO;
+        cell.accessoryType = UITableViewCellAccessoryCheckmark;
+        
+    } else if ([tappedArray[indexPath.row] isEqualToNumber:[NSNumber numberWithInt:1]]) {
+        
+        //cell.checkButton.image = [UIImage imageNamed:@"check"];
         cell.nameLabel.font = [UIFont fontWithName:@"OpenSans-Semibold" size:17];
+        //[cell.checkImageView.stop frame];
+        cell.checkImageView.springBounciness = 20;
+        cell.checkImageView.springSpeed = 20;
+        //cell.checkImageView.spring.center = cell.checkView.center;
+        
+        cell.checkImageView.spring.frame = CGRectMake(cell.checkView.frame.origin.x + 4, cell.checkView.frame.origin.y + 4, 22, 22);
         
     } else {
         
-        cell.checkButton.image = [UIImage imageNamed:@"check-empty"];
+        [cell.checkImageView.stop frame];
+        //cell.checkButton.image = [UIImage imageNamed:@"check-empty"];
         cell.nameLabel.font = [UIFont fontWithName:@"OpenSans" size:17];
-        
+        cell.checkImageView.frame = CGRectMake(cell.checkView.frame.origin.x + 15, cell.checkView.frame.origin.y + 15, 0, 0);
     }
     
     cell.nameLabel.text = namesArray[indexPath.row];
@@ -275,7 +314,17 @@
         }
     }
     
-    [cell addSubview:idsArray[indexPath.row]];
+    [cell addSubview:imagesArray[indexPath.row]];
+    
+    [[cell viewWithTag:234] removeFromSuperview];
+    
+    if ([bestFriendsIds containsObject:idsArray[indexPath.row]]) {
+        
+        UIImageView *starImageView = [[UIImageView alloc] initWithFrame:CGRectMake(20 + 10, 0 + 5, 10, 10)];
+        starImageView.image = [UIImage imageNamed:@"star-blue-bordered"];
+        starImageView.tag = 234;
+        [cell addSubview:starImageView];
+    }
     
     return cell;
 }
@@ -286,64 +335,153 @@
     CGPoint tapLocation = [tapRecognizer locationInView:self.tableView];
     NSIndexPath *tappedIndexPath = [self.tableView indexPathForRowAtPoint:tapLocation];
     
+    NSString *theID = @"";
+    
     NSString *letterRepresentingTheseFriends = [sortedFriendsLetters objectAtIndex:tappedIndexPath.section];
     NSDictionary *friendsForThisLetter = [sections objectForKey:letterRepresentingTheseFriends];
     NSMutableArray *tappedArray = [friendsForThisLetter objectForKey:@"Tapped"];
     NSMutableArray *namesArray = [friendsForThisLetter objectForKey:@"Names"];
     NSArray *idsArray = [friendsForThisLetter objectForKey:@"IDs"];
+    NSArray *imagesArray = [friendsForThisLetter objectForKey:@"Images"];
     
     NSString *theName = namesArray[tappedIndexPath.row];
+    theID = idsArray[tappedIndexPath.row];
     
-    if ([selectedRowsArray containsObject:theName]) {
+    if ([selectedIDs containsObject:theID]) {
         
-        [selectedRowsArray removeObject:theName];
-        [selectedIDs removeObject:idsArray[tappedIndexPath.row]];
+        [selectedIDs removeObject:theID];
+        [finalUserIDArray removeObject:theID];
+        [selectedNamesArray removeObject:theName];
+        NSMutableDictionary *dict = [selectedDict objectForKey:theID];
+        [dict setObject:@(NO) forKey:@"Selected"];
         
     } else {
         
-        [selectedRowsArray addObject:theName];
-        [selectedIDs addObject:idsArray[tappedIndexPath.row]];
+        [selectedIDs addObject:theID];
+        [finalUserIDArray addObject:theID];
+        [selectedNamesArray addObject:theName];
+        NSMutableDictionary *dict = [selectedDict objectForKey:theID];
+        if (!dict) {
+            dict = [NSMutableDictionary dictionary];
+            
+            [dict setObject:imagesArray[tappedIndexPath.row] forKey:@"Image"];
+            [dict setObject:theName forKey:@"Name"];
+            [selectedDict setObject:dict forKey:theID];
+            [dict setObject:@(NO) forKey:@"Loaded"];
+            [dict setObject:tappedIndexPath forKey:@"IndexPath"];
+        }
+        [dict setObject:@(YES) forKey:@"Selected"];
     }
     
-    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
     
-    NSDictionary *friendsForThisLetter3 = [sections objectForKey:[theName substringToIndex:1]];
-    NSArray *namesArray3 = [friendsForThisLetter3 objectForKey:@"Names"];
-    NSMutableArray *tappedArray3 = [friendsForThisLetter3 objectForKey:@"Tapped"];
+    NSIndexPath *indexPath1 = [NSIndexPath indexPathForRow:0 inSection:40];
+    NSIndexPath *indexPath2 = [NSIndexPath indexPathForRow:0 inSection:40];
+    NSIndexPath *indexPath3 = [NSIndexPath indexPathForRow:0 inSection:40];
+    
+    
+    if ([tappedArray[tappedIndexPath.row] isEqualToNumber:[NSNumber numberWithInt:1]]) {
         
-    for (int i = 0; i < namesArray3.count; i++) {
-        if ([namesArray3[i] isEqualToString:theName]) {
-            tappedArray3[i] = [NSNumber numberWithInt:0];
-            NSUInteger letterIndex = [sortedFriendsLetters indexOfObject:[theName substringToIndex:1]];
-            indexPath = [NSIndexPath indexPathForRow:i inSection:letterIndex];
-            [self.tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation: UITableViewRowAnimationNone];
-            break;
+        NSDictionary *friendsForThisLetter2 = [sections objectForKey:@"INTERESTED"];
+        NSArray *namesArray2 = [friendsForThisLetter2 objectForKey:@"Names"];
+        NSMutableArray *tappedArray2 = [friendsForThisLetter2 objectForKey:@"Tapped"];
+        
+        for (int i = 0; i < namesArray2.count; i++) {
+            if ([namesArray2[i] isEqualToString:theName]) {
+                tappedArray2[i] = [NSNumber numberWithInt:0];
+                indexPath2 = [NSIndexPath indexPathForRow:i inSection:1];
+                [self.tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath2] withRowAnimation: UITableViewRowAnimationNone];
+                break;
+            }
+        }
+        
+        NSDictionary *friendsForThisLetter3 = [sections objectForKey:[theName substringToIndex:1]];
+        NSArray *namesArray3 = [friendsForThisLetter3 objectForKey:@"Names"];
+        NSMutableArray *tappedArray3 = [friendsForThisLetter3 objectForKey:@"Tapped"];
+        
+        for (int i = 0; i < namesArray3.count; i++) {
+            if ([namesArray3[i] isEqualToString:theName]) {
+                tappedArray3[i] = [NSNumber numberWithInt:0];
+                NSUInteger letterIndex = [sortedFriendsLetters indexOfObject:[theName substringToIndex:1]];
+                indexPath3 = [NSIndexPath indexPathForRow:i inSection:letterIndex];
+                [self.tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath3] withRowAnimation: UITableViewRowAnimationNone];
+                break;
+            }
+        }
+        
+    } else {
+        
+        NSDictionary *friendsForThisLetter2 = [sections objectForKey:@"INTERESTED"];
+        NSArray *namesArray2 = [friendsForThisLetter2 objectForKey:@"Names"];
+        NSMutableArray *tappedArray2 = [friendsForThisLetter2 objectForKey:@"Tapped"];
+        
+        for (int i = 0; i < namesArray2.count; i++) {
+            if ([namesArray2[i] isEqualToString:theName]) {
+                tappedArray2[i] = [NSNumber numberWithInt:1];
+                indexPath2 = [NSIndexPath indexPathForRow:i inSection:1];
+                [self.tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath2] withRowAnimation: UITableViewRowAnimationNone];
+                break;
+            }
+        }
+        
+        NSDictionary *friendsForThisLetter3 = [sections objectForKey:[theName substringToIndex:1]];
+        NSArray *namesArray3 = [friendsForThisLetter3 objectForKey:@"Names"];
+        NSMutableArray *tappedArray3 = [friendsForThisLetter3 objectForKey:@"Tapped"];
+        
+        for (int i = 0; i < namesArray3.count; i++) {
+            if ([namesArray3[i] isEqualToString:theName]) {
+                tappedArray3[i] = [NSNumber numberWithInt:1];
+                NSUInteger letterIndex = [sortedFriendsLetters indexOfObject:[theName substringToIndex:1]];
+                indexPath3 = [NSIndexPath indexPathForRow:i inSection:letterIndex];
+                [self.tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath3] withRowAnimation: UITableViewRowAnimationNone];
+                break;
+            }
+        }
+    }
+
+    [self updateNamesOnBottomForID:theID];
+
+}
+
+-(void)updateNamesOnBottomForID:(NSString *)fbID {
+    
+    NSMutableDictionary *dict = [selectedDict objectForKey:fbID];
+    NSNumber *shouldAdd = [dict objectForKey:@"Selected"];
+    id imageData = [dict objectForKey:@"Image"];
+    NSNumber *didLoad = [dict objectForKey:@"Loaded"];
+    
+    
+    int indexOfDeletedImage = 0;
+    
+    if ([shouldAdd boolValue] == NO) {
+        for (int i = 0; i < selectedImagesArray.count; i++) {
+            UIView *imv = selectedImagesArray[i];
+            if ([imageData isEqual:imv]) {
+                [selectedImagesArray removeObject:imv];
+                
+                [UIView animateWithDuration:0.3 animations:^{
+                    imv.alpha = 0;
+                } completion:^(BOOL finished) {
+                    //x[imv removeFromSuperview];
+                }];
+                
+                for (int i = 0; i < selectedImagesArray.count; i++) {
+                    UIView *imageView = selectedImagesArray[i];
+                    
+                    if (i >= indexOfDeletedImage) {
+                        
+                        [UIView animateWithDuration:0.3 animations:^{
+                            imageView.frame = CGRectMake(10 + (45 * i), 5, 40, 40);
+                        }];
+                    }
+                    
+                }
+                
+                break;
+            }
         }
     }
     
-    [self updateNamesOnBottom];
-    
-}
-
--(void)updateNamesOnBottom {
-    
-    
-    if (selectedRowsArray.count == 1) {
-        
-        friendsLabel.text = [NSString stringWithFormat:@"%@", selectedRowsArray[0]];
-        [friendsLabel sizeToFit];
-        
-        [UIView animateWithDuration:0.2f delay:0 options:UIViewAnimationOptionCurveLinear animations:^{
-            
-            float newPos = friendsLabel.frame.size.width - friendScrollView.frame.size.width + 15;
-            if (newPos > 0) {
-                friendScrollView.contentOffset = CGPointMake(newPos, 0);
-            } else {
-                friendScrollView.contentOffset = CGPointMake(0, 0);
-                
-            }
-            
-        } completion:nil];
+    if (selectedImagesArray.count == 0 && [shouldAdd boolValue] == YES) { // animate bottom bar up
         
         [UIView animateWithDuration:0.3 animations:^{
             
@@ -356,15 +494,13 @@
                 namesOnBottomView.frame = CGRectMake(0, 568-64-50 + self.tableView.contentOffset.y, 320, namesOnBottomView.frame.size.height);
             }
             
-            friendScrollView.contentSize = CGSizeMake(friendsLabel.frame.size.width + 15, friendsLabel.frame.size.height);
+            friendScrollView.contentSize = CGSizeMake(5 + 40, 40);
             
         } completion:^(BOOL finished) {
             
         }];
         
-    } else if (selectedRowsArray.count == 0) {
-        
-        friendsLabel.text = @"";
+    } else if (selectedImagesArray.count == 0 && [shouldAdd boolValue] == NO) { // animate bottom bar down
         
         [UIView animateWithDuration:0.3 animations:^{
             
@@ -374,34 +510,248 @@
         } completion:^(BOOL finished) {
             
         }];
+    }
+    
+    if ([shouldAdd boolValue] == YES) {
         
-    } else {
-        
-        friendsLabel.text = [NSString stringWithFormat:@"%@", selectedRowsArray[0]];
-        
-        for (int i = 1; i < selectedRowsArray.count; i++) {
+        if ([didLoad boolValue] == YES) { // use cached image
             
-            friendsLabel.text = [NSString stringWithFormat:@"%@, %@", friendsLabel.text, selectedRowsArray[i]];
-        }
-        
-        [friendsLabel sizeToFit];
-        [UIView animateWithDuration:0.2f delay:0 options:UIViewAnimationOptionCurveLinear animations:^{
             
-            float newPos = friendsLabel.frame.size.width - friendScrollView.frame.size.width + 15;
-            if (newPos > 0) {
-                friendScrollView.contentOffset = CGPointMake(newPos, 0);
+            if ([imageData isKindOfClass:[FBSDKProfilePictureView class]]) {
+                
+                FBSDKProfilePictureView *imv = imageData;
+                imv.alpha = 1.0;
+                imv.frame = CGRectMake(10 + (45 * selectedImagesArray.count), 5, 40, 40);
+                [friendScrollView addSubview:imv];
+                [selectedImagesArray addObject:imv];
+                /*
+                 if ([bestFriendsIds containsObject:imv.profileID]) {
+                 UIImageView *starImageView = [[UIImageView alloc] initWithFrame:CGRectMake(10 + 25 + (45 * selectedImagesArray.count), 0, 15, 15)];
+                 starImageView.image = [UIImage imageNamed:@"star-blue-bordered"];
+                 [friendScrollView addSubview:starImageView];
+                 } */
+                
             } else {
-                friendScrollView.contentOffset = CGPointMake(0, 0);
+                
+                UIImageView *imv = imageData;
+                imv.alpha = 1.0;
+                imv.frame = CGRectMake(10 + (45 * selectedImagesArray.count), 5, 40, 40);
+                [friendScrollView addSubview:imv];
+                [selectedImagesArray addObject:imv];
             }
             
-            friendScrollView.contentSize = CGSizeMake(friendsLabel.frame.size.width + 15, friendsLabel.frame.size.height);
+        } else { // create and cache image
             
-            
-        } completion:nil];
+            if ([imageData isKindOfClass:[FBSDKProfilePictureView class]]) {
+                
+                FBSDKProfilePictureView *imv = imageData;
+                FBSDKProfilePictureView *newImv = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(10 + (45 * selectedImagesArray.count), 5, 40, 40)];
+                newImv.profileID = imv.profileID;
+                newImv.layer.cornerRadius = 20;
+                newImv.layer.masksToBounds = YES;
+                
+                newImv.userInteractionEnabled = YES;
+                [newImv addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(bottomPicTapped:)]];
+                newImv.accessibilityIdentifier = fbID;
+                
+                //newImv.alpha = 0;
+                [dict setObject:newImv forKey:@"Image"];
+                [dict setObject:@(YES) forKey:@"Loaded"];
+                
+                UIView *maskView = [[UIView alloc] initWithFrame:newImv.bounds];
+                maskView.backgroundColor = [UIColor blackColor];
+                maskView.alpha = 0.3;
+                [newImv addSubview:maskView];
+                
+                UIImageView *checkIMV = [[UIImageView alloc] initWithFrame:CGRectMake(10, 10, 20, 20)];
+                checkIMV.image = [UIImage imageNamed:@"white_check"];
+                [newImv addSubview:checkIMV];
+                
+                [friendScrollView addSubview:newImv];
+                [selectedImagesArray addObject:newImv];
+                
+            } else {
+                
+                __block UIImageView *tempImageView = [[UIImageView alloc]  initWithFrame:CGRectMake(10 + (45 * (selectedImagesArray.count)), 5, 40, 40)];
+                tempImageView.image = [UIImage imageNamed:@"userImage"];
+                [friendScrollView addSubview:tempImageView];
+                [selectedImagesArray addObject:tempImageView];
+                [dict setObject:tempImageView forKey:@"Image"];
+                
+                //PFFile *file = imageData;
+                //[file getDataInBackgroundWithBlock:^(NSData *data, NSError *error) {
+                
+                //if (!error) {
+                [tempImageView removeFromSuperview];
+                [selectedImagesArray removeObject:tempImageView];
+                
+                // UIImage *image = [UIImage imageWithData:data];
+                
+                UIImage *test = (UIImage *)imageData;
+                
+                UIImageView *imv = [[UIImageView alloc] initWithFrame:CGRectMake(10 + (45 * selectedImagesArray.count), 5, 40, 40)];
+                
+                imv.image = [test copy];
+                imv.layer.cornerRadius = 20;
+                imv.layer.masksToBounds = YES;
+                imv.tag = 3;
+                //imv.alpha = 0;
+                [dict setObject:imv forKey:@"Image"];
+                [dict setObject:@(YES) forKey:@"Loaded"];
+                [friendScrollView addSubview:imv];
+                [selectedImagesArray addObject:imv];
+                
+                UIView *maskView = [[UIView alloc] initWithFrame:imv.bounds];
+                maskView.backgroundColor = [UIColor blackColor];
+                maskView.alpha = 0.3;
+                [imv addSubview:maskView];
+                
+                UIImageView *checkIMV = [[UIImageView alloc] initWithFrame:CGRectMake(10, 10, 20, 20)];
+                checkIMV.image = [UIImage imageNamed:@"white_check"];
+                [imv addSubview:checkIMV];
+                
+                imv.userInteractionEnabled = YES;
+                [imv addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(bottomPicTapped:)]];
+                imv.accessibilityIdentifier = fbID;
+                //}
+                //}];
+                
+            }
+        }
         
+    } else { // remove
+        
+        NSLog(@"remove");
         
         
     }
+    
+    float newPos = 10 + selectedImagesArray.count * 45;
+    
+    [UIView animateWithDuration:0.2f delay:0 options:UIViewAnimationOptionCurveLinear animations:^{
+        
+        if (newPos > 0) {
+            friendScrollView.contentOffset = CGPointMake(newPos, 0);
+        } else {
+            friendScrollView.contentOffset = CGPointMake(0, 0);
+        }
+        
+        friendScrollView.contentSize = CGSizeMake(newPos, 40);
+        
+    } completion:nil];
+    
+}
+
+- (void)bottomPicTapped:(UIGestureRecognizer *)gr {
+    
+    UIImageView *imv = (UIImageView *)gr.view;
+    NSString *theID = imv.accessibilityIdentifier;
+    
+    NSMutableDictionary *dict = [selectedDict objectForKey:theID];
+    NSIndexPath *tappedIndexPath = [dict objectForKey:@"IndexPath"];
+    
+    NSString *letterRepresentingTheseFriends = [sortedFriendsLetters objectAtIndex:tappedIndexPath.section];
+    NSDictionary *friendsForThisLetter = [sections objectForKey:letterRepresentingTheseFriends];
+    NSMutableArray *tappedArray = [friendsForThisLetter objectForKey:@"Tapped"];
+    NSMutableArray *namesArray = [friendsForThisLetter objectForKey:@"Names"];
+    NSArray *idsArray = [friendsForThisLetter objectForKey:@"IDs"];
+    NSArray *imagesArray = [friendsForThisLetter objectForKey:@"Images"];
+    
+    NSString *theName = namesArray[tappedIndexPath.row];
+    theID = idsArray[tappedIndexPath.row];
+    
+    if ([selectedIDs containsObject:theID]) {
+        
+        [selectedIDs removeObject:theID];
+        [finalUserIDArray removeObject:theID];
+        [selectedNamesArray removeObject:theName];
+        NSMutableDictionary *dict = [selectedDict objectForKey:theID];
+        [dict setObject:@(NO) forKey:@"Selected"];
+        
+    } else {
+        
+        [selectedIDs addObject:theID];
+        [finalUserIDArray addObject:theID];
+        [selectedNamesArray addObject:theName];
+        NSMutableDictionary *dict = [selectedDict objectForKey:theID];
+        if (!dict) {
+            dict = [NSMutableDictionary dictionary];
+            
+            [dict setObject:imagesArray[tappedIndexPath.row] forKey:@"Image"];
+            [dict setObject:theName forKey:@"Name"];
+            [selectedDict setObject:dict forKey:theID];
+            [dict setObject:@(NO) forKey:@"Loaded"];
+            [dict setObject:tappedIndexPath forKey:@"IndexPath"];
+        }
+        [dict setObject:@(YES) forKey:@"Selected"];
+    }
+    
+    
+    NSIndexPath *indexPath1 = [NSIndexPath indexPathForRow:0 inSection:40];
+    NSIndexPath *indexPath2 = [NSIndexPath indexPathForRow:0 inSection:40];
+    NSIndexPath *indexPath3 = [NSIndexPath indexPathForRow:0 inSection:40];
+    
+    
+    if ([tappedArray[tappedIndexPath.row] isEqualToNumber:[NSNumber numberWithInt:1]]) {
+        
+        NSDictionary *friendsForThisLetter2 = [sections objectForKey:@"INTERESTED"];
+        NSArray *namesArray2 = [friendsForThisLetter2 objectForKey:@"Names"];
+        NSMutableArray *tappedArray2 = [friendsForThisLetter2 objectForKey:@"Tapped"];
+        
+        for (int i = 0; i < namesArray2.count; i++) {
+            if ([namesArray2[i] isEqualToString:theName]) {
+                tappedArray2[i] = [NSNumber numberWithInt:0];
+                indexPath2 = [NSIndexPath indexPathForRow:i inSection:1];
+                [self.tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath2] withRowAnimation: UITableViewRowAnimationNone];
+                break;
+            }
+        }
+        
+        NSDictionary *friendsForThisLetter3 = [sections objectForKey:[theName substringToIndex:1]];
+        NSArray *namesArray3 = [friendsForThisLetter3 objectForKey:@"Names"];
+        NSMutableArray *tappedArray3 = [friendsForThisLetter3 objectForKey:@"Tapped"];
+        
+        for (int i = 0; i < namesArray3.count; i++) {
+            if ([namesArray3[i] isEqualToString:theName]) {
+                tappedArray3[i] = [NSNumber numberWithInt:0];
+                NSUInteger letterIndex = [sortedFriendsLetters indexOfObject:[theName substringToIndex:1]];
+                indexPath3 = [NSIndexPath indexPathForRow:i inSection:letterIndex];
+                [self.tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath3] withRowAnimation: UITableViewRowAnimationNone];
+                break;
+            }
+        }
+        
+    } else {
+        
+        NSDictionary *friendsForThisLetter2 = [sections objectForKey:@"INTERESTED"];
+        NSArray *namesArray2 = [friendsForThisLetter2 objectForKey:@"Names"];
+        NSMutableArray *tappedArray2 = [friendsForThisLetter2 objectForKey:@"Tapped"];
+        
+        for (int i = 0; i < namesArray2.count; i++) {
+            if ([namesArray2[i] isEqualToString:theName]) {
+                tappedArray2[i] = [NSNumber numberWithInt:1];
+                indexPath2 = [NSIndexPath indexPathForRow:i inSection:1];
+                [self.tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath2] withRowAnimation: UITableViewRowAnimationNone];
+                break;
+            }
+        }
+        
+        NSDictionary *friendsForThisLetter3 = [sections objectForKey:[theName substringToIndex:1]];
+        NSArray *namesArray3 = [friendsForThisLetter3 objectForKey:@"Names"];
+        NSMutableArray *tappedArray3 = [friendsForThisLetter3 objectForKey:@"Tapped"];
+        
+        for (int i = 0; i < namesArray3.count; i++) {
+            if ([namesArray3[i] isEqualToString:theName]) {
+                tappedArray3[i] = [NSNumber numberWithInt:1];
+                NSUInteger letterIndex = [sortedFriendsLetters indexOfObject:[theName substringToIndex:1]];
+                indexPath3 = [NSIndexPath indexPathForRow:i inSection:letterIndex];
+                [self.tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath3] withRowAnimation: UITableViewRowAnimationNone];
+                break;
+            }
+        }
+    }
+    
+    [self updateNamesOnBottomForID:theID];
     
 }
 
@@ -411,31 +761,29 @@
     
 }
 
+
 - (void)inviteButtonTapped {
     
     [SVProgressHUD setViewForExtension:self.view];
     [SVProgressHUD show];
     
-    finalUserIDArray = [[NSMutableArray alloc] init];
-    NSMutableArray *finalNamesArray = [[NSMutableArray alloc] init];
-    NSMutableArray *finalGroupIDArray = [[NSMutableArray alloc] init];
-    
-    for (int i = 0; i < selectedRowsArray.count; i++) {
+    /*
+    for (int i = 0; i < selectedNamesArray.count; i++) {
         
         if ([[selectedIDs[i] class] isSubclassOfClass:[FBSDKProfilePictureView class]]) {
             FBSDKProfilePictureView *profPicView = selectedIDs[i];
-            NSLog(@"Invite: %@, %@  ---- ", selectedRowsArray[i], profPicView.profileID);
             [finalUserIDArray addObject:profPicView.profileID];
-            [finalNamesArray addObject:selectedRowsArray[i]];
+            [finalNamesArray addObject:selectedNamesArray[i]];
         } else {
             [finalGroupIDArray addObject:selectedIDs[i]];
         }
-    }
+    }*/
     
+    NSLog(@"Add to group: %@ ---- %@", selectedIDs, selectedNamesArray);
     
     
     PFQuery *query = [PFUser query];
-    [query whereKey:@"FBObjectID" containedIn:finalUserIDArray];
+    [query whereKey:@"FBObjectID" containedIn:selectedIDs];
     [query findObjectsInBackgroundWithBlock:^(NSArray *array, NSError *error){
        
         if (!error) {
@@ -450,10 +798,46 @@
             }
             
             [group incrementKey:@"memberCount" byAmount:@(finalUserIDArray.count)];
+
+            NSMutableArray *parseIds = [NSMutableArray arrayWithArray:group[@"user_parse_ids"]];
+            NSMutableArray *userDicts = [NSMutableArray arrayWithArray:group[@"user_dicts"]];
             
-            NSArray *users = group[@"user_objects"];
-            users = [users arrayByAddingObjectsFromArray:array];
-            group[@"user_objects"] = users;
+            for (PFUser *user in array) {
+                [parseIds addObject:user.objectId];
+                
+                NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+                [dict setObject:user.objectId forKey:@"parseId"];
+                [dict setObject:[NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]] forKey:@"name"];
+                [dict setObject:user[@"FBObjectID"] forKey:@"id"];
+                [userDicts addObject:dict];
+            }
+            
+            group[@"user_parse_ids"]= parseIds;
+            group[@"user_dicts"] = userDicts;
+            
+            
+            PFUser *currentUser = [PFUser currentUser];
+            
+            if (wasDefaultName) {
+                
+                NSMutableArray *namesArray = [NSMutableArray array];
+                for (NSDictionary *dict in group[@"user_dicts"]) {
+                    [namesArray addObject: [[[dict valueForKey:@"name"] componentsSeparatedByString:@" "] objectAtIndex:0] ];
+                }
+
+                
+                NSString *groupName = [NSString stringWithFormat:@"%@", namesArray[0]];
+                for (int i = 1; i < namesArray.count - 1; i++) {
+                    groupName = [groupName stringByAppendingString:[NSString stringWithFormat:@", %@", namesArray[i]]];
+                }
+                
+                groupName = [groupName stringByAppendingString:[NSString stringWithFormat:@" and %@", [namesArray lastObject]]];
+                
+                group[@"name"] = groupName;
+                
+                [convo setValue:groupName forMetadataAtKeyPath:@"title"];
+            
+            }
             
             [group saveEventually];
             
@@ -462,14 +846,13 @@
             if (!convoError) {
                 
                 //Send message w data
-                PFUser *currentUser = [PFUser currentUser];
-                NSString *messageText = [NSString stringWithFormat:@"%@ %@ added %@", currentUser[@"firstName"], currentUser[@"lastName"], finalNamesArray[0]];
-                for (int i = 1; i < finalNamesArray.count - 1; i++) {
-                    messageText = [messageText stringByAppendingString:[NSString stringWithFormat:@", %@", finalNamesArray[i]]];
+                NSString *messageText = [NSString stringWithFormat:@"%@ %@ added %@", currentUser[@"firstName"], currentUser[@"lastName"], selectedNamesArray[0]];
+                for (int i = 1; i < selectedNamesArray.count - 1; i++) {
+                    messageText = [messageText stringByAppendingString:[NSString stringWithFormat:@", %@", selectedNamesArray[i]]];
                 }
                 
-                if (finalNamesArray.count > 1) {
-                    messageText = [messageText stringByAppendingString:[NSString stringWithFormat:@" and %@", [finalNamesArray lastObject]]];
+                if (selectedNamesArray.count > 1) {
+                    messageText = [messageText stringByAppendingString:[NSString stringWithFormat:@" and %@", [selectedNamesArray lastObject]]];
                 }
                 
                 messageText = [messageText stringByAppendingString:@" to the group."];
@@ -500,8 +883,8 @@
                 BOOL success = [convo sendMessage:message error:&error];
                 if (success) {
                     NSLog(@"Message queued to be sent: %@", message);
-                    [SVProgressHUD showSuccessWithStatus:@"Friends added!"];
                     [self dismissViewControllerAnimated:YES completion:^{
+                        [self.delegate showBoom];
                         [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"refreshGroups"];
                         [[NSUserDefaults standardUserDefaults] synchronize];
                     }];
@@ -510,7 +893,7 @@
                     NSLog(@"Message send failed: %@", error);
                     
                     [self dismissViewControllerAnimated:YES completion:^{
-                        [SVProgressHUD showErrorWithStatus:@"Something went wrong :("];
+                        [self.delegate showError:@"Something went wrong :("];
                         [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"refreshGroups"];
                         [[NSUserDefaults standardUserDefaults] synchronize];
                     }];
@@ -537,14 +920,7 @@
 
 - (NSInteger)tableView:(UITableView *)tableView sectionForSectionIndexTitle:(NSString *)title atIndex:(NSInteger)index
 {
-    //NSLog(@"title: %@", title);
-    
-    if (index == 0)
-        return 0;
-    else if (index == 1 || index == 2)
-        return index-1;
-    
-    return [sortedFriendsLetters indexOfObject:title] - 1;
+    return [sortedFriendsLetters indexOfObject:title] + 1;
 }
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {

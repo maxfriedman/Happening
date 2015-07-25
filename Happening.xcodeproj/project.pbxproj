@@ -27,6 +27,7 @@
 		50248C8519BBAB2F00329910 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50248C8419BBAB2F00329910 /* Security.framework */; };
 		50248C8919BBAB3D00329910 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50248C8819BBAB3D00329910 /* SystemConfiguration.framework */; };
 		5028636F1AC213F20029BD15 /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 5028636E1AC213F20029BD15 /* Reachability.m */; };
+		502A55821B5F0D45006B44AB /* PermissionsView.m in Sources */ = {isa = PBXBuildFile; fileRef = 502A55811B5F0D44006B44AB /* PermissionsView.m */; };
 		502CA2B01B3A545C00576E82 /* SystemCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 502CA2AF1B3A545C00576E82 /* SystemCollectionViewCell.m */; };
 		502CA2B31B3B4F6B00576E82 /* GroupAddFriendsTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 502CA2B21B3B4F6B00576E82 /* GroupAddFriendsTVC.m */; };
 		5031EBEC1A939489007E3523 /* webViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5031EBEB1A939489007E3523 /* webViewController.m */; };
@@ -124,6 +125,9 @@
 		5099CEC51B4EB81C0064DF85 /* CustomAPActivityProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 5099CEC41B4EB81C0064DF85 /* CustomAPActivityProvider.m */; };
 		509A8A531B44454000EF6C68 /* HappeningCameraVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 509A8A521B44454000EF6C68 /* HappeningCameraVC.m */; };
 		50A677761A59B67C00E1E12A /* RKDropdownAlert.m in Sources */ = {isa = PBXBuildFile; fileRef = 50A677751A59B67C00E1E12A /* RKDropdownAlert.m */; };
+		50B17CE71B60126300AF880B /* UIViewController+MHSemiModal.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B17CE61B60126300AF880B /* UIViewController+MHSemiModal.m */; };
+		50B17CEA1B6012BA00AF880B /* ChecklistModalVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B17CE91B6012BA00AF880B /* ChecklistModalVC.m */; };
+		50B17CED1B60894600AF880B /* LoginButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B17CEC1B60894600AF880B /* LoginButton.m */; };
 		50B7071A1B1575BD0080657E /* inviteHomies.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B707191B1575BD0080657E /* inviteHomies.m */; };
 		50B707201B17D2D90080657E /* inviteHomiesCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B7071F1B17D2D90080657E /* inviteHomiesCell.m */; };
 		50B707271B1D26A90080657E /* GroupsTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B707261B1D26A90080657E /* GroupsTVC.m */; };
@@ -147,6 +151,11 @@
 		50CA89F11B2A200F000AC48D /* PFUser+ATLParticipant.m in Sources */ = {isa = PBXBuildFile; fileRef = 50CA89F01B2A200F000AC48D /* PFUser+ATLParticipant.m */; };
 		50D255A41A6388A10086B7A4 /* OpenSans-Extrabold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50478F1B1A44DF1500161D01 /* OpenSans-Extrabold.ttf */; };
 		50D78E521B555EB70015F88A /* InviteHomiesToGroup.m in Sources */ = {isa = PBXBuildFile; fileRef = 50D78E511B555EB70015F88A /* InviteHomiesToGroup.m */; };
+		50F7D36F1B5D5BBC00C0806B /* ActivityTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 50F7D36E1B5D5BBC00C0806B /* ActivityTVC.m */; };
+		50F7D3751B5D5C0C00C0806B /* interestedCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50F7D3741B5D5C0C00C0806B /* interestedCell.m */; };
+		50F7D3781B5D5C2200C0806B /* friendJoinedCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50F7D3771B5D5C2200C0806B /* friendJoinedCell.m */; };
+		50F7D37E1B5D5C4300C0806B /* reminderCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50F7D37D1B5D5C4300C0806B /* reminderCell.m */; };
+		50F7D3841B5D5C8E00C0806B /* matchesCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50F7D3831B5D5C8E00C0806B /* matchesCell.m */; };
 		50F7DEA51A5643A6008B8C2B /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 50478F101A44DE6900161D01 /* main.m */; };
 		50F7DEA71A5794D6008B8C2B /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50F7DEA61A5794D5008B8C2B /* MessageUI.framework */; };
 		50F7DEAA1A57B4B8008B8C2B /* UICountingLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = 50F7DEA91A57B4B8008B8C2B /* UICountingLabel.m */; };
@@ -188,6 +197,8 @@
 		50248C8819BBAB3D00329910 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		5028636D1AC213F20029BD15 /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Reachability.h; path = Happening/Extras/Reachability.h; sourceTree = SOURCE_ROOT; };
 		5028636E1AC213F20029BD15 /* Reachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Reachability.m; path = Happening/Extras/Reachability.m; sourceTree = SOURCE_ROOT; };
+		502A55801B5F0D44006B44AB /* PermissionsView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PermissionsView.h; path = Happening/Extras/PermissionsView.h; sourceTree = SOURCE_ROOT; };
+		502A55811B5F0D44006B44AB /* PermissionsView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PermissionsView.m; path = Happening/Extras/PermissionsView.m; sourceTree = SOURCE_ROOT; };
 		502CA2AE1B3A545C00576E82 /* SystemCollectionViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SystemCollectionViewCell.h; path = Happening/Groups/SystemCollectionViewCell.h; sourceTree = SOURCE_ROOT; };
 		502CA2AF1B3A545C00576E82 /* SystemCollectionViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SystemCollectionViewCell.m; path = Happening/Groups/SystemCollectionViewCell.m; sourceTree = SOURCE_ROOT; };
 		502CA2B11B3B4F6B00576E82 /* GroupAddFriendsTVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GroupAddFriendsTVC.h; path = Happening/Groups/GroupAddFriendsTVC.h; sourceTree = SOURCE_ROOT; };
@@ -358,6 +369,12 @@
 		509A8A541B446DFB00EF6C68 /* Happening.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = Happening.entitlements; path = Happening/Happening.entitlements; sourceTree = SOURCE_ROOT; };
 		50A677741A59B67C00E1E12A /* RKDropdownAlert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RKDropdownAlert.h; path = Happening/Extras/RKDropdownAlert.h; sourceTree = SOURCE_ROOT; };
 		50A677751A59B67C00E1E12A /* RKDropdownAlert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RKDropdownAlert.m; path = Happening/Extras/RKDropdownAlert.m; sourceTree = SOURCE_ROOT; };
+		50B17CE51B60126300AF880B /* UIViewController+MHSemiModal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIViewController+MHSemiModal.h"; sourceTree = SOURCE_ROOT; };
+		50B17CE61B60126300AF880B /* UIViewController+MHSemiModal.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIViewController+MHSemiModal.m"; sourceTree = SOURCE_ROOT; };
+		50B17CE81B6012BA00AF880B /* ChecklistModalVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ChecklistModalVC.h; path = Happening/Extras/ChecklistModalVC.h; sourceTree = SOURCE_ROOT; };
+		50B17CE91B6012BA00AF880B /* ChecklistModalVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ChecklistModalVC.m; path = Happening/Extras/ChecklistModalVC.m; sourceTree = SOURCE_ROOT; };
+		50B17CEB1B60894600AF880B /* LoginButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoginButton.h; path = "Happening/Login Flow/LoginButton.h"; sourceTree = SOURCE_ROOT; };
+		50B17CEC1B60894600AF880B /* LoginButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoginButton.m; path = "Happening/Login Flow/LoginButton.m"; sourceTree = SOURCE_ROOT; };
 		50B707181B1575BD0080657E /* inviteHomies.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = inviteHomies.h; path = "Happening/Discover Tab/inviteHomies.h"; sourceTree = SOURCE_ROOT; };
 		50B707191B1575BD0080657E /* inviteHomies.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = inviteHomies.m; path = "Happening/Discover Tab/inviteHomies.m"; sourceTree = SOURCE_ROOT; };
 		50B7071E1B17D2D90080657E /* inviteHomiesCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = inviteHomiesCell.h; path = "Happening/Discover Tab/inviteHomiesCell.h"; sourceTree = SOURCE_ROOT; };
@@ -404,6 +421,16 @@
 		50D252DD1A6385DC0086B7A4 /* HappeningTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HappeningTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		50D78E501B555EB70015F88A /* InviteHomiesToGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = InviteHomiesToGroup.h; path = Happening/Groups/InviteHomiesToGroup.h; sourceTree = SOURCE_ROOT; };
 		50D78E511B555EB70015F88A /* InviteHomiesToGroup.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = InviteHomiesToGroup.m; path = Happening/Groups/InviteHomiesToGroup.m; sourceTree = SOURCE_ROOT; };
+		50F7D36D1B5D5BBC00C0806B /* ActivityTVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ActivityTVC.h; path = Happening/Activity/ActivityTVC.h; sourceTree = SOURCE_ROOT; };
+		50F7D36E1B5D5BBC00C0806B /* ActivityTVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ActivityTVC.m; path = Happening/Activity/ActivityTVC.m; sourceTree = SOURCE_ROOT; };
+		50F7D3731B5D5C0C00C0806B /* interestedCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = interestedCell.h; path = Happening/Activity/interestedCell.h; sourceTree = SOURCE_ROOT; };
+		50F7D3741B5D5C0C00C0806B /* interestedCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = interestedCell.m; path = Happening/Activity/interestedCell.m; sourceTree = SOURCE_ROOT; };
+		50F7D3761B5D5C2200C0806B /* friendJoinedCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = friendJoinedCell.h; path = Happening/Activity/friendJoinedCell.h; sourceTree = SOURCE_ROOT; };
+		50F7D3771B5D5C2200C0806B /* friendJoinedCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = friendJoinedCell.m; path = Happening/Activity/friendJoinedCell.m; sourceTree = SOURCE_ROOT; };
+		50F7D37C1B5D5C4300C0806B /* reminderCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = reminderCell.h; path = Happening/Activity/reminderCell.h; sourceTree = SOURCE_ROOT; };
+		50F7D37D1B5D5C4300C0806B /* reminderCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = reminderCell.m; path = Happening/Activity/reminderCell.m; sourceTree = SOURCE_ROOT; };
+		50F7D3821B5D5C8E00C0806B /* matchesCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = matchesCell.h; path = Happening/Activity/matchesCell.h; sourceTree = SOURCE_ROOT; };
+		50F7D3831B5D5C8E00C0806B /* matchesCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = matchesCell.m; path = Happening/Activity/matchesCell.m; sourceTree = SOURCE_ROOT; };
 		50F7DEA61A5794D5008B8C2B /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		50F7DEA81A57B4B8008B8C2B /* UICountingLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UICountingLabel.h; path = Happening/Extras/UICountingLabel.h; sourceTree = SOURCE_ROOT; };
 		50F7DEA91A57B4B8008B8C2B /* UICountingLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = UICountingLabel.m; path = Happening/Extras/UICountingLabel.m; sourceTree = SOURCE_ROOT; };
@@ -497,6 +524,7 @@
 			children = (
 				50478F0C1A44DE5C00161D01 /* Main Files */,
 				5041A10E1A44AC9500C151B7 /* Login Flow */,
+				50F7D3681B5C636600C0806B /* Activity */,
 				50B707241B1D26890080657E /* Groups */,
 				5041A1101A44ACF500C151B7 /* Create Tab */,
 				5041A10F1A44ACB900C151B7 /* Discover Tab */,
@@ -657,6 +685,8 @@
 				50BF2CE21A75531B00160B5E /* movieLoginVC.m */,
 				5011C5241ACAB6A500BAAF74 /* QuestionMarkPage.h */,
 				5011C5251ACAB6A500BAAF74 /* QuestionMarkPage.m */,
+				50B17CEB1B60894600AF880B /* LoginButton.h */,
+				50B17CEC1B60894600AF880B /* LoginButton.m */,
 				502863711AC30A470029BD15 /* Unused */,
 			);
 			name = "Login Flow";
@@ -719,6 +749,8 @@
 				50512F071ABB453200118FD9 /* UI & Class Overrides */,
 				50512F081ABB459400118FD9 /* General */,
 				502863701AC245D50029BD15 /* Unused */,
+				502A55801B5F0D44006B44AB /* PermissionsView.h */,
+				502A55811B5F0D44006B44AB /* PermissionsView.m */,
 			);
 			name = Extras;
 			sourceTree = "<group>";
@@ -739,6 +771,8 @@
 		50512F061ABB44F200118FD9 /* Navigation & Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				50B17CE51B60126300AF880B /* UIViewController+MHSemiModal.h */,
+				50B17CE61B60126300AF880B /* UIViewController+MHSemiModal.m */,
 				509A8A511B44454000EF6C68 /* HappeningCameraVC.h */,
 				509A8A521B44454000EF6C68 /* HappeningCameraVC.m */,
 				50CA89E91B2A1FFA000AC48D /* MHCustomTabBarController.h */,
@@ -747,6 +781,8 @@
 				50BF2CE51A758D8300160B5E /* RKSwipeBetweenViewControllers.m */,
 				5031EBEA1A939489007E3523 /* webViewController.h */,
 				5031EBEB1A939489007E3523 /* webViewController.m */,
+				50B17CE81B6012BA00AF880B /* ChecklistModalVC.h */,
+				50B17CE91B6012BA00AF880B /* ChecklistModalVC.m */,
 			);
 			name = "Navigation & Controllers";
 			sourceTree = "<group>";
@@ -986,6 +1022,31 @@
 			path = Happening/Extras/FBShimmering;
 			sourceTree = SOURCE_ROOT;
 		};
+		50F7D3681B5C636600C0806B /* Activity */ = {
+			isa = PBXGroup;
+			children = (
+				50F7D36D1B5D5BBC00C0806B /* ActivityTVC.h */,
+				50F7D36E1B5D5BBC00C0806B /* ActivityTVC.m */,
+				50F7D36C1B5D5B9200C0806B /* Cells */,
+			);
+			name = Activity;
+			sourceTree = "<group>";
+		};
+		50F7D36C1B5D5B9200C0806B /* Cells */ = {
+			isa = PBXGroup;
+			children = (
+				50F7D3731B5D5C0C00C0806B /* interestedCell.h */,
+				50F7D3741B5D5C0C00C0806B /* interestedCell.m */,
+				50F7D3761B5D5C2200C0806B /* friendJoinedCell.h */,
+				50F7D3771B5D5C2200C0806B /* friendJoinedCell.m */,
+				50F7D37C1B5D5C4300C0806B /* reminderCell.h */,
+				50F7D37D1B5D5C4300C0806B /* reminderCell.m */,
+				50F7D3821B5D5C8E00C0806B /* matchesCell.h */,
+				50F7D3831B5D5C8E00C0806B /* matchesCell.m */,
+			);
+			name = Cells;
+			sourceTree = "<group>";
+		};
 		AADC6A3485B8FC644C6A1C44 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -1048,6 +1109,9 @@
 						CreatedOnToolsVersion = 6.0;
 						DevelopmentTeam = 9536BXJVRW;
 						SystemCapabilities = {
+							com.apple.BackgroundModes = {
+								enabled = 1;
+							};
 							com.apple.InAppPurchase = {
 								enabled = 0;
 							};
@@ -1156,6 +1220,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				506961FC1A8F122C009CB5DB /* ExternalProfileTVC.m in Sources */,
+				50B17CEA1B6012BA00AF880B /* ChecklistModalVC.m in Sources */,
 				507677D31A88761100B9F21D /* ProfileTVC.m in Sources */,
 				50512F251ABB719700118FD9 /* SVIndefiniteAnimatedView.m in Sources */,
 				500639431B50990B00D1CD6E /* MatchesWithFriendsTVC.m in Sources */,
@@ -1166,6 +1231,7 @@
 				50B851151B264F6300C1C8FB /* GroupRSVP.m in Sources */,
 				50512F171ABB6E9100118FD9 /* NotificationsTVC.m in Sources */,
 				50CA89F11B2A200F000AC48D /* PFUser+ATLParticipant.m in Sources */,
+				50F7D3751B5D5C0C00C0806B /* interestedCell.m in Sources */,
 				50BA96391AC5DDD2006A8A13 /* InitialVC.m in Sources */,
 				50512F1D1ABB714000118FD9 /* PrivacyTVC.m in Sources */,
 				505529DF1B30C4C6007A2F00 /* InviteCollectionViewCell.m in Sources */,
@@ -1173,6 +1239,7 @@
 				50478EF31A44DD9800161D01 /* SettingsTVC.m in Sources */,
 				50F7DEAA1A57B4B8008B8C2B /* UICountingLabel.m in Sources */,
 				50CA89ED1B2A1FFA000AC48D /* MHCustomTabBarController.m in Sources */,
+				50F7D37E1B5D5C4300C0806B /* reminderCell.m in Sources */,
 				50B707541B1FA7CD0080657E /* FBShimmeringLayer.m in Sources */,
 				50478EC31A44DCAD00161D01 /* PageContentViewController.m in Sources */,
 				50B707581B2102260080657E /* GroupPageTVC.m in Sources */,
@@ -1180,6 +1247,7 @@
 				50C35E081ADB166400389EF4 /* tempProfile.m in Sources */,
 				50478EBD1A44DBCC00161D01 /* InitialLocationSearch.m in Sources */,
 				50478EBE1A44DBCC00161D01 /* LogInExistingUser.m in Sources */,
+				50F7D3841B5D5C8E00C0806B /* matchesCell.m in Sources */,
 				5099CEC21B4EB7FE0064DF85 /* CategoryBubbleView.m in Sources */,
 				50478ED31A44DD2400161D01 /* EditEventTVC.m in Sources */,
 				50478F0A1A44DE1F00161D01 /* CupertinoYankee.m in Sources */,
@@ -1196,6 +1264,7 @@
 				5031EBEC1A939489007E3523 /* webViewController.m in Sources */,
 				5028636F1AC213F20029BD15 /* Reachability.m in Sources */,
 				5011C5261ACAB6A500BAAF74 /* QuestionMarkPage.m in Sources */,
+				50B17CED1B60894600AF880B /* LoginButton.m in Sources */,
 				502CA2B01B3A545C00576E82 /* SystemCollectionViewCell.m in Sources */,
 				50478ED51A44DD2400161D01 /* ExtraInfoTVC.m in Sources */,
 				50478EF81A44DDE300161D01 /* LeftToRightSegue.m in Sources */,
@@ -1204,6 +1273,7 @@
 				50478EE71A44DD6C00161D01 /* CustomCalendarActivity.m in Sources */,
 				5099CEB91B4B8BA20064DF85 /* ConversationCell.m in Sources */,
 				5072D8611B4612FC00518278 /* SwipeableCardVC.m in Sources */,
+				502A55821B5F0D45006B44AB /* PermissionsView.m in Sources */,
 				50BF2CE31A75531B00160B5E /* movieLoginVC.m in Sources */,
 				505529E31B30EDEE007A2F00 /* CustomConstants.m in Sources */,
 				50478EE81A44DD6C00161D01 /* DraggableView.m in Sources */,
@@ -1219,6 +1289,7 @@
 				50478EE91A44DD6C00161D01 /* DraggableViewBackground.m in Sources */,
 				50478F091A44DE1F00161D01 /* MapViewController.m in Sources */,
 				508DD3271AC9AE9A005E2E95 /* AMPopTip.m in Sources */,
+				50F7D36F1B5D5BBC00C0806B /* ActivityTVC.m in Sources */,
 				50B8511B1B2749F700C1C8FB /* GroupChatVC.m in Sources */,
 				50965A641A76A6DB00EDF5FC /* dropdownSettingsView.m in Sources */,
 				50478F021A44DE0500161D01 /* moreDetailFromTable.m in Sources */,
@@ -1231,6 +1302,7 @@
 				50478ED41A44DD2400161D01 /* EventTVC.m in Sources */,
 				50478F011A44DE0500161D01 /* AttendTableCell.m in Sources */,
 				50B8510C1B2147FA00C1C8FB /* NewGroupCreatorVC.m in Sources */,
+				50B17CE71B60126300AF880B /* UIViewController+MHSemiModal.m in Sources */,
 				508240CD1B2DF433006CBCE8 /* PFObject+ATLAvatarItem.m in Sources */,
 				50FA6B891A7ECC35009AA6A0 /* TutorialDragView.m in Sources */,
 				50512F111ABB51DB00118FD9 /* ProfileSettingsTVC.m in Sources */,
@@ -1247,6 +1319,7 @@
 				506DFD801A60A94600715079 /* UIImage+ImageEffects.m in Sources */,
 				50CA89DF1B2790D8000AC48D /* UserManager.m in Sources */,
 				50478F141A44DE6900161D01 /* AppDelegate.m in Sources */,
+				50F7D3781B5D5C2200C0806B /* friendJoinedCell.m in Sources */,
 				508240D01B2E09FB006CBCE8 /* groupManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1370,7 +1443,7 @@
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/Happening/Main Files/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1398,7 +1471,7 @@
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/Happening/Main Files/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",

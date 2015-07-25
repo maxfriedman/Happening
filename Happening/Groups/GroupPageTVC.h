@@ -11,7 +11,7 @@
 #import <Atlas/Atlas.h>
 #import <Parse/Parse.h>
 
-@interface GroupPageTVC : UITableViewController <CLLocationManagerDelegate>
+@interface GroupPageTVC : UIViewController <CLLocationManagerDelegate>
 
 @property (strong, nonatomic) IBOutlet UIButton *chatBubble;
 @property (assign) NSString *groupId;
@@ -23,5 +23,9 @@
 @property (assign) BOOL groupDidLoad;
 
 @property (assign) BOOL loadTopView;
+
+@property (nonatomic, strong) NSArray *userDicts;
+
+@property (strong, nonatomic) IBOutlet UIView *containerView;
 
 @end

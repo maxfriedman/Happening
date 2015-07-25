@@ -11,7 +11,7 @@
 #import <FBSDKLoginKit/FBSDKLoginKit.h>
 #import <FBSDKCoreKit/FBSDKCoreKit.h>
 #import <Parse/Parse.h>
-#import "FlatButton.h"
+#import "LoginButton.h"
 
 @interface movieLoginVC : UIViewController <FBSDKGraphRequestConnectionDelegate>
 
@@ -21,8 +21,8 @@
 
 @property (strong, nonatomic) NSString *eventIdFromNotification;
 
-@property (strong, nonatomic) IBOutlet UIButton *noAccountButton;
+@property (strong, nonatomic) IBOutlet LoginButton *noAccountButton;
 
-@property (strong, nonatomic) IBOutlet UIButton *fbButton;
+@property (strong, nonatomic) IBOutlet LoginButton *fbButton;
 
 @end

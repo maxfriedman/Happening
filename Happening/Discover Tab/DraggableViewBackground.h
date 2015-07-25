@@ -49,4 +49,6 @@
 
 @property NSInteger storedIndex;
 
+@property BOOL isLoaded;
+
 @end

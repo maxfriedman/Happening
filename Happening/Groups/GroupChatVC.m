@@ -22,6 +22,8 @@
     AppDelegate *appDelegate;
 }
 
+@synthesize userDicts;
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
@@ -36,20 +38,52 @@
     
     appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
     self.layerClient = appDelegate.layerClient;
+
+    if (userDicts.count == 2 && [self.groupObject[@"isDefaultImage"] boolValue] == YES) {
+        
+        //self.title = self.groupObject[@"name"];
+        
+        UIView *navigationView = [[UIView alloc]initWithFrame:CGRectMake(0,0,self.view.frame.size.width,self.navigationController.navigationBar.frame.size.height)];
+        UIButton *middleButton = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 35, 35)];
+        middleButton.center = navigationView.center;
+        middleButton.layer.cornerRadius = 17.5;
+        middleButton.layer.masksToBounds = YES;
+        
+        for (NSDictionary *dict in userDicts) {
+            if (![[dict valueForKey:@"parseId"] isEqualToString:[PFUser currentUser].objectId]) {
+                
+                FBSDKProfilePictureView *ppView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(0, 0, 35, 35)];
+                ppView.profileID = [dict valueForKey:@"id"];
+                [middleButton addSubview:ppView];
+            }
+            
+        }
+        
+        middleButton.backgroundColor = [UIColor clearColor]; //[UIColor colorWithRed:41.0/255 green:181.0/255 blue:1.0 alpha:1.0];;
+        //[middleButton addTarget:self action:@selector(refreshData) forControlEvents:UIControlEventTouchUpInside];
+        [navigationView addSubview:middleButton];
+        self.navigationItem.titleView = navigationView;
+        
+    } else {
     
-    UIView *navigationView = [[UIView alloc]initWithFrame:CGRectMake(0,0,self.view.frame.size.width,self.navigationController.navigationBar.frame.size.height)];
-    UIButton *middleButton = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 35, 35)];
-    middleButton.center = navigationView.center;
-    middleButton.layer.cornerRadius = 17.5;
-    middleButton.layer.masksToBounds = YES;
-    PFFile *file = self.groupObject[@"avatar"];
-    [file getDataInBackgroundWithBlock:^(NSData *data, NSError *error) {
-        [middleButton setImage:[UIImage imageWithData:data] forState:UIControlStateNormal];
-    }];
-    middleButton.backgroundColor = [UIColor clearColor]; //[UIColor colorWithRed:41.0/255 green:181.0/255 blue:1.0 alpha:1.0];;
-    //[middleButton addTarget:self action:@selector(refreshData) forControlEvents:UIControlEventTouchUpInside];
-    [navigationView addSubview:middleButton];
-    self.navigationItem.titleView = navigationView;
+        UIView *navigationView = [[UIView alloc]initWithFrame:CGRectMake(0,0,self.view.frame.size.width,self.navigationController.navigationBar.frame.size.height)];
+        UIButton *middleButton = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 35, 35)];
+        middleButton.center = navigationView.center;
+        middleButton.layer.cornerRadius = 17.5;
+        middleButton.layer.masksToBounds = YES;
+        
+        PFFile *file = self.groupObject[@"avatar"];
+        [file getDataInBackgroundWithBlock:^(NSData *data, NSError *error) {
+            [middleButton setImage:[UIImage imageWithData:data] forState:UIControlStateNormal];
+        }];
+        
+        middleButton.backgroundColor = [UIColor clearColor]; //[UIColor colorWithRed:41.0/255 green:181.0/255 blue:1.0 alpha:1.0];;
+        //[middleButton addTarget:self action:@selector(refreshData) forControlEvents:UIControlEventTouchUpInside];
+        [navigationView addSubview:middleButton];
+        self.navigationItem.titleView = navigationView;
+    }
+    
+    
     
     
     // Register custom cell class for star cell

@@ -29,12 +29,15 @@
 @implementation InviteCollectionViewCell {
     UIColor *borderColor;
     PFUser *currentUser;
-    NSMutableArray *yesUsers;
-    NSMutableArray *noUsers;
     PFObject *groupEvent;
     PFObject *event;
     UIActivityIndicatorView *activityView;
     LYRConversation *conversation;
+    
+    NSMutableDictionary *extraSections;
+    NSMutableArray *rsvpYesArray;
+    NSMutableArray *rsvpNoArray;
+    NSMutableArray *rsvpMaybeArray;
 }
 
 @synthesize title, yesButton, noButton, location, calDayLabel, calDayOfWeekLabel, calImageView, calMonthLabel, calTimeLabel, eventImageView;
@@ -277,71 +280,66 @@
         [file getDataInBackgroundWithBlock:^(NSData *data, NSError *error){
         
             eventImageView.image = [UIImage imageWithData:data];
-            
+            [activityView stopAnimating];
         }];
         
     }];
     
     
-    PFQuery *groupEventQuery = [PFQuery queryWithClassName:@"Group_Event"];
-    //[groupEventQuery fromLocalDatastore];
-    [groupEventQuery whereKey:@"EventID" equalTo:[json objectForKey:@"eventId"]];
-    [groupEventQuery whereKey:@"GroupID" equalTo:[json objectForKey:@"groupId"]];
-    [groupEventQuery includeKey:@"users_going"];
-    [groupEventQuery includeKey:@"users_not_going"];
-    [groupEventQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
+    rsvpMaybeArray = [NSMutableArray array];
+    rsvpNoArray = [NSMutableArray array];
+    rsvpYesArray = [NSMutableArray array];
+    extraSections = [NSMutableDictionary dictionary];
+
+    PFQuery *groupRSVPQuery = [PFQuery queryWithClassName:@"Group_RSVP"];
+    [groupRSVPQuery fromLocalDatastore];
+    [groupRSVPQuery whereKey:@"EventID" equalTo:[json objectForKey:@"eventId"]];
+    [groupRSVPQuery whereKey:@"GroupID" equalTo:[json objectForKey:@"groupId"]];
+    [groupRSVPQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error){
+        
+        calImageView.alpha = 1.0;
+        yesButton.enabled = YES;
+        noButton.enabled = YES;
+        
         if (!error) {
             
-            NSLog(@"Loading RSVP...... ");
-            
-            groupEvent = object;
-            
-            calImageView.alpha = 1.0;
-            yesButton.enabled = YES;
-            noButton.enabled = YES;
-            
-            if (object[@"users_going"] != nil) {
-                yesUsers = object[@"users_going"];
+            NSString *goingType = object[@"GoingType"];
+            if ([goingType isEqualToString:@"yes"]) {
+                
+                [yesButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+                yesButton.backgroundColor = borderColor;
+                yesButton.tag = 1;
+                
+                noButton.backgroundColor = [UIColor whiteColor];
+                [noButton setTitleColor:borderColor forState:UIControlStateNormal];
+                noButton.tag = 0;
+                
+            } else if ([goingType isEqualToString:@"no"]) {
+                
+                [noButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+                noButton.backgroundColor = borderColor;
+                noButton.tag = 1;
+                
+                yesButton.backgroundColor = [UIColor whiteColor];
+                [yesButton setTitleColor:borderColor forState:UIControlStateNormal];
+                yesButton.tag = 0;
+                
             } else {
-                yesUsers = [NSMutableArray array];
+                
+                //maybe
+                
             }
             
-            if (object[@"users_not_going"] != nil) {
-                noUsers = object[@"users_not_going"];
-            } else {
-                noUsers = [NSMutableArray array];
-            }
+        } else {
             
-            for (PFUser *user in yesUsers) {
-                if ([user.objectId isEqualToString:currentUser.objectId]) {
-                    [yesButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-                    yesButton.backgroundColor = borderColor;
-                    yesButton.tag = 1;
-                    break;
-                }
-            }
-        
-            for (PFUser *user in noUsers) {
-                if ([user.objectId isEqualToString:currentUser.objectId]) {
-                    [noButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-                    noButton.backgroundColor = borderColor;
-                    noButton.tag = 1;
-                    break;
-                }
-            }
-        
-            /*
-            for (PFObject *user in maybeUsers) {
-                if ([user.objectId isEqualToString:currentUser.objectId]) {
-                    goingButton.tag = 0;
-                    notGoingButton.tag = 0;
-                    break;
-                }
-            } */
+            //maybe
             
-            [activityView stopAnimating];
+            
+            
         }
+        
     }];
+
     
 }
 
@@ -396,153 +394,55 @@
 
 - (void)reloadRSVPs {
     
-    [groupEvent fetchInBackgroundWithBlock:^(PFObject *object, NSError *error) {
+    LYRMessagePart *part = self.message.parts[0];
+    NSData *data = part.data;
+    NSError* error;
+    NSDictionary* json = [NSJSONSerialization JSONObjectWithData:data
+                                                         options:kNilOptions
+                                                           error:&error];
     
-        groupEvent = object;
+    PFQuery *groupRSVPQuery = [PFQuery queryWithClassName:@"Group_RSVP"];
+    [groupRSVPQuery fromLocalDatastore];
+    [groupRSVPQuery whereKey:@"EventID" equalTo:[json objectForKey:@"eventId"]];
+    [groupRSVPQuery whereKey:@"GroupID" equalTo:[json objectForKey:@"groupId"]];
+    [groupRSVPQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error){
         
-        if (groupEvent[@"users_going"] != nil) {
-            yesUsers = groupEvent[@"users_going"];
-        } else {
-            yesUsers = [NSMutableArray array];
-        }
+        PFObject *rsvpObject = [PFObject objectWithClassName:@"Group_RSVP"];
         
-        if (groupEvent[@"users_not_going"] != nil) {
-            noUsers = groupEvent[@"users_not_going"];
+        if (!error) {
+            
+            rsvpObject = object;
+            
         } else {
-            noUsers = [NSMutableArray array];
+            
+            rsvpObject[@"EventID"] = [json objectForKey:@"eventId"];
+            rsvpObject[@"GroupID"] = [json objectForKey:@"groupId"];
+            //rsvpObject[@"Group_Event_ID"] = groupEventObject.objectId;
+            rsvpObject[@"UserID"] = currentUser.objectId;
+            rsvpObject[@"UserFBID"] = currentUser[@"FBObjectID"];
+            rsvpObject[@"User_Object"] = currentUser;
+            //rsvpObject[@"GoingType"] = @"yes"; SET BELOW
+            [rsvpObject pinInBackground];
+            
         }
         
         if (yesButton.tag == 1) {
-            
-            // ~~~~~~~~~~~ NAMES
-            [yesUsers insertObject:currentUser atIndex:0];
-            
-            for (int i = 0; i < noUsers.count; i++) {
-                PFObject *user = noUsers[i];
-                if ([user.objectId isEqualToString:currentUser.objectId])
-                    [noUsers removeObject:user];
-            }
-            
-            /*
-            for (int i = 0; i < maybeUsers.count; i++) {
-                PFObject *user = maybeUsers[i];
-                if ([user.objectId isEqualToString:currentUser.objectId])
-                    [maybeUsers removeObject:user];
-            } */
-            
-            // ~~~~~~~~~~ PICS
-            /*
-            for (int i = 0; i < noImages.count; i++) {
-                FBSDKProfilePictureView *view = noImages[i];
-                if ([view.accessibilityIdentifier isEqualToString:currentUser.objectId]) {
-                    [yesImages insertObject:view atIndex:0];
-                    [noImages removeObject:view];
-                }
-            }
-            
-            for (int i = 0; i < maybeImages.count; i++) {
-                FBSDKProfilePictureView *view = maybeImages[i];
-                if ([view.accessibilityIdentifier isEqualToString:currentUser.objectId]) {
-                    [yesImages insertObject:view atIndex:0];
-                    [maybeImages removeObject:view];
-                }
-            } */
-            
-            /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-            
+            rsvpObject[@"GoingType"] = @"yes";
         } else if (noButton.tag == 1) {
-            
-            // ~~~~~~~~~~~ NAMES
-            [noUsers insertObject:currentUser atIndex:0];
-            
-            for (int i = 0; i < yesUsers.count; i++) {
-                PFObject *user = yesUsers[i];
-                if ([user.objectId isEqualToString:currentUser.objectId])
-                    [yesUsers removeObject:user];
-            }
-            
-            /*
-            for (int i = 0; i < maybeUsers.count; i++) {
-                PFObject *user = maybeUsers[i];
-                if ([user.objectId isEqualToString:currentUser.objectId])
-                    [maybeUsers removeObject:user];
-            }
-            
-            // ~~~~~~~~~~ PICS
-            for (int i = 0; i < yesImages.count; i++) {
-                FBSDKProfilePictureView *view = yesImages[i];
-                if ([view.accessibilityIdentifier isEqualToString:currentUser.objectId]) {
-                    [noImages insertObject:view atIndex:0];
-                    [yesImages removeObject:view];
-                }
-            }
-            
-            for (int i = 0; i < maybeImages.count; i++) {
-                FBSDKProfilePictureView *view = maybeImages[i];
-                if ([view.accessibilityIdentifier isEqualToString:currentUser.objectId]) {
-                    [noImages insertObject:view atIndex:0];
-                    [maybeImages removeObject:view];
-                }
-            } */
-            
-            /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-            
-        }  else {
-            
-            // ~~~~~~~~~~ NAMES
-            //[maybeUsers insertObject:currentUser atIndex:0];
-            
-            for (int i = 0; i < noUsers.count; i++) {
-                PFObject *user = noUsers[i];
-                if ([user.objectId isEqualToString:currentUser.objectId])
-                    [noUsers removeObject:user];
-            }
-            
-            for (int i = 0; i < yesUsers.count; i++) {
-                PFObject *user = yesUsers[i];
-                if ([user.objectId isEqualToString:currentUser.objectId])
-                    [yesUsers removeObject:user];
-            }
-            /*
-            // ~~~~~~~~~~ PICS
-            for (int i = 0; i < noImages.count; i++) {
-                FBSDKProfilePictureView *view = noImages[i];
-                if ([view.accessibilityIdentifier isEqualToString:currentUser.objectId]) {
-                    [maybeImages insertObject:view atIndex:0];
-                    [noImages removeObject:view];
-                }
-            }
-            
-            for (int i = 0; i < yesImages.count; i++) {
-                FBSDKProfilePictureView *view = yesImages[i];
-                if ([view.accessibilityIdentifier isEqualToString:currentUser.objectId]) {
-                    [maybeImages insertObject:view atIndex:0];
-                    [yesImages removeObject:view];
-                }
-            } */
-            
+            rsvpObject[@"GoingType"] = @"no";
+        } else {
+            rsvpObject[@"GoingType"] = @"maybe";
         }
         
-        //NSLog(@"xxxxx");
-        //NSLog(@"YES: %@  ---  NO: %@", yesUsers, noUsers);
-        groupEvent[@"users_going"] = yesUsers;
-        groupEvent[@"users_not_going"] = noUsers;
-        [groupEvent saveInBackgroundWithBlock:^(BOOL success, NSError *error){
-          
-            if (event && !error && (noButton.tag == 1 || yesButton.tag == 1)) {
-                
-                LYRMessagePart *part = self.message.parts[0];
-                NSData *data = part.data;
-                NSError* error = nil;
-                NSDictionary* json = [NSJSONSerialization JSONObjectWithData:data
-                                                                     options:kNilOptions
-                                                                       error:&error];
+        [rsvpObject saveEventually:^(BOOL success, NSError *error){
+            
+            if (!error && (noButton.tag == 1 || yesButton.tag == 1)) {
                 
                 NSString *messageText = @"";
                 if (yesButton.tag == 1) {
-                    messageText = [NSString stringWithFormat:@"%@ %@ is going to '%@'", currentUser[@"firstName"], currentUser[@"lastName"], event[@"Title"]];
+                    messageText = [NSString stringWithFormat:@"%@ %@ is going to '%@'", currentUser[@"firstName"], currentUser[@"lastName"], self.title.text];
                 } else if (noButton.tag == 1) {
-                    messageText = [NSString stringWithFormat:@"%@ %@ is not going to '%@'", currentUser[@"firstName"], currentUser[@"lastName"], event[@"Title"]];
+                    messageText = [NSString stringWithFormat:@"%@ %@ is not going to '%@'", currentUser[@"firstName"], currentUser[@"lastName"], self.title.text];
                 }
                 
                 NSDictionary *dataDictionary = @{@"message":messageText,
@@ -567,16 +467,16 @@
                 // Sends the specified message
                 BOOL success = [conversation sendMessage:message error:&error];
                 if (success) {
-                    NSLog(@"Message queued to be sent: %@", message);
+                    //NSLog(@"Message queued to be sent: %@", message);
                 } else {
                     NSLog(@"Message send failed: %@", error);
                 }
             }
-
+            
         }];
-    
-    }];
         
+    }];
+    
     //[self loadPics];
 }
 

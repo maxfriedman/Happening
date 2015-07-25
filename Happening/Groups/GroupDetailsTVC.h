@@ -10,13 +10,25 @@
 #import <Parse/Parse.h>
 #import <Atlas/Atlas.h>
 
+@protocol GroupDetailsTVCDelegate <NSObject>
+
+- (void)groupChanged;
+
+@end
+
 @interface GroupDetailsTVC : UITableViewController
+
+@property (weak) id <GroupDetailsTVCDelegate> delegate;
 
 @property PFObject *group;
 @property (strong, nonatomic) IBOutlet UIImageView *groupImageView;
 @property (strong, nonatomic) IBOutlet UILabel *groupNameLabel;
+@property (strong, nonatomic) IBOutlet UIButton *notiButton;
 @property (assign) NSString *groupNameString;
-@property NSMutableArray *users;
 @property LYRConversation *convo;
+
+@property (nonatomic, strong) NSArray *fbIds;
+@property (nonatomic, strong) NSArray *parseIds;
+@property (nonatomic, strong) NSArray *names;
 
 @end

@@ -9,6 +9,8 @@
 #import <UIKit/UIKit.h>
 #import <FBSDKCoreKit/FBSDKCoreKit.h>
 #import <Parse/Parse.h>
+#import "inviteHomies.h"
+#import "InviteHomiesToGroup.h"
 
 @interface NewGroupCreatorVC : UIViewController
 
@@ -25,5 +27,8 @@
 @property NSArray *userIdArray;
 @property (assign) int memCount;
 @property (assign) BOOL fromGroupsTab;
+
+@property inviteHomies *inviteHomies;
+@property InviteHomiesToGroup *inviteHomiesToGroup;
 
 @end

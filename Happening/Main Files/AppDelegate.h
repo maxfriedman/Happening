@@ -16,9 +16,10 @@
 #import "RKSwipeBetweenViewControllers.h"
 #import "MHCustomTabBarController.h"
 #import <LayerKit/LayerKit.h>
+#import <LocationKit/LocationKit.h>
 
 
-@interface AppDelegate : UIResponder <UIApplicationDelegate, CLLocationManagerDelegate>
+@interface AppDelegate : UIResponder <UIApplicationDelegate, CLLocationManagerDelegate, LocationKitDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
 
@@ -40,6 +41,10 @@
 @property (nonatomic) LYRClient *layerClient;
 
 - (void)authenticateLayerWithUserID:(NSString *)userID completion:(void (^)(BOOL success, NSError * error))completion;
+- (void)loadFriends;
+- (void)loadGroups;
+- (void)loadEvents;
+
 
 @end
 

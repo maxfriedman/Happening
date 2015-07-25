@@ -16,6 +16,7 @@
     
     NSArray *yesArray;
     NSArray *noArray;
+    NSArray *downArray;
     
 }
 @synthesize imageView, label;
@@ -37,8 +38,10 @@
         */
         //[self addSubview:imageView];
         
-        yesArray = [[NSArray alloc]initWithObjects:@"Yeah!", @"Totally", @"Let's do it", @"Love this", @"Interested", @"See you there!", @"Yesss", @"Awesome", @"Yup", @"Like", @"Boom shakalaka", @"Leggo", @":)", nil];
-        noArray = [[NSArray alloc]initWithObjects:@"Nope", @"Nah", @"No thanks", @"Not interested", @"Nooo", @"Dislike", @"Meh", @"Maybe next time", @"Skip", @"Naw", @":(", nil];
+        yesArray = [[NSArray alloc]initWithObjects:@"I'm interested", @"Seems cool", @"Might be going", @"Interested", @"Maybe", @"Interesting", @"Not too shabby", @"Like", @":)", nil];
+        noArray = [[NSArray alloc]initWithObjects:@"Nope", @"Nah", @"No thanks", @"Not interested", @"Nooo", @"Dislike", @"Meh", @"Skip", @"Naw", @":(", @"To the left to the left", nil];
+        downArray = [[NSArray alloc]initWithObjects:@"I'm going", @"Going", @"Boom shakalaka", @"I'm down", @"Down to go", @"Leggooo", @"Swipe down for what", @"I'm down if you are", @"I'll be there", nil];
+        
         
         label = [[UILabel alloc]init];
         [label setTextAlignment:NSTextAlignmentCenter];
@@ -86,7 +89,9 @@
         label.backgroundColor = [UIColor greenColor];
         
     } else if (mode == GGOverlayViewModeDown) {
-        label.text = @"Add to calendar";
+        
+        NSUInteger randomIndex = arc4random() % [downArray count];
+        label.text = downArray[randomIndex];
         label.backgroundColor = [UIColor cyanColor];
         
     }

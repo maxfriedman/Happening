@@ -44,6 +44,7 @@
 - (void)showFriendProfile:(UITapGestureRecognizer *)gr;
 - (void)inviteHomies;
 - (void)updateTopLabel;
+- (void)swipeDown:(UIView *)card;
 
 @property (weak) id <DragViewControllerDelegate> delegate;
 

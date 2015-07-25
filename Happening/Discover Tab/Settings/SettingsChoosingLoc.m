@@ -211,8 +211,6 @@
     //[self.searchBar. setActive:NO animated:YES];
     
     NSLog(@"Location was selected");
-
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     
     if (indexPath.section == 0) {
         
@@ -224,12 +222,9 @@
         } else if (indexPath.row == 1) {
             
             user[@"userLocTitle"] = @"Washington, DC";
-            [defaults setObject:@"Washington, DC" forKey:@"userLocTitle"];
             
             PFGeoPoint *geoPoint = [PFGeoPoint geoPointWithLatitude:38.907192 longitude:-77.036871];
             user[@"userLoc"] = geoPoint;
-
-            [defaults synchronize];
             
             [user saveEventually]; //:^(BOOL succeeded, NSError *error) {
                // if (succeeded) {
@@ -259,12 +254,9 @@
         } else if (indexPath.row == 2) {
             
             user[@"userLocTitle"] = @"Boston, MA";
-            [defaults setObject:@"Boston, MA" forKey:@"userLocTitle"];
             
             PFGeoPoint *geoPoint = [PFGeoPoint geoPointWithLatitude:42.358431 longitude:-71.059773];
             user[@"userLoc"] = geoPoint;
-            
-            [defaults synchronize];
             
             [user saveEventually]; //:^(BOOL succeeded, NSError *error) {
                 //if (succeeded) {
@@ -292,13 +284,11 @@
         }
         
         user[@"userLocSubtitle"] = @"";
-        [defaults setObject:@"" forKey:@"userLocSubtitle"];
         
     } else {
     
         MKMapItem *item = results.mapItems[indexPath.row];
         user[@"userLocTitle"] = item.name;
-        [defaults setObject:item.name forKey:@"userLocTitle"];
     
         NSString *cityName = item.placemark.addressDictionary[@"City"];
         NSString *stateName = item.placemark.addressDictionary[@"State"];
@@ -313,14 +303,12 @@
         }
 
         user[@"userLocSubtitle"] = subtitle;
-        [defaults setObject:subtitle forKey:@"userLocSubtitle"];
     
         MKMapItem *userLocation = results.mapItems[indexPath.row];
         PFGeoPoint *loc = [PFGeoPoint geoPointWithLocation:userLocation.placemark.location];
         user[@"userLoc"] = loc;
     
         [user saveEventually];
-        [defaults synchronize];
         [delegate refreshSettings];
         
         [self dismissViewControllerAnimated:YES completion:nil];
@@ -406,19 +394,10 @@
         PFGeoPoint *loc = [PFGeoPoint geoPointWithLocation:locManager.location];
         user[@"userLoc"] = loc;
         user[@"userLocTitle"] = @"Current Location";
+        user[@"userLocSubtitle"] = @"";
         [user saveEventually]; //:^(BOOL succeeded, NSError *error) {
             //if (succeeded) {
-                
-                NSLog(@"Saved user");
-                
-                // Peace out!
-                NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-                //[defaults setBool:YES forKey:@"hasLaunched"];
-                [defaults setObject:@"Current Location" forKey:@"userLocTitle"];
-                [defaults setObject:@"" forKey:@"userLocSubtitle"];
-                [defaults synchronize];
-                
-                
+
                 if (SYSTEM_VERSION_LESS_THAN(@"8.0")) {
                     
                     NSLog(@" ====== iOS 7 ====== ");
@@ -460,7 +439,7 @@
      locationSearching.delegate = self;
      */
     
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"hasLaunched"]) {
+    if ([user[@"hasLaunched"] boolValue] == YES) {
         [self dismissViewControllerAnimated:YES completion:nil];
         
     

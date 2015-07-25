@@ -12,6 +12,7 @@ pod "FastttCamera"
 pod 'Hoko', '~> 2.0.1'
 pod "Button", "~> 3"
 pod 'TTTAttributedLabel'
+pod 'LocationKit', '~> 2.0.0'
 
 end
 

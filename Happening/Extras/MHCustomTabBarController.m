@@ -55,9 +55,9 @@ NSString *const MHCustomTabBarControllerViewControllerAlreadyVisibleNotification
     self.viewControllersByIdentifier = [NSMutableDictionary dictionary];
     viewLoaded = YES;
     
-    bluePics = [NSArray arrayWithObjects:[UIImage imageNamed:@"groups_tab_pressed"], [UIImage imageNamed:@"cards_tab_pressed"], [UIImage imageNamed:@"profile_tab_pressed"], nil];
+    bluePics = [NSArray arrayWithObjects:[UIImage imageNamed:@"cards_tab_pressed"], [UIImage imageNamed:@"heart_pressed"], [UIImage imageNamed:@"groups_tab_pressed"], [UIImage imageNamed:@"profile_tab_pressed"], nil];
     
-    grayPics = [NSArray arrayWithObjects:[UIImage imageNamed:@"groups_tab"], [UIImage imageNamed:@"cards_tab"], [UIImage imageNamed:@"profile_tab"], nil];
+    grayPics = [NSArray arrayWithObjects: [UIImage imageNamed:@"cards_tab"], [UIImage imageNamed:@"heart"], [UIImage imageNamed:@"groups_tab"], [UIImage imageNamed:@"profile_tab"], nil];
 
 }
 
@@ -67,10 +67,25 @@ NSString *const MHCustomTabBarControllerViewControllerAlreadyVisibleNotification
     AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
     appDelegate.mh = self;
     
+    groupHub = [[RKNotificationHub alloc]initWithView:[self.buttons objectAtIndex:2]]; // sets the count to 0
+    
+    //%%% CIRCLE FRAME
+    //[hub setCircleAtFrame:CGRectMake(-10, -10, 30, 30)]; //frame relative to the view you set it to
+    
+    //%%% MOVE FRAME
+    [groupHub moveCircleByX:-10 Y:8]; // moves the circle 5 pixels left and down from its current position
+    
+    //%%% CIRCLE SIZE
+    [groupHub scaleCircleSizeBy:0.5]; // doubles the size of the circle, keeps the same center
+    
+    [groupHub setCircleColor:[UIColor colorWithRed:0 green:176.0/255 blue:242.0/255 alpha:1.0] labelColor:[UIColor whiteColor]];
+    
+    [groupHub setCountLabelFont:[UIFont fontWithName:@"OpenSans" size:6.0]];
+        
     if (self.childViewControllers.count < 1) {
         [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"refreshData"];
         [[NSUserDefaults standardUserDefaults] synchronize];
-        [self performSegueWithIdentifier:@"viewController2" sender:[self.buttons objectAtIndex:1]];
+        [self performSegueWithIdentifier:@"viewController1" sender:[self.buttons objectAtIndex:0]];
     }
     
     if (self.eventIdForSegue != nil) {
@@ -78,6 +93,7 @@ NSString *const MHCustomTabBarControllerViewControllerAlreadyVisibleNotification
         [self performSegueWithIdentifier:@"toSwipeVC" sender:self];
     }
     
+    /*
     // Fetches all LYRConversation objects
     LYRQuery *query = [LYRQuery queryWithQueryableClass:[LYRConversation class]];
     NSError *error;
@@ -87,7 +103,9 @@ NSString *const MHCustomTabBarControllerViewControllerAlreadyVisibleNotification
         
         int notiNumber = 0;
         for (LYRConversation *convo in conversations) {
+            
             if (convo.hasUnreadMessages) {
+                
                 notiNumber++;
                 //[convo markAllMessagesAsRead:nil];
             }
@@ -95,26 +113,36 @@ NSString *const MHCustomTabBarControllerViewControllerAlreadyVisibleNotification
         
         if (notiNumber > 0) {
             NSLog(@"%d unread messages", notiNumber);
-            groupHub = [[RKNotificationHub alloc]initWithView:[self.buttons objectAtIndex:0]]; // sets the count to 0
-
-            //%%% CIRCLE FRAME
-            //[hub setCircleAtFrame:CGRectMake(-10, -10, 30, 30)]; //frame relative to the view you set it to
-            
-            //%%% MOVE FRAME
-            [groupHub moveCircleByX:-17 Y:10]; // moves the circle 5 pixels left and down from its current position
-            
-            //%%% CIRCLE SIZE
-            [groupHub scaleCircleSizeBy:0.65]; // doubles the size of the circle, keeps the same center
-            
-            [groupHub setCircleColor:[UIColor colorWithRed:0 green:176.0/255 blue:242.0/255 alpha:1.0] labelColor:[UIColor whiteColor]];
+    
             [groupHub incrementBy:notiNumber];
             [groupHub bump];
-            
             
         }
         
     } else {
         NSLog(@"Query failed with error %@", error);
+    } */
+    
+    // Fetches the count of all unread messages for the authenticated user
+    LYRQuery *query = [LYRQuery queryWithQueryableClass:[LYRMessage class]];
+    
+    // Messages must be unread
+    LYRPredicate *unreadPredicate =[LYRPredicate predicateWithProperty:@"isUnread" predicateOperator:LYRPredicateOperatorIsEqualTo value:@(YES)];
+    
+    // Messages must not be sent by the authenticated user
+    LYRPredicate *userPredicate = [LYRPredicate predicateWithProperty:@"sender.userID" predicateOperator:LYRPredicateOperatorIsNotEqualTo value:appDelegate.layerClient.authenticatedUserID];
+    
+    query.predicate = [LYRCompoundPredicate compoundPredicateWithType:LYRCompoundPredicateTypeAnd subpredicates:@[unreadPredicate, userPredicate]];
+    query.resultType = LYRQueryResultTypeCount;
+    NSError *error = nil;
+    NSUInteger unreadMessageCount = [appDelegate.layerClient countForQuery:query error:&error];
+    
+    if (unreadMessageCount > 0) {
+        NSLog(@"%lu unread messages", unreadMessageCount);
+        
+        [groupHub incrementBy:unreadMessageCount];
+        [groupHub bump];
+        
     }
 
 }
@@ -172,7 +200,7 @@ NSString *const MHCustomTabBarControllerViewControllerAlreadyVisibleNotification
     
     [[NSNotificationCenter defaultCenter] postNotificationName:MHCustomTabBarControllerViewControllerChangedNotification object:nil]; 
 
-    if ([segue.identifier isEqualToString:@"viewController1"]) {
+    if ([segue.identifier isEqualToString:@"viewController3"]) {
         
         if ([[[segue destinationViewController] topViewController] isKindOfClass:[GroupsTVC class]]) {
             GroupsTVC *tvc = (GroupsTVC *)[[segue destinationViewController] topViewController];
@@ -180,11 +208,11 @@ NSString *const MHCustomTabBarControllerViewControllerAlreadyVisibleNotification
             
             if (tvc.layerClient == nil) {
                 tvc.layerClient = appDelegate.layerClient;
-                tvc.navigationItem.title = @"Friends";
+                tvc.navigationItem.title = @"Groups";
                 //tvc.deletionModes = [NSArray arrayWithObjects:[NSNumber numberWithUnsignedInteger:LYRDeletionModeLocal], nil];
             }
         }
-    } else if ([segue.identifier isEqualToString:@"viewController2"]) {
+    } else if ([segue.identifier isEqualToString:@"viewController1"]) {
         
         if ([[[segue destinationViewController] topViewController] isKindOfClass:[GroupsTVC class]]) {
             DragViewController *vc = (DragViewController *)[[segue destinationViewController] topViewController];

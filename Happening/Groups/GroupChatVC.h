@@ -12,9 +12,10 @@
 
 @interface GroupChatVC : ATLConversationViewController
 
-@property (nonatomic) NSArray *usersArray;
 @property (assign) NSString *groupEventId;
 @property PFObject *groupEventObject;
 @property PFObject *groupObject;
+
+@property NSArray *userDicts;
 
 @end

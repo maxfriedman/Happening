@@ -42,6 +42,12 @@
 #define COCOAPODS_VERSION_MINOR_LayerKit 15
 #define COCOAPODS_VERSION_PATCH_LayerKit 0
 
+// LocationKit
+#define COCOAPODS_POD_AVAILABLE_LocationKit
+#define COCOAPODS_VERSION_MAJOR_LocationKit 2
+#define COCOAPODS_VERSION_MINOR_LocationKit 0
+#define COCOAPODS_VERSION_PATCH_LocationKit 6
+
 // POP+MCAnimate
 #define COCOAPODS_POD_AVAILABLE_POP_MCAnimate
 #define COCOAPODS_VERSION_MAJOR_POP_MCAnimate 2

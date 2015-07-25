@@ -7,6 +7,7 @@
 //
 
 #import "GroupsEventCell.h"
+#import "UIButton+Extensions.h"
 
 @implementation GroupsEventCell
 
@@ -114,6 +115,8 @@
     [myProfPicView addSubview:cornerImageView];
     
     self.distanceLabel.minimumScaleFactor = 0.5;
+    
+    [self.rsvpButton setHitTestEdgeInsets:UIEdgeInsetsMake(-5, -10, -5, -5)];
     
 }
 

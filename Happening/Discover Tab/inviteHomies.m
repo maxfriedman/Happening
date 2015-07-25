@@ -124,13 +124,13 @@
 
 - (void)loadFriends {
     
-    [SVProgressHUD setViewForExtension:self.tableView.superview];
-    [SVProgressHUD showWithStatus:@"Loading frands" maskType:SVProgressHUDMaskTypeClear];
-    
     sections = [[NSMutableDictionary alloc] init];
 
     NSMutableArray *tappedArray = [NSMutableArray array];
     NSMutableArray *imagesArray = [NSMutableArray array];
+    
+    indexTitles = [[NSArray alloc] init];
+    indexTitles = @[@"\u263A", @"√", @"A", @"B", @"C", @"D", @"E", @"F", @"G", @"H", @"I", @"J", @"K", @"L", @"M", @"N", @"O", @"P", @"Q", @"R", @"S", @"T", @"U", @"V", @"W", @"X", @"Y", @"Z"];
     
     for (int i = 0; i < interestedIds.count; i++) {
         
@@ -154,221 +154,191 @@
     [interestedDict setObject:interestedIds forKey:@"IDs"];
     [interestedDict setObject:tappedArray forKey:@"Tapped"];
     [interestedDict setObject:imagesArray forKey:@"Images"];
+            
+    if ([[PFUser currentUser] objectForKey:@"BestFriends"] != nil)
+        bestFriendsIds = [[PFUser currentUser] objectForKey:@"BestFriends"];
+    else
+        bestFriendsIds = [NSArray new];
     
-    if ([FBSDKAccessToken currentAccessToken]) {
+    NSArray *friends = [PFUser currentUser][@"friends"];
+    
+    NSMutableArray *names = [[NSMutableArray alloc] init];
+    NSMutableArray *friendObjectIDs = [[NSMutableArray alloc] init];
+    
+    for (NSDictionary *dict in friends) {
+        [friendObjectIDs addObject:[dict objectForKey:@"id"]];
+        [names addObject:[dict objectForKey:@"name"]];
+    }
+    
+    NSMutableArray *p = [NSMutableArray arrayWithCapacity:names.count];
+    for (NSUInteger i = 0 ; i != names.count ; i++) {
+        [p addObject:[NSNumber numberWithInteger:i]];
+    }
+    [p sortWithOptions:0 usingComparator:^NSComparisonResult(id obj1, id obj2) {
+        // Modify this to use [first objectAtIndex:[obj1 intValue]].name property
+        NSString *lhs = [names objectAtIndex:[obj1 intValue]];
+        // Same goes for the next line: use the name
+        NSString *rhs = [names objectAtIndex:[obj2 intValue]];
+        return [lhs compare:rhs];
+    }];
+    NSMutableArray *sortedFirst = [NSMutableArray arrayWithCapacity:names.count];
+    NSMutableArray *sortedSecond = [NSMutableArray arrayWithCapacity:friendObjectIDs.count];
+    [p enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        NSUInteger pos = [obj intValue];
+        [sortedFirst addObject:[names objectAtIndex:pos]];
+        [sortedSecond addObject:[friendObjectIDs objectAtIndex:pos]];
+    }];
+    
+    names = sortedFirst;
+    friendObjectIDs = sortedSecond;
+    
+    sortedFriends = [names sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
+    
+    for (int i = 0; i < names.count; i++) {
         
-        [[[FBSDKGraphRequest alloc] initWithGraphPath:@"/me/friends?limit=1000" parameters:nil] startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
-            //code
-            
-            if ([[PFUser currentUser] objectForKey:@"BestFriends"] != nil)
-                bestFriendsIds = [[PFUser currentUser] objectForKey:@"BestFriends"];
-            else
-                bestFriendsIds = [NSArray new];
-            
-            NSArray* friends = [result objectForKey:@"data"];
-            NSLog(@"Found: %lu friends", (unsigned long)friends.count);
-            
-            
-            NSMutableArray *names = [[NSMutableArray alloc] init];
-            
-            NSMutableArray *friendObjectIDs = [[NSMutableArray alloc] init];
-            for (int i = 0; i < friends.count; i ++) {
-                NSDictionary *friend = friends[i];
-                [friendObjectIDs addObject:[friend objectForKey:@"id"]];
-                [names addObject:[friend objectForKey:@"name"]];
-            }
-            
-            NSMutableArray *p = [NSMutableArray arrayWithCapacity:names.count];
-            for (NSUInteger i = 0 ; i != names.count ; i++) {
-                [p addObject:[NSNumber numberWithInteger:i]];
-            }
-            [p sortWithOptions:0 usingComparator:^NSComparisonResult(id obj1, id obj2) {
-                // Modify this to use [first objectAtIndex:[obj1 intValue]].name property
-                NSString *lhs = [names objectAtIndex:[obj1 intValue]];
-                // Same goes for the next line: use the name
-                NSString *rhs = [names objectAtIndex:[obj2 intValue]];
-                return [lhs compare:rhs];
-            }];
-            NSMutableArray *sortedFirst = [NSMutableArray arrayWithCapacity:names.count];
-            NSMutableArray *sortedSecond = [NSMutableArray arrayWithCapacity:friendObjectIDs.count];
-            [p enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                NSUInteger pos = [obj intValue];
-                [sortedFirst addObject:[names objectAtIndex:pos]];
-                [sortedSecond addObject:[friendObjectIDs objectAtIndex:pos]];
-            }];
-            
-            names = sortedFirst;
-            friendObjectIDs = sortedSecond;
-            
-            sortedFriends = [names sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
-            
-            for (int i = 0; i < names.count; i++) {
-                
-                NSString *letter = [[names objectAtIndex: i] substringToIndex:1];
-                NSMutableDictionary *letterDict = [sections objectForKey:letter];
-                if (letterDict == nil) {
-                    letterDict = [NSMutableDictionary dictionary];
-                }
-                
-                [sections setObject:letterDict forKey:letter];
+        NSString *letter = [[names objectAtIndex: i] substringToIndex:1];
+        NSMutableDictionary *letterDict = [sections objectForKey:letter];
+        if (letterDict == nil) {
+            letterDict = [NSMutableDictionary dictionary];
+        }
+        
+        [sections setObject:letterDict forKey:letter];
 
+        
+        NSMutableArray *namesArray = [letterDict objectForKey:@"Names"];
+        if (namesArray == nil) {
+            namesArray = [NSMutableArray array];
+        }
+        
+        [letterDict setObject:namesArray forKey:@"Names"];
+        [namesArray addObject:names[i]];
+        
+        
+        NSMutableArray *idsArray = [letterDict objectForKey:@"IDs"];
+        if (idsArray == nil) {
+            idsArray = [NSMutableArray array];
+        }
+        [letterDict setObject:idsArray forKey:@"IDs"];
+        [idsArray addObject:friendObjectIDs[i]];
+        
+        
+        NSMutableArray *imagesArray = [letterDict objectForKey:@"Images"];
+        if (imagesArray == nil) {
+            imagesArray = [NSMutableArray array];
+        }
+        [letterDict setObject:imagesArray forKey:@"Images"];
+        FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(10, 5, 30, 30)];
+        profPicView.layer.cornerRadius = 15;
+        profPicView.layer.masksToBounds = YES;
+        profPicView.profileID = friendObjectIDs[i];
+        profPicView.tag = 9;
+        [imagesArray addObject:profPicView];
+        
+        
+        NSMutableArray *tappedArray = [letterDict objectForKey:@"Tapped"];
+        if (tappedArray == nil) {
+            tappedArray = [NSMutableArray array];
+        }
+        
+        [letterDict setObject:tappedArray forKey:@"Tapped"];
+        NSNumber *no = [NSNumber numberWithInt:0];
+        [tappedArray addObject:no];
+        
+    }
+    
+    NSArray *unsortedFriendsLetters = [sections allKeys];
+    sortedFriendsLetters = [unsortedFriendsLetters sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
+    NSArray *addArray = [NSArray arrayWithObjects:@"GROUPS", @"INTERESTED", nil];
+    
+    sortedFriendsLetters = [addArray arrayByAddingObjectsFromArray:sortedFriendsLetters];
+
+    NSMutableArray *blankGroupNamesArray1 = [NSMutableArray array];
+    NSMutableArray *blankMemberNamesArray1 = [NSMutableArray array];
+    NSMutableArray *blankGroupImagesArray1 = [NSMutableArray array];
+    NSMutableArray *blankIDsArray1 = [NSMutableArray array];
+    NSMutableArray *blankTappedArray1 = [NSMutableArray array];
+
+    NSMutableDictionary *blankDict1 = [NSMutableDictionary dictionary];
+    
+    [sections setObject:blankDict1 forKey:@"GROUPS"];
+    [sections setObject:interestedDict forKey:@"INTERESTED"];
+    
+    [blankDict1 setObject:blankGroupNamesArray1 forKey:@"GroupNames"];
+    [blankDict1 setObject:blankMemberNamesArray1 forKey:@"MemberNames"];
+    [blankDict1 setObject:blankGroupImagesArray1 forKey:@"GroupImages"];
+    [blankDict1 setObject:blankIDsArray1 forKey:@"IDs"];
+    [blankDict1 setObject:blankTappedArray1 forKey:@"Tapped"];
+    
+    [self.tableView reloadData];
+    
+    PFUser *currentUser = [PFUser currentUser];
+    
+    PFQuery *groupsUserQuery = [PFQuery queryWithClassName:@"Group_User"];
+    [groupsUserQuery whereKey:@"user_id" equalTo:currentUser.objectId];
+    
+    PFQuery *groupsQuery = [PFQuery queryWithClassName:@"Group"];
+    [groupsQuery fromLocalDatastore];
+    //[groupsQuery whereKey:@"objectId" matchesKey:@"group_id" inQuery:groupsUserQuery];
+    [groupsQuery whereKey:@"memberCount" greaterThan:@2];
+    
+    [groupsQuery findObjectsInBackgroundWithBlock:^(NSArray *array, NSError *error) {
+
+        if (!error) {
+            NSMutableDictionary *groupsDict = [sections objectForKey:@"GROUPS"];
+            NSMutableArray *groupNamesArray = [groupsDict objectForKey:@"GroupNames"];
+            NSMutableArray *groupImagesArray = [groupsDict objectForKey:@"GroupImages"];
+            NSMutableArray *memberNamesArray = [groupsDict objectForKey:@"MemberNames"];
+            NSMutableArray *idsArray = [groupsDict objectForKey:@"IDs"];
+            NSMutableArray *tappedArray = [groupsDict objectForKey:@"Tapped"];
+
+            for (PFObject *group in array) {
+
+                NSArray *users = group[@"user_dicts"];
                 
-                NSMutableArray *namesArray = [letterDict objectForKey:@"Names"];
-                if (namesArray == nil) {
-                    namesArray = [NSMutableArray array];
+                NSMutableArray *tempArray = [[NSMutableArray alloc] init];
+                for (NSDictionary *dict in users) {
+                    if (![[dict objectForKey:@"parseId"] isEqualToString:currentUser.objectId]) {
+                        NSString *name = [dict valueForKey:@"name"];
+                        [tempArray addObject:[NSString stringWithFormat:@"%@", [[name componentsSeparatedByString:@" "] objectAtIndex:0]]];
+                    }
+                }
+
+                [groupNamesArray addObject: group[@"name"]];
+                
+                NSString *memberString = [NSString stringWithFormat:@"With %@", tempArray[0]];
+                
+                for (int i = 1; i < tempArray.count - 1; i++) {
+                    memberString = [memberString stringByAppendingString:[NSString stringWithFormat:@", %@", tempArray[i]]];
                 }
                 
-                [letterDict setObject:namesArray forKey:@"Names"];
-                [namesArray addObject:names[i]];
-                
-                
-                NSMutableArray *idsArray = [letterDict objectForKey:@"IDs"];
-                if (idsArray == nil) {
-                    idsArray = [NSMutableArray array];
-                }
-                [letterDict setObject:idsArray forKey:@"IDs"];
-                [idsArray addObject:friendObjectIDs[i]];
-                
-                
-                NSMutableArray *imagesArray = [letterDict objectForKey:@"Images"];
-                if (imagesArray == nil) {
-                    imagesArray = [NSMutableArray array];
-                }
-                [letterDict setObject:imagesArray forKey:@"Images"];
-                FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(10, 5, 30, 30)];
-                profPicView.layer.cornerRadius = 15;
-                profPicView.layer.masksToBounds = YES;
-                profPicView.profileID = friendObjectIDs[i];
-                profPicView.tag = 9;
-                [imagesArray addObject:profPicView];
-                
-                
-                NSMutableArray *tappedArray = [letterDict objectForKey:@"Tapped"];
-                if (tappedArray == nil) {
-                    tappedArray = [NSMutableArray array];
+                if (tempArray.count > 1) {
+                    NSString *name = [tempArray lastObject];
+                    memberString = [memberString stringByAppendingString:[NSString stringWithFormat:@" and %@", name]];
                 }
                 
-                [letterDict setObject:tappedArray forKey:@"Tapped"];
+                [memberNamesArray addObject:memberString];
+                
                 NSNumber *no = [NSNumber numberWithInt:0];
                 [tappedArray addObject:no];
                 
-            }
-            
-            NSArray *unsortedFriendsLetters = [sections allKeys];
-            sortedFriendsLetters = [unsortedFriendsLetters sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
-            NSArray *addArray = [NSArray arrayWithObjects:@"GROUPS", @"INTERESTED", nil];
-            
-            sortedFriendsLetters = [addArray arrayByAddingObjectsFromArray:sortedFriendsLetters];
-
-            NSMutableArray *blankGroupNamesArray1 = [NSMutableArray array];
-            NSMutableArray *blankMemberNamesArray1 = [NSMutableArray array];
-            NSMutableArray *blankGroupImagesArray1 = [NSMutableArray array];
-            NSMutableArray *blankIDsArray1 = [NSMutableArray array];
-            NSMutableArray *blankTappedArray1 = [NSMutableArray array];
-
-            NSMutableDictionary *blankDict1 = [NSMutableDictionary dictionary];
-            
-            [sections setObject:blankDict1 forKey:@"GROUPS"];
-            [sections setObject:interestedDict forKey:@"INTERESTED"];
-            
-            [blankDict1 setObject:blankGroupNamesArray1 forKey:@"GroupNames"];
-            [blankDict1 setObject:blankMemberNamesArray1 forKey:@"MemberNames"];
-            [blankDict1 setObject:blankGroupImagesArray1 forKey:@"GroupImages"];
-            [blankDict1 setObject:blankIDsArray1 forKey:@"IDs"];
-            [blankDict1 setObject:blankTappedArray1 forKey:@"Tapped"];
-            
-            [self.tableView reloadData];
-            
-            PFUser *currentUser = [PFUser currentUser];
-            
-            PFQuery *groupsUserQuery = [PFQuery queryWithClassName:@"Group_User"];
-            [groupsUserQuery whereKey:@"user_id" equalTo:currentUser.objectId];
-            
-            PFQuery *groupsQuery = [PFQuery queryWithClassName:@"Group"];
-            [groupsQuery whereKey:@"objectId" matchesKey:@"group_id" inQuery:groupsUserQuery];
-            [groupsQuery includeKey:@"user_objects"];
-            [groupsQuery whereKey:@"memberCount" greaterThan:@2];
-            
-            [groupsQuery findObjectsInBackgroundWithBlock:^(NSArray *array, NSError *error) {
-
-                if (!error) {
-                    NSMutableDictionary *groupsDict = [sections objectForKey:@"GROUPS"];
-                    NSMutableArray *groupNamesArray = [groupsDict objectForKey:@"GroupNames"];
-                    NSMutableArray *groupImagesArray = [groupsDict objectForKey:@"GroupImages"];
-                    NSMutableArray *memberNamesArray = [groupsDict objectForKey:@"MemberNames"];
-                    NSMutableArray *idsArray = [groupsDict objectForKey:@"IDs"];
-                    NSMutableArray *tappeddArray = [groupsDict objectForKey:@"Tapped"];
-
-                    for (PFObject *group in array) {
-
-                        NSArray *users = group[@"user_objects"];
-                        
-                        NSString *name = group[@"name"];
-                        if ([name isEqualToString:@"_indy_"]) {
-                            
-                            for (PFUser *user in users) {
-                                if (![user.objectId isEqualToString:currentUser.objectId])
-                                    [groupNamesArray addObject:[NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]]];
-                                [memberNamesArray addObject:@""];
-                            }
-                            
-                        } else {
-                            
-                            [groupNamesArray addObject: group[@"name"]];
-                        
-                            NSMutableArray *tempArray = [[NSMutableArray alloc] init];
-                            
-                            for (PFUser *user in users) {
-                                if (![user.objectId isEqualToString: currentUser.objectId]) {
-                                    [tempArray addObject:[NSString stringWithFormat:@"%@", user[@"firstName"]]];
-                                }
-                            }
-                            
-                            NSString *memberString = [NSString stringWithFormat:@"With %@", tempArray[0]];
-                            
-                            for (int i = 1; i < tempArray.count - 1; i++) {
-                                memberString = [memberString stringByAppendingString:[NSString stringWithFormat:@", %@", tempArray[i]]];
-                            }
-                            
-                            PFUser *user = users[users.count-1];
-                            if (tempArray.count > 1)
-                                memberString = [memberString stringByAppendingString:[NSString stringWithFormat:@" and %@", user[@"firstName"]]];
-                            
-                            [memberNamesArray addObject:memberString];
-                        }
-                        
-                        NSNumber *no = [NSNumber numberWithInt:0];
-                        [tappeddArray addObject:no];
-                        
-                        [idsArray addObject:group.objectId];
-                        
-                        if (group[@"avatar"] != nil) {
-                            [groupImagesArray addObject:group[@"avatar"]];
-                        }
-                    }
-                    
-                    NSLog(@"reload data");
-                    [SVProgressHUD dismiss];
-                    NSLog(@"%@", sections);
-
-                    [self.tableView reloadData];
-                    
-                } else {
-                    NSLog(@"error");
+                [idsArray addObject:group.objectId];
+                
+                if (group[@"avatar"] != nil) {
+                    [groupImagesArray addObject:group[@"avatar"]];
                 }
                 
-            }];
-        
-        }];
-        
-    } else {
-        
-        NSLog(@"no token......");
-    }
+            }
+            
+            NSLog(@"reload data");
+            [SVProgressHUD dismiss];
+            NSLog(@"%@", sections);
 
-    
-    indexTitles = [[NSArray alloc] init];
-    indexTitles = @[@"\u263A", @"√", @"A", @"B", @"C", @"D", @"E", @"F", @"G", @"H", @"I", @"J", @"K", @"L", @"M", @"N", @"O", @"P", @"Q", @"R", @"S", @"T", @"U", @"V", @"W", @"X", @"Y", @"Z"];
+            [self.tableView reloadData];
+            
+        } else {
+            NSLog(@"error: %@", error);
+        }
+    }];
     
 }
 
@@ -412,14 +382,13 @@
             return 70;
         }
     }
-    
-    
+
     return 40;
-    
 }
 
 -(UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
 {
+    
     UIView *view = [[UIView alloc] initWithFrame:CGRectMake(0, 0, tableView.frame.size.width, 18)];
     /* Create custom view to display section header... */
     UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(10, 5, tableView.frame.size.width, 18)];
@@ -432,7 +401,6 @@
     
     return view;
 }
-
 
  - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
  
@@ -1253,6 +1221,8 @@
     [SVProgressHUD setViewForExtension:self.tableView.superview];
     [SVProgressHUD setOffsetFromCenter:UIOffsetMake(0, 30)];
     
+    [self interactionEnabled:NO];
+    
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         // time-consuming task
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -1301,7 +1271,6 @@
     
     PFQuery *groupQuery = [PFQuery queryWithClassName:@"Group"];
     [groupQuery whereKey:@"objectId" containedIn:finalGroupIDArray];
-    [groupQuery includeKey:@"user_objects"];
     [groupQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         
         if (!error) {
@@ -1329,10 +1298,12 @@
                 */
                 
                 PFQuery *eventCheckQuery = [PFQuery queryWithClassName:@"Group_Event"];
-                [eventCheckQuery fromLocalDatastore];
+                //[eventCheckQuery fromLocalDatastore];
                 [eventCheckQuery whereKey:@"EventID" equalTo:self.objectID];
                 [eventCheckQuery whereKey:@"GroupID" equalTo:group.objectId];
                 [eventCheckQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
+                    
+                    [self interactionEnabled:YES];
                     
                     if (!error) {
                         
@@ -1342,14 +1313,14 @@
                         
                             if ([object[@"invitedByID"] isEqualToString:currentUser.objectId]) {
                                 
-                                NSArray *users = group[@"user_objects"];
-                                PFUser *u = [PFUser user];
-                                for (PFUser *user in users) {
-                                    if (![user.objectId isEqualToString:currentUser.objectId])
-                                        u = user;
+                                NSArray *userObjects = group[@"user_dicts"];
+                                NSString *name = @"";
+                                for (NSDictionary *user in userObjects) {
+                                    name = [user valueForKey:@"name"];
                                 }
                                 
-                                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Holduppp" message:[NSString stringWithFormat:@"You already invited %@ %@ to this event!", u[@"firstName"], u[@"lastName"]] delegate:self cancelButtonTitle:@"Right on" otherButtonTitles:nil, nil];
+                                
+                                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Holduppp" message:[NSString stringWithFormat:@"You already invited %@ to this event!", name] delegate:self cancelButtonTitle:@"Right on" otherButtonTitles:nil, nil];
                                 [alertView show];
                                 
                             } else {
@@ -1371,22 +1342,8 @@
                             
                             [self dismissViewControllerAnimated:YES completion:^{
                                 
-                                [SVProgressHUD setViewForExtension:[UIApplication sharedApplication].keyWindow];
-                                //[SVProgressHUD showWithMaskType:SVProgressHUDMaskTypeGradient];
+                                //[self.delegate showBoom];
                                 
-                                //[SVProgressHUD setViewForExtension:self.tableView.superview];
-                                //[SVProgressHUD setOffsetFromCenter:UIOffsetMake(0, 20)];
-                                
-                                [self.delegate showBoom];
-                                
-                                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-                                    // time-consuming task
-                                    dispatch_async(dispatch_get_main_queue(), ^{
-                                        [SVProgressHUD showSuccessWithStatus:@"Boom"]; //WithMaskType:SVProgressHUDMaskTypeGradient];
-                                        //[SVProgressHUD setFont:[UIFont fontWithName:@"OpenSans" size:15.0]];
-                                        //[SVProgressHUD setStatus:@"Loading Happenings"];
-                                    });
-                                });
                                 [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"refreshGroups"];
                                 [[NSUserDefaults standardUserDefaults] synchronize];
                             }];
@@ -1398,12 +1355,13 @@
                         
                         NSLog(@"Event in group does NOT exist!");
                         
+                        [self interactionEnabled:YES];
+                        
                         PFObject *groupEvent = [PFObject objectWithClassName:@"Group_Event"];
                         groupEvent[@"EventID"] = self.objectID;
                         groupEvent[@"GroupID"] = group.objectId;
                         groupEvent[@"invitedByName"] = [NSString stringWithFormat:@"%@ %@", currentUser[@"firstName"], currentUser[@"lastName"]];
                         groupEvent[@"invitedByID"] = currentUser.objectId;
-                        groupEvent[@"users_going"] = [NSArray arrayWithObject:currentUser];
                         [event pinInBackground];
                         [groupEvent saveEventually:^(BOOL success, NSError *error) {
                             
@@ -1413,6 +1371,7 @@
                             rsvpObject[@"Group_Event_ID"] = groupEvent.objectId;
                             rsvpObject[@"UserID"] = currentUser.objectId;
                             rsvpObject[@"User_Object"] = currentUser;
+                            rsvpObject[@"UserFBID"] = currentUser[@"FBObjectID"];
                             rsvpObject[@"GoingType"] = @"yes";
                             [rsvpObject pinInBackground];
                             [rsvpObject saveEventually];
@@ -1511,6 +1470,7 @@
             
         } else {
             
+            [self interactionEnabled:YES];
             [SVProgressHUD showErrorWithStatus:@"Group creation failed :("];
         }
         
@@ -1518,7 +1478,15 @@
     
 }
 
+- (void)interactionEnabled:(BOOL)enabled {
+    
+    self.tableView.userInteractionEnabled = enabled;
+    sendInvitesButton.enabled = enabled;
+}
+
 -(void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
+    
+    [self interactionEnabled:NO];
     
     if (alertView.tag == 3) {
         
@@ -1541,10 +1509,11 @@
             [groupUserQuery whereKey:@"user_id" matchesKey:@"objectId" inQuery:userQuery];
             
             PFQuery *groupQuery = [PFQuery queryWithClassName:@"Group"];
-            [groupQuery whereKey:@"objectId" matchesKey:@"group_id" inQuery:groupUserQuery];
+            /* [groupQuery whereKey:@"objectId" matchesKey:@"group_id" inQuery:groupUserQuery];
             [groupQuery whereKey:@"memberCount" equalTo:@(tempIDArray.count)];
-            [groupQuery includeKey:@"user_objects"];
+            [groupQuery includeKey:@"user_objects"]; */
             
+            [groupQuery fromLocalDatastore];
             [groupQuery findObjectsInBackgroundWithBlock:^(NSArray *groups, NSError *error){
 
                 if (!error) {
@@ -1553,12 +1522,12 @@
                     
                     for (PFObject *group in groups) {
                         
-                        NSArray *groupUsers = group[@"user_objects"];
-                        NSMutableArray *tempArray = [NSMutableArray new];
-                        for (PFUser *user in groupUsers) {
-                            [tempArray addObject:user[@"FBObjectID"]];
+                        NSArray *users = group[@"user_dicts"];
+                        
+                        NSMutableArray *tempArray = [[NSMutableArray alloc] init];
+                        for (NSDictionary *dict in users) {
+                            [tempArray addObject:[dict valueForKey:@"id"]];
                         }
-                        NSLog(@"%@ --- %@", tempIDArray, tempArray);
                         
                         tempArray = (NSMutableArray *)[tempArray sortedArrayUsingSelector:@selector(compare:)];
                         
@@ -1578,6 +1547,7 @@
                         
                         NSLog(@"Group doesn't exist...");
                         [SVProgressHUD dismiss];
+                        [self interactionEnabled:YES];
                         [self performSegueWithIdentifier:@"toNewGroup" sender:self];
                     }
                 
@@ -1585,6 +1555,7 @@
                     
                     NSLog(@"Group doesn't exist...");
                     [SVProgressHUD dismiss];
+                    [self interactionEnabled:YES];
                     [self performSegueWithIdentifier:@"toNewGroup" sender:self];
                }
                 
@@ -1615,128 +1586,148 @@
             
             for (int i = 0; i < users.count; i++) {
                 
-                PFUser *user = users[i];
-            
-                PFObject *group = [PFObject objectWithClassName:@"Group"];
+                PFObject *user = (PFObject *)users[i];
+                
                 PFObject *cu = (PFObject *)currentUser;
                 
                 NSMutableArray *usersForGroup = [[NSMutableArray alloc] initWithObjects:user, cu, nil];
+                NSMutableArray *userIds = [NSMutableArray array];
+                for (PFUser *user in usersForGroup) {
+                    [userIds addObject:user.objectId];
+                }
                 
                 PFQuery *groupUserQuery1 = [PFQuery queryWithClassName:@"Group_User"];
                 [groupUserQuery1 whereKey:@"user_id" equalTo:currentUser.objectId];
                 
-                PFQuery *groupUserQuery2 = [PFQuery queryWithClassName:@"Group_User"];
-                [groupUserQuery2 whereKey:@"user_id" equalTo:user.objectId];
+                NSLog(@"%@", userIds);
                 
                 PFQuery *groupQuery = [PFQuery queryWithClassName:@"Group"];
-                [groupQuery whereKey:@"objectId" matchesKey:@"group_id" inQuery:groupUserQuery1];
-                [groupQuery whereKey:@"objectId" matchesKey:@"group_id" inQuery:groupUserQuery2];
+                [groupQuery fromLocalDatastore];
+                [groupQuery whereKey:@"user_parse_ids" containsAllObjectsInArray:userIds];
                 [groupQuery whereKey:@"memberCount" equalTo:@2];
                 
-                [groupQuery findObjectsInBackgroundWithBlock:^(NSArray *groups, NSError *error){
-                
+                [groupQuery getFirstObjectInBackgroundWithBlock:^(PFObject *group, NSError *error){
+                    
                     BOOL newGroupNewEvent = YES;
                     
                     if (!error) {
                         
-                        NSLog(@"%lu groups exists between these users, now check if they have a 1-1 group...", (unsigned long)groups.count);
-                        
-                        for (PFObject *group in groups) {
+                        NSLog(@"1-1 group exists!");
+                        newGroupNewEvent = NO;
+
+                        PFQuery *eventCheckQuery = [PFQuery queryWithClassName:@"Group_Event"];
+                        //[eventCheckQuery fromLocalDatastore];
+                        [eventCheckQuery whereKey:@"EventID" equalTo:self.objectID];
+                        [eventCheckQuery whereKey:@"GroupID" equalTo:group.objectId];
+                        [eventCheckQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
                             
-                            if ([group[@"memberCount"] intValue] == 2) {
+                            [self interactionEnabled:YES];
+                            
+                            if (!error) {
                                 
-                                NSLog(@"1-1 group exists!");
-                                newGroupNewEvent = NO;
-
-                                PFQuery *eventCheckQuery = [PFQuery queryWithClassName:@"Group_Event"];
-                                [eventCheckQuery fromLocalDatastore];
-                                [eventCheckQuery whereKey:@"EventID" equalTo:self.objectID];
-                                [eventCheckQuery whereKey:@"GroupID" equalTo:group.objectId];
-                                [eventCheckQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
+                                NSLog(@"Event in group DOES exist!");
+                                
+                                if ([object[@"invitedByID"] isEqualToString:currentUser.objectId]) {
+                                
+                                    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Oops" message:[NSString stringWithFormat:@"You already invited %@ %@ to this event!", user[@"firstName"], user[@"lastName"]] delegate:self cancelButtonTitle:@"Oh yeah" otherButtonTitles:nil, nil];
+                                    [alertView show];
                                     
-                                    if (!error) {
+                                } else {
+                                    
+                                    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Wait a second" message:[NSString stringWithFormat:@"%@ already invited you to this event!", group[@"invitedByName"]] delegate:self cancelButtonTitle:@"Awesome sauce" otherButtonTitles:nil, nil];
+                                    [alertView show];
+                                    
+                                }
+                                
+                                saveCount++;
+                                
+                                if (saveCount == users.count) {
+                                    
+                                    [self dismissViewControllerAnimated:YES completion:^{
                                         
-                                        NSLog(@"Event in group DOES exist!");
-                                        
-                                        if ([object[@"invitedByID"] isEqualToString:currentUser.objectId]) {
-                                        
-                                            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Oops" message:[NSString stringWithFormat:@"You already invited %@ %@ to this event!", user[@"firstName"], user[@"lastName"]] delegate:self cancelButtonTitle:@"Oh yeah" otherButtonTitles:nil, nil];
-                                            [alertView show];
-                                            
-                                        } else {
-                                            
-                                            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Wait a second" message:[NSString stringWithFormat:@"%@ already invited you to this event!", group[@"invitedByName"]] delegate:self cancelButtonTitle:@"Awesome sauce" otherButtonTitles:nil, nil];
-                                            [alertView show];
-                                            
-                                        }
-                                        
-                                        saveCount++;
-                                        
-                                        if (saveCount == users.count) {
-                                            
-                                            [self dismissViewControllerAnimated:YES completion:^{
-                                                
-                                                [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"refreshGroups"];
-                                                [[NSUserDefaults standardUserDefaults] synchronize];
-                                            }];
-                                        }
+                                        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"refreshGroups"];
+                                        [[NSUserDefaults standardUserDefaults] synchronize];
+                                    }];
+                                }
 
-                                        
-                                    } else {
-                                        
-                                        NSLog(@"Event in group does NOT exist!");
-                                        
-                                        PFObject *groupEvent = [PFObject objectWithClassName:@"Group_Event"];
-                                        groupEvent[@"EventID"] = self.objectID;
-                                        groupEvent[@"GroupID"] = group.objectId;
-                                        groupEvent[@"invitedByName"] = [NSString stringWithFormat:@"%@ %@", currentUser[@"firstName"], currentUser[@"lastName"]];
-                                        groupEvent[@"invitedByID"] = currentUser.objectId;
-                                        groupEvent[@"users_going"] = [NSArray arrayWithObject:currentUser];
-                                        [event pinInBackground];
-                                        [groupEvent saveEventually:^(BOOL success, NSError *error) {
-                                            
-                                            PFObject *rsvpObject = [PFObject objectWithClassName:@"Group_RSVP"];
-                                            rsvpObject[@"EventID"] = event.objectId;
-                                            rsvpObject[@"GroupID"] = group.objectId;
-                                            rsvpObject[@"Group_Event_ID"] = groupEvent.objectId;
-                                            rsvpObject[@"UserID"] = currentUser.objectId;
-                                            rsvpObject[@"User_Object"] = currentUser;
-                                            rsvpObject[@"GoingType"] = @"yes";
-                                            [rsvpObject pinInBackground];
-                                            [rsvpObject saveEventually];
-                                            
-                                        }];
-                                        
-                                        [self setupConversationWithMessage:[NSString stringWithFormat:@"%@ %@ wants to go to: %@ %@", currentUser[@"firstName"], currentUser[@"lastName"], eventTitle, eventLocation] forGroup:group];
-                                        
-                                        saveCount++;
-                                        
-                                        if (saveCount == users.count) {
-                                            
-                                            [self dismissViewControllerAnimated:YES completion:^{
-                                                
-                                                [self.delegate showBoom];
-                                                [SVProgressHUD showSuccessWithStatus:@"Boom"];
-                                                [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"refreshGroups"];
-                                                [[NSUserDefaults standardUserDefaults] synchronize];
-                                            }];
-                                        }
-                                    }
+                                
+                            } else {
+                                
+                                NSLog(@"Event in group does NOT exist!");
+                                
+                                PFObject *groupEvent = [PFObject objectWithClassName:@"Group_Event"];
+                                groupEvent[@"EventID"] = self.objectID;
+                                groupEvent[@"GroupID"] = group.objectId;
+                                groupEvent[@"invitedByName"] = [NSString stringWithFormat:@"%@ %@", currentUser[@"firstName"], currentUser[@"lastName"]];
+                                groupEvent[@"invitedByID"] = currentUser.objectId;
+                                [event pinInBackground];
+                                [groupEvent saveEventually:^(BOOL success, NSError *error) {
+                                    
+                                    PFObject *rsvpObject = [PFObject objectWithClassName:@"Group_RSVP"];
+                                    rsvpObject[@"EventID"] = event.objectId;
+                                    rsvpObject[@"GroupID"] = group.objectId;
+                                    rsvpObject[@"Group_Event_ID"] = groupEvent.objectId;
+                                    rsvpObject[@"UserID"] = currentUser.objectId;
+                                    rsvpObject[@"User_Object"] = currentUser;
+                                    rsvpObject[@"UserFBID"] = currentUser[@"FBObjectID"];
+                                    rsvpObject[@"GoingType"] = @"yes";
+                                    [rsvpObject pinInBackground];
+                                    [rsvpObject saveEventually];
+                                    
                                 }];
+                                
+                                [self setupConversationWithMessage:[NSString stringWithFormat:@"%@ %@ wants to go to: %@ %@", currentUser[@"firstName"], currentUser[@"lastName"], eventTitle, eventLocation] forGroup:group];
+                                
+                                saveCount++;
+                                
+                                if (saveCount == users.count) {
+                                    
+                                    [self dismissViewControllerAnimated:YES completion:^{
+                                        
+                                        [self.delegate showBoom];
+                                        [SVProgressHUD showSuccessWithStatus:@"Boom"];
+                                        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"refreshGroups"];
+                                        [[NSUserDefaults standardUserDefaults] synchronize];
+                                    }];
+                                }
                             }
-                        }
+                        }];
                     }
                     
                     if (newGroupNewEvent) {
                         
                         NSLog(@"users do not have a 1-1 group. Create new group and event!");
                         
-                        group[@"user_objects"] = usersForGroup;
-                        group[@"name"] = @"_indy_"; //[NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]];
+                        PFObject *group = [PFObject objectWithClassName:@"Group"];
+                        group[@"name"] =  [NSString stringWithFormat:@"%@ and %@", currentUser[@"firstName"], user[@"firstName"]]; //[NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]];
                         group[@"memberCount"] = @2;
-                        group[@"avatar"] = [PFFile fileWithName:@"image.png" data:UIImagePNGRepresentation([UIImage imageNamed:@"interested_face"])];
+                        group[@"avatar"] = [PFFile fileWithName:@"image.png" data:UIImagePNGRepresentation([UIImage imageNamed:@"userImage"])];
+                        group[@"isDefaultImage"] = @YES;
+                        group[@"isDefaultName"] = @YES;
+                        
+                        NSMutableArray *userDictsArray = [NSMutableArray array];
+                        NSMutableArray *parseArray = [NSMutableArray array];
+                        NSMutableArray *fbArray = [NSMutableArray array];
+                        for (PFUser *user in usersForGroup) {
+                            [parseArray addObject:user.objectId];
+                            [fbArray addObject:user[@"FBObjectID"]];
+                            
+                            NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+                            
+                            [dict setObject:user.objectId forKey:@"parseId"];
+                            [dict setObject:[NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]] forKey:@"name"];
+                            [dict setObject:user[@"FBObjectID"] forKey:@"id"];
+                            [userDictsArray addObject:dict];
+                        }
+                        
+                        group[@"user_parse_ids"] = parseArray;
+                        group[@"user_dicts"] = userDictsArray;
+                        
+                        NSLog(@"%@", group);
                         
                         [group saveInBackgroundWithBlock:^(BOOL success, NSError *error){
+                            
+                            NSLog(@"Made it");
                             
                             if (success) {
                             
@@ -1825,7 +1816,6 @@
                                 groupEvent[@"GroupID"] = group.objectId;
                                 groupEvent[@"invitedByName"] = [NSString stringWithFormat:@"%@ %@", currentUser[@"firstName"], currentUser[@"lastName"]];
                                 groupEvent[@"invitedByID"] = currentUser.objectId;
-                                groupEvent[@"users_going"] = [NSArray arrayWithObject:currentUser];
                                 [event pinInBackground];
                                 [groupEvent saveEventually:^(BOOL success, NSError *error) {
                                     
@@ -1835,6 +1825,7 @@
                                     rsvpObject[@"Group_Event_ID"] = groupEvent.objectId;
                                     rsvpObject[@"UserID"] = currentUser.objectId;
                                     rsvpObject[@"User_Object"] = currentUser;
+                                    rsvpObject[@"UserFBID"] = currentUser[@"FBObjectID"];
                                     rsvpObject[@"GoingType"] = @"yes";
                                     [rsvpObject pinInBackground];
                                     [rsvpObject saveEventually];
@@ -1857,18 +1848,23 @@
                                 }
                                 
                             } else {
-                                [SVProgressHUD showErrorWithStatus:@"Something went wrong :("];
+                                
+                                [self interactionEnabled:YES];
+                                [self dismissViewControllerAnimated:YES completion:^{
+                                    
+                                    [self.delegate showError:[NSString stringWithFormat:@"Failed to create group with %@", user[@"firstName"]]];
+                                    [SVProgressHUD showSuccessWithStatus:@"Boom"];
+                                    [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"refreshGroups"];
+                                    [[NSUserDefaults standardUserDefaults] synchronize];
+                                }];
                             }
                         }];
+                    
                     }
+                    
                 }];
             }
-            
-        } else {
-            
-            [SVProgressHUD showErrorWithStatus:@"Something went wrong :("];
         }
-        
     }];
     
 
@@ -1903,10 +1899,10 @@
     
     if (shouldCreateNewConvo) {
         
-        NSArray *userObjects = group[@"user_objects"];
+        NSArray *userObjects = group[@"user_dicts"];
         NSMutableArray *idArray = [NSMutableArray new];
-        for (PFUser *user in userObjects) {
-            [idArray addObject:user.objectId];
+        for (NSDictionary *user in userObjects) {
+            [idArray addObject:[user valueForKey:@"parseId"]];
         }
         
         conversation = [appDelegate.layerClient newConversationWithParticipants:[NSSet setWithArray:idArray] options:nil error:&error];
@@ -1920,6 +1916,7 @@
     
     if (!conversation || conversation == nil) {
         NSLog(@"New Conversation creation failed: %@", error);
+        [self interactionEnabled:YES];
         [SVProgressHUD showErrorWithStatus:@"Something went wrong :("];
     }
     
@@ -1952,7 +1949,7 @@
         NSLog(@"Message send failed: %@", error);
         
         [self dismissViewControllerAnimated:YES completion:^{
-            [SVProgressHUD showErrorWithStatus:@"Something went wrong :("];
+            [SVProgressHUD showErrorWithStatus:@"Failed to send message"];
             [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"refreshGroups"];
             [[NSUserDefaults standardUserDefaults] synchronize];
         }];
@@ -2018,6 +2015,7 @@
         vc.userIdArray = (NSMutableArray *)[finalUserIDArray arrayByAddingObject:currentUser[@"FBObjectID"]];
         vc.memCount = (int)vc.userIdArray.count;
         vc.event = event;
+        vc.inviteHomies = self;
         NSLog(@"%@", vc.userIdArray);
     
     }

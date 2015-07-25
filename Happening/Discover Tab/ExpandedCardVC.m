@@ -124,7 +124,8 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                     
                 } else {
                     
-                    dragView.eventImage.image = [UIImage imageNamed:event[@"Hashtag"]];
+                    NSString *tag = event[@"Hashtag"];
+                    dragView.eventImage.image = [UIImage imageNamed:tag];
                     [self createDraggableView];
                 }
             }
@@ -167,19 +168,19 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             
             finalString = [NSString stringWithFormat:@"Happening NOW!"];
             
-        } else if ([eventDate beginningOfDay] == [[NSDate date]beginningOfDay]) {  // TODAY
+        } else if ([[eventDate beginningOfDay] isEqualToDate:[[NSDate date]beginningOfDay]]) {  // TODAY
             
             [formatter setDateFormat:@"h:mma"];
             NSString *timeString = [formatter stringFromDate:eventDate];
             finalString = [NSString stringWithFormat:@"Today at %@", timeString];
             
-        } else if ([eventDate beginningOfDay] == [[NSDate dateWithTimeIntervalSinceNow:86400] beginningOfDay]) { // TOMORROW
+        } else if ([[eventDate beginningOfDay] isEqualToDate:[[NSDate dateWithTimeIntervalSinceNow:86400] beginningOfDay]]) { // TOMORROW
             
             [formatter setDateFormat:@"h:mma"];
             NSString *timeString = [formatter stringFromDate:eventDate];
             finalString = [NSString stringWithFormat:@"Tomorrow at %@", timeString];
             
-        } else if ([eventDate endOfWeek] == [[NSDate date]endOfWeek]) { // SAME WEEK
+        } else if ([[eventDate endOfWeek] isEqualToDate:[[NSDate date]endOfWeek]]) { // SAME WEEK
             
             [formatter setDateFormat:@"EEEE"];
             NSString *dayOfWeekString = [formatter stringFromDate:eventDate];
@@ -187,7 +188,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             NSString *timeString = [formatter stringFromDate:eventDate];
             finalString = [NSString stringWithFormat:@"%@ at %@", dayOfWeekString, timeString];
             
-        } else if ([eventDate beginningOfDay] != [endDate beginningOfDay]) { //MULTI-DAY EVENT
+        } else if (![[eventDate beginningOfDay] isEqualToDate:[endDate beginningOfDay]]) { //MULTI-DAY EVENT
             
             [formatter setDateFormat:@"MMM d"];
             NSString *dateString = [formatter stringFromDate:eventDate];
@@ -223,6 +224,18 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             dragView.eventImage.image = self.image;
         }
         
+        if (!self.distanceString) {
+            PFGeoPoint *loc = event[@"GeoLoc"];
+            PFGeoPoint *userLoc = currentUser[@"userLoc"];
+            NSNumber *meters = [NSNumber numberWithDouble:([loc distanceInMilesTo:userLoc])];
+            if (meters.floatValue >= 100.0) {
+                self.distanceString = [NSString stringWithFormat:(@"100+ mi")];
+            } else if (meters.floatValue >= 10.0) {
+                self.distanceString = [NSString stringWithFormat:(@"%.f mi"), meters.floatValue];
+            } else {
+                self.distanceString = [NSString stringWithFormat:(@"%.1f mi"), meters.floatValue];
+            }
+        }
         dragView.geoLoc.text = self.distanceString;
         
         CAGradientLayer *l = [CAGradientLayer layer];
@@ -249,6 +262,21 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             dragView.ticketLink = @"";
         else
             dragView.ticketLink = ticketLinkString;
+        
+        NSNumber *lowPriceNumber = event[@"lowest_price"];
+        if (![lowPriceNumber isKindOfClass:[NSNull class]] && lowPriceNumber != nil) {
+            dragView.startPriceNumLabel.text = [NSString stringWithFormat:@"$%d", [lowPriceNumber intValue]];
+        } else {
+            dragView.startPriceNumLabel.text = @"";
+        }
+        
+        
+        NSNumber *avePriceNumber = event[@"average_price"];
+        if (![avePriceNumber isKindOfClass:[NSNull class]] && lowPriceNumber != nil) {
+            dragView.avePriceNumLabel.text = [NSString stringWithFormat:@"$%d", [avePriceNumber intValue]];
+        } else {
+            dragView.avePriceNumLabel.text = @"";
+        }
         
         [self addExtrasToCard];
         
@@ -286,7 +314,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     [hapLogoButton addTarget:self action:@selector(buttonNormal:) forControlEvents:UIControlEventTouchDragExit];
     
     
-    [self loadFBFriends:friendScrollView];
+    [self loadFBFriends:friendScrollView withCard:dragView];
     //[draggableView.cardView addSubview:friendScrollView];
     friendScrollView.tag = 33;
     
@@ -352,47 +380,46 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     dragView.cardView.userInteractionEnabled = YES;
     dragView.cardView.layer.masksToBounds = YES;
     
-    UILabel *startingPriceLabel = [[UILabel alloc] initWithFrame:CGRectMake(140, 349 + extraDescHeight - 62, 100, 30)];
-    startingPriceLabel.textAlignment = NSTextAlignmentCenter;
-    startingPriceLabel.font = [UIFont fontWithName:@"OpenSans-Semibold" size:11.0];
-    startingPriceLabel.textColor = [UIColor darkGrayColor];
-    startingPriceLabel.text = @"Starting";
-    startingPriceLabel.tag = 3;
-    [dragView.cardView addSubview:startingPriceLabel];
-    
-    UILabel *avgPriceLabel = [[UILabel alloc] initWithFrame:CGRectMake(185, 349 + extraDescHeight - 62, 100, 30)];
-    avgPriceLabel.textAlignment = NSTextAlignmentCenter;
-    avgPriceLabel.font = [UIFont fontWithName:@"OpenSans-Semibold" size:11.0];
-    avgPriceLabel.textColor = [UIColor darkGrayColor];
-    avgPriceLabel.text = @"Avg";
-    avgPriceLabel.tag = 3;
-    [dragView.cardView addSubview:avgPriceLabel];
-    
-    dragView.startPriceNumLabel.frame = CGRectMake(0, 0, 50, 30);
-    dragView.startPriceNumLabel.center = CGPointMake(startingPriceLabel.center.x, startingPriceLabel.center.y + 15);
-    [dragView.cardView addSubview:dragView.startPriceNumLabel];
-    dragView.startPriceNumLabel.text = @"$19";
-    
-    dragView.avePriceNumLabel.frame = CGRectMake(0, 0, 50, 30);
-    dragView.avePriceNumLabel.center = CGPointMake(avgPriceLabel.center.x, avgPriceLabel.center.y + 15);
-    [dragView.cardView addSubview:dragView.avePriceNumLabel];
-    dragView.avePriceNumLabel.text = @"$33";
     [[dragView.cardView viewWithTag:90] removeFromSuperview];
     BTNDropinButton *uberBTN =[[BTNDropinButton alloc] initWithButtonId:@"btn-0acf02149a673eb6"];
     uberBTN.tag = 90;
-    [uberBTN setFrame:CGRectMake(0, 529 + extraDescHeight, 180, 24)];// scroll view
-    //[uberBTN setFrame:CGRectMake(36, 400 + extraDescHeight, 210, 40)];
-    uberBTN.center = CGPointMake(dragView.cardView.center.x, uberBTN.center.y);
+    //[uberBTN setFrame:CGRectMake(0, 555 + extraDescHeight, 180, 24)];// scroll view
     //uberBTN.center = CGPointMake(142, uberBTN.center.y);
-    [dragView.cardView addSubview:uberBTN];
     
-    BTNVenue *venue = [BTNVenue venueWithId:@"abc123" venueName:dragView.location.text latitude:dragView.geoPoint.latitude longitude:dragView.geoPoint.longitude];
-    [uberBTN prepareForDisplayWithVenue:venue completion:^(BOOL isDisplayable) {
-        if (!isDisplayable) {
-            // If you want to hide a Button that has nothing to offer, remove it here.
-        }
-    }];
+    NSString *locationText = [NSString stringWithString:dragView.location.text];
+    locationText = [locationText stringByReplacingOccurrencesOfString:@"at " withString:@""];
     
+    BTNVenue *venue = [BTNVenue venueWithId:@"abc123" venueName:locationText latitude:dragView.geoPoint.latitude longitude:dragView.geoPoint.longitude];
+    
+    NSDate *eventDate = dragView.eventObject[@"Date"];
+    
+    if ([eventDate compare:[NSDate dateWithTimeIntervalSinceNow:-3600]] == NSOrderedDescending) { // more than 1 hr before, show reminder
+        
+        [uberBTN setFrame:CGRectMake(0, 552 + extraDescHeight - 28, 217, 30)];
+        uberBTN.center = CGPointMake(dragView.center.x - 18, uberBTN.center.y);
+        
+        NSDictionary *context = @{
+                                  BTNContextApplicableDateKey: eventDate,
+                                  BTNContextEndLocationKey:venue.location,
+                                  BTNContextReminderUseDebugIntervalKey: @YES
+                                  };
+        [uberBTN prepareForDisplayWithContext:context completion:^(BOOL isDisplayable) {
+            if (isDisplayable) {
+                [dragView addSubview:uberBTN];
+            }
+        }];
+        
+    } else {
+        
+        [uberBTN setFrame:CGRectMake(0, 552 + extraDescHeight - 28, 175, 30)];
+        uberBTN.center = CGPointMake(dragView.center.x - 18, uberBTN.center.y);
+        
+        [uberBTN prepareForDisplayWithVenue:venue completion:^(BOOL isDisplayable) {
+            if (isDisplayable) {
+                [dragView addSubview:uberBTN];
+            }
+        }];
+    }
     
     mapView = [[MKMapView alloc] initWithFrame:CGRectMake(15, 440 + extraDescHeight - 60, 254, 133)];
     [dragView.cardView addSubview:mapView];
@@ -464,13 +491,11 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     NSString *ticketLink = [NSString stringWithFormat:@"%@", event[@"TicketLink"]];
     int height = 0;
     
-    if ([event objectForKey:@"TicketLink"]) {
+    if (ticketLink != nil && (![ticketLink isEqualToString:@""] || ![ticketLink isEqualToString:@"$0"])) {
         
         height += 20;
         
-        NSLog(@"ticket link::: %@", ticketLink);
-        
-        ticketsButton = [[UIButton alloc] initWithFrame:CGRectMake(15, 360.5 + extraDescHeight - 62, 120, 25)];
+        ticketsButton = [[UIButton alloc] initWithFrame:CGRectMake(15, 360.5 + extraDescHeight - 62, 100, 25)];
         ticketsButton.enabled = YES;
         ticketsButton.userInteractionEnabled = YES;
         ticketsButton.tag = 3;
@@ -480,7 +505,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         [ticketsButton setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];
         [ticketsButton setBackgroundColor:[UIColor whiteColor]];
         
-        ticketsButton.titleLabel.font = [UIFont fontWithName:@"OpenSans-Semibold" size:13.0];
+        ticketsButton.titleLabel.font = [UIFont fontWithName:@"OpenSans" size:12.0];
         
         ticketsButton.layer.masksToBounds = YES;
         ticketsButton.layer.borderColor = hapBlue.CGColor;
@@ -491,11 +516,115 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         [ticketsButton addTarget:self action:@selector(buttonNormal:) forControlEvents:UIControlEventTouchUpInside];
         [ticketsButton addTarget:self action:@selector(buttonNormal:) forControlEvents:UIControlEventTouchDragExit];
         
+        
+        /*
+         if ([self doesString:ticketLink contain:@"eventbrite"]) {  //[ticketLink containsString:@"eventbrite"]) {
+         
+         [ticketsButton setImage:[UIImage imageNamed:@"buy tickets"] forState:UIControlStateNormal];
+         [ticketsButton setImage:[UIImage imageNamed:@"buy tickets pressed"] forState:UIControlStateHighlighted];
+         
+         } else if ([self doesString:ticketLink contain:@"facebook"]) {  //[ticketLink containsString:@"eventbrite"]) {
+         
+         ticketsButton.frame = CGRectMake(15, 360 + extraDescHeight - 62, 136.9, 25);
+         [ticketsButton setImage:[UIImage imageNamed:@"join facebook"] forState:UIControlStateNormal];
+         [ticketsButton setImage:[UIImage imageNamed:@"join facebook pressed"] forState:UIControlStateHighlighted];
+         
+         } else if ([self doesString:ticketLink contain:@"meetup"]) {  //[ticketLink containsString:@"eventbrite"]) {
+         
+         ticketsButton.frame = CGRectMake(15, 360 + extraDescHeight - 62, 145, 20);
+         [ticketsButton setImage:[UIImage imageNamed:@"rsvp to meetup"] forState:UIControlStateNormal];
+         [ticketsButton setImage:[UIImage imageNamed:@"rsvp to meetup pressed"] forState:UIControlStateHighlighted];
+         
+         } else {
+         
+         ticketsButton.frame = CGRectMake(15, 360 + extraDescHeight - 62, 121.25, 25);
+         [ticketsButton setImage:[UIImage imageNamed:@"get tickets"] forState:UIControlStateNormal];
+         [ticketsButton setImage:[UIImage imageNamed:@"get tickets pressed"] forState:UIControlStateHighlighted];
+         
+         } */
+        
         [dragView.cardView addSubview:ticketsButton];
         
         ticketsButton.accessibilityIdentifier = ticketLink;
         [ticketsButton addTarget:self action:@selector(ticketsButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
         
+        if ([self doesString:ticketLink contain:@"seatgeek.com"]) {
+            
+            if (![dragView.startPriceNumLabel.text isEqualToString:@""] || ![dragView.startPriceNumLabel.text isEqualToString:@"$0"]) {
+                
+                UILabel *startingPriceLabel = [[UILabel alloc] initWithFrame:CGRectMake(160, 349 + extraDescHeight - 62, 100, 30)];
+                startingPriceLabel.textAlignment = NSTextAlignmentCenter;
+                startingPriceLabel.font = [UIFont fontWithName:@"OpenSans-Semibold" size:12.0];
+                startingPriceLabel.textColor = [UIColor darkGrayColor];
+                startingPriceLabel.text = @"Starting";
+                [startingPriceLabel sizeToFit];
+                startingPriceLabel.center = CGPointMake(ticketsButton.center.x + 85 , ticketsButton.center.y);
+                startingPriceLabel.tag = 3;
+                [dragView.cardView addSubview:startingPriceLabel];
+                
+                dragView.startPriceNumLabel.frame = CGRectMake(startingPriceLabel.frame.size.width + startingPriceLabel.frame.origin.x + 5, startingPriceLabel.frame.origin.y, 50, 30);
+                [dragView.startPriceNumLabel sizeToFit];
+                dragView.startPriceNumLabel.center = CGPointMake(dragView.startPriceNumLabel.center.x, startingPriceLabel.center.y);
+                [dragView.cardView addSubview:dragView.startPriceNumLabel];
+                //draggableBackground.dragView.startPriceNumLabel.text = @"$19";
+                
+                if (![dragView.avePriceNumLabel.text isEqualToString:@""] || ![dragView.avePriceNumLabel.text isEqualToString:@"$0"]) {
+                    
+                    UILabel *avgPriceLabel = [[UILabel alloc] initWithFrame:CGRectMake(dragView.startPriceNumLabel.frame.origin.x + dragView.startPriceNumLabel.frame.size.width + 10, 349 + extraDescHeight - 62, 100, 30)];
+                    avgPriceLabel.textAlignment = NSTextAlignmentCenter;
+                    avgPriceLabel.font = [UIFont fontWithName:@"OpenSans-Semibold" size:12.0];
+                    avgPriceLabel.textColor = [UIColor darkGrayColor];
+                    avgPriceLabel.text = @"Avg";
+                    [avgPriceLabel sizeToFit];
+                    avgPriceLabel.center = CGPointMake(avgPriceLabel.center.x , ticketsButton.center.y);
+                    avgPriceLabel.tag = 3;
+                    [dragView.cardView addSubview:avgPriceLabel];
+                    
+                    dragView.avePriceNumLabel.frame = CGRectMake(avgPriceLabel.frame.size.width + avgPriceLabel.frame.origin.x + 5, avgPriceLabel.frame.origin.y, 50, 30);
+                    [dragView.avePriceNumLabel sizeToFit];
+                    dragView.avePriceNumLabel.center = CGPointMake(dragView.avePriceNumLabel.center.x, avgPriceLabel.center.y);
+                    [dragView.cardView addSubview:dragView.avePriceNumLabel];
+                    //draggableBackground.dragView.avePriceNumLabel.text = @"$33";
+                }
+            }
+        } else if ([self doesString:ticketLink contain:@"facebook.com"]) {
+            
+            [ticketsButton setTitle:@"RSVP TO FACEBOOK EVENT" forState:UIControlStateNormal];
+            ticketsButton.frame = CGRectMake(15, 360.5 + extraDescHeight - 62, 200, 25);
+            ticketsButton.center = CGPointMake(dragView.center.x, ticketsButton.center.y);
+            
+        } else if ([self doesString:ticketLink contain:@"meetup.com"]) {
+            
+            [ticketsButton setTitle:@"RSVP ON MEETUP.COM" forState:UIControlStateNormal];
+            ticketsButton.frame = CGRectMake(15, 360.5 + extraDescHeight - 62, 200, 25);
+            ticketsButton.center = CGPointMake(dragView.center.x, ticketsButton.center.y);
+            
+        } else if ([[dragView.eventObject objectForKey:@"isFreeEvent"] isEqualToNumber:@YES]) {
+            
+            [ticketsButton setTitle:@"THIS EVENT IS FREE!" forState:UIControlStateNormal];
+            ticketsButton.frame = CGRectMake(15, 360.5 + extraDescHeight - 62, 200, 25);
+            ticketsButton.center = CGPointMake(dragView.center.x, ticketsButton.center.y);
+            
+        }
+        
+    } else { //no tix
+        
+        UILabel *noTixLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 360.5 + extraDescHeight - 62, 250, 25)];
+        noTixLabel.textAlignment = NSTextAlignmentCenter;
+        noTixLabel.font = [UIFont fontWithName:@"OpenSans-Extrabold" size:12.0];
+        noTixLabel.textColor = [UIColor colorWithRed:0.0 green:176.0/255 blue:242.0/255 alpha:1.0];
+        noTixLabel.tag = 3;
+        
+        if ([[dragView.eventObject objectForKey:@"isTicketedEvent"] isEqualToNumber:@NO]) {
+            noTixLabel.text = @"This event does not have tickets.";
+        } else if ([[dragView.eventObject objectForKey:@"isFreeEvent"] isEqualToNumber:@YES]){
+            noTixLabel.text = @"This event is free! No tickets required.";
+        } else {
+            noTixLabel.text = @"No ticket information is available.";
+        }
+        
+        noTixLabel.center = CGPointMake(dragView.center.x, noTixLabel.center.y);
+        [self.dragView.cardView addSubview:noTixLabel];
         
     }
     
@@ -503,9 +632,30 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     
 }
 
-- (void)loadFBFriends:(UIScrollView *)friendScrollView {
+- (MKAnnotationView *)mapView:(MKMapView *)mapView viewForAnnotation:(id <MKAnnotation>)anno
+{
+    if ([annotation isKindOfClass:[MKUserLocation class]])
+    {
+        return nil;
+    }
+    else  // use whatever annotation class you used when creating the annotation
+    {
+        MKAnnotationView *annotationView = [[MKAnnotationView alloc]initWithAnnotation:annotation reuseIdentifier:@"tag"];
+        annotationView.enabled = YES;
+        annotationView.canShowCallout = YES;
+        annotationView.image = [UIImage imageNamed:@"Annotation"];
+        annotationView.frame = CGRectMake(0, 0, 20, 25);
+        annotationView.centerOffset = CGPointMake(0, -5);
+        //annotationView.rightCalloutAccessoryView = [UIButton buttonWithType:UIButtonTypeDetailDisclosure];
+        
+        return annotationView;
+    }
+}
+
+- (void)loadFBFriends:(UIScrollView *)friendScrollView withCard:(DraggableView *)card {
     
-    // NSLog(@"Loading FB Friends");
+    card.interestedNames = [NSMutableArray new];
+    card.interestedIds = [NSMutableArray new];
     
     if ([FBSDKAccessToken currentAccessToken]) {
         
@@ -526,7 +676,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             
             PFQuery *friendQuery = [PFQuery queryWithClassName:@"Swipes"];
             [friendQuery whereKey:@"FBObjectID" containedIn:friendObjectIDs];
-            [friendQuery whereKey:@"EventID" equalTo:dragView.objectID];
+            [friendQuery whereKey:@"EventID" equalTo:card.objectID];
             [friendQuery whereKey:@"swipedRight" equalTo:@YES];
             
             PFQuery *userQuery = [PFUser query];
@@ -583,19 +733,23 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                             [friendScrollView addSubview:starImageView];
                         }
                         
+                        [card.interestedIds addObject:object[@"FBObjectID"]];
+                        [card.interestedNames addObject:[NSString stringWithFormat:@"%@ %@", object[@"firstName"], object[@"lastName"]]];
+                        //[interestedPics addObject:profPicView];
+                        
                         friendCount++;
                         
                         if (friendCount == 1) {
-                            dragView.friendsInterested.text = [NSString stringWithFormat:@"%d friend interested", friendCount - 1];
+                            card.friendsInterested.text = [NSString stringWithFormat:@"%d friend interested", friendCount - 1];
                         } else {
-                            dragView.friendsInterested.text = [NSString stringWithFormat:@"%d friends interested", friendCount - 1];
+                            card.friendsInterested.text = [NSString stringWithFormat:@"%d friends interested", friendCount - 1];
                         }
                         
                     }
                     
                     if (objects.count > 4) {
                         
-                        dragView.friendArrow.alpha = 1;
+                        card.friendArrow.alpha = 1;
                     }
                     
                     if (objects.count == 0) {
@@ -616,6 +770,19 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     }
     
 }
+
+-(void)showFriendProfile:(UITapGestureRecognizer *)gr {
+    
+    UIView *view = gr.view;
+    friendObjectID = view.accessibilityIdentifier;
+    [self performSegueWithIdentifier:@"showFriendProfile" sender:self];
+    
+}
+
+-(void)inviteHomies {
+    [self performSegueWithIdentifier:@"toInviteHomies" sender:self];
+}
+
 
 -(BOOL)doesString:(NSString *)first contain:(NSString*)other {
     NSRange range = [first rangeOfString:other];
@@ -666,12 +833,6 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     [button setBackgroundColor:[UIColor colorWithRed:0.0 green:176.0/255 blue:242.0/255 alpha:1.0]];
 }
 
-
--(void)inviteHomies {
-    
-    [self performSegueWithIdentifier:@"toInviteHomies" sender:self];
-}
-
 -(void)showBoom {
     
     NSLog(@"Boom");
@@ -692,6 +853,20 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 
 -(void)showError:(NSString *)message {
     
+    NSLog(@"Error");
+    
+    [SVProgressHUD setViewForExtension:self.view];
+    [SVProgressHUD setOffsetFromCenter:UIOffsetMake(0, -66)];
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        // time-consuming task
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [SVProgressHUD show];
+            [SVProgressHUD showErrorWithStatus:message];
+            [SVProgressHUD setFont:[UIFont fontWithName:@"OpenSans" size:15.0]];
+        });
+    });
+    
 }
 
 
@@ -707,6 +882,8 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         vc.eventTitle = dragView.title.text;
         vc.eventLocation = dragView.location.text;
         vc.event = event;
+        vc.interestedNames = dragView.interestedNames;
+        vc.interestedIds = dragView.interestedIds;
         vc.delegate = self;
         
     } else if ([segue.identifier isEqualToString:@"toMapView"]) {
@@ -725,7 +902,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     } else if ([segue.identifier isEqualToString:@"toWebView"]) {
         
         webViewController *vc = (webViewController *)[[segue destinationViewController] topViewController];
-        vc.urlString = urlString;
+        vc.urlString = ticketsButton.accessibilityIdentifier;
         vc.titleString = dragView.title.text;
         
     } else if ([segue.identifier isEqualToString:@"toEKEventEdit"]) {

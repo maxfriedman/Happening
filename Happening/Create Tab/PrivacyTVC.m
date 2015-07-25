@@ -8,6 +8,7 @@
 
 #import "PrivacyTVC.h"
 #import "webViewController.h"
+#import <Parse/Parse.h>
 
 @interface PrivacyTVC ()
 
@@ -22,7 +23,8 @@
     [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"navBar"] forBarMetrics:UIBarMetricsDefault];
     self.navigationController.navigationBar.translucent = NO;
     
-    self.socialSwitch.on = [[NSUserDefaults standardUserDefaults] boolForKey:@"socialMode"];
+    BOOL mode = [[PFUser currentUser][@"socialMode"] boolValue];
+    self.socialSwitch.on = mode;
     
 }
 
@@ -35,8 +37,7 @@
     
     NSLog(@"Social Mode: %d", self.socialSwitch.on);
     
-    [[NSUserDefaults standardUserDefaults] setBool:self.socialSwitch.on forKey:@"socialMode"];
-    [[NSUserDefaults standardUserDefaults] synchronize];
+    [PFUser currentUser][@"socialMode"] = @(self.socialSwitch.on);
 }
 
 #pragma mark - Table view data source

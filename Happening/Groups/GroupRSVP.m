@@ -27,10 +27,14 @@
     BOOL firstTime;
 }
 
-@synthesize myProfPicView, goingButton, notGoingButton, yesUsers, noUsers, maybeUsers, convo, group, titleString;
+@synthesize myProfPicView, goingButton, notGoingButton, yesUsers, noUsers, maybeUsers, convo, group, titleString, userDicts, groupEventObject, eventObject;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+    self.navigationController.navigationBar.barTintColor = [UIColor clearColor]; //%%% bartint
+    [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"navBar"] forBarMetrics:UIBarMetricsDefault];
+    self.navigationController.navigationBar.translucent = NO;
     
     firstTime = YES;
     currentUser = [PFUser currentUser];
@@ -61,37 +65,44 @@
     noImages = [NSMutableArray array];
     maybeImages = [NSMutableArray array];
     
-    for (PFObject *user in yesUsers) {
+    for (NSString *fbid in yesUsers) {
         
         FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(10, 5, 30, 30)];
         profPicView.layer.cornerRadius = 15;
         profPicView.layer.masksToBounds = YES;
-        profPicView.profileID = user[@"FBObjectID"];
+        profPicView.profileID = fbid;
         profPicView.tag = 9;
-        profPicView.accessibilityIdentifier = user.objectId;
+        for (NSDictionary *dict in userDicts) {
+            if ([[dict valueForKey:@"id"] isEqualToString:fbid])
+                profPicView.accessibilityIdentifier = [dict valueForKey:@"parseId"];
+        }
         [yesImages addObject:profPicView];
     }
     
-    for (PFObject *user in noUsers) {
+    for (NSString *fbid in noUsers) {
         
         FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(10, 5, 30, 30)];
         profPicView.layer.cornerRadius = 15;
         profPicView.layer.masksToBounds = YES;
-        profPicView.profileID = user[@"FBObjectID"];
+        profPicView.profileID = fbid;
         profPicView.tag = 9;
-        profPicView.accessibilityIdentifier = user.objectId;
-        [noImages addObject:profPicView];
+        for (NSDictionary *dict in userDicts) {
+            if ([[dict valueForKey:@"id"] isEqualToString:fbid])
+                profPicView.accessibilityIdentifier = [dict valueForKey:@"parseId"];
+        }        [noImages addObject:profPicView];
     }
     
-    for (PFObject *user in maybeUsers) {
+    for (NSString *fbid in maybeUsers) {
         
         FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(10, 5, 30, 30)];
         profPicView.layer.cornerRadius = 15;
         profPicView.layer.masksToBounds = YES;
-        profPicView.profileID = user[@"FBObjectID"];
+        profPicView.profileID = fbid;
         profPicView.tag = 9;
-        profPicView.accessibilityIdentifier = user.objectId;
-        [maybeImages addObject:profPicView];
+        for (NSDictionary *dict in userDicts) {
+            if ([[dict valueForKey:@"id"] isEqualToString:fbid])
+                profPicView.accessibilityIdentifier = [dict valueForKey:@"parseId"];
+        }        [maybeImages addObject:profPicView];
     }
     
     [self.tableView reloadData];
@@ -101,8 +112,8 @@
     
     BOOL shouldContinue = YES;
     if (shouldContinue) {
-        for (PFObject *user in yesUsers) {
-            if ([user.objectId isEqualToString:currentUser.objectId]) {
+        for (NSString *fbId in yesUsers) {
+            if ([fbId isEqualToString:currentUser[@"FBObjectID"]]) {
                 goingButton.tag = 0;
                 [self goingButtonPressed:nil];
                 shouldContinue = NO;
@@ -112,8 +123,8 @@
     }
     
     if (shouldContinue) {
-        for (PFObject *user in noUsers) {
-            if ([user.objectId isEqualToString:currentUser.objectId]) {
+        for (NSString *fbId in noUsers) {
+            if ([fbId isEqualToString:currentUser[@"FBObjectID"]]) {
                 notGoingButton.tag = 0;
                 [self NOTgoingButtonPressed:nil];
                 shouldContinue = NO;
@@ -123,8 +134,8 @@
     }
     
     if (shouldContinue) {
-        for (PFObject *user in maybeUsers) {
-            if ([user.objectId isEqualToString:currentUser.objectId]) {
+        for (NSString *fbId in maybeImages) {
+            if ([fbId isEqualToString:currentUser[@"FBObjectID"]]) {
                 goingButton.tag = 0;
                 notGoingButton.tag = 0;
                 shouldContinue = NO;
@@ -164,29 +175,34 @@
     //UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleChecking:)];
     //[cell addGestureRecognizer:tap];
     
-    PFUser *user = [PFUser user];
+    NSString *fbid = @"";
     
     if (indexPath.section == 0) {
         
-        user = yesUsers[indexPath.row];
+        fbid = yesUsers[indexPath.row];
         [cell addSubview:yesImages[indexPath.row]];
         
     } else if (indexPath.section == 1) {
         
-        user = maybeUsers[indexPath.row];
+        fbid = maybeUsers[indexPath.row];
         [cell addSubview:maybeImages[indexPath.row]];
         
     } else if (indexPath.section == 2) {
         
-        user = noUsers[indexPath.row];
+        fbid = noUsers[indexPath.row];
         [cell addSubview:noImages[indexPath.row]];
 
     }
     
-    if (![user.objectId isEqualToString:currentUser.objectId])
-        cell.nameLabel.text = [NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]];
-    else
-        cell.nameLabel.text = [NSString stringWithFormat:@"%@ %@ (me)", user[@"firstName"], user[@"lastName"]];
+    for (NSDictionary *dict in userDicts) {
+        
+        if ([[dict valueForKey:@"id"] isEqualToString:fbid]) {
+            if (![fbid isEqualToString:currentUser[@"FBObjectID"]])
+                cell.nameLabel.text = [dict valueForKey:@"name"];
+            else
+                cell.nameLabel.text = [NSString stringWithFormat:@"%@ (me)", [dict valueForKey:@"name"]];
+        }
+    }
     
     /*
     for (UIView *view in cell.subviews) {
@@ -284,23 +300,23 @@
 
 - (void)reloadRSVPs {
     
-    PFObject *rsvpObject = [PFObject objectWithoutDataWithClassName:@"Group_Event" objectId:self.groupEventId];
+    NSString *currentFBID = currentUser[@"FBObjectID"];
     
     if (goingButton.tag == 1) {
         
         // ~~~~~~~~~~~ NAMES
-        [yesUsers insertObject:currentUser atIndex:0];
+        [yesUsers insertObject:currentFBID atIndex:0];
         
         for (int i = 0; i < noUsers.count; i++) {
-            PFObject *user = noUsers[i];
-            if ([user.objectId isEqualToString:currentUser.objectId])
-                [noUsers removeObject:user];
+            NSString *fbID = noUsers[i];
+            if ([fbID isEqualToString:currentFBID])
+                [noUsers removeObject:fbID];
         }
         
         for (int i = 0; i < maybeUsers.count; i++) {
-            PFObject *user = maybeUsers[i];
-            if ([user.objectId isEqualToString:currentUser.objectId])
-                [maybeUsers removeObject:user];
+            NSString *fbID = maybeUsers[i];
+            if ([fbID isEqualToString:currentFBID])
+                [maybeUsers removeObject:fbID];
         }
         
         // ~~~~~~~~~~ PICS
@@ -328,15 +344,15 @@
         [noUsers insertObject:currentUser atIndex:0];
         
         for (int i = 0; i < yesUsers.count; i++) {
-            PFObject *user = yesUsers[i];
-            if ([user.objectId isEqualToString:currentUser.objectId])
-                [yesUsers removeObject:user];
+            NSString *fbID = yesUsers[i];
+            if ([fbID isEqualToString:currentFBID])
+                [yesUsers removeObject:fbID];
         }
         
         for (int i = 0; i < maybeUsers.count; i++) {
-            PFObject *user = maybeUsers[i];
-            if ([user.objectId isEqualToString:currentUser.objectId])
-                [maybeUsers removeObject:user];
+            NSString *fbID = maybeUsers[i];
+            if ([fbID isEqualToString:currentFBID])
+                [maybeUsers removeObject:fbID];
         }
         
         // ~~~~~~~~~~ PICS
@@ -364,15 +380,15 @@
         [maybeUsers insertObject:currentUser atIndex:0];
         
         for (int i = 0; i < noUsers.count; i++) {
-            PFObject *user = noUsers[i];
-            if ([user.objectId isEqualToString:currentUser.objectId])
-                [noUsers removeObject:user];
+            NSString *fbID = noUsers[i];
+            if ([fbID isEqualToString:currentFBID])
+                [noUsers removeObject:fbID];
         }
         
         for (int i = 0; i < yesUsers.count; i++) {
-            PFObject *user = yesUsers[i];
-            if ([user.objectId isEqualToString:currentUser.objectId])
-                [yesUsers removeObject:user];
+            NSString *fbID = yesUsers[i];
+            if ([fbID isEqualToString:currentFBID])
+                [yesUsers removeObject:fbID];
         }
         
         // ~~~~~~~~~~ PICS
@@ -394,46 +410,80 @@
         
     }
     
-    rsvpObject[@"users_going"] = yesUsers;
-    rsvpObject[@"users_not_going"] = noUsers;
-    [rsvpObject saveEventually:^(BOOL success, NSError *error){
+    PFQuery *query = [PFQuery queryWithClassName:@"Group_RSVP"];
+    //[query whereKey:@"Group_Event_ID" equalTo:groupEventObject.objectId];
+    [query whereKey:@"EventID" equalTo:self.eventObject.objectId];
+    [query whereKey:@"GroupID" equalTo:self.group.objectId];
+    [query fromLocalDatastore];
+    [query getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
         
-        if (!error && (notGoingButton.tag == 1 || goingButton.tag == 1)) {
+        PFObject *rsvpObject = [PFObject objectWithClassName:@"Group_RSVP"];
+
+        if (!error) {
             
-            NSString *messageText = @"";
-            if (goingButton.tag == 1) {
-                messageText = [NSString stringWithFormat:@"%@ %@ is going to '%@'", currentUser[@"firstName"], currentUser[@"lastName"], titleString];
-            } else if (notGoingButton.tag == 1) {
-                messageText = [NSString stringWithFormat:@"%@ %@ is not going to '%@'", currentUser[@"firstName"], currentUser[@"lastName"], titleString];
-            }
+            rsvpObject = object;
             
-            NSDictionary *dataDictionary = @{@"message":messageText,
-                                             @"type":@"RSVP",
-                                             @"groupId":group.objectId,
-                                             };
-            NSError *JSONSerializerError;
-            NSData *dataDictionaryJSON = [NSJSONSerialization dataWithJSONObject:dataDictionary options:NSJSONWritingPrettyPrinted error:&JSONSerializerError];
-            LYRMessagePart *dataMessagePart = [LYRMessagePart messagePartWithMIMEType:ATLMimeTypeSystemObject data:dataDictionaryJSON];
-            // Create messagepart with info about cell
-            float actualLineSize = [messageText boundingRectWithSize:CGSizeMake(270, CGFLOAT_MAX)
-                                                             options:NSStringDrawingUsesLineFragmentOrigin
-                                                          attributes:@{NSFontAttributeName:[UIFont fontWithName:@"OpenSans" size:10.0]}
-                                                             context:nil].size.height;
-            NSDictionary *cellInfoDictionary = @{@"height": [NSString stringWithFormat:@"%f", actualLineSize]};
-            NSData *cellInfoDictionaryJSON = [NSJSONSerialization dataWithJSONObject:cellInfoDictionary options:NSJSONWritingPrettyPrinted error:&JSONSerializerError];
-            LYRMessagePart *cellInfoMessagePart = [LYRMessagePart messagePartWithMIMEType:ATLMimeTypeSystemCellInfo data:cellInfoDictionaryJSON];
-            // Add message to ordered set.  This ordered set messages will get sent to the participants
-            AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
-            LYRMessage *message = [appDelegate.layerClient newMessageWithParts:@[dataMessagePart,cellInfoMessagePart] options:@{LYRMessageOptionsPushNotificationAlertKey: messageText} error:&error];
+        } else {
             
-            // Sends the specified message
-            BOOL success = [convo sendMessage:message error:&error];
-            if (success) {
-                NSLog(@"Message queued to be sent: %@", message);
-            } else {
-                NSLog(@"Message send failed: %@", error);
-            }
+            rsvpObject[@"EventID"] = eventObject.objectId;
+            rsvpObject[@"GroupID"] = group.objectId;
+            rsvpObject[@"Group_Event_ID"] = groupEventObject.objectId;
+            rsvpObject[@"UserID"] = currentUser.objectId;
+            rsvpObject[@"UserFBID"] = currentUser[@"FBObjectID"];
+            rsvpObject[@"User_Object"] = currentUser;
+            //rsvpObject[@"GoingType"] = @"yes"; SET BELOW
+            [rsvpObject pinInBackground];
+            
         }
+        
+        if (goingButton.tag == 1) {
+            rsvpObject[@"GoingType"] = @"yes";
+        } else if (notGoingButton.tag == 1) {
+            rsvpObject[@"GoingType"] = @"no";
+        } else {
+            rsvpObject[@"GoingType"] = @"maybe";
+        }
+        
+        [rsvpObject saveEventually:^(BOOL success, NSError *error){
+            
+            if (!error && (notGoingButton.tag == 1 || goingButton.tag == 1)) {
+                
+                NSString *messageText = @"";
+                if (goingButton.tag == 1) {
+                    messageText = [NSString stringWithFormat:@"%@ %@ is going to '%@'", currentUser[@"firstName"], currentUser[@"lastName"], titleString];
+                } else if (notGoingButton.tag == 1) {
+                    messageText = [NSString stringWithFormat:@"%@ %@ is not going to '%@'", currentUser[@"firstName"], currentUser[@"lastName"], titleString];
+                }
+                
+                NSDictionary *dataDictionary = @{@"message":messageText,
+                                                 @"type":@"RSVP",
+                                                 @"groupId":group.objectId,
+                                                 };
+                NSError *JSONSerializerError;
+                NSData *dataDictionaryJSON = [NSJSONSerialization dataWithJSONObject:dataDictionary options:NSJSONWritingPrettyPrinted error:&JSONSerializerError];
+                LYRMessagePart *dataMessagePart = [LYRMessagePart messagePartWithMIMEType:ATLMimeTypeSystemObject data:dataDictionaryJSON];
+                // Create messagepart with info about cell
+                float actualLineSize = [messageText boundingRectWithSize:CGSizeMake(270, CGFLOAT_MAX)
+                                                                 options:NSStringDrawingUsesLineFragmentOrigin
+                                                              attributes:@{NSFontAttributeName:[UIFont fontWithName:@"OpenSans" size:10.0]}
+                                                                 context:nil].size.height;
+                NSDictionary *cellInfoDictionary = @{@"height": [NSString stringWithFormat:@"%f", actualLineSize]};
+                NSData *cellInfoDictionaryJSON = [NSJSONSerialization dataWithJSONObject:cellInfoDictionary options:NSJSONWritingPrettyPrinted error:&JSONSerializerError];
+                LYRMessagePart *cellInfoMessagePart = [LYRMessagePart messagePartWithMIMEType:ATLMimeTypeSystemCellInfo data:cellInfoDictionaryJSON];
+                // Add message to ordered set.  This ordered set messages will get sent to the participants
+                AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+                LYRMessage *message = [appDelegate.layerClient newMessageWithParts:@[dataMessagePart,cellInfoMessagePart] options:@{LYRMessageOptionsPushNotificationAlertKey: messageText} error:&error];
+                
+                // Sends the specified message
+                BOOL success = [convo sendMessage:message error:&error];
+                if (success) {
+                    //NSLog(@"Message queued to be sent: %@", message);
+                } else {
+                    NSLog(@"Message send failed: %@", error);
+                }
+            }
+            
+        }];
         
     }];
 

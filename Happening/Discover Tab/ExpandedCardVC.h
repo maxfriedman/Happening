@@ -17,9 +17,6 @@
 
 @interface ExpandedCardVC : UIViewController <UIScrollViewDelegate, MKMapViewDelegate, MKAnnotation, EKEventEditViewDelegate>
 
-@property (strong, nonatomic) UIButton *ticketsButton;
-@property (strong, nonatomic) UIButton *uberButton;
-
 @property NSString *eventID;
 @property NSString *distanceString;
 @property UIImage *image;

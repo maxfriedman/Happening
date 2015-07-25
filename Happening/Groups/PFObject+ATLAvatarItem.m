@@ -14,20 +14,8 @@
 {
     if ([self isPersonalGroup]) {
         
-        NSArray *users = self[@"user_objects"];
-        PFUser *otherUser = nil;
-        for (PFUser *user in users) {
-            if (![user isEqual:[PFUser currentUser]]) {
-                otherUser = user;
-            }
-        }
-        
-        NSArray *friends = [[PFUser currentUser] objectForKey:@"friends"];
-        NSMutableArray *idsArray = [NSMutableArray new];
-        for (NSDictionary *dict in friends) {
-            if ([[dict valueForKey:@"parseId"] isEqualToString:otherUser.objectId])
-                return [dict valueForKey:@"name"];
-        }
+        NSDictionary *dict = [self getOtherUserDict];
+        return [dict valueForKey:@"name"];
 
     }
 
@@ -70,8 +58,6 @@
 
 -(NSURL *)avatarImageURL {
     
-    PFFile *file = self[@"avatar"];
-    
     if ([self isPersonalGroup]) {
 
         NSDictionary *dict = [self getOtherUserDict];
@@ -79,6 +65,8 @@
         return [NSURL URLWithString:[NSString stringWithFormat:@"https://graph.facebook.com/%@/picture?type=large", [dict objectForKey:@"id"]]];
 
     }
+    
+    PFFile *file = self[@"avatar"];
     
     if (file)
         return [NSURL URLWithString:file.url];
@@ -92,52 +80,21 @@
 - (BOOL)isPersonalGroup {
     
     NSNumber *memCount = self[@"memberCount"];
-    if ([memCount intValue] == 2) {
+    if ([memCount intValue] == 2 && [self[@"isDefaultImage"] boolValue] == YES) {
         return YES;
     }
     
     return NO;
 }
 
--(PFUser *)getOtherParseUser {
-    
-    // THE OTHER USER
-    NSArray *users = self[@"user_objects"];
-    for (PFUser *user in users) {
-        if (![user isEqual:[PFUser currentUser]]) {
-            
-            NSArray *friends = [[PFUser currentUser] objectForKey:@"friends"];
-            for (NSDictionary *dict in friends) {
-
-                if ([[dict valueForKey:@"parseId"] isEqualToString:user.objectId]) {
-                    
-                    return user;
-                    
-                }
-            }
-        }
-    }
-    
-    return nil;
-}
-
 -(NSDictionary *)getOtherUserDict {
     
     // THE OTHER USER
-    NSArray *users = self[@"user_objects"];
-    for (PFUser *user in users) {
-        if (![user isEqual:[PFUser currentUser]]) {
-            
-            NSArray *friends = [[PFUser currentUser] objectForKey:@"friends"];
-            for (NSDictionary *dict in friends) {
-
-                if ([[dict valueForKey:@"parseId"] isEqualToString:user.objectId]) {
-                    
-                    return dict;
-                    
-                }
-            }
-        }
+    
+    NSArray *userDicts = self[@"user_dicts"];
+    for (NSDictionary *dict in userDicts) {
+        if (![[dict valueForKey:@"parseId"] isEqualToString:[PFUser currentUser].objectId])
+            return dict;
     }
     
     return nil;

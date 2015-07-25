@@ -16,6 +16,7 @@
 #import "AppDelegate.h"
 #import "ProfileSettingsTVC.h"
 #import "ExpandedCardVC.h"
+#import "UIButton+Extensions.h"
 
 #define SYSTEM_VERSION_EQUAL_TO(v)                  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedSame)
 #define SYSTEM_VERSION_GREATER_THAN(v)              ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedDescending)
@@ -29,6 +30,7 @@
 @property (strong, nonatomic) NSArray *sortedDays;
 @property (strong, nonatomic) NSDateFormatter *sectionDateFormatter;
 @property (strong, nonatomic) NSDateFormatter *cellDateFormatter;
+@property (strong, nonatomic) IBOutlet UIButton *settingsButton;
 @property (strong, nonatomic) IBOutlet UISegmentedControl *segControl;
 
 - (NSDate *)dateAtBeginningOfDayForDate:(NSDate *)inputDate;
@@ -47,7 +49,7 @@
 
 //@synthesize locManager, refreshControl;
 @synthesize sections, sortedDays, locManager;
-@synthesize nameLabel, detailLabel, profilePicImageView, myEventsTableView;
+@synthesize nameLabel, detailLabel, profilePicImageView, myEventsTableView, settingsButton;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -60,6 +62,8 @@
      [NSDictionary dictionaryWithObjectsAndKeys:
       [UIFont fontWithName:@"OpenSans-Semibold" size:18],
       NSFontAttributeName, nil]];
+    
+    [settingsButton setHitTestEdgeInsets:UIEdgeInsetsMake(-10, -10, -10, -10)];
     
     user = [PFUser currentUser];
     nameLabel.text = [NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]];
@@ -251,11 +255,11 @@
     NSDate *eventDate = [[NSDate alloc]init];
     eventDate = [self.sortedDays objectAtIndex:section];
     
-    if ((section == 0 || section == 1) && ([eventDate beginningOfDay] == [[NSDate date] beginningOfDay])) {
+    if ((section == 0 || section == 1) && ([[eventDate beginningOfDay] isEqualToDate:[[NSDate date] beginningOfDay]])) {
         return @"Today";
     }
     
-    if ((section == 0 || section == 1) && ([eventDate beginningOfDay] == [[NSDate dateWithTimeIntervalSinceNow:86400] beginningOfDay])) {
+    if ((section == 0 || section == 1) && ([[eventDate beginningOfDay] isEqualToDate:[[NSDate dateWithTimeIntervalSinceNow:86400] beginningOfDay]])) {
         return @"Tomorrow";
     }
     

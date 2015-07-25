@@ -16,8 +16,9 @@
 #import "GroupDetailsTVC.h"
 #import "SVProgressHUD.h"
 #import "CustomConstants.h"
+#import "ExpandedCardVC.h"
 
-@interface GroupPageTVC ()
+@interface GroupPageTVC () <UIScrollViewDelegate, UITableViewDataSource, UITableViewDelegate, GroupDetailsTVCDelegate>
 
 @property (strong, nonatomic) IBOutlet UIButton *topButtonView;
 @property (strong, nonatomic) NSMutableDictionary *sections;
@@ -25,6 +26,7 @@
 @property (strong, nonatomic) NSDateFormatter *sectionDateFormatter;
 @property (strong, nonatomic) NSDateFormatter *cellDateFormatter;
 //@property (strong, nonatomic) IBOutlet UISegmentedControl *segControl;
+@property (strong, nonatomic) IBOutlet UITableView *tableView;
 
 @end
 
@@ -38,8 +40,6 @@
     NSMutableArray *rsvpYesArray;
     NSMutableArray *rsvpNoArray;
     NSMutableArray *rsvpMaybeArray;
-
-    NSMutableArray *allUsers;
     
     NSMutableDictionary *sections;
     NSMutableDictionary *extraSections;
@@ -49,9 +49,15 @@
     NSString *friendObjectID;
     
     RKNotificationHub *chatHub;
+    
+    NSMutableArray *fbIds;
+    NSMutableArray *parseIds;
+    NSMutableArray *names;
+    
+    BOOL groupChanged;
 }
 
-@synthesize groupId, locManager, groupName, chatBubble, conversation, group;
+@synthesize groupId, locManager, groupName, chatBubble, conversation, group, containerView, userDicts;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -65,6 +71,8 @@
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:YES];
+    
+    self.title = group[@"name"];
     
     AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
     [appDelegate.mh hideTabBar:NO];
@@ -89,16 +97,27 @@
     
     //if (self.segControl.selectedSegmentIndex == 0)
     [chatBubble addTarget:self action:@selector(chatTapped:) forControlEvents:UIControlEventTouchUpInside];
-    allUsers = [NSMutableArray array];
-    allUsers = group[@"user_objects"];
-    NSLog(@"%lu", allUsers.count);
-
+    
+    [SVProgressHUD setViewForExtension:self.view];
+    [SVProgressHUD showWithStatus:@"Loading group..."];
     
     [self.topButtonView addTarget:self action:@selector(toGroupDetails:) forControlEvents:UIControlEventTouchUpInside];
     
+    names = [NSMutableArray new];
+    fbIds = [NSMutableArray new];
+    parseIds = [NSMutableArray new];
+    
+    for (NSDictionary *dict in userDicts) {
+        
+        [names addObject:[dict valueForKey:@"name"]];
+        [fbIds addObject:[dict valueForKey:@"id"]];
+        [parseIds addObject:[dict valueForKey:@"parseId"]];
+        
+    }
+    
     [self loadChat];
     
-    if (self.group) {
+    if (self.group.isDataAvailable) {
         [self loadEventData];
         if (self.loadTopView) {
             /*
@@ -111,6 +130,10 @@
                     [allUsers removeObjectAtIndex:i];
             }*/
             
+            self.topButtonView.enabled = NO;
+            [self loadTopButtonView];
+
+            /*
             [PFObject fetchAllInBackground:allUsers block:^(NSArray *array, NSError *error) {
                 if (!error) {
 
@@ -118,19 +141,16 @@
                     allUsers = [NSMutableArray arrayWithArray: array];
                     NSLog(@"%lu", allUsers.count);
 
-                    if (![allUsers containsObject:currentUser]) {
-                        NSLog(@"ADDING CURRENT USER");
-                        [allUsers addObject:currentUser];
-                        group[@"user_objects"] = allUsers;
-                        [group saveEventually];
-                        
+                    for (PFUser *user in allUsers) {
+                        NSLog(@"%@", user[@"firstName"]);
                     }
+                    
+                    
                     [self loadTopButtonView];
                 }
-            }];
+            }];*/
         }
     } else {
-        [SVProgressHUD show];
         [self loadGroup];
     }
     
@@ -143,7 +163,8 @@
     rsvpYesArray = [NSMutableArray array];
     extraSections = [NSMutableDictionary dictionary];
     
-    [SVProgressHUD show];
+    [SVProgressHUD setViewForExtension:self.view];
+    [SVProgressHUD showWithStatus:@"Loading Events..."];
     
     PFQuery *groupEventQuery = [PFQuery queryWithClassName:@"Group_Event"];
     //[groupEventQuery fromLocalDatastore];
@@ -159,11 +180,11 @@
             NSMutableDictionary *extras = [NSMutableDictionary dictionary];
             [extraSections setObject:extras forKey:object[@"EventID"]];
             [extras setObject:object.objectId forKey:@"ID"];
-            [extras setObject:object forKey:@"eventObject"];
+            [extras setObject:object forKey:@"groupEventObject"];
         
             [idArray addObject:object[@"EventID"]];
             
-            [extras setObject:allUsers forKey:@"maybe"];
+            [extras setObject:[NSMutableArray arrayWithArray:fbIds] forKey:@"maybe"];
             [extras setObject:[NSMutableArray array] forKey:@"no"];
             [extras setObject:[NSMutableArray array] forKey:@"yes"];
         
@@ -172,12 +193,12 @@
         PFQuery *groupRSVPQuery = [PFQuery queryWithClassName:@"Group_RSVP"];
         [groupRSVPQuery whereKey:@"EventID" containedIn:idArray];
         [groupRSVPQuery whereKey:@"GroupID" equalTo:group.objectId];
-        [groupRSVPQuery includeKey:@"User_Object"];
         [groupRSVPQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error){
             
             for (PFObject *rsvpObject in objects) {
                 
-                PFUser *user = rsvpObject[@"User_Object"];
+                //PFUser *user = rsvpObject[@"User_Object"];
+                NSString *userFBID = rsvpObject[@"UserFBID"];
 
                 NSMutableDictionary *extras = [extraSections objectForKey:rsvpObject[@"EventID"]];
                 NSMutableArray *yesUsers = [extras objectForKey:@"yes"];
@@ -185,13 +206,13 @@
                 NSMutableArray *maybeUsers = [extras objectForKey:@"maybe"];
                 
                 if ([rsvpObject[@"GoingType"] isEqualToString:@"yes"]) {
-                    [yesUsers addObject:user];
-                    [maybeUsers removeObject:user];
+                    [yesUsers addObject:userFBID];
+                    [maybeUsers removeObject:userFBID];
                     [extras setObject:yesUsers forKey:@"yes"];
                     [extras setObject:maybeUsers forKey:@"maybe"];
                 } else if ([rsvpObject[@"GoingType"] isEqualToString:@"no"]) {
-                    [noUsers addObject:user];
-                    [maybeUsers removeObject:user];
+                    [noUsers addObject:userFBID];
+                    [maybeUsers removeObject:userFBID];
                     [extras setObject:noUsers forKey:@"no"];
                     [extras setObject:maybeUsers forKey:@"maybe"];
                 } else if ([rsvpObject[@"GoingType"] isEqualToString:@"maybe"]) {
@@ -271,18 +292,46 @@
     
     PFQuery *groupQuery = [PFQuery queryWithClassName:@"Group"];
     [groupQuery includeKey:@"user_objects"];
-    [groupQuery getObjectInBackgroundWithId:[conversation.metadata valueForKey:@"groupId"] block:^(PFObject *ob, NSError *error){
+    //[groupQuery getObjectInBackgroundWithId:[conversation.metadata valueForKey:@"groupId"] block:^(PFObject *ob, NSError *error){
+    
+    [group fetchInBackgroundWithBlock:^(PFObject *ob, NSError *error){
         
         if (!error) {
-        
+            
             NSLog(@"Loading group...");
             group = ob;
             [group pinInBackground];
-            allUsers = [NSMutableArray array];
-            allUsers = group[@"user_objects"];
+            //allUsers = [NSArray array];
+            //allUsers = group[@"user_objects"];
+            
+            userDicts = group[@"user_dicts"];
+            
+            /*
+            [PFObject fetchAllIfNeededInBackground:allUsers block:^(NSArray *users, NSError *error) {
+               
+                for (PFUser *user in users) {
+                    NSLog(@"%@", user[@"firstName"]);
+                    [user pinInBackground];
+                }
+                
+                allUsers = users;
+                
+                [self loadEventData];
+                [self loadTopButtonView];
+            }]; */
 
             [self loadEventData];
             [self loadTopButtonView];
+            
+            /*
+            if (![allUsers containsObject:currentUser]) {
+                NSLog(@"ADDING CURRENT USER");
+                [allUsers addObject:currentUser];
+                group[@"user_objects"] = allUsers;
+                [group saveEventually];
+                
+            }*/
+            
         
         } else {
             [SVProgressHUD showErrorWithStatus:@"Something went wrong :("];
@@ -303,11 +352,11 @@
     NSDate *eventDate = [[NSDate alloc]init];
     eventDate = [self.sortedDays objectAtIndex:section];
     
-    if ((section == 0 || section == 1) && ([eventDate beginningOfDay] == [[NSDate date] beginningOfDay])) {
+    if ((section == 0 || section == 1) && ([[eventDate beginningOfDay] isEqualToDate:[[NSDate date] beginningOfDay]])) {
         return @"Today";
     }
     
-    if ((section == 0 || section == 1) && ([eventDate beginningOfDay] == [[NSDate dateWithTimeIntervalSinceNow:86400] beginningOfDay])) {
+    if ((section == 0 || section == 1) && ([[eventDate beginningOfDay] isEqualToDate:[[NSDate dateWithTimeIntervalSinceNow:86400] beginningOfDay]])) {
         return @"Tomorrow";
     }
     
@@ -336,6 +385,7 @@
     NSArray *eventsOnThisDay = [self.sections objectForKey:dateRepresentingThisDay];
     
     PFObject *Event = eventsOnThisDay[indexPath.row];
+    cell.eventObject = Event;
     cell.eventId = Event.objectId;
     
     [cell.titleLabel setText:[NSString stringWithFormat:@"%@",Event[@"Title"]]];
@@ -448,7 +498,7 @@
     NSArray *no = [dict objectForKey:@"no"];
     NSArray *yes = [dict objectForKey:@"yes"];
     
-    NSUInteger totalCount = allUsers.count;
+    NSUInteger totalCount = fbIds.count;
     NSString *rsvpCount = [NSString stringWithFormat:@"%lu of %lu", (unsigned long)yes.count, (unsigned long)totalCount];
     
     [cell.rsvpButton setTitle:rsvpCount forState:UIControlStateNormal];
@@ -457,7 +507,7 @@
     
     [cell.chatButton addTarget:self action:@selector(chatTapped:) forControlEvents:UIControlEventTouchUpInside];
     
-    cell.groupEventObject = [dict objectForKey:@"eventObject"];
+    cell.groupEventObject = [dict objectForKey:@"groupEventObject"];
     
     NSString *invitedByName = cell.groupEventObject[@"invitedByName"];
     
@@ -485,9 +535,10 @@
     
     for (int i = 0; i < yes.count; i++) {
         
-        PFUser *user = yes[i];
+        //PFUser *user = yes[i];
+        NSString *fbId = yes[i];
         
-        if ([user.objectId isEqualToString:currentUser.objectId]) {
+        if ([fbId isEqualToString:currentUser[@"FBObjectID"]]) {
             cell.cornerImageView.image = [UIImage imageNamed:@"check75"];
             [cell.checkButton setImage:[UIImage imageNamed:@"checked6green"] forState:UIControlStateNormal];
             [cell.xButton setImage:[UIImage imageNamed:@"close7"] forState:UIControlStateNormal];
@@ -498,7 +549,7 @@
             
             UIView *picViewContainer = [[UIView alloc] initWithFrame:CGRectMake(164 + 50*userCount, 92, 40, 40)];
             FBSDKProfilePictureView *profPic = [[FBSDKProfilePictureView alloc] initWithFrame:picViewContainer.bounds];
-            profPic.profileID = user[@"FBObjectID"];
+            profPic.profileID = fbId;
             [picViewContainer addSubview:profPic];
             picViewContainer.tag = 9;
             
@@ -521,9 +572,9 @@
     
     for (int i = 0; i < maybe.count; i++) {
         
-        PFUser *user = maybe[i];
+        NSString *fbId = maybe[i];
         
-        if ([user.objectId isEqualToString:currentUser.objectId]) {
+        if ([fbId isEqualToString:currentUser[@"FBObjectID"]]) {
             cell.cornerImageView.image = [UIImage imageNamed:@"question"];
             [cell.checkButton setImage:[UIImage imageNamed:@"checked6"] forState:UIControlStateNormal];
             [cell.xButton setImage:[UIImage imageNamed:@"close7"] forState:UIControlStateNormal];
@@ -534,7 +585,7 @@
             
             UIView *picViewContainer = [[UIView alloc] initWithFrame:CGRectMake(164 + 50*userCount, 92, 40, 40)];
             FBSDKProfilePictureView *profPic = [[FBSDKProfilePictureView alloc] initWithFrame:picViewContainer.bounds];
-            profPic.profileID = user[@"FBObjectID"];
+            profPic.profileID = fbId;
             [picViewContainer addSubview:profPic];
             
             profPic.layer.cornerRadius = 20.0;
@@ -556,9 +607,9 @@
     
     for (int i = 0; i < no.count; i++) {
         
-        PFUser *user = no[i];
+        NSString *fbId = no[i];
         
-        if ([user.objectId isEqualToString:currentUser.objectId]) {
+        if ([fbId isEqualToString:currentUser[@"FBObjectID"]]) {
             cell.cornerImageView.image = [UIImage imageNamed:@"X"];
             [cell.checkButton setImage:[UIImage imageNamed:@"checked6"] forState:UIControlStateNormal];
             [cell.xButton setImage:[UIImage imageNamed:@"close7red"] forState:UIControlStateNormal];
@@ -569,7 +620,7 @@
             
             UIView *picViewContainer = [[UIView alloc] initWithFrame:CGRectMake(164 + 50*userCount, 92, 40, 40)];
             FBSDKProfilePictureView *profPic = [[FBSDKProfilePictureView alloc] initWithFrame:picViewContainer.bounds];
-            profPic.profileID = user[@"FBObjectID"];
+            profPic.profileID = fbId;
             [picViewContainer addSubview:profPic];
             
             profPic.layer.cornerRadius = 20.0;
@@ -588,8 +639,6 @@
             userCount++;
         }
     }
-    
-    
     
 
     return cell;
@@ -687,9 +736,9 @@
 
 - (void)loadChat {
     
-    if (conversation.hasUnreadMessages) {
-        chatHub = [[RKNotificationHub alloc]initWithView:(UIView *)chatBubble]; // sets the count to 0
+    if (!chatHub) {
         
+        chatHub = [[RKNotificationHub alloc]initWithView:(UIView *)chatBubble]; // sets the count to 0
         //%%% CIRCLE FRAME
         //[hub setCircleAtFrame:CGRectMake(-10, -10, 30, 30)]; //frame relative to the view you set it to
         
@@ -700,9 +749,22 @@
         [chatHub scaleCircleSizeBy:0.2]; // doubles the size of the circle, keeps the same center
         
         [chatHub setCircleColor: [UIColor colorWithRed:0 green:176.0/255 blue:255.0/255 alpha:1.0] labelColor:[UIColor whiteColor]];
-        [chatHub increment];
+        
         [chatHub hideCount];
+
+    }
+    
+    if (conversation.hasUnreadMessages) {
+        
+        [chatHub increment];
         [chatHub pop];
+    
+    } else {
+        
+        if (!groupChanged)
+            [chatHub decrementBy:chatHub.count];
+        else
+            groupChanged = NO;
     }
     
 }
@@ -715,7 +777,7 @@
     AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
     GroupChatVC *controller = [GroupChatVC conversationViewControllerWithLayerClient:appDelegate.layerClient];
 
-    controller.usersArray = allUsers;
+    controller.userDicts = userDicts;
     controller.groupObject = group;
     controller.conversation = conversation;
      
@@ -725,37 +787,46 @@
 
 - (void)loadTopButtonView {
     
-    float width = (allUsers.count * 50 + 5);
+    for (UIView *view in self.topButtonView.subviews) {
+        if (view.tag == 21) [view removeFromSuperview];
+    }
+    
+    float width = (fbIds.count * 50 + 5);
     if (width > 280) width = 280;
     UIView *picView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, width, 50)];
     picView.center = CGPointMake(self.topButtonView.center.x - 15, self.topButtonView.center.y);
     picView.userInteractionEnabled = YES;
     [picView addGestureRecognizer:[[UIGestureRecognizer alloc] initWithTarget:self action:@selector(toGroupDetails:)]];
+    picView.tag = 21;
     
     UIButton *moreButton = [[UIButton alloc] initWithFrame:CGRectMake(picView.frame.size.width + 5, 17.5, 15, 15)];
     [moreButton setImage:[UIImage imageNamed:@"rightArrow"] forState:UIControlStateNormal];
+    moreButton.tag = 21;
     [picView addSubview:moreButton];
     
     [self.topButtonView addSubview:picView];
     
-    NSInteger userCount = allUsers.count;
+    NSInteger userCount = fbIds.count;
     if (userCount > 5) userCount = 5;
+    
+    userCount = fbIds.count;
     
     for (int i = 0; i < userCount; i++) {
                 
-        PFUser *user = allUsers[i];
+        //PFUser *user = allUsers[i];
+        NSString *fbId = fbIds[i];
         
         FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(5 + 50 * i, 5, 40, 40)]; // initWithProfileID:user[@"FBObjectID"] pictureCropping:FBSDKProfilePictureModeSquare];
-        if (user.isDataAvailable || [user.objectId isEqualToString:currentUser.objectId]) {
-            profPicView.profileID = user[@"FBObjectID"];
+        //if (user.isDataAvailable || [user.objectId isEqualToString:currentUser.objectId]) {
+            profPicView.profileID = fbId;
             UITapGestureRecognizer *gr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(showFriendProfile:)];
             [profPicView addGestureRecognizer:gr];
-        }
+        //}
         profPicView.pictureMode = FBSDKProfilePictureModeSquare;
         
         profPicView.layer.cornerRadius = 20;
         profPicView.layer.masksToBounds = YES;
-        profPicView.accessibilityIdentifier = user.objectId;
+        profPicView.accessibilityIdentifier = parseIds[i];
         profPicView.userInteractionEnabled = YES;
         
         [picView addSubview:profPicView];
@@ -777,6 +848,7 @@
     }
     
     self.loadTopView = NO;
+    self.topButtonView.enabled = YES;
     
 }
 
@@ -800,35 +872,41 @@
     rsvpYesArray = [[NSMutableArray alloc] initWithArray: [dict objectForKey:@"yes"]];
     
     PFQuery *query = [PFQuery queryWithClassName:@"Group_RSVP"];
-    [query whereKey:@"Group_Event_ID" equalTo:cell.groupEventId];
+    //[query whereKey:@"Group_Event_ID" equalTo:cell.groupEventId];
+    [query whereKey:@"EventID" equalTo:cell.eventId];
+    [query whereKey:@"GroupID" equalTo:group.objectId];
     [query fromLocalDatastore];
     [query getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
         
         PFObject *rsvpObject = [PFObject objectWithClassName:@"Group_RSVP"];
-    
+        
         if (!error) {
             
+            NSLog(@"RSVP exists");
             rsvpObject = object;
-            if (cell.checkButton.tag == 1) {
-               object[@"GoingType"] = @"yes";
-            } else if (cell.xButton.tag == 1) {
-                object[@"GoingType"] = @"no";
-            } else {
-                object[@"GoingType"] = @"maybe";
-            }
             
         } else {
             
+            NSLog(@"Create new RSVP object");
+            
             rsvpObject[@"EventID"] = cell.eventId;
             rsvpObject[@"GroupID"] = group.objectId;
-            rsvpObject[@"Group_Event_ID"] = groupEvent.objectId;
+            rsvpObject[@"Group_Event_ID"] = cell.groupEventId;
             rsvpObject[@"UserID"] = currentUser.objectId;
             rsvpObject[@"User_Object"] = currentUser;
-            rsvpObject[@"GoingType"] = @"yes";
+            rsvpObject[@"UserFBID"] = currentUser[@"FBObjectID"];
+            //rsvpObject[@"GoingType"] = @"yes"; SET BELOW
             [rsvpObject pinInBackground];
-            [rsvpObject saveEventually];
+            
         }
         
+        if (cell.checkButton.tag == 1) {
+            rsvpObject[@"GoingType"] = @"yes";
+        } else if (cell.xButton.tag == 1) {
+            rsvpObject[@"GoingType"] = @"no";
+        } else {
+            rsvpObject[@"GoingType"] = @"maybe";
+        }
         
         [rsvpObject saveEventually:^(BOOL success, NSError *error){
             
@@ -864,6 +942,9 @@
                 BOOL success = [conversation sendMessage:message error:&error];
                 if (success) {
                     //NSLog(@"Message queued to be sent: %@", message);
+                    [chatHub increment];
+                    [chatHub pop];
+                    
                 } else {
                     NSLog(@"Message send failed: %@", error);
                 }
@@ -891,7 +972,31 @@
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    [self performSegueWithIdentifier:@"toEvent" sender:self];
+}
 
+-(void)groupChanged {
+    
+    groupChanged = YES;
+    
+    self.title = group[@"name"];
+    
+    userDicts = group[@"user_dicts"];
+    names = [NSMutableArray new];
+    fbIds = [NSMutableArray new];
+    parseIds = [NSMutableArray new];
+    
+    for (NSDictionary *dict in userDicts) {
+        
+        [names addObject:[dict valueForKey:@"name"]];
+        [fbIds addObject:[dict valueForKey:@"id"]];
+        [parseIds addObject:[dict valueForKey:@"parseId"]];
+        
+    }
+    
+    [self loadTopButtonView];
+    [chatHub increment];
 }
 
 #pragma mark - Navigation
@@ -916,18 +1021,15 @@
         vc.yesUsers = [NSMutableArray arrayWithArray:rsvpYesArray];
         vc.noUsers = [NSMutableArray arrayWithArray:rsvpNoArray];
         vc.maybeUsers = [NSMutableArray arrayWithArray:rsvpMaybeArray];
-        vc.groupEventId = [dict objectForKey:@"ID"];
+        vc.userDicts = userDicts;
+        
+        vc.groupEventObject = cell.groupEventObject;
+        vc.eventObject = cell.eventObject;
         
         vc.group = group;
         vc.titleString = cell.titleLabel.text;
         vc.convo = conversation;
 
-    } else if ([segue.identifier isEqualToString:@"toChat"]) {
-        
-        GroupChatVC *vc = (GroupChatVC *)[segue destinationViewController];
-        AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
-        vc = [GroupChatVC conversationViewControllerWithLayerClient:appDelegate.layerClient];
-        
     } else if ([segue.identifier isEqualToString:@"toProf"]) {
         
         ExternalProfileTVC *vc = (ExternalProfileTVC *)[segue destinationViewController];
@@ -935,13 +1037,60 @@
         
     } else if ([segue.identifier isEqualToString:@"toDetails"]) {
         
+        /*
+        for (PFUser *user in allUsers) {
+            NSLog(@"%@", user[@"firstName"]);
+        }*/
+        
+        /*
+        if (![allUsers containsObject:currentUser]) {
+            NSLog(@"ADDING CURRENT USER");
+            [allUsers addObject:currentUser];
+            group[@"user_objects"] = allUsers;
+            [group saveEventually];
+            
+        } */
+        
         GroupDetailsTVC *vc = (GroupDetailsTVC *)[segue destinationViewController];
         vc.groupNameString = self.title;
         vc.group = group;
-        vc.users = allUsers;
+        //vc.users = [NSArray arrayWithArray:allUsers];
+        vc.fbIds = fbIds;
+        vc.names = names;
+        vc.parseIds = parseIds;
         vc.convo = conversation;
+        vc.delegate = self;
     
+    } else if ([segue.identifier isEqualToString:@"toEvent"]) {
+        
+        NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
+        GroupsEventCell *cell = (GroupsEventCell *)[self.tableView cellForRowAtIndexPath:indexPath];
+        
+        ExpandedCardVC *vc = (ExpandedCardVC *)[segue destinationViewController];
+        vc.event = cell.eventObject;
+        vc.eventID = cell.eventObject.objectId;
+        vc.distanceString = cell.distanceLabel.text;
+        vc.image = cell.eventImageView.image;
+        
     }
+    
+}
+
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    
+   // if (self.tableView.contentOffset.y > 0) {
+        
+        CGRect newFrame = containerView.frame;
+        newFrame.origin.x = 0;
+        newFrame.origin.y = self.tableView.contentOffset.y;
+        self.containerView.frame = newFrame;
+        
+    /*
+    } else {
+        
+        containerView.frame = CGRectMake(0, 0, 320, 40);
+        
+    } */
     
 }
 

@@ -10,8 +10,16 @@
 #import <Atlas/Atlas.h>
 #import <Parse/Parse.h>
 
+@protocol GroupAddFriendsTVCDelegate <NSObject>
+
+- (void)showBoom;
+- (void)showError:(NSString *)message;
+
+@end
+
 @interface GroupAddFriendsTVC : UITableViewController
 
+@property (weak) id <GroupAddFriendsTVCDelegate> delegate;
 @property (nonatomic, retain) UIView *namesOnBottomView;
 @property LYRConversation *convo;
 @property PFObject *group;

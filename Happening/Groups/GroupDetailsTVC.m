@@ -7,27 +7,42 @@
 //
 
 #import "GroupDetailsTVC.h"
+#import <QuartzCore/QuartzCore.h>
 #import <FBSDKCoreKit/FBSDKCoreKit.h>
 #import "AppDelegate.h"
 #import "CustomConstants.h"
 #import "GroupAddFriendsTVC.h"
+#import <FastttCamera.h>
+#import "UIButton+Extensions.h"
+#import "SVProgressHUD.h"
 
-@interface GroupDetailsTVC () <UIAlertViewDelegate>
+@import MobileCoreServices;
+
+@interface GroupDetailsTVC () <UIAlertViewDelegate, UIActionSheetDelegate, FastttCameraDelegate, UITextFieldDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, GroupAddFriendsTVCDelegate>
+
+@property (nonatomic, strong) FastttCamera *fastCamera;
+@property (nonatomic, strong) UIButton *flashButton;
+@property (nonatomic, strong) UIButton *switchCameraButton;
 
 @end
 
 @implementation GroupDetailsTVC {
     
-    NSMutableArray *namesArray;
     NSMutableArray *picsArray;
+    
+    UIButton *takePictureButton;
+    UIActivityIndicatorView *activityView;
+    UIImage *groupImage;
+    UIButton *chooseImageButton;
+    UIButton *changeButton;
+    UIView *borderView;
 }
 
-@synthesize group, groupImageView, groupNameLabel, users;
+@synthesize group, groupImageView, groupNameLabel, parseIds, fbIds, names, flashButton, switchCameraButton;
 
 - (void)viewDidLoad {
-    [super viewDidLoad];
     
-    UIView *borderView = [[UIView alloc] initWithFrame:CGRectMake(groupImageView.frame.origin.x - 2, groupImageView.frame.origin.y - 2, groupImageView.frame.size.width + 4, groupImageView.frame.size.height + 4)];
+    borderView = [[UIView alloc] initWithFrame:CGRectMake(groupImageView.frame.origin.x - 2, groupImageView.frame.origin.y - 2, groupImageView.frame.size.width + 4, groupImageView.frame.size.height + 4)];
     borderView.backgroundColor = [UIColor clearColor];
     borderView.layer.cornerRadius = 52;
     borderView.layer.borderColor = [UIColor whiteColor].CGColor;
@@ -39,35 +54,53 @@
     groupImageView.layer.cornerRadius = 50.0f;
     groupImageView.clipsToBounds = YES;
     
-    NSString *name = group[@"name"];
+    borderView.userInteractionEnabled = YES;
+    [borderView addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(changeImage:)]];
     
-    if ([name isEqualToString:@"_indy_"]) {
-        groupNameLabel.text = self.groupNameString;
+    BOOL isDefault = [group[@"isDefaultImage"] boolValue];
+    
+    self.groupNameLabel.text = group[@"name"];
+    
+    if (isDefault) {
+        
+        groupImageView.backgroundColor = [UIColor groupTableViewBackgroundColor];
+        changeButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 60, 60)];
+        changeButton.center = CGPointMake(borderView.bounds.size.width / 2, borderView.bounds.size.height / 2);
+        [changeButton setImage:[UIImage imageNamed:@"camera"] forState:UIControlStateNormal];
+        [changeButton addTarget:self action:@selector(changeImage:) forControlEvents:UIControlEventTouchDown];
+        [borderView addSubview:changeButton];
+
+        if (self.names.count > 2) {
+            groupImageView.image = [UIImage imageNamed:@"userImage"];
+        }
+        
     } else {
-        groupNameLabel.text = name;
+     
+        PFFile *file = group[@"avatar"];
+        [file getDataInBackgroundWithBlock:^(NSData *data, NSError *error) {
+            
+            if (!error)
+                groupImageView.image = [UIImage imageWithData:data];
+        }];
+        
     }
     
-    PFFile *file = group[@"avatar"];
-    [file getDataInBackgroundWithBlock:^(NSData *data, NSError *error) {
-        
-        if (!error)
-            groupImageView.image = [UIImage imageWithData:data];
-    }];
-    
-    namesArray = [NSMutableArray new];
     picsArray = [NSMutableArray new];
-    for (PFUser *user in users) {
-        [namesArray addObject:[NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]]];
+    for (int i = 0; i < fbIds.count; i++) {
+        //[namesArray addObject:[NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]]];
 
+        NSString *fbId = fbIds[i];
+        NSString *pfId = parseIds[i];
+        
         FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(10, 7, 36, 36)];
-        profPicView.layer.cornerRadius = 20;
+        profPicView.layer.cornerRadius = 18;
         profPicView.layer.masksToBounds = YES;
-        profPicView.profileID = user[@"FBObjectID"];
+        profPicView.profileID = fbId;
         profPicView.tag = 9;
-        profPicView.accessibilityIdentifier = user.objectId;
+        profPicView.accessibilityIdentifier = pfId;
         [picsArray addObject:profPicView];
     }
-    
+        
 }
 
 - (void)didReceiveMemoryWarning {
@@ -104,7 +137,7 @@
         UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"peeps" forIndexPath:indexPath];
         
         UILabel *nameLabel = (UILabel *)[cell viewWithTag:5];
-        nameLabel.text = namesArray[indexPath.row];
+        nameLabel.text = names[indexPath.row];
         
         [[cell viewWithTag:9] removeFromSuperview];
         [cell addSubview:[picsArray objectAtIndex:indexPath.row]];
@@ -235,39 +268,450 @@
     }
 }
 
-/*
-// Override to support conditional editing of the table view.
-- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the specified item to be editable.
+- (void)changeImage: (UIGestureRecognizer *) gr {
+    
+    NSLog(@"Change image!");
+    
+    [self.view endEditing:YES];
+    
+    UIActionSheet *sheet = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"Take Photo", @"Choose Photo", @"Use Default", nil];
+    [sheet showInView:self.view];
+    
+}
+
+- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex {
+    
+    NSLog(@"index: %lu", buttonIndex);
+    
+    
+    switch (buttonIndex) {
+        case 0: { // Take Photo
+            
+            _fastCamera = [FastttCamera new];
+            self.fastCamera.delegate = self;
+            
+            [self.fastCamera removeFromParentViewController];
+            [self fastttAddChildViewController:self.fastCamera];
+            self.fastCamera.view.frame = groupImageView.frame;
+            
+            self.fastCamera.view.layer.masksToBounds = YES;
+            self.fastCamera.view.layer.cornerRadius = self.fastCamera.view.frame.size.width / 2;
+            
+            takePictureButton = [[UIButton alloc] initWithFrame:CGRectMake(groupImageView.frame.origin.x + groupImageView.frame.size.width + 15, groupImageView.center.y + 10, 80, 30)];
+            [takePictureButton setTitleColor:[UIColor colorWithRed:0.0 green:176.0/255 blue:242.0/255 alpha:1.0] forState:UIControlStateNormal];
+            takePictureButton.titleLabel.font = [UIFont fontWithName:@"OpenSans" size:15.0];
+            takePictureButton.layer.cornerRadius = 4.0;
+            takePictureButton.layer.masksToBounds = YES;
+            takePictureButton.layer.borderWidth = 1.0;
+            takePictureButton.layer.borderColor = [UIColor colorWithRed:0.0 green:176.0/255 blue:242.0/255 alpha:1.0].CGColor;
+            [self.view addSubview:takePictureButton];
+            [takePictureButton addTarget:self action:@selector(snapDopePic) forControlEvents:UIControlEventTouchUpInside];
+            
+            takePictureButton.alpha = 1;
+            [takePictureButton setTitle:@"Snap pic" forState:UIControlStateNormal];
+            
+            flashButton = [[UIButton alloc] initWithFrame:CGRectMake(takePictureButton.frame.origin.x + 10, takePictureButton.frame.origin.y + 30 + 8, 15, 21.6)];
+            [flashButton setHitTestEdgeInsets:UIEdgeInsetsMake(-5, -5, -5, -5)];
+            [self.view addSubview:flashButton];
+            [flashButton addTarget:self action:@selector(flashButtonPressed) forControlEvents:UIControlEventTouchUpInside];
+            
+            [flashButton setImage:[UIImage imageNamed:@"flash_transp"] forState:UIControlStateNormal];
+            flashButton.alpha = 1;
+            flashButton.enabled = YES;
+            
+            switchCameraButton = [[UIButton alloc] initWithFrame:CGRectMake(takePictureButton.frame.origin.x + takePictureButton.frame.size.width - 20 - 10, takePictureButton.frame.origin.y + 30 + 9, 20, 20)];
+            [switchCameraButton setHitTestEdgeInsets:UIEdgeInsetsMake(-5, -5, -5, -5)];
+            [switchCameraButton addTarget:self action:@selector(switchCameraButtonPressed) forControlEvents:UIControlEventTouchUpInside];
+            [self.view addSubview:switchCameraButton];
+            
+            [switchCameraButton setImage:[UIImage imageNamed:@"flip"] forState:UIControlStateNormal];
+            switchCameraButton.enabled = YES;
+            switchCameraButton.alpha = 1;
+            
+            /*
+            if (!chooseImageButton) {
+                chooseImageButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 200, 40)];
+                chooseImageButton.center = CGPointMake(160, 480);
+                [chooseImageButton setTitle:@"Choose Image" forState:UIControlStateNormal];
+                chooseImageButton.titleLabel.font = [UIFont fontWithName:@"OpenSans" size:11.0];
+                [chooseImageButton setTitleColor:[UIColor colorWithRed:0.0 green:80.0/255 blue:230.0/255 alpha:1.0] forState:UIControlStateNormal];
+                [self.view addSubview:chooseImageButton];
+                [chooseImageButton addTarget:self action:@selector(chooseImage) forControlEvents:UIControlEventTouchUpInside];
+            }
+            chooseImageButton.alpha = 1;*/
+            
+            break;
+        }
+        case 1: { // Choose Photo
+            
+            [self chooseImage];
+            
+            break;
+        }
+            
+        case 2: { // Default
+            
+            changeButton.alpha = 0;
+            
+            groupImage = [UIImage imageNamed:@"userImage"];
+            groupImageView.image = [UIImage imageNamed:@"userImage"];
+            [changeButton removeFromSuperview];
+            [self saveImage:groupImage isDefault:YES];
+            //[textField becomeFirstResponder];
+            
+        }
+            
+        default:
+            break;
+    }
+    
+}
+
+- (void)saveImage:(UIImage *)image isDefault:(BOOL)isDefault {
+    
+    UIView *maskView = [[UIView alloc] initWithFrame:groupImageView.bounds];
+    maskView.backgroundColor = [UIColor blackColor];
+    maskView.alpha = 0.0;
+    [groupImageView addSubview:maskView];
+    
+    UIActivityIndicatorView *indicatorView = [[UIActivityIndicatorView alloc] initWithFrame:CGRectMake(0, 0, 40, 40)];
+    indicatorView.activityIndicatorViewStyle = UIActivityIndicatorViewStyleWhite;
+    indicatorView.center = CGPointMake(groupImageView.bounds.size.width/2, groupImageView.bounds.size.height/2);
+    [groupImageView addSubview:indicatorView];
+    [indicatorView startAnimating];
+    
+    [UIView animateWithDuration:0.1 animations:^{
+        maskView.alpha = 0.4;
+    } completion:^(BOOL finished) {
+        [indicatorView startAnimating];
+    }];
+    
+    NSData *imageData = UIImagePNGRepresentation(groupImage);
+    PFFile *imageFile = [PFFile fileWithName:@"image.png" data:imageData];
+    
+    [group fetchInBackgroundWithBlock:^(PFObject *ob, NSError *error) {
+        
+        if (!error) {
+        
+            ob[@"avatar"] = imageFile;
+            ob[@"isDefaultImage"] = @(isDefault);
+            
+            [ob saveInBackgroundWithBlock:^(BOOL success, NSError *error) {
+               
+                if (success) {
+                    
+                    [ob pinInBackground];
+                    
+                    //[self ]
+                    
+                    [UIView animateWithDuration:0.1 animations:^{
+                    } completion:^(BOOL finished) {
+                        [indicatorView stopAnimating];
+                        
+                        UIImageView *checkImv = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 32, 32)];
+                        checkImv.center = indicatorView.center;
+                        checkImv.alpha = 0;
+                        checkImv.image = [UIImage imageNamed:@"white_check"];
+                        [groupImageView addSubview:checkImv];
+                        
+                        [UIView animateWithDuration:0.1 animations:^{
+                            checkImv.alpha = 1.0;
+                        } completion:^(BOOL finished) {
+                            
+                            [UIView animateWithDuration:0.3 delay:0.8 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+                                checkImv.alpha = 0.0;
+                                maskView.alpha = 0.0;
+                            } completion:^(BOOL finished) {
+                                [checkImv removeFromSuperview];
+                                [maskView removeFromSuperview];
+                                [indicatorView removeFromSuperview];
+                            }];
+                        }];
+                        
+                    }];
+                    
+                } else {
+                    
+                    
+                }
+                
+            }];
+            
+        }
+
+    }];
+    
+}
+
+- (void)snapDopePic {
+    
+    [self.fastCamera takePicture];
+    
+    [takePictureButton setTitle:@"" forState:UIControlStateNormal];
+    takePictureButton.enabled = NO;
+    flashButton.enabled = NO;
+    switchCameraButton.enabled = NO;
+    
+    activityView = [[UIActivityIndicatorView alloc] initWithFrame:CGRectMake(0, 0, 20, 20)];
+    [activityView setActivityIndicatorViewStyle:UIActivityIndicatorViewStyleGray];
+    activityView.center = takePictureButton.center;
+    [self.view addSubview:activityView];
+    [activityView startAnimating];
+    
+    //[takePictureButton removeTarget:self action:@selector(snapDopePic) forControlEvents:UIControlEventTouchUpInside];
+    //[takePictureButton addTarget:self action:@selector(retakePicture) forControlEvents:UIControlEventTouchUpInside];
+}
+
+- (void)flashButtonPressed
+{
+    NSLog(@"flash button pressed");
+    
+    FastttCameraFlashMode flashMode;
+    NSString *flashTitle;
+    switch (self.fastCamera.cameraFlashMode) {
+        case FastttCameraFlashModeOn:
+            flashMode = FastttCameraFlashModeOff;
+            flashTitle = @"Flash Off";
+            [flashButton setImage:[UIImage imageNamed:@"flash_transp"] forState:UIControlStateNormal];
+            break;
+        case FastttCameraFlashModeOff:
+        default:
+            flashMode = FastttCameraFlashModeOn;
+            flashTitle = @"Flash On";
+            [flashButton setImage:[UIImage imageNamed:@"flash_filled"] forState:UIControlStateNormal];
+            break;
+    }
+    if ([self.fastCamera isFlashAvailableForCurrentDevice]) {
+        [self.fastCamera setCameraFlashMode:flashMode];
+        [self.flashButton setTitle:flashTitle forState:UIControlStateNormal];
+    }
+}
+
+- (void)switchCameraButtonPressed
+{
+    NSLog(@"switch camera button pressed");
+    
+    FastttCameraDevice cameraDevice;
+    switch (self.fastCamera.cameraDevice) {
+        case FastttCameraDeviceFront:
+            cameraDevice = FastttCameraDeviceRear;
+            break;
+        case FastttCameraDeviceRear:
+        default:
+            cameraDevice = FastttCameraDeviceFront;
+            break;
+    }
+    if ([FastttCamera isCameraDeviceAvailable:cameraDevice]) {
+        [self.fastCamera setCameraDevice:cameraDevice];
+        if (![self.fastCamera isFlashAvailableForCurrentDevice]) {
+            [self.flashButton setTitle:@"Flash Off" forState:UIControlStateNormal];
+            flashButton.enabled = NO;
+            [flashButton setImage:[UIImage imageNamed:@"flash_transp"] forState:UIControlStateNormal];
+        } else {
+            flashButton.enabled = YES;
+        }
+    }
+}
+
+#pragma mark - IFTTTFastttCameraDelegate
+
+- (void)cameraController:(FastttCamera *)cameraController
+ didFinishCapturingImage:(FastttCapturedImage *)capturedImage
+{
+    /**
+     *  Here, capturedImage.fullImage contains the full-resolution captured
+     *  image, while capturedImage.rotatedPreviewImage contains the full-resolution
+     *  image with its rotation adjusted to match the orientation in which the
+     *  image was captured.
+     */
+}
+
+- (void)cameraController:(FastttCamera *)cameraController
+didFinishScalingCapturedImage:(FastttCapturedImage *)capturedImage
+{
+    /**
+     *  Here, capturedImage.scaledImage contains the scaled-down version
+     *  of the image.
+     */
+    NSLog(@"Scaled image snagged.");
+    
+    [self.fastCamera stopRunning];
+    [self fastttRemoveChildViewController:self.fastCamera];
+    [activityView stopAnimating];
+    takePictureButton.enabled = YES;
+    
+    [takePictureButton removeFromSuperview];
+    [flashButton removeFromSuperview];
+    [switchCameraButton removeFromSuperview];
+    
+    groupImage = capturedImage.scaledImage;
+    groupImageView.image = groupImage;
+    [changeButton removeFromSuperview];
+
+    /*
+    if ([textField.text isEqualToString:@""]) {
+        [textField becomeFirstResponder];
+    }*/
+}
+
+- (void)cameraController:(FastttCamera *)cameraController
+didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
+{
+    /**
+     *  Here, capturedImage.fullImage and capturedImage.scaledImage have
+     *  been rotated so that they have image orientations equal to
+     *  UIImageOrientationUp. These images are ready for saving and uploading,
+     *  as they should be rendered more consistently across different web
+     *  services than images with non-standard orientations.
+     */
+    
+    NSLog(@"Image Acquired.");
+    groupImage = capturedImage.fullImage;
+    [self saveImage:groupImage isDefault:NO];
+
+    
+}
+
+- (void)chooseImage {
+    
+    [self.fastCamera stopRunning];
+    flashButton.alpha = 0;
+    switchCameraButton.alpha = 0;
+    takePictureButton.alpha = 0;
+    chooseImageButton.alpha = 0;
+    [self startMediaBrowserFromViewController:self usingDelegate:(self)];
+    
+}
+
+- (BOOL) startMediaBrowserFromViewController: (UIViewController*) controller
+                               usingDelegate: (id <UIImagePickerControllerDelegate,
+                                               UINavigationControllerDelegate>) delegate {
+    
+    if (([UIImagePickerController isSourceTypeAvailable:
+          UIImagePickerControllerSourceTypeSavedPhotosAlbum] == NO)
+        || (delegate == nil)
+        || (controller == nil))
+        return NO;
+    
+    UIImagePickerController *mediaUI = [[UIImagePickerController alloc] init];
+    mediaUI.sourceType = UIImagePickerControllerSourceTypeSavedPhotosAlbum;
+    
+    mediaUI.mediaTypes = [[NSArray alloc] initWithObjects: (NSString *)kUTTypeImage, nil];
+    
+    // Hides the controls for moving & scaling pictures, or for
+    // trimming movies. To instead show the controls, use YES.
+    mediaUI.allowsEditing = YES;
+    
+    mediaUI.delegate = delegate;
+    
+    [controller presentViewController:mediaUI animated:YES completion:nil];
     return YES;
 }
-*/
 
-/*
-// Override to support editing the table view.
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (editingStyle == UITableViewCellEditingStyleDelete) {
-        // Delete the row from the data source
-        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    } else if (editingStyle == UITableViewCellEditingStyleInsert) {
-        // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-    }   
-}
-*/
+- (void) imagePickerController: (UIImagePickerController *) picker
+ didFinishPickingMediaWithInfo: (NSDictionary *) info {
+    
+    NSString *mediaType = [info objectForKey: UIImagePickerControllerMediaType];
+    UIImage *originalImage, *editedImage, *imageToUse;
+    
+    // Handle a still image picked from a photo album
+    if (CFStringCompare ((CFStringRef) mediaType, kUTTypeImage, 0)
+        == kCFCompareEqualTo) {
+        
+        editedImage = (UIImage *) [info objectForKey:
+                                   UIImagePickerControllerEditedImage];
+        //originalImage = (UIImage *) [info objectForKey:
+        //UIImagePickerControllerOriginalImage];
+        
+        if (editedImage) {
+            imageToUse = editedImage;
+        } else {
+            imageToUse = originalImage;
+        }
+        
+        groupImage = imageToUse;
+        groupImageView.image = groupImage;
+        [changeButton removeFromSuperview];
+        [self saveImage:groupImage isDefault:NO];
 
-/*
-// Override to support rearranging the table view.
-- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath {
+    }
+    
+    [picker dismissViewControllerAnimated:YES completion:nil];
+    
+    //[textField becomeFirstResponder];
+    
 }
-*/
 
-/*
-// Override to support conditional rearranging of the table view.
-- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the item to be re-orderable.
-    return YES;
+-(void)showBoom {
+    
+    NSLog(@"Boom");
+    
+    [SVProgressHUD setViewForExtension:self.view];
+    [SVProgressHUD setOffsetFromCenter:UIOffsetMake(0, -66)];
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        // time-consuming task
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [SVProgressHUD show];
+            [SVProgressHUD showSuccessWithStatus:@"Boom"];
+            [SVProgressHUD setFont:[UIFont fontWithName:@"OpenSans" size:15.0]];
+        });
+    });
+
+    names = [NSArray new];
+    fbIds = [NSArray new];
+    parseIds = [NSArray new];
+    
+    for (NSDictionary *dict in group[@"user_dicts"]) {
+        
+        names = [names arrayByAddingObject:[dict valueForKey:@"name"]];
+        fbIds = [fbIds arrayByAddingObject:[dict valueForKey:@"id"]];
+        parseIds = [parseIds arrayByAddingObject:[dict valueForKey:@"parseId"]];
+        
+    }
+    
+    picsArray = [NSMutableArray new];
+    for (int i = 0; i < fbIds.count; i++) {
+        //[namesArray addObject:[NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]]];
+        
+        NSString *fbId = fbIds[i];
+        NSString *pfId = parseIds[i];
+        
+        FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(10, 7, 36, 36)];
+        profPicView.layer.cornerRadius = 18;
+        profPicView.layer.masksToBounds = YES;
+        profPicView.profileID = fbId;
+        profPicView.tag = 9;
+        profPicView.accessibilityIdentifier = pfId;
+        [picsArray addObject:profPicView];
+    }
+    
+    self.groupNameLabel.text = group[@"name"];
+    
+    [self.tableView reloadData];
+    [self.delegate groupChanged];
+    
 }
-*/
+
+-(void)showError:(NSString *)message {
+    
+    NSLog(@"Error");
+    
+    [SVProgressHUD setViewForExtension:self.view];
+    [SVProgressHUD setOffsetFromCenter:UIOffsetMake(0, -66)];
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        // time-consuming task
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [SVProgressHUD show];
+            [SVProgressHUD showErrorWithStatus:message];
+            [SVProgressHUD setFont:[UIFont fontWithName:@"OpenSans" size:15.0]];
+        });
+    });
+    
+    [self.tableView reloadData];
+    
+}
 
 
 #pragma mark - Navigation
@@ -282,7 +726,7 @@
         GroupAddFriendsTVC *vc = (GroupAddFriendsTVC *)[[segue destinationViewController] topViewController];
         vc.convo = self.convo;
         vc.group = self.group;
-
+        vc.delegate = self;
     }
     
 }

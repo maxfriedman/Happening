@@ -6,6 +6,12 @@
 //  Copyright (c) 2015 Happening. All rights reserved.
 //
 
+#define SYSTEM_VERSION_EQUAL_TO(v)                  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedSame)
+#define SYSTEM_VERSION_GREATER_THAN(v)              ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedDescending)
+#define SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(v)  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedAscending)
+#define SYSTEM_VERSION_LESS_THAN(v)                 ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedAscending)
+#define SYSTEM_VERSION_LESS_THAN_OR_EQUAL_TO(v)     ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedDescending)
+
 #define ACTION_MARGIN 60 //%%% distance from center where the action applies. Higher = swipe further in order for the action to be called
 #define SCALE_STRENGTH 4 //%%% how quickly the card shrinks. Higher = slower shrinking
 #define SCALE_MAX .93 //%%% upper bar for how much the card shrinks. Higher = shrinks less
@@ -20,9 +26,12 @@
 #import "UIImage+ImageEffects.h"
 #import "RKDropdownAlert.h"
 #import "AppDelegate.h"
-#import <POP+MCAnimate/POP+MCAnimate.h>
+#import "PermissionsView.h"
 
-@interface TutorialDragView()
+#define MCANIMATE_SHORTHAND
+#import <POP+MCAnimate.h>
+
+@interface TutorialDragView() <UIAlertViewDelegate, UIApplicationDelegate, PermissionsViewDelegate>
 
 @property (assign)int actionMargin;
 @property (assign)int swipeDownMargin;
@@ -112,11 +121,11 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         UIImageView *swipeRightImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"SwipeRight"]];
         UIImageView *swipeLeftImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"SwipeLeft"]];
         UIImageView *swipeDownImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"SwipeDown"]];
-        UIImageView *tapToExpandImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"dotted arrow"]];
+        //UIImageView *tapToExpandImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"dotted arrow"]];
         //UIImageView *currentLocImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"interested_face"]];
         //UIView *cityAndRadiusView = [[UIView alloc] init];
         
-        imageArray = [[NSArray alloc] initWithObjects:swipeRightImageView, swipeLeftImageView, swipeDownImageView, tapToExpandImageView, /*currentLocImageView,*/ nil];
+        imageArray = [[NSArray alloc] initWithObjects:swipeRightImageView, swipeLeftImageView, swipeDownImageView, /*tapToExpandImageView, /*currentLocImageView,*/ nil];
         
         for (UIImageView *view in imageArray) {
             
@@ -231,7 +240,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         [tutorialView addSubview:imv];
         
         UILabel *label3 = [[UILabel alloc] initWithFrame:CGRectMake(15, 270, CARD_WIDTH - 30, 100)];
-        [label3 setText:@"This permanently removes the event. Over time, we'll recommend events based on your swipes!"];
+        //[label3 setText:@"This permanently removes the event. Over time, we'll recommend events based on your swipes!"];
         [label3 setFont:[UIFont fontWithName:@"OpenSans" size:11.0]];
         [label3 setNumberOfLines:0];
         [label3 setTextColor:color];
@@ -241,22 +250,22 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     } else if (index == 2) {
         
         UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 10, CARD_WIDTH, 100)];
-        [label setText:@"Swipe down to"];
+        [label setText:@"Down to go?"];
         [label setFont:[UIFont fontWithName:@"OpenSans-Bold" size:26.0]];
         [label setTextColor:color];
         [label setTextAlignment:NSTextAlignmentCenter];
         [tutorialView addSubview:label];
         
-        UILabel *label2 = [[UILabel alloc] initWithFrame:CGRectMake(0, 40, CARD_WIDTH, 100)];
-        [label2 setText:@"save an event"];
-        [label2 setFont:[UIFont fontWithName:@"OpenSans-Bold" size:26.0]];
+        UILabel *label2 = [[UILabel alloc] initWithFrame:CGRectMake(0, 50, CARD_WIDTH, 100)];
+        [label2 setText:@"Swipe down if you're"];
+        [label2 setFont:[UIFont fontWithName:@"OpenSans-Bold" size:24.0]];
         [label2 setTextColor:color];
         [label2 setTextAlignment:NSTextAlignmentCenter];
         [tutorialView addSubview:label2];
         
-        UILabel *label3 = [[UILabel alloc] initWithFrame:CGRectMake(0, 70, CARD_WIDTH, 100)];
-        [label3 setText:@"to your calendar"];
-        [label3 setFont:[UIFont fontWithName:@"OpenSans-Bold" size:26.0]];
+        UILabel *label3 = [[UILabel alloc] initWithFrame:CGRectMake(0, 80, CARD_WIDTH, 100)];
+        [label3 setText:@"going to an event."];
+        [label3 setFont:[UIFont fontWithName:@"OpenSans-Bold" size:24.0]];
         [label3 setTextColor:color];
         [label3 setTextAlignment:NSTextAlignmentCenter];
         [tutorialView addSubview:label3];
@@ -767,14 +776,14 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     switch (status)
     {
             // Update our UI if the user has granted access to their Calendar
-        case EKAuthorizationStatusAuthorized: [self accessGrantedForCalendar];
+        case EKAuthorizationStatusAuthorized: [self accessGrantedForCalendar:YES];
             break;
             // Prompt the user for access to Calendar if there is no definitive answer
         case EKAuthorizationStatusNotDetermined: [self requestCalendarAccess];
             break;
-            // Display a message if the user has denied or restricted access to Calendar
-        case EKAuthorizationStatusDenied:
-        case EKAuthorizationStatusRestricted:
+            // Display a message card the user has denied or restricted access to Calendar
+        case EKAuthorizationStatusDenied: [self accessGrantedForCalendar:NO];
+        case EKAuthorizationStatusRestricted: [self accessGrantedForCalendar:NO];
         {
             UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Privacy Warning" message:@"Permission was not granted for Calendar"
                                                            delegate:nil
@@ -795,19 +804,68 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     
     [eventStore requestAccessToEntityType:EKEntityTypeEvent completion:^(BOOL granted, NSError *error)
      {
+         
+         UIActivityIndicatorView *activityIndicator = [[UIActivityIndicatorView alloc]initWithFrame:CGRectMake(0, 0, 50, 50)];
+         
          if (granted)
          {
-             [self accessGrantedForCalendar];
+             //[self accessGrantedForCalendar];
          }
+         
+         /*
+         UILabel *boomLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 320, 100)];
+         boomLabel.center = CGPointMake(-self.center.x, self.center.y - 100);
+         
+         boomLabel.font = [UIFont fontWithName:@"OpenSans-Extrabold" size:30.0];
+         boomLabel.textColor = [UIColor colorWithRed:70.0/255 green:70.0/255 blue:70.0/255 alpha:1.0];
+         [self addSubview:boomLabel];
+         boomLabel.text = @"Boom";
+         boomLabel.textAlignment = NSTextAlignmentCenter;
+         
+         UILabel *simpleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 320, 100)];
+         simpleLabel.center = CGPointMake(self.center.x * 3, self.center.y - 50);
+         simpleLabel.font = [UIFont fontWithName:@"OpenSans" size:25.0];
+         simpleLabel.textColor = [UIColor colorWithRed:70.0/255 green:70.0/255 blue:70.0/255 alpha:1.0];
+         [self addSubview:simpleLabel];
+         simpleLabel.text = @"It's that simple.";
+         simpleLabel.textAlignment = NSTextAlignmentCenter;
+         
+         
+         [UIView animateWithDuration:1.0 delay:0 usingSpringWithDamping:0.9 initialSpringVelocity:0.67 options:UIViewAnimationOptionTransitionNone animations:^{
+             
+             boomLabel.center = CGPointMake(self.center.x - 18, self.center.y - 100);
+             simpleLabel.center = CGPointMake(self.center.x - 18, self.center.y - 50);
+             
+         } completion:^(BOOL finished) {
+             
+             [UIView animateWithDuration:0.5 delay:1.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+                 
+                 boomLabel.center = CGPointMake(self.center.x*3, self.center.y - 100);
+                 simpleLabel.center = CGPointMake(-self.center.x, self.center.y - 50);
+                 
+             } completion:^(BOOL finished) {
+                 
+                 [self.myViewController dropdownPressedFromTut:YES];
+                 [self.myViewController dropdownPressed];
+             }];
+             
+         }]; */
+         dispatch_async(dispatch_get_main_queue(), ^{
+
+             [self.myViewController dropdownPressedFromTut:YES];
+             [self.myViewController dropdownPressed];
+         });
+         
      }];
 }
 
 
 // This method is called when the user has granted permission to Calendar
--(void)accessGrantedForCalendar
+-(void)accessGrantedForCalendar:(BOOL)granted
 {
     
-
+    [self.myViewController dropdownPressedFromTut:YES];
+    [self.myViewController dropdownPressed];
 
 }
 
@@ -996,6 +1054,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                      }completion:^(BOOL complete){
                          [card removeFromSuperview];
                          
+                         
                          if (card.tag == 50 || card.tag == 3) {
                              NSLog(@"Last card swiped");
 
@@ -1044,43 +1103,34 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                              
                              NSLog(@"Last card swiped");
                              
-                             UILabel *boomLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 320, 100)];
-                             boomLabel.center = CGPointMake(-self.center.x, self.center.y - 100);
+                             BOOL notisEnabled = NO;
+                             BOOL locEnabled = NO;
                              
-                             boomLabel.font = [UIFont fontWithName:@"OpenSans-Extrabold" size:30.0];
-                             boomLabel.textColor = [UIColor colorWithRed:70.0/255 green:70.0/255 blue:70.0/255 alpha:1.0];
-                             [self addSubview:boomLabel];
-                             boomLabel.text = @"Boom";
-                             boomLabel.textAlignment = NSTextAlignmentCenter;
+                             if (SYSTEM_VERSION_LESS_THAN(@"8.0")) {
+                                 NSLog(@" ====== iOS 7 ====== ");
+                                 UIRemoteNotificationType enabledTypes = [[UIApplication sharedApplication] enabledRemoteNotificationTypes];
+                                 if (enabledTypes) notisEnabled = YES;
+                                 //if ([CLLocationManager authorizationStatus] == kCLAuthorizationStatusAuthorized) locEnabled = YES;
+                             } else {
+                                 NSLog(@" ====== iOS 8 ====== ");
+                                 if ([[UIApplication sharedApplication] isRegisteredForRemoteNotifications]) notisEnabled = YES;
+                                 if ([CLLocationManager authorizationStatus] == kCLAuthorizationStatusAuthorizedAlways) locEnabled = YES;
+                             }
                              
-                             UILabel *simpleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 320, 100)];
-                             simpleLabel.center = CGPointMake(self.center.x * 3, self.center.y - 50);
-                             simpleLabel.font = [UIFont fontWithName:@"OpenSans" size:25.0];
-                             simpleLabel.textColor = [UIColor colorWithRed:70.0/255 green:70.0/255 blue:70.0/255 alpha:1.0];
-                             [self addSubview:simpleLabel];
-                             simpleLabel.text = @"It's that simple.";
-                             simpleLabel.textAlignment = NSTextAlignmentCenter;
+                             if (!notisEnabled || !locEnabled) {
                              
+                                 PermissionsView *permissionsView = [[PermissionsView alloc] initWithFrame:CGRectMake(0, 0, 300, 360)];
+                                 permissionsView.center = CGPointMake(self.center.x - 18, self.center.y - 80);
+                                 [self addSubview:permissionsView];
+                                 self.userInteractionEnabled = YES;
+                                 permissionsView.delegate = self;
                              
-                             [UIView animateWithDuration:1.0 delay:0 usingSpringWithDamping:0.9 initialSpringVelocity:0.67 options:UIViewAnimationOptionTransitionNone animations:^{
+                             } else {
                                  
-                                 boomLabel.center = CGPointMake(self.center.x - 18, self.center.y - 100);
-                                 simpleLabel.center = CGPointMake(self.center.x - 18, self.center.y - 50);
-                                 
-                             } completion:^(BOOL finished) {
-                                 
-                                 [UIView animateWithDuration:0.5 delay:1.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-                                     
-                                     boomLabel.center = CGPointMake(self.center.x*3, self.center.y - 100);
-                                     simpleLabel.center = CGPointMake(-self.center.x, self.center.y - 50);
-                                     
-                                 } completion:^(BOOL finished) {
-                                     
-                                     [self.myViewController dropdownPressedFromTut:YES];
-                                     [self.myViewController dropdownPressed];
-                                 }];
-                                 
-                             }];
+                                 [self.myViewController dropdownPressedFromTut:YES];
+                                 [self.myViewController dropdownPressed];
+                             }
+                             
                          }
                          
                          /*
@@ -1091,9 +1141,9 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                           }*/
                      }];
     
-    [self checkEventStoreAccessForCalendar];
-    [self cardSwipedRight:card fromExpandedView:NO];
+    //[self checkEventStoreAccessForCalendar];
     
+    [self cardSwipedRight:card fromExpandedView:NO];
     
     NSLog(@"DOWN");
 }
@@ -1129,9 +1179,70 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     }
 }
 
+-(void)userEnabledNotis {
+    
+        //AppDelegate *ad = (AppDelegate *)[UIApplication sharedApplication].delegate;
+        if (SYSTEM_VERSION_LESS_THAN(@"8.0")) {
+            
+            NSLog(@" ====== iOS 7 ====== ");
+            
+            [[UIApplication sharedApplication] registerForRemoteNotificationTypes: (UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound | UIRemoteNotificationTypeAlert)];
+            
+        } else {
+            
+            NSLog(@" ====== iOS 8 ====== ");
+            
+            UIUserNotificationType userNotificationTypes = (UIUserNotificationTypeAlert |
+                                                            UIUserNotificationTypeBadge |
+                                                            UIUserNotificationTypeSound);
+            UIUserNotificationSettings *settings = [UIUserNotificationSettings settingsForTypes:userNotificationTypes
+                                                                                     categories:nil];
+            [[UIApplication sharedApplication] registerUserNotificationSettings:settings];
+            [[UIApplication sharedApplication] registerForRemoteNotifications];
+        
+            [[NSNotificationCenter defaultCenter] addObserver:self
+                                                     selector:@selector(didRegister)
+                                                         name:@"moveAlong"
+                                                       object:nil];
+        }
+    
+}
+
+-(void)userEnabledLoc {
+ 
+    
+    
+}
+
+-(void)moveOn {
+    
+    [self.myViewController dropdownPressedFromTut:YES];
+    [self.myViewController dropdownPressed];
+    
+}
+
+-(void)didRegister {
+    
+    BOOL locEnabled = NO;
+    
+    if (SYSTEM_VERSION_LESS_THAN(@"8.0")) {
+        NSLog(@" ====== iOS 7 ====== ");
+        if ([CLLocationManager authorizationStatus] == kCLAuthorizationStatusAuthorized) locEnabled = YES;
+    } else {
+        NSLog(@" ====== iOS 8 ====== ");
+        if ([CLLocationManager authorizationStatus] == kCLAuthorizationStatusAuthorizedAlways || [CLLocationManager authorizationStatus] == kCLAuthorizationStatusAuthorizedWhenInUse) locEnabled = YES;
+    }
+    
+    if ([[UIApplication sharedApplication] isRegisteredForRemoteNotifications]) {
+        //[self requestCalendarAccess];
+    } else {
+        //[self.myViewController dropdownPressedFromTut:YES];
+        //[self.myViewController dropdownPressed];
+    }
+}
 
 #warning BE CAREFUL --- fix this later. updates literally every second... unnecessary
-
+/*
 - (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations{
     
     PFUser *user = [PFUser currentUser];
@@ -1150,7 +1261,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     [defaults synchronize];
     
     //[delegate setLocationSegue];
-}
+} */
 
 - (void)didClickContinue:(id)sender {
     

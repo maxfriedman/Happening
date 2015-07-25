@@ -13,7 +13,7 @@
 @implementation dropdownSettingsView {
     
     NSUserDefaults *defaults;
-    PFUser *user;
+    PFUser *currentUser;
     NSInteger sliderVal;
     NSArray *categoryArray;
     NSArray *imageArray;
@@ -34,7 +34,7 @@
     //[super awakeFromNib];
     NSLog(@"------- Settings Opened -------");
     
-    user = [PFUser currentUser];
+    currentUser = [PFUser currentUser];
     defaults = [NSUserDefaults standardUserDefaults];
     
     categoryChanged = NO;
@@ -42,7 +42,7 @@
     dropdownView.layer.borderWidth = 1.0;
     dropdownView.layer.borderColor = [UIColor colorWithRed:172.0/255 green:172.0/255 blue:172.0/255 alpha:1.0].CGColor;
     
-    [locationField setTitle:[NSString stringWithFormat:@"         Near %@", [defaults objectForKey:@"userLocTitle"]] forState:UIControlStateNormal];
+    [locationField setTitle:[NSString stringWithFormat:@"         Near %@", [currentUser objectForKey:@"userLocTitle"]] forState:UIControlStateNormal];
     
     /*
     locationField.layer.masksToBounds = YES;
@@ -52,7 +52,7 @@
     */
      
      
-    sliderVal = [defaults integerForKey:@"sliderValue"];
+    sliderVal = [currentUser[@"radius"] integerValue];
     
     //appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
     NSString *distanceString = [NSString stringWithFormat:@"%ld mi. away", (long)sliderVal];
@@ -81,7 +81,7 @@
     selectionBar.backgroundColor = [UIColor colorWithRed:0 green:183.0/255.0 blue:238.0/255.0 alpha:1.0]; //%%% sbcolor
     selectionBar.alpha = 0.8; //%%% sbalpha
 
-    if ([defaults boolForKey:@"today"]) {
+    if ([currentUser[@"time"] isEqualToString:@"today"]) {
         
         [todayButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
         [tomorrowButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
@@ -90,7 +90,7 @@
         selectionBar.frame = CGRectMake(32, 183, todayButton.frame.size.width + 6, 3);
         timeString = @"Today";
         
-    } else if ([defaults boolForKey:@"tomorrow"]) {
+    } else if ([currentUser[@"time"] isEqualToString:@"tomorrow"]) {
         
         [todayButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
         [tomorrowButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
@@ -118,7 +118,7 @@
     
     categoryArray = [[NSArray alloc] initWithObjects:@"Most popular", @"Best deals", @"Bars & Clubs", @"Food & Drink", @"Sports & Fitness", @"Concerts & Shows", /*@"Free in the city",*/ @"Charity & Causes", @"Shopping", /*@"Film & Media",*/ @"Meetups", nil];
     
-    defaultsArray = [[NSArray alloc] initWithObjects:@"nightlife", @"entertainment", @"music", @"dining", @"happyHour", @"sports", @"shopping", @"fundraiser", @"meetup", @"freebies", @"other", nil];
+    defaultsArray = [[NSArray alloc] initWithObjects:@"Nightlife", @"Entertainment", @"Music", @"Dining", @"Happy Hour", @"Sports", @"Shopping", @"Fundraiser", @"Meetup", @"Freebies", @"Other", nil];
     
     
     UIImage *popularImage = [UIImage imageNamed:@"popular"];
@@ -151,7 +151,7 @@
 
 - (void)setTopLabelText {
     
-    NSMutableAttributedString *aAttrString1 = [[NSMutableAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@, ", [defaults valueForKey:@"categoryName"]]];
+    NSMutableAttributedString *aAttrString1 = [[NSMutableAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@, ", currentUser[@"categoryName"]]];
     
     UIFont *font = [UIFont fontWithName:@"OpenSans" size:14.0];
     NSMutableDictionary *attrsDictionary = [NSMutableDictionary dictionaryWithObject:font
@@ -285,10 +285,7 @@
         } completion:^(BOOL finished) {
         }];
         
-        [defaults setBool:YES forKey:@"today"];
-        
-        [defaults setBool:NO forKey:@"tomorrow"];
-        [defaults setBool:NO forKey:@"thisWeekend"];
+        currentUser[@"time"] = @"today";
         timeString = @"Today";
         
     } else if (tag == 2) {
@@ -302,10 +299,7 @@
         } completion:^(BOOL finished) {
         }];
         
-        [defaults setBool:YES forKey:@"tomorrow"];
-        
-        [defaults setBool:NO forKey:@"today"];
-        [defaults setBool:NO forKey:@"thisWeekend"];
+        currentUser[@"time"] = @"tomorrow";
         timeString = @"Tomorrow";
         
     } else {
@@ -319,17 +313,15 @@
         } completion:^(BOOL finished) {
         }];
         
-        [defaults setBool:YES forKey:@"thisWeekend"];
-        
-        [defaults setBool:NO forKey:@"today"];
-        [defaults setBool:NO forKey:@"tomorrow"];
+        currentUser[@"time"] = @"this weekend";
         timeString = @"This weekend";
     }
+    
+    [currentUser saveEventually];
     
     //NSLog(@"%@", [[NSUserDefaults standardUserDefaults] dictionaryRepresentation]);
 
     categoryChanged = YES;
-    [defaults synchronize];
     [self setTopLabelText];
 }
 
@@ -343,61 +335,41 @@
     
     //defaultsArray = [[NSArray alloc] initWithObjects:@"nightlife", @"entertainment", @"music", @"dining", @"happyHour", @"sports", @"shopping", @"fundraiser", @"meetup", @"freebies", @"other", nil];
     
-    for (NSString *string in defaultsArray) {
-        [defaults setBool:NO forKey:string];
-    }
-    
     switch (num) {
         case 0: // Most popular
             NSLog(@"Selected Most Popular");
-            
-            [defaults setBool:YES forKey:@"mostPopular"];
-            [defaults setValue:@"Most Popular" forKey:@"categoryName"];
-            
-            for (NSString *string in defaultsArray) {
-                [defaults setBool:YES forKey:string];
-            }
+            currentUser[@"categoryName"] = @"Most Popular";
+            currentUser[@"categories"] = defaultsArray;
 
             break;
         case 1: // Best deals
             NSLog(@"Selected Best Deals");
-            
-            [defaults setBool:YES forKey:@"bestDeals"];
-            [defaults setValue:@"Best Deals" forKey:@"categoryName"];
-            
-            [defaults setBool:YES forKey:@"freebies"];
-            [defaults setBool:YES forKey:@"happyHour"];
+            currentUser[@"categoryName"] = @"Best Deals";
+            currentUser[@"categories"] = [NSArray arrayWithObjects:@"Freebies", @"Happy Hour", nil];
             
             break;
         case 2: // Bars & Clubs
             NSLog(@"Selected Bars & Clubs");
-            
-            [defaults setValue:@"Bars & Clubs" forKey:@"categoryName"];
-            [defaults setBool:YES forKey:@"happyHour"];
-            [defaults setBool:YES forKey:@"nightlife"];
+            currentUser[@"categoryName"] = @"Bars & Clubs";
+            currentUser[@"categories"] = [NSArray arrayWithObjects:@"Happy Hour", @"Nightlife", nil];
             
             break;
         case 3: // Food & Drink
             NSLog(@"Selected Food & Drink");
-            
-            [defaults setValue:@"Food & Drink" forKey:@"categoryName"];
-            [defaults setBool:YES forKey:@"dining"];
-            [defaults setBool:YES forKey:@"happyHour"];
+            currentUser[@"categoryName"] = @"Food & Drink";
+            currentUser[@"categories"] = [NSArray arrayWithObjects:@"Dining", @"Happy Hour", nil];
             
             break;
         case 4: // Sports
             NSLog(@"Selected Sports & Fitness");
-            
-            [defaults setValue:@"Sports" forKey:@"categoryName"];
-            [defaults setBool:YES forKey:@"sports"];
+            currentUser[@"categoryName"] = @"Sports & Fitness";
+            currentUser[@"categories"] = [NSArray arrayWithObjects:@"Sports", nil];
             
             break;
         case 5: // Concerts & Shows
             NSLog(@"Selected Concerts & Shows");
-            
-            [defaults setValue:@"Concerts & Shows" forKey:@"categoryName"];
-            [defaults setBool:YES forKey:@"entertainment"];
-            [defaults setBool:YES forKey:@"music"];
+            currentUser[@"categoryName"] = @"Concerts & Shows";
+            currentUser[@"categories"] = [NSArray arrayWithObjects:@"Entertainment", @"Music", nil];
             
             break;
             /*
@@ -411,16 +383,14 @@
              */
         case 6: // Charity & Causes
             NSLog(@"Selected Charity & Causes");
-            
-            [defaults setValue:@"Charity & Causes" forKey:@"categoryName"];
-            [defaults setBool:YES forKey:@"fundraiser"];
+            currentUser[@"categoryName"] = @"Charity & Causes";
+            currentUser[@"categories"] = [NSArray arrayWithObjects:@"Fundraiser", nil];
             
             break;
         case 7: // Shopping
             NSLog(@"Selected Shopping");
-            
-            [defaults setValue:@"Shopping" forKey:@"categoryName"];
-            [defaults setBool:YES forKey:@"shopping"];
+            currentUser[@"categoryName"] = @"Shopping";
+            currentUser[@"categories"] = [NSArray arrayWithObjects:@"Shopping", nil];
             
             break;
             /*
@@ -434,9 +404,8 @@
              */
         case 8: // Professional
             NSLog(@"Selected Meetups");
-            
-            [defaults setValue:@"Meetups" forKey:@"categoryName"];
-            [defaults setBool:YES forKey:@"meetup"];
+            currentUser[@"categoryName"] = @"Meetups";
+            currentUser[@"categories"] = [NSArray arrayWithObjects:@"Meetup", nil];
             
             break;
             
@@ -456,8 +425,10 @@
     cell.accessoryType = UITableViewCellAccessoryCheckmark;
     cell.textLabel.font = [UIFont fontWithName:@"OpenSans-Semibold" size:16.0];
     
+    categoryChanged = YES;
     
     [defaults synchronize];
+    [currentUser saveEventually];
     [self setTopLabelText];
     [delegate dropdownPressed];
     [delegate refreshData];
@@ -560,10 +531,10 @@
 
 -(void)refreshSettings {
     
-    [locationField setTitle:[NSString stringWithFormat:@"         Near %@", [defaults objectForKey:@"userLocTitle"]] forState:UIControlStateNormal];
+    [locationField setTitle:[NSString stringWithFormat:@"         Near %@", [currentUser objectForKey:@"userLocTitle"]] forState:UIControlStateNormal];
     categoryChanged = YES;
     
-    if (![defaults boolForKey:@"hasLaunched"]) {
+    if ([[PFUser currentUser][@"hasLaunched"] boolValue] == NO) {
         NSLog(@"First time-- Loc selected.");
         [delegate dropdownPressedFromTut:NO];
     }
@@ -583,12 +554,11 @@
 
     //NSLog(@"%ld ----------- %ld", (long)[defaults integerForKey:@"sliderValue"], (long)sliderVal);
     
-    if ([defaults integerForKey:@"sliderValue"] != sliderVal || /*![[defaults objectForKey:@"userLocTitle"] isEqualToString:userLocationTitle] ||*/ categoryChanged) {
+    if (![currentUser[@"radius"] isEqualToNumber:@(sliderVal)] || /*![[defaults objectForKey:@"userLocTitle"] isEqualToString:userLocationTitle] ||*/ categoryChanged) {
         NSLog(@"Settings changed");
 
         categoryChanged = NO;
-        [defaults setInteger:sliderVal forKey:@"sliderValue"];
-        [defaults synchronize];
+        currentUser[@"radius"] = @(sliderVal);
         
         return YES;
         

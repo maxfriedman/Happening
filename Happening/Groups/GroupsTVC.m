@@ -41,6 +41,8 @@
     
     LYRConversation *selectedConvo;
     NSMutableDictionary *groupDict;
+    
+    UIView *noConvosView;
 }
 
 - (void)viewDidLoad {
@@ -52,7 +54,7 @@
     self.navigationController.navigationBar.barTintColor = [UIColor clearColor]; //%%% bartint
     [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"navBar"] forBarMetrics:UIBarMetricsDefault];
     self.navigationController.navigationBar.translucent = NO;
-    self.navigationItem.title = @"Friends";
+    self.navigationItem.title = @"Groups";
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"white plus"] style:UIBarButtonItemStylePlain target:self action:@selector(createGroup:)];
     
     groupDict = [NSMutableDictionary new];
@@ -74,10 +76,46 @@
     }
 }
 
+/*
+-(void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    NSLog(@"Made it");
+    
+    // Remove seperator inset
+    if ([cell respondsToSelector:@selector(setSeparatorInset:)]) {
+        [cell setSeparatorInset:UIEdgeInsetsZero];
+    }
+    
+    // Prevent the cell from inheriting the Table View's margin settings
+    if ([cell respondsToSelector:@selector(setPreservesSuperviewLayoutMargins:)]) {
+        [cell setPreservesSuperviewLayoutMargins:NO];
+    }
+    
+    // Explictly set your cell's layout margins
+    if ([cell respondsToSelector:@selector(setLayoutMargins:)]) {
+        [cell setLayoutMargins:UIEdgeInsetsZero];
+    }
+} */
+
 - (void)facebookSuccessfulSignup {
     [[self.view viewWithTag:456] removeFromSuperview];
     //[self loadFriends];
-    [self.tableView reloadData];
+    // Fetches all LYRConversation objects
+    
+    LYRQuery *query = [LYRQuery queryWithQueryableClass:[LYRConversation class]];
+    NSError *error;
+    AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+    NSOrderedSet *conversations = [appDelegate.layerClient executeQuery:query error:&error];
+    if (!error) {
+        NSLog(@"%tu conversations", conversations.count);
+        
+        if (conversations.count == 0 && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
+            [self showNoConvosView];
+        }
+        
+    } else {
+        NSLog(@"Query failed with error %@", error);
+    }
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -89,7 +127,7 @@
     
     AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
     [appDelegate.mh.groupHub decrementBy:appDelegate.mh.groupHub.count];
-
+    [appDelegate loadGroups];
     
     [ATLConversationCollectionViewHeader appearance].participantLabelFont = [UIFont fontWithName:@"OpenSans" size:11.0];
     
@@ -110,9 +148,12 @@
         
         if (conversations.count == 0 && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
             [self showNoConvosView];
+        } else {
+
         }
         
     } else {
+        
         NSLog(@"Query failed with error %@", error);
     }
 
@@ -203,8 +244,10 @@
 
         PFObject *group = [PFObject objectWithoutDataWithClassName:@"Group" objectId:[conversation.metadata objectForKey:@"groupId"]];
         [group deleteEventually];
-        
     }
+    
+    [self.tableView reloadData];
+
 }
 
 - (void)conversationListViewController:(ATLConversationListViewController *)conversationListViewController didFailDeletingConversation:(LYRConversation *)conversation deletionMode:(LYRDeletionMode)deletionMode error:(NSError *)error
@@ -240,6 +283,14 @@
 
 - (NSString *)conversationListViewController:(ATLConversationListViewController *)conversationListViewController titleForConversation:(LYRConversation *)conversation
 {
+    if (noConvosView) {
+        [UIView animateWithDuration:0.3 animations:^{
+            noConvosView.alpha = 0;
+        } completion:^(BOOL finished) {
+            [noConvosView removeFromSuperview];
+        }];
+    }
+    
     NSString *title = [conversation.metadata valueForKey:@"title"];
     if ((title != nil) && ![title isEqualToString:@"_indy_"]){
         return [conversation.metadata valueForKey:@"title"];
@@ -273,13 +324,20 @@
 - (id<ATLAvatarItem>)conversationListViewController:(ATLConversationListViewController *)conversationListViewController avatarItemForConversation:(LYRConversation *)conversation {
     
     PFQuery *query = [PFQuery queryWithClassName:@"Group"];
+    //[query includeKey:@"user_objects"];
     [query fromLocalDatastore];
     PFObject *ob = [query getObjectWithId:[conversation.metadata valueForKey:@"groupId"]];
     NSLog(@"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
     if (ob != nil) [groupDict setObject:ob forKey:[conversation.metadata valueForKey:@"groupId"]];
-    else ob = [PFObject objectWithClassName:@"Group"];
-
+    else { ob = [PFObject objectWithoutDataWithClassName:@"Group" objectId:[conversation.metadata valueForKey:@"groupId"]];
+        [ob fetchIfNeeded];
+        [groupDict setObject:ob forKey:[conversation.metadata valueForKey:@"groupId"]];
+        [ob pinInBackground];
+    }
+    //NSArray *array = ob[@"user_objects"];
+    //NSLog(@"%lu", array.count);
+    
     return ob;
 }
 
@@ -303,58 +361,63 @@
 
 -(void)showNoConvosView {
     
-    UIView *noConvosView = [[UIView alloc] initWithFrame:CGRectMake(0, 64, 320, 519-64)];
+    if (!noConvosView) {
     
-    noConvosView.backgroundColor = [UIColor clearColor];
-    
-    UIImageView *imv = [[UIImageView alloc] initWithFrame:noConvosView.bounds];
-    imv.image = [UIImage imageNamed:@"Group Screenshot"];
-    [noConvosView addSubview:imv];
-    
-    FXBlurView *blurEffectView = [[FXBlurView alloc] initWithFrame:noConvosView.bounds];
-    blurEffectView.tintColor = [UIColor blackColor];
-    blurEffectView.tag = 77;
-    blurEffectView.blurRadius = 13;
-    blurEffectView.dynamic = NO;
-    
-    [noConvosView addSubview:blurEffectView];
-    //self.tableView.scrollEnabled = NO;
-    
-    UILabel *messageLabel = [[UILabel alloc] init];
-    [messageLabel setText:[NSString stringWithFormat:@"Events are better with friends. Create a group to make it happen!"]];
-    [messageLabel setFont:[UIFont fontWithName:@"OpenSans" size:22.0]];
-    messageLabel.textColor = [UIColor blackColor];
-    
-    [messageLabel setTextAlignment:NSTextAlignmentCenter];
-    [messageLabel setFrame:CGRectMake(40, 120, 240, 150)];
-    messageLabel.numberOfLines = 0;
-    
-    [blurEffectView addSubview:messageLabel];
-    
-    UIButton *createButton = [[UIButton alloc] initWithFrame:CGRectMake(56, 360, 208, 50)];
-    createButton.tag = 3;
-    UIColor *hapBlue = [UIColor colorWithRed:0.0 green:176.0/255 blue:242.0/255 alpha:1.0];
-    [createButton setTitle:@"CREATE GROUP" forState:UIControlStateNormal];
-    [createButton setTitleColor:hapBlue forState:UIControlStateNormal];
-    [createButton setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];
-    [createButton setBackgroundColor:[UIColor whiteColor]];
-    
-    createButton.titleLabel.font = [UIFont fontWithName:@"OpenSans" size:16.0];
-    
-    createButton.layer.masksToBounds = YES;
-    createButton.layer.borderColor = hapBlue.CGColor;
-    createButton.layer.borderWidth = 1.5;
-    createButton.layer.cornerRadius = 50/2;
-    
-    [createButton addTarget:self action:@selector(buttonHighlight:) forControlEvents:UIControlEventTouchDown];
-    [createButton addTarget:self action:@selector(buttonNormal:) forControlEvents:UIControlEventTouchUpInside];
-    [createButton addTarget:self action:@selector(buttonNormal:) forControlEvents:UIControlEventTouchDragExit];
-    //[createButton setImage:[UIImage imageNamed:@"Facebook Login"] forState:UIControlStateNormal];
-    [createButton addTarget:self action:@selector(createGroup:) forControlEvents:UIControlEventTouchUpInside];
-    [noConvosView addSubview:createButton];
-    
-    [self.navigationController.view addSubview:noConvosView];
-
+        noConvosView = [[UIView alloc] initWithFrame:CGRectMake(0, 64, 320, 519-64)];
+        
+        noConvosView.backgroundColor = [UIColor clearColor];
+        
+        UIImageView *imv = [[UIImageView alloc] initWithFrame:noConvosView.bounds];
+        imv.image = [UIImage imageNamed:@"Group Screenshot"];
+        [noConvosView addSubview:imv];
+        
+        FXBlurView *blurEffectView = [[FXBlurView alloc] initWithFrame:noConvosView.bounds];
+        blurEffectView.tintColor = [UIColor blackColor];
+        blurEffectView.tag = 77;
+        blurEffectView.blurRadius = 13;
+        blurEffectView.dynamic = NO;
+        
+        [noConvosView addSubview:blurEffectView];
+        //self.tableView.scrollEnabled = NO;
+        
+        UILabel *messageLabel = [[UILabel alloc] init];
+        [messageLabel setText:[NSString stringWithFormat:@"Events are better with friends. Create a group to make it happen!"]];
+        [messageLabel setFont:[UIFont fontWithName:@"OpenSans" size:22.0]];
+        messageLabel.textColor = [UIColor blackColor];
+        
+        [messageLabel setTextAlignment:NSTextAlignmentCenter];
+        [messageLabel setFrame:CGRectMake(40, 120, 240, 150)];
+        messageLabel.numberOfLines = 0;
+        
+        [blurEffectView addSubview:messageLabel];
+        
+        UIButton *createButton = [[UIButton alloc] initWithFrame:CGRectMake(56, 360, 208, 50)];
+        createButton.tag = 3;
+        UIColor *hapBlue = [UIColor colorWithRed:0.0 green:176.0/255 blue:242.0/255 alpha:1.0];
+        [createButton setTitle:@"CREATE GROUP" forState:UIControlStateNormal];
+        [createButton setTitleColor:hapBlue forState:UIControlStateNormal];
+        [createButton setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];
+        [createButton setBackgroundColor:[UIColor whiteColor]];
+        
+        createButton.titleLabel.font = [UIFont fontWithName:@"OpenSans" size:16.0];
+        
+        createButton.layer.masksToBounds = YES;
+        createButton.layer.borderColor = hapBlue.CGColor;
+        createButton.layer.borderWidth = 1.5;
+        createButton.layer.cornerRadius = 50/2;
+        
+        [createButton addTarget:self action:@selector(buttonHighlight:) forControlEvents:UIControlEventTouchDown];
+        [createButton addTarget:self action:@selector(buttonNormal:) forControlEvents:UIControlEventTouchUpInside];
+        [createButton addTarget:self action:@selector(buttonNormal:) forControlEvents:UIControlEventTouchDragExit];
+        //[createButton setImage:[UIImage imageNamed:@"Facebook Login"] forState:UIControlStateNormal];
+        [createButton addTarget:self action:@selector(createGroup:) forControlEvents:UIControlEventTouchUpInside];
+        [noConvosView addSubview:createButton];
+        
+        noConvosView.tag = 765;
+        
+        [self.navigationController.view addSubview:noConvosView];
+        
+    }
 }
 
 -(void)buttonNormal:(id)sender {
@@ -378,6 +441,8 @@
     
     NSLog(@"Boom");
     
+    [noConvosView removeFromSuperview];
+    
     [SVProgressHUD setViewForExtension:self.view];
     [SVProgressHUD setOffsetFromCenter:UIOffsetMake(0, -66)];
     
@@ -389,6 +454,9 @@
             [SVProgressHUD setFont:[UIFont fontWithName:@"OpenSans" size:15.0]];
         });
     });
+    
+    [self.tableView reloadData];
+
     
 }
 
@@ -468,6 +536,13 @@
         }
         
         vc.group = [groupDict valueForKey:[selectedConvo.metadata valueForKey:@"groupId"]];
+        
+        if (vc.group.isDataAvailable) {
+            
+            vc.userDicts = vc.group[@"user_dicts"];
+
+        }
+        
         vc.loadTopView = YES;
 
         if (!vc.group) {
