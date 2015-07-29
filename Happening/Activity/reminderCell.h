@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <Parse/Parse.h>
 
 @interface reminderCell : UITableViewCell
 
@@ -16,5 +17,6 @@
 @property (strong, nonatomic) IBOutlet UILabel *eventDateLabel;
 @property (strong, nonatomic) IBOutlet UIImageView *eventImageView;
 
+@property (strong, nonatomic) PFObject *eventObject;
 
 @end

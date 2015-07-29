@@ -63,6 +63,7 @@
     self.navigationController.navigationBar.barTintColor = [UIColor clearColor]; //%%% bartint
     [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"navBar"] forBarMetrics:UIBarMetricsDefault];
     self.navigationController.navigationBar.translucent = NO;
+    [self.navigationController.navigationBar addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(scrollToTop)]];
     
     friendsArray = [[NSMutableArray alloc] init];
     selectedNamesArray = [[NSMutableArray alloc] init];
@@ -103,6 +104,10 @@
     else wasDefaultName = NO;
     
     [self loadFriends];
+}
+
+- (void)scrollToTop {
+    [self.tableView setContentOffset:CGPointZero animated:YES];
 }
 
 - (void)loadFriends {
@@ -183,8 +188,8 @@
             imagesArray = [NSMutableArray array];
         }
         [letterDict setObject:imagesArray forKey:@"Images"];
-        FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(10, 5, 30, 30)];
-        profPicView.layer.cornerRadius = 15;
+        FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(10, 7.5, 40, 40)];
+        profPicView.layer.cornerRadius = 20;
         profPicView.layer.masksToBounds = YES;
         profPicView.profileID = friendObjectIDs[i];
         profPicView.tag = 9;
@@ -241,7 +246,7 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     
-    return 40;
+    return 55;
     
 }
 

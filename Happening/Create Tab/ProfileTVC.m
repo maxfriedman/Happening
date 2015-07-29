@@ -172,15 +172,15 @@
     
     user = [PFUser currentUser];
     
-    /*
     PFQuery *swipesQuery = [PFQuery queryWithClassName:@"Swipes"];
     [swipesQuery whereKey:@"UserID" equalTo:user.objectId];
     [swipesQuery whereKey:@"swipedRight" equalTo:@YES];
-    swipesQuery.limit = 1000; */
+    [swipesQuery fromLocalDatastore];
+    swipesQuery.limit = 1000;
     
     PFQuery *eventQuery = [PFQuery queryWithClassName:@"Event"];
     [eventQuery fromLocalDatastore];
-    //[eventQuery whereKey:@"objectId" matchesKey:@"EventID" inQuery:swipesQuery];
+    [eventQuery whereKey:@"objectId" matchesKey:@"EventID" inQuery:swipesQuery];
     [eventQuery whereKey:@"EndTime" greaterThan:[NSDate dateWithTimeIntervalSinceNow:1800]]; // show today's events, must be at least 30 minutes left in the event (END)
     [eventQuery orderByAscending:@"Date"];
     eventQuery.limit = 1000;

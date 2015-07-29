@@ -185,7 +185,7 @@
         [self addSubview:yesButton];
         [self addSubview:noButton];
         
-        [self shouldDisplayAvatarItem:NO];
+        //[self shouldDisplayAvatarItem:YES];
         
     }
     return self;
@@ -240,6 +240,7 @@
     sender = nil;
     return;
 }
+
 
 - (void)shouldDisplayAvatarItem:(BOOL)shouldDisplayAvatarItem{
     

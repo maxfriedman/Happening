@@ -67,21 +67,25 @@ NSString *const MHCustomTabBarControllerViewControllerAlreadyVisibleNotification
     AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
     appDelegate.mh = self;
     
-    groupHub = [[RKNotificationHub alloc]initWithView:[self.buttons objectAtIndex:2]]; // sets the count to 0
-    
-    //%%% CIRCLE FRAME
-    //[hub setCircleAtFrame:CGRectMake(-10, -10, 30, 30)]; //frame relative to the view you set it to
-    
-    //%%% MOVE FRAME
-    [groupHub moveCircleByX:-10 Y:8]; // moves the circle 5 pixels left and down from its current position
-    
-    //%%% CIRCLE SIZE
-    [groupHub scaleCircleSizeBy:0.5]; // doubles the size of the circle, keeps the same center
-    
-    [groupHub setCircleColor:[UIColor colorWithRed:0 green:176.0/255 blue:242.0/255 alpha:1.0] labelColor:[UIColor whiteColor]];
-    
-    [groupHub setCountLabelFont:[UIFont fontWithName:@"OpenSans" size:6.0]];
+    if (!groupHub) {
         
+        groupHub = [[RKNotificationHub alloc]initWithView:[self.buttons objectAtIndex:2]]; // sets the count to 0
+        
+        //%%% CIRCLE FRAME
+        //[hub setCircleAtFrame:CGRectMake(-10, -10, 30, 30)]; //frame relative to the view you set it to
+        
+        //%%% MOVE FRAME
+        [groupHub moveCircleByX:-10 Y:8]; // moves the circle 5 pixels left and down from its current position
+        
+        //%%% CIRCLE SIZE
+        [groupHub scaleCircleSizeBy:0.5]; // doubles the size of the circle, keeps the same center
+        
+        [groupHub setCircleColor:[UIColor colorWithRed:0 green:176.0/255 blue:242.0/255 alpha:1.0] labelColor:[UIColor whiteColor]];
+        
+        [groupHub setCountLabelFont:[UIFont fontWithName:@"OpenSans" size:6.0]];
+        
+    }
+    
     if (self.childViewControllers.count < 1) {
         [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"refreshData"];
         [[NSUserDefaults standardUserDefaults] synchronize];
@@ -140,7 +144,7 @@ NSString *const MHCustomTabBarControllerViewControllerAlreadyVisibleNotification
     if (unreadMessageCount > 0) {
         NSLog(@"%lu unread messages", unreadMessageCount);
         
-        [groupHub incrementBy:unreadMessageCount];
+        [groupHub setCount:unreadMessageCount];
         [groupHub bump];
         
     }

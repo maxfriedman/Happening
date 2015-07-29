@@ -92,6 +92,7 @@
         
         NSUInteger randomIndex = arc4random() % [downArray count];
         label.text = downArray[randomIndex];
+        
         label.backgroundColor = [UIColor cyanColor];
         
     }

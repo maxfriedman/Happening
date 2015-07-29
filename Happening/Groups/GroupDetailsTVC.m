@@ -18,7 +18,7 @@
 
 @import MobileCoreServices;
 
-@interface GroupDetailsTVC () <UIAlertViewDelegate, UIActionSheetDelegate, FastttCameraDelegate, UITextFieldDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, GroupAddFriendsTVCDelegate>
+@interface GroupDetailsTVC () <UIAlertViewDelegate, UIActionSheetDelegate, FastttCameraDelegate, UITextFieldDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, GroupAddFriendsTVCDelegate, UITextFieldDelegate>
 
 @property (nonatomic, strong) FastttCamera *fastCamera;
 @property (nonatomic, strong) UIButton *flashButton;
@@ -36,9 +36,12 @@
     UIButton *chooseImageButton;
     UIButton *changeButton;
     UIView *borderView;
+    UITextField *textField;
+    
+    BOOL isDefault;
 }
 
-@synthesize group, groupImageView, groupNameLabel, parseIds, fbIds, names, flashButton, switchCameraButton;
+@synthesize group, groupImageView, groupNameLabel, parseIds, fbIds, names, flashButton, switchCameraButton, editItem;
 
 - (void)viewDidLoad {
     
@@ -57,17 +60,21 @@
     borderView.userInteractionEnabled = YES;
     [borderView addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(changeImage:)]];
     
-    BOOL isDefault = [group[@"isDefaultImage"] boolValue];
+    isDefault = [group[@"isDefaultImage"] boolValue];
     
     self.groupNameLabel.text = group[@"name"];
+    
+    groupNameLabel.userInteractionEnabled = YES;
+    [groupNameLabel addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(editName)]];
+    
+    changeButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 60, 60)];
+    changeButton.center = CGPointMake(borderView.bounds.size.width / 2, borderView.bounds.size.height / 2);
+    [changeButton setImage:[UIImage imageNamed:@"camera"] forState:UIControlStateNormal];
+    [changeButton addTarget:self action:@selector(changeImage:) forControlEvents:UIControlEventTouchDown];
     
     if (isDefault) {
         
         groupImageView.backgroundColor = [UIColor groupTableViewBackgroundColor];
-        changeButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 60, 60)];
-        changeButton.center = CGPointMake(borderView.bounds.size.width / 2, borderView.bounds.size.height / 2);
-        [changeButton setImage:[UIImage imageNamed:@"camera"] forState:UIControlStateNormal];
-        [changeButton addTarget:self action:@selector(changeImage:) forControlEvents:UIControlEventTouchDown];
         [borderView addSubview:changeButton];
 
         if (self.names.count > 2) {
@@ -101,6 +108,111 @@
         [picsArray addObject:profPicView];
     }
         
+}
+
+- (void)editName {
+    
+    groupNameLabel.alpha = 0;
+    
+    textField = [[UITextField alloc] initWithFrame:CGRectMake(8, 145, 304, 24)];
+    textField.delegate = self;
+    textField.text = groupNameLabel.text;
+    textField.alpha = 1.0;
+    textField.font = [UIFont fontWithName:@"OpenSans-Semibold" size:18.0];
+    textField.textAlignment = NSTextAlignmentCenter;
+    [self.view addSubview:textField];
+    
+    /*
+    [UIView animateWithDuration:0.2 animations:^{
+        groupNameLabel.alpha = 0;
+    } completion:^(BOOL finished) {
+        [UIView animateWithDuration:0.2 animations:^{
+            textField.alpha = 1.0;
+        } completion:^(BOOL finished) {
+            
+        }];
+    }]; */
+    
+    [textField setReturnKeyType:UIReturnKeyDone];
+    [textField becomeFirstResponder];
+    [self userIsEditing:YES];
+    
+}
+
+- (void)textFieldDidEndEditing:(UITextField *)tf {
+    [self userIsEditing:NO];
+}
+
+- (BOOL)textFieldShouldReturn:(UITextField *)tf
+{
+    [self userIsEditing:NO];
+    return YES;
+}
+
+- (void)userIsEditing:(BOOL)isEditing {
+ 
+    if (isEditing) {
+        
+        editItem.title = @"Done";
+        editItem.style = UIBarButtonItemStyleDone;
+        editItem.tag = 2;
+        
+    } else {
+        
+        [textField endEditing:YES];
+        editItem.title = @"Edit";
+        editItem.style = UIBarButtonItemStylePlain;
+        [[groupImageView viewWithTag:765] removeFromSuperview];
+        if (!isDefault) {
+            [changeButton removeFromSuperview];
+        }
+        [textField resignFirstResponder];
+        editItem.tag = 1;
+        [self didNameChange];
+        groupNameLabel.alpha = 1;
+        [textField removeFromSuperview];
+
+    }
+    
+}
+
+- (void)didNameChange {
+    
+    if (![groupNameLabel.text isEqualToString:textField.text] && ![textField.text isEqualToString:@""]) {
+        
+        NSLog(@"name changed!");
+        group[@"name"] = textField.text;
+        [group saveEventually];
+        
+        [self sendMessage:[NSString stringWithFormat:@"%@ %@ renamed the group to \"%@\".", [PFUser currentUser][@"firstName"], [PFUser currentUser][@"lastName"], textField.text] type:@"settings"];
+        
+        [self.convo.metadata setValue:textField.text forKeyPath:@"title"];
+        
+        groupNameLabel.text = textField.text;
+    }
+    
+}
+
+- (IBAction)editButtonPressed:(UIBarButtonItem *)sender {
+    
+    if (sender.tag == 1) {
+        [self userIsEditing:YES];
+        [self editName];
+
+        if (!isDefault) {
+            UIView *maskView = [[UIView alloc] initWithFrame:groupImageView.bounds];
+            maskView.backgroundColor = [UIColor lightGrayColor];
+            maskView.alpha = 0.5;
+            maskView.tag = 765;
+            [groupImageView addSubview:maskView];
+            [borderView addSubview:changeButton];
+        }
+        
+    } else {
+        [self userIsEditing:NO];
+    
+    }
+    
 }
 
 - (void)didReceiveMemoryWarning {
@@ -401,6 +513,7 @@
                 if (success) {
                     
                     [ob pinInBackground];
+                    [self sendMessage:[NSString stringWithFormat:@"%@ %@ changed the group's image.", [PFUser currentUser][@"firstName"], [PFUser currentUser][@"lastName"]] type:@"settings"];
                     
                     //[self ]
                     

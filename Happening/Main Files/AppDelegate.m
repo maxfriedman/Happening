@@ -22,6 +22,7 @@
 #import <Button/Button.h>
 #import "SwipeableCardVC.h"
 #import <Bolts/Bolts.h>
+#import <Rdio/Rdio.h>
 
 #define SYSTEM_VERSION_EQUAL_TO(v)                  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedSame)
 #define SYSTEM_VERSION_GREATER_THAN(v)              ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedDescending)
@@ -33,9 +34,21 @@
 
 @end
 
+static Rdio * _rdioInstance;
+
 @implementation AppDelegate
 
 @synthesize locationManager = _locationManager, item, userLocation, locSubtitle, rk;
+
++ (Rdio *)sharedRdio
+{
+    if (_rdioInstance == nil) {
+        _rdioInstance = [[Rdio alloc] initWithClientId:@"nwb2guio6nh6dnc4nko7qdyfye"
+                                             andSecret:@"LtKsfB3aZQhrOyk6rpthCg"
+                                              delegate:nil];
+    }
+    return _rdioInstance;
+}
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
@@ -71,7 +84,11 @@
     [Parse setApplicationId:@"olSntgsT5uY3ZZbJtnjNz8yvol4CxwmArTsbkCZa"
                   clientKey:@"xwmrITvs8UaFBNfBupzXcUa6HN3sU515xp1TsGxu"];
     [PFAnalytics trackAppOpenedWithLaunchOptions:launchOptions];
-    [PFUser enableAutomaticUser];
+    
+    if ([PFUser currentUser] == nil) {
+        NSLog(@"ENABLE AUTOMATIC USER");
+        [PFUser enableAutomaticUser];
+    }
     
     NSURL *appID = [NSURL URLWithString:@"layer:///apps/staging/337f6c52-0eb7-11e5-b8c8-aa9e2d006589"];
     self.layerClient = [LYRClient clientWithAppID:appID];
@@ -92,7 +109,19 @@
         [[LocationKit sharedInstance] startWithApiToken:@"48ced72017ecb03b" andDelegate:self];
     }
     
-    [[Button sharedButton] configureWithApplicationId:@"app-070dce57d47ec28b" completion:NULL];
+    _rdioInstance = [AppDelegate sharedRdio]; //initialize
+    
+    //[rdio preparePlayerWithDelegate:nil];
+    //[rdio.player performSelector:@selector(play:) withObject:@"t1" afterDelay:2.0];
+    
+    [[Button sharedButton] configureWithApplicationId:@"app-070dce57d47ec28b" completion:^(NSError *error){
+        if (!error) {
+            NSLog(@"Yay! Button is initialized.");
+        } else {
+            NSLog(@"Womp womp. Button failed to initialize with error: %@", error);
+        }
+    }];
+    
     [BTNLocationManager allowButtonToRequestLocationPermission:YES];
 
     //[[BTNDropinButton appearance] setContentInsets:UIEdgeInsetsMake(0, -1, 0.0, 0)];
@@ -153,7 +182,7 @@
         }
 
     }
-    
+        
     //[PFObject unpinAllObjects];
 
     [FBSDKLoginButton class];
@@ -386,7 +415,7 @@
                 [localEventQuery findObjectsInBackgroundWithBlock:^(NSArray *events2, NSError *error){
                     
                     if (events2.count > 0 && !error) {
-                        
+
                         [PFObject fetchAllInBackground:events2 block:^(NSArray *events3, NSError *error) {
                             
                             if (!error) {
@@ -470,6 +499,53 @@
                         } else {
                             NSLog(@"failed to update and pin groups with error: %@", error);
                             
+                        }
+                        
+                    }];
+                    
+                    LYRQuery *query = [LYRQuery queryWithQueryableClass:[LYRConversation class]];
+                    
+                    NSError *error = nil;
+                    NSOrderedSet *conversations = [self.layerClient executeQuery:query error:&error];
+                    if (!error) {
+                        for (PFObject *group in groups2) {
+                            for (LYRConversation *convo in conversations) {
+                                if ([[convo.metadata valueForKey:@"groupId"] isEqualToString:group.objectId]) {
+                                    [convo.metadata setValue:group[@"name"] forKeyPath:@"title"];
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    
+                    NSMutableArray *groupIds = [NSMutableArray array];
+                    for (PFObject *group in groups2) {
+                        [groupIds addObject:group.objectId];
+                    }
+                    
+                    PFQuery *groupEventQuery = [PFQuery queryWithClassName:@"Group_Event"];
+                    //[groupEventQuery fromLocalDatastore];
+                    [groupEventQuery whereKey:@"GroupID" containedIn:groupIds];
+                    [groupEventQuery includeKey:@"eventObject"];
+                    [groupEventQuery findObjectsInBackgroundWithBlock:^(NSArray *groupEvents, NSError *error){
+                    
+                        if (!error) {
+                            
+                            [PFObject pinAllInBackground:groupEvents block:^(BOOL success, NSError *error){
+                                
+                                if (success) {
+                                    NSLog(@"successfully updated and pinned %lu group events", groups2.count);
+                                } else {
+                                    NSLog(@"failed to update and pin group events with error: %@", error);
+                                    
+                                }
+                            
+                            
+                            }];
+                            
+                        } else {
+                            
+                            NSLog(@"failed to update and pin group events with error: %@", error);
                         }
                         
                     }];
@@ -605,7 +681,14 @@
         if ([userInfo objectForKey:@"eventID"] != nil) {
         
             NSString *eventID = [userInfo objectForKey:@"eventID"];
-
+            //vc.eventIdFromNotification = eventID;
+            
+            UINavigationController *nvc = [[UIStoryboard storyboardWithName:@"Main" bundle:nil] instantiateViewControllerWithIdentifier:@"SwipeVCNav"];
+            SwipeableCardVC *vc = (SwipeableCardVC *)[nvc topViewController];
+            vc.eventID = eventID;
+            [HOKNavigation presentViewController:nvc animated:YES];
+            
+            /*
             PFQuery *query = [PFQuery queryWithClassName:@"Event"];
             [query getObjectInBackgroundWithId:eventID block:^(PFObject *event, NSError *error){
         
@@ -646,7 +729,7 @@
                 }
 
             
-            }];
+            }]; */
         }
     }
 }
@@ -734,10 +817,46 @@ didReceiveLocalNotification:(UILocalNotification *)notification {
 }
 
 - (void)locationKit:(LocationKit *)locationKit didUpdateLocation:(CLLocation *)location {
-    NSLog(@"The user has moved and their location is now (%.6f, %.6f)",
-          location.coordinate.latitude,
-          location.coordinate.longitude);
-    [PFUser currentUser][@"userLoc"] = [PFGeoPoint geoPointWithLocation:location];
+    NSLog(@"The user has moved and their location is now (%.6f, %.6f)", location.coordinate.latitude, location.coordinate.longitude);
+    PFUser *currentUser = [PFUser currentUser];
+    currentUser[@"userLoc"] = [PFGeoPoint geoPointWithLocation:location];
+    [currentUser pinInBackground];
+}
+
+- (void)locationKit:(LocationKit *)locationKit didStartVisit:(LKVisit *)visit {
+    
+    NSLog(@"User started a visit at %@", visit.place.venue.name);
+    
+    PFQuery *eventQuery = [PFQuery queryWithClassName:@"Event"];
+    [eventQuery fromLocalDatastore];
+    [eventQuery whereKey:@"GeoLoc" nearGeoPoint:[PFGeoPoint geoPointWithLatitude:visit.place.address.coordinate.latitude longitude:visit.place.address.coordinate.longitude] withinMiles:50];
+    [eventQuery whereKey:@"Date" lessThan:[NSDate dateWithTimeIntervalSinceNow:3600]];
+    [eventQuery whereKey:@"EndTime" greaterThan:[NSDate dateWithTimeIntervalSinceNow:-3600]];
+    [eventQuery getFirstObjectInBackgroundWithBlock:^(PFObject *event, NSError *error) {
+       
+        if (!error && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
+            
+            NSLog(@"User is at an actual event!");
+            
+            PFUser *currentUser = [PFUser currentUser];
+            NSString *name = [NSString stringWithFormat:@"%@ %@", currentUser[@"firstName"], currentUser[@"lastName"]];
+            
+            [PFCloud callFunctionInBackground:@"userIsAtEvent"
+                               withParameters:@{@"user":currentUser.objectId, @"event":event.objectId, @"fbID":currentUser[@"FBObjectID"], @"fbToken":[FBSDKAccessToken currentAccessToken].tokenString, @"title":event[@"Title"], @"loc":event[@"Location"], @"name":name, @"eventDate":event[@"Date"]}
+                                        block:^(NSString *result, NSError *error) {
+                                            if (!error) {
+                                                //NSLog(@"%@", result);
+                                            }
+                                        }];
+            
+        } else {
+            
+            NSLog(@"False alarm.");
+            
+        }
+        
+    }];
+    
 }
 
 -(void)locationManager:(CLLocationManager *)manager didUpdateToLocation:(CLLocation *)newLocation fromLocation:(CLLocation *)oldLocation{

@@ -22,12 +22,6 @@
 @property UIImage *image;
 @property PFObject *event;
 
-@end
+@property BOOL presentedAsModal;
 
-#import "DraggableView.h"
-@interface APActivityProvider2 : UIActivityItemProvider <UIActivityItemSource>
-@property (nonatomic, strong)DraggableView *APdragView;
-@end
-
-@interface APActivityIcon2 : UIActivity
 @end

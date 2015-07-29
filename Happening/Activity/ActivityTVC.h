@@ -10,12 +10,13 @@
 #import <Parse/Parse.h>
 #import <ParseUI/ParseUI.h>
 
-@interface ActivityTVC : PFQueryTableViewController
+@interface ActivityTVC : UIViewController
 
 @property (strong, nonatomic) IBOutlet UIButton *meButton;
 @property (strong, nonatomic) IBOutlet UIButton *friendsButton;
 @property (strong, nonatomic) IBOutlet UIView *sliderView;
 @property (strong, nonatomic) IBOutlet UIView *containerView;
+@property (strong, nonatomic) IBOutlet UITableView *tableView;
 
 
 @end

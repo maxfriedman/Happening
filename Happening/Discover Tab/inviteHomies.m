@@ -60,6 +60,7 @@
     self.navigationController.navigationBar.barTintColor = [UIColor clearColor]; //%%% bartint
     [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"navBar"] forBarMetrics:UIBarMetricsDefault];
     self.navigationController.navigationBar.translucent = NO;
+    [self.navigationController.navigationBar addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(scrollToTop)]];
     
     headerList = [[NSMutableArray alloc] initWithObjects:@"GROUPS", @"INTERESTED", @"", /*@"NOT INTERESTED",*/ nil];
     friendsArray = [[NSMutableArray alloc] init];
@@ -112,6 +113,10 @@
     }
 }
 
+- (void)scrollToTop {
+    [self.tableView setContentOffset:CGPointZero animated:YES];
+}
+
 - (void)facebookSuccessfulSignup {
     [[self.view viewWithTag:456] removeFromSuperview];
     [self loadFriends];
@@ -134,8 +139,8 @@
     
     for (int i = 0; i < interestedIds.count; i++) {
         
-        FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(10, 5, 30, 30)];
-        profPicView.layer.cornerRadius = 15;
+        FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(10, 7.5, 40, 40)];
+        profPicView.layer.cornerRadius = 20;
         profPicView.layer.masksToBounds = YES;
         profPicView.profileID = interestedIds[i];
         profPicView.tag = 9;
@@ -227,8 +232,8 @@
             imagesArray = [NSMutableArray array];
         }
         [letterDict setObject:imagesArray forKey:@"Images"];
-        FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(10, 5, 30, 30)];
-        profPicView.layer.cornerRadius = 15;
+        FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(10, 7.5, 40, 40)];
+        profPicView.layer.cornerRadius = 20;
         profPicView.layer.masksToBounds = YES;
         profPicView.profileID = friendObjectIDs[i];
         profPicView.tag = 9;
@@ -383,7 +388,7 @@
         }
     }
 
-    return 40;
+    return 55;
 }
 
 -(UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
@@ -1362,7 +1367,9 @@
                         groupEvent[@"GroupID"] = group.objectId;
                         groupEvent[@"invitedByName"] = [NSString stringWithFormat:@"%@ %@", currentUser[@"firstName"], currentUser[@"lastName"]];
                         groupEvent[@"invitedByID"] = currentUser.objectId;
+                        groupEvent[@"eventObject"] = event;
                         [event pinInBackground];
+                        [groupEvent pinInBackground];
                         [groupEvent saveEventually:^(BOOL success, NSError *error) {
                             
                             PFObject *rsvpObject = [PFObject objectWithClassName:@"Group_RSVP"];
@@ -1378,7 +1385,18 @@
                             
                         }];
                         
-                        
+                        PFObject *swipesObject = [PFObject objectWithClassName:@"Swipes"];
+                        swipesObject[@"UserID"] = currentUser.objectId;
+                        swipesObject[@"username"] = currentUser.username;
+                        swipesObject[@"EventID"] = event.objectId;
+                        swipesObject[@"swipedRight"] = @YES;
+                        swipesObject[@"swipedLeft"] = @NO;
+                        swipesObject[@"isGoing"] = @(YES);
+                        if ([[PFUser currentUser][@"socialMode"] isEqualToNumber:@YES] && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
+                            swipesObject[@"FBObjectID"] = currentUser[@"FBObjectID"];
+                        }
+                        [swipesObject pinInBackground];
+                        [swipesObject saveEventually];
                         
                         [self setupConversationWithMessage:[NSString stringWithFormat:@"%@ %@ wants to go to: %@ %@", currentUser[@"firstName"], currentUser[@"lastName"], eventTitle, eventLocation] forGroup:group];
                         
@@ -1486,9 +1504,9 @@
 
 -(void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
     
-    [self interactionEnabled:NO];
-    
     if (alertView.tag == 3) {
+        
+        [self interactionEnabled:NO];
         
         if (buttonIndex == 0) {
         
@@ -1660,7 +1678,9 @@
                                 groupEvent[@"GroupID"] = group.objectId;
                                 groupEvent[@"invitedByName"] = [NSString stringWithFormat:@"%@ %@", currentUser[@"firstName"], currentUser[@"lastName"]];
                                 groupEvent[@"invitedByID"] = currentUser.objectId;
+                                groupEvent[@"eventObject"] = event;
                                 [event pinInBackground];
+                                [groupEvent pinInBackground];
                                 [groupEvent saveEventually:^(BOOL success, NSError *error) {
                                     
                                     PFObject *rsvpObject = [PFObject objectWithClassName:@"Group_RSVP"];
@@ -1675,6 +1695,19 @@
                                     [rsvpObject saveEventually];
                                     
                                 }];
+                                
+                                PFObject *swipesObject = [PFObject objectWithClassName:@"Swipes"];
+                                swipesObject[@"UserID"] = user.objectId;
+                                swipesObject[@"username"] = currentUser.username;
+                                swipesObject[@"EventID"] = event.objectId;
+                                swipesObject[@"swipedRight"] = @YES;
+                                swipesObject[@"swipedLeft"] = @NO;
+                                swipesObject[@"isGoing"] = @(YES);
+                                if ([[PFUser currentUser][@"socialMode"] isEqualToNumber:@YES] && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
+                                    swipesObject[@"FBObjectID"] = user[@"FBObjectID"];
+                                }
+                                [swipesObject pinInBackground];
+                                [swipesObject saveEventually];
                                 
                                 [self setupConversationWithMessage:[NSString stringWithFormat:@"%@ %@ wants to go to: %@ %@", currentUser[@"firstName"], currentUser[@"lastName"], eventTitle, eventLocation] forGroup:group];
                                 
@@ -1816,6 +1849,8 @@
                                 groupEvent[@"GroupID"] = group.objectId;
                                 groupEvent[@"invitedByName"] = [NSString stringWithFormat:@"%@ %@", currentUser[@"firstName"], currentUser[@"lastName"]];
                                 groupEvent[@"invitedByID"] = currentUser.objectId;
+                                groupEvent[@"eventObject"] = event;
+                                [groupEvent pinInBackground];
                                 [event pinInBackground];
                                 [groupEvent saveEventually:^(BOOL success, NSError *error) {
                                     
@@ -1831,6 +1866,19 @@
                                     [rsvpObject saveEventually];
                                     
                                 }];
+                                
+                                PFObject *swipesObject = [PFObject objectWithClassName:@"Swipes"];
+                                swipesObject[@"UserID"] = user.objectId;
+                                swipesObject[@"username"] = currentUser.username;
+                                swipesObject[@"EventID"] = event.objectId;
+                                swipesObject[@"swipedRight"] = @YES;
+                                swipesObject[@"swipedLeft"] = @NO;
+                                swipesObject[@"isGoing"] = @(YES);
+                                if ([[PFUser currentUser][@"socialMode"] isEqualToNumber:@YES] && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
+                                    swipesObject[@"FBObjectID"] = user[@"FBObjectID"];
+                                }
+                                [swipesObject pinInBackground];
+                                [swipesObject saveEventually];
                                 
                                 [self setupConversationWithMessage:[NSString stringWithFormat:@"%@ %@ wants to go to: %@ %@", currentUser[@"firstName"], currentUser[@"lastName"], eventTitle, eventLocation] forGroup:group];
                                 

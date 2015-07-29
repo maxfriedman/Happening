@@ -22,6 +22,7 @@
 
 @property (assign) BOOL wasUserAnonymous;
 @property (weak) id <LoginButtonDelegate> delegate;
+@property (assign) BOOL userExists;
 
 -(void)setButtonType:(NSString *)type;
 

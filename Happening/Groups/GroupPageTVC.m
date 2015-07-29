@@ -53,6 +53,9 @@
     NSMutableArray *fbIds;
     NSMutableArray *parseIds;
     NSMutableArray *names;
+    NSMutableArray *eventIdsArray;
+    
+    NSMutableDictionary *imagesDict;
     
     BOOL groupChanged;
 }
@@ -67,24 +70,6 @@
     //self.navigationController.navigationBar.translucent = NO;
     // self.navigationItem.title = groupName;
     
-}
-
-- (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:YES];
-    
-    self.title = group[@"name"];
-    
-    AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
-    [appDelegate.mh hideTabBar:NO];
-    
-    if(locManager && [CLLocationManager locationServicesEnabled]){
-        [self.locManager startUpdatingLocation];
-        CLLocation *currentLocation = locManager.location;
-        currentUser[@"userLoc"] = [PFGeoPoint geoPointWithLocation:currentLocation];
-        NSLog(@"Current Location is: %@", currentLocation);
-        [currentUser saveEventually];
-    }
-    
     currentUser = [PFUser currentUser];
     
     self.sectionDateFormatter = [[NSDateFormatter alloc] init];
@@ -98,8 +83,8 @@
     //if (self.segControl.selectedSegmentIndex == 0)
     [chatBubble addTarget:self action:@selector(chatTapped:) forControlEvents:UIControlEventTouchUpInside];
     
-    [SVProgressHUD setViewForExtension:self.view];
-    [SVProgressHUD showWithStatus:@"Loading group..."];
+    //[SVProgressHUD setViewForExtension:self.view];
+    //[SVProgressHUD showWithStatus:@"Loading group..."];
     
     [self.topButtonView addTarget:self action:@selector(toGroupDetails:) forControlEvents:UIControlEventTouchUpInside];
     
@@ -121,38 +106,59 @@
         [self loadEventData];
         if (self.loadTopView) {
             /*
-            NSArray *usersCopy = [NSArray arrayWithArray:allUsers];
-            
-            for (int i = 0; i < allUsers.count; i++) {
-                
-                PFUser *user = allUsers[i];
-                if (user.isDataAvailable)
-                    [allUsers removeObjectAtIndex:i];
-            }*/
+             NSArray *usersCopy = [NSArray arrayWithArray:allUsers];
+             
+             for (int i = 0; i < allUsers.count; i++) {
+             
+             PFUser *user = allUsers[i];
+             if (user.isDataAvailable)
+             [allUsers removeObjectAtIndex:i];
+             }*/
             
             self.topButtonView.enabled = NO;
             [self loadTopButtonView];
-
+            
             /*
-            [PFObject fetchAllInBackground:allUsers block:^(NSArray *array, NSError *error) {
-                if (!error) {
-
-                    //[allUsers addObjectsFromArray:array];
-                    allUsers = [NSMutableArray arrayWithArray: array];
-                    NSLog(@"%lu", allUsers.count);
-
-                    for (PFUser *user in allUsers) {
-                        NSLog(@"%@", user[@"firstName"]);
-                    }
-                    
-                    
-                    [self loadTopButtonView];
-                }
-            }];*/
+             [PFObject fetchAllInBackground:allUsers block:^(NSArray *array, NSError *error) {
+             if (!error) {
+             
+             //[allUsers addObjectsFromArray:array];
+             allUsers = [NSMutableArray arrayWithArray: array];
+             NSLog(@"%lu", allUsers.count);
+             
+             for (PFUser *user in allUsers) {
+             NSLog(@"%@", user[@"firstName"]);
+             }
+             
+             
+             [self loadTopButtonView];
+             }
+             }];*/
         }
     } else {
         [self loadGroup];
     }
+    
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:YES];
+    
+    self.title = group[@"name"];
+    
+    AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+    [appDelegate.mh hideTabBar:NO];
+    
+    if(locManager && [CLLocationManager locationServicesEnabled]){
+        [self.locManager startUpdatingLocation];
+        CLLocation *currentLocation = locManager.location;
+        currentUser[@"userLoc"] = [PFGeoPoint geoPointWithLocation:currentLocation];
+        NSLog(@"Current Location is: %@", currentLocation);
+        [currentUser saveEventually];
+    }
+    NSLog(@"%@", eventIdsArray);
+    if (eventIdsArray == nil) eventIdsArray = [NSMutableArray array];
+    else [self didRsvpsChange];
     
 }
 
@@ -163,15 +169,17 @@
     rsvpYesArray = [NSMutableArray array];
     extraSections = [NSMutableDictionary dictionary];
     
+    /*
     [SVProgressHUD setViewForExtension:self.view];
     [SVProgressHUD showWithStatus:@"Loading Events..."];
+    */
     
     PFQuery *groupEventQuery = [PFQuery queryWithClassName:@"Group_Event"];
-    //[groupEventQuery fromLocalDatastore];
+    [groupEventQuery fromLocalDatastore];
     [groupEventQuery whereKey:@"GroupID" equalTo:group.objectId];
     [groupEventQuery findObjectsInBackgroundWithBlock:^(NSArray *events, NSError *error){
         
-        NSMutableArray *idArray = [NSMutableArray new];
+        NSMutableArray *idsArray = [NSMutableArray array];
         
         for (PFObject *object in events) {
             
@@ -182,7 +190,7 @@
             [extras setObject:object.objectId forKey:@"ID"];
             [extras setObject:object forKey:@"groupEventObject"];
         
-            [idArray addObject:object[@"EventID"]];
+            [idsArray addObject:object[@"EventID"]];
             
             [extras setObject:[NSMutableArray arrayWithArray:fbIds] forKey:@"maybe"];
             [extras setObject:[NSMutableArray array] forKey:@"no"];
@@ -190,45 +198,9 @@
         
         }
         
-        PFQuery *groupRSVPQuery = [PFQuery queryWithClassName:@"Group_RSVP"];
-        [groupRSVPQuery whereKey:@"EventID" containedIn:idArray];
-        [groupRSVPQuery whereKey:@"GroupID" equalTo:group.objectId];
-        [groupRSVPQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error){
-            
-            for (PFObject *rsvpObject in objects) {
-                
-                //PFUser *user = rsvpObject[@"User_Object"];
-                NSString *userFBID = rsvpObject[@"UserFBID"];
-
-                NSMutableDictionary *extras = [extraSections objectForKey:rsvpObject[@"EventID"]];
-                NSMutableArray *yesUsers = [extras objectForKey:@"yes"];
-                NSMutableArray *noUsers = [extras objectForKey:@"no"];
-                NSMutableArray *maybeUsers = [extras objectForKey:@"maybe"];
-                
-                if ([rsvpObject[@"GoingType"] isEqualToString:@"yes"]) {
-                    [yesUsers addObject:userFBID];
-                    [maybeUsers removeObject:userFBID];
-                    [extras setObject:yesUsers forKey:@"yes"];
-                    [extras setObject:maybeUsers forKey:@"maybe"];
-                } else if ([rsvpObject[@"GoingType"] isEqualToString:@"no"]) {
-                    [noUsers addObject:userFBID];
-                    [maybeUsers removeObject:userFBID];
-                    [extras setObject:noUsers forKey:@"no"];
-                    [extras setObject:maybeUsers forKey:@"maybe"];
-                } else if ([rsvpObject[@"GoingType"] isEqualToString:@"maybe"]) {
-                    //[maybeUsers addObject:rsvpObject[@"User_Object"]];
-                }
-             
-                [SVProgressHUD dismiss];
-                [self.tableView reloadData];
-            }
-            
-        }];
-        
-        
         PFQuery *eventQuery = [PFQuery queryWithClassName:@"Event"];
-        //[eventQuery fromLocalDatastore];
-        [eventQuery whereKey:@"objectId" containedIn:idArray];
+        [eventQuery fromLocalDatastore];
+        [eventQuery whereKey:@"objectId" containedIn:idsArray];
         [eventQuery whereKey:@"EndTime" greaterThan:[NSDate date]];
         [eventQuery orderByAscending:@"Date"];
         
@@ -242,6 +214,8 @@
             
             for (PFObject *event in eventsArray)
             {
+                [eventIdsArray addObject:event.objectId];
+                
                 //[event pinInBackground];
                 
                 // Reduce event start date to date components (year, month, day)
@@ -262,6 +236,13 @@
                 // Add the event to the list for this day
                 [eventsOnThisDay addObject:event];
                 
+                NSMutableDictionary *dict = [extraSections objectForKey:event.objectId];
+                if ([dict objectForKey:@"Image"] == nil) {
+                    if (event[@"Image"] != nil) [dict setObject:event[@"Image"] forKey:@"Image"];
+                    else [dict setObject:[UIImage imageNamed:event[@"Hashtag"]] forKey:@"Image"];
+                }
+
+                
                 count++;
             }
             
@@ -279,14 +260,55 @@
                 //[noEventsView removeFromSuperview];
             }
          
-            [SVProgressHUD dismiss];
+            //[SVProgressHUD dismiss];
             [self.tableView reloadData];
             
           }];
         
+        //[self loadRsvpsWithEventIds:idArray];
+        
     }];
     
 }
+/*
+- (void)loadRsvpsWithEventIds:(NSArray *)idArray {
+    
+    PFQuery *groupRSVPQuery = [PFQuery queryWithClassName:@"Group_RSVP"];
+    [groupRSVPQuery whereKey:@"EventID" containedIn:idArray];
+    [groupRSVPQuery whereKey:@"GroupID" equalTo:group.objectId];
+    [groupRSVPQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error){
+        
+        for (PFObject *rsvpObject in objects) {
+            
+            //PFUser *user = rsvpObject[@"User_Object"];
+            NSString *userFBID = rsvpObject[@"UserFBID"];
+            
+            NSMutableDictionary *extras = [extraSections objectForKey:rsvpObject[@"EventID"]];
+            NSMutableArray *yesUsers = [extras objectForKey:@"yes"];
+            NSMutableArray *noUsers = [extras objectForKey:@"no"];
+            NSMutableArray *maybeUsers = [extras objectForKey:@"maybe"];
+            
+            if ([rsvpObject[@"GoingType"] isEqualToString:@"yes"]) {
+                [yesUsers addObject:userFBID];
+                [maybeUsers removeObject:userFBID];
+                [extras setObject:yesUsers forKey:@"yes"];
+                [extras setObject:maybeUsers forKey:@"maybe"];
+            } else if ([rsvpObject[@"GoingType"] isEqualToString:@"no"]) {
+                [noUsers addObject:userFBID];
+                [maybeUsers removeObject:userFBID];
+                [extras setObject:noUsers forKey:@"no"];
+                [extras setObject:maybeUsers forKey:@"maybe"];
+            } else if ([rsvpObject[@"GoingType"] isEqualToString:@"maybe"]) {
+                //[maybeUsers addObject:rsvpObject[@"User_Object"]];
+            }
+            
+            //[SVProgressHUD dismiss];
+            [self.tableView reloadData];
+        }
+        
+    }];
+    
+} */
 
 - (void)loadGroup {
     
@@ -382,9 +404,14 @@
     [noEventsView removeFromSuperview];
     
     NSDate *dateRepresentingThisDay = [self.sortedDays objectAtIndex:indexPath.section];
-    NSArray *eventsOnThisDay = [self.sections objectForKey:dateRepresentingThisDay];
+    NSMutableArray *eventsOnThisDay = [self.sections objectForKey:dateRepresentingThisDay];
     
     PFObject *Event = eventsOnThisDay[indexPath.row];
+    
+    NSMutableDictionary *extrasDict = [extraSections objectForKey:Event.objectId];
+    id imageOnThisDay = [extrasDict objectForKey:@"Image"];
+
+    
     cell.eventObject = Event;
     cell.eventId = Event.objectId;
     
@@ -419,11 +446,10 @@
         [cell.timeLabel setText:[NSString stringWithFormat:@"%@",eventTimeString]];
     }
     
-    cell.eventImageView.image = [UIImage imageNamed:Event[@"Hashtag"]];
-    
-    if (Event[@"Image"] != nil) {
+    if ([imageOnThisDay isKindOfClass:[PFFile class]]) {
         // Image formatting
-        PFFile *imageFile = Event[@"Image"];
+        cell.eventImageView.image = [UIImage imageNamed:Event[@"Hashtag"]];
+        PFFile *imageFile = imageOnThisDay;
         [imageFile getDataInBackgroundWithBlock:^(NSData *imageData, NSError *error) {
             if (!error) {
                 
@@ -431,6 +457,8 @@
                 
                 //cell.blurView.alpha = 0;
                 cell.eventImageView.image = [UIImage imageWithData:imageData];
+                //cell.blurView.alpha = 0;
+                [extrasDict setObject:cell.eventImageView.image forKey:@"Image"];
                 
                 CAGradientLayer *l = [CAGradientLayer layer];
                 l.frame = cell.eventImageView.bounds;
@@ -452,9 +480,11 @@
             }
         }];
         
-    } else {
+    } else if (imageOnThisDay != nil) {
         
         // default image
+        cell.eventImageView.image = (UIImage *)imageOnThisDay;
+
     }
     
     PFGeoPoint *loc = Event[@"GeoLoc"];
@@ -493,34 +523,6 @@
     
     //cell.interestedLabel.text = [NSString stringWithFormat:@"%@ interested", Event[@"swipesRight"]];
     
-    NSMutableDictionary *dict = [extraSections objectForKey:Event.objectId];
-    NSArray *maybe = [dict objectForKey:@"maybe"];
-    NSArray *no = [dict objectForKey:@"no"];
-    NSArray *yes = [dict objectForKey:@"yes"];
-    
-    NSUInteger totalCount = fbIds.count;
-    NSString *rsvpCount = [NSString stringWithFormat:@"%lu of %lu", (unsigned long)yes.count, (unsigned long)totalCount];
-    
-    [cell.rsvpButton setTitle:rsvpCount forState:UIControlStateNormal];
-    
-    cell.groupEventId = [dict objectForKey:@"ID"];
-    
-    [cell.chatButton addTarget:self action:@selector(chatTapped:) forControlEvents:UIControlEventTouchUpInside];
-    
-    cell.groupEventObject = [dict objectForKey:@"groupEventObject"];
-    
-    NSString *invitedByName = cell.groupEventObject[@"invitedByName"];
-    
-    if ([cell.groupEventObject[@"invitedByID"] isEqualToString:currentUser.objectId]) {
-        cell.invitedByLabel.text = @"Invited by you";
-    } else {
-        NSString *firstWord = [[invitedByName componentsSeparatedByString:@" "] objectAtIndex:0];
-        NSString *secondWord = [[invitedByName componentsSeparatedByString:@" "] objectAtIndex:1];
-        cell.invitedByLabel.text = [NSString stringWithFormat:@"Invited by %@ %@.", firstWord, [secondWord substringToIndex:1]];
-    }
-    
-    int userCount = 0;
-    
     //NSLog(@"YES: %@", yes);
     //NSLog(@"NO: %@", no);
     //NSLog(@"MAYBE: %@", maybe);
@@ -532,20 +534,132 @@
             [view removeFromSuperview];
     }
     
+    cell.groupEventId = [extrasDict objectForKey:@"ID"];
     
-    for (int i = 0; i < yes.count; i++) {
+    [cell.chatButton addTarget:self action:@selector(chatTapped:) forControlEvents:UIControlEventTouchUpInside];
+    
+    cell.groupEventObject = [extrasDict objectForKey:@"groupEventObject"];
+    
+    NSString *invitedByName = cell.groupEventObject[@"invitedByName"];
+    
+    if ([cell.groupEventObject[@"invitedByID"] isEqualToString:currentUser.objectId]) {
+        cell.invitedByLabel.text = @"Invited by you";
+    } else {
+        NSString *firstWord = [[invitedByName componentsSeparatedByString:@" "] objectAtIndex:0];
+        NSString *secondWord = [[invitedByName componentsSeparatedByString:@" "] objectAtIndex:1];
+        cell.invitedByLabel.text = [NSString stringWithFormat:@"Invited by %@ %@.", firstWord, [secondWord substringToIndex:1]];
+    }
+    
+    PFQuery *groupRSVPQuery = [PFQuery queryWithClassName:@"Group_RSVP"];
+    [groupRSVPQuery whereKey:@"EventID" equalTo:Event.objectId];
+    [groupRSVPQuery whereKey:@"GroupID" equalTo:group.objectId];
+    [groupRSVPQuery fromLocalDatastore];
+    [groupRSVPQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error){
+     
+        if (!error) {
+            
+            NSString *goingType = object[@"GoingType"];
+            
+            if ([goingType isEqualToString:@"yes"]) {
+                cell.cornerImageView.image = [UIImage imageNamed:@"check75"];
+                [cell.checkButton setImage:[UIImage imageNamed:@"checked6green"] forState:UIControlStateNormal];
+                [cell.xButton setImage:[UIImage imageNamed:@"close7"] forState:UIControlStateNormal];
+                cell.checkButton.tag = 1;
+                cell.xButton.tag = 0;
+                
+            } else if ([goingType isEqualToString:@"no"]) {
+                cell.cornerImageView.image = [UIImage imageNamed:@"X"];
+                [cell.checkButton setImage:[UIImage imageNamed:@"checked6"] forState:UIControlStateNormal];
+                [cell.xButton setImage:[UIImage imageNamed:@"close7red"] forState:UIControlStateNormal];
+                cell.xButton.tag = 1;
+                cell.checkButton.tag = 0;
+                
+            } else if ([goingType isEqualToString:@"maybe"]) {
+                cell.cornerImageView.image = [UIImage imageNamed:@"question"];
+                [cell.checkButton setImage:[UIImage imageNamed:@"checked6"] forState:UIControlStateNormal];
+                [cell.xButton setImage:[UIImage imageNamed:@"close7"] forState:UIControlStateNormal];
+                cell.checkButton.tag = 0;
+                cell.xButton.tag = 0;
+                
+            }
+        }
+        
+    }];
+    
+    if ([[extrasDict objectForKey:@"didChange"] boolValue] == YES) {
+        
+        NSLog(@"REFRESHING RSVPs");
+        [self loadRsvpsForCell:cell];
+        [extrasDict setObject:@NO forKey:@"didChange"];
+            
+    } else {
+    
+        NSLog(@"LOADING RSVPs");
+        PFQuery *groupRSVPQuery = [PFQuery queryWithClassName:@"Group_RSVP"];
+        [groupRSVPQuery whereKey:@"EventID" equalTo:Event.objectId];
+        [groupRSVPQuery whereKey:@"GroupID" equalTo:group.objectId];
+        [groupRSVPQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error){
+            
+            if (!error) {
+            
+                NSMutableArray *yesUsers = [extrasDict objectForKey:@"yes"];
+                NSMutableArray *noUsers = [extrasDict objectForKey:@"no"];
+                NSMutableArray *maybeUsers = [extrasDict objectForKey:@"maybe"];
+                yesUsers = [NSMutableArray array];
+                noUsers = [NSMutableArray array];
+                
+                for (PFObject *rsvpObject in objects) {
+                    
+                    NSString *userFBID = rsvpObject[@"UserFBID"];
+                    
+                    if ([rsvpObject[@"GoingType"] isEqualToString:@"yes"]) {
+                        [yesUsers addObject:userFBID];
+                        [maybeUsers removeObject:userFBID];
+                        [extrasDict setObject:yesUsers forKey:@"yes"];
+                        [extrasDict setObject:maybeUsers forKey:@"maybe"];
+                    } else if ([rsvpObject[@"GoingType"] isEqualToString:@"no"]) {
+                        [noUsers addObject:userFBID];
+                        [maybeUsers removeObject:userFBID];
+                        [extrasDict setObject:noUsers forKey:@"no"];
+                        [extrasDict setObject:maybeUsers forKey:@"maybe"];
+                    } else if ([rsvpObject[@"GoingType"] isEqualToString:@"maybe"]) {
+                        //[maybeUsers addObject:rsvpObject[@"User_Object"]];
+                    }
+                    
+                }
+                
+                [self loadRsvpsForCell:cell];
+                
+            }
+            
+        }];
+    
+    }
+
+    return cell;
+}
+
+- (void)loadRsvpsForCell:(GroupsEventCell *)cell {
+    
+    NSMutableDictionary *extrasDict = [extraSections objectForKey:cell.eventId];
+    
+    NSMutableArray *yesUsers = [extrasDict objectForKey:@"yes"];
+    NSMutableArray *noUsers = [extrasDict objectForKey:@"no"];
+    NSMutableArray *maybeUsers = [extrasDict objectForKey:@"maybe"];
+    
+    NSUInteger totalCount = fbIds.count;
+    NSString *rsvpCount = [NSString stringWithFormat:@"%lu of %lu", (unsigned long)yesUsers.count, (unsigned long)totalCount];
+    
+    [cell.rsvpButton setTitle:rsvpCount forState:UIControlStateNormal];
+    
+    int userCount = 0;
+    
+    for (int i = 0; i < yesUsers.count; i++) {
         
         //PFUser *user = yes[i];
-        NSString *fbId = yes[i];
+        NSString *fbId = yesUsers[i];
         
-        if ([fbId isEqualToString:currentUser[@"FBObjectID"]]) {
-            cell.cornerImageView.image = [UIImage imageNamed:@"check75"];
-            [cell.checkButton setImage:[UIImage imageNamed:@"checked6green"] forState:UIControlStateNormal];
-            [cell.xButton setImage:[UIImage imageNamed:@"close7"] forState:UIControlStateNormal];
-            cell.checkButton.tag = 1;
-            cell.xButton.tag = 0;
-            
-        } else if (userCount < 2) {
+        if (userCount < 2 && ![fbId isEqualToString:currentUser[@"FBObjectID"]]) {
             
             UIView *picViewContainer = [[UIView alloc] initWithFrame:CGRectMake(164 + 50*userCount, 92, 40, 40)];
             FBSDKProfilePictureView *profPic = [[FBSDKProfilePictureView alloc] initWithFrame:picViewContainer.bounds];
@@ -570,18 +684,11 @@
         
     }
     
-    for (int i = 0; i < maybe.count; i++) {
+    for (int i = 0; i < maybeUsers.count; i++) {
         
-        NSString *fbId = maybe[i];
+        NSString *fbId = maybeUsers[i];
         
-        if ([fbId isEqualToString:currentUser[@"FBObjectID"]]) {
-            cell.cornerImageView.image = [UIImage imageNamed:@"question"];
-            [cell.checkButton setImage:[UIImage imageNamed:@"checked6"] forState:UIControlStateNormal];
-            [cell.xButton setImage:[UIImage imageNamed:@"close7"] forState:UIControlStateNormal];
-            cell.checkButton.tag = 0;
-            cell.xButton.tag = 0;
-            
-        } else if (userCount < 2) {
+        if (userCount < 2 && ![fbId isEqualToString:currentUser[@"FBObjectID"]]) {
             
             UIView *picViewContainer = [[UIView alloc] initWithFrame:CGRectMake(164 + 50*userCount, 92, 40, 40)];
             FBSDKProfilePictureView *profPic = [[FBSDKProfilePictureView alloc] initWithFrame:picViewContainer.bounds];
@@ -605,18 +712,11 @@
         }
     }
     
-    for (int i = 0; i < no.count; i++) {
+    for (int i = 0; i < noUsers.count; i++) {
         
-        NSString *fbId = no[i];
+        NSString *fbId = noUsers[i];
         
-        if ([fbId isEqualToString:currentUser[@"FBObjectID"]]) {
-            cell.cornerImageView.image = [UIImage imageNamed:@"X"];
-            [cell.checkButton setImage:[UIImage imageNamed:@"checked6"] forState:UIControlStateNormal];
-            [cell.xButton setImage:[UIImage imageNamed:@"close7red"] forState:UIControlStateNormal];
-            cell.xButton.tag = 1;
-            cell.checkButton.tag = 0;
-            
-        } else if (userCount < 2) {
+        if (userCount < 2 && ![fbId isEqualToString:currentUser[@"FBObjectID"]]) {
             
             UIView *picViewContainer = [[UIView alloc] initWithFrame:CGRectMake(164 + 50*userCount, 92, 40, 40)];
             FBSDKProfilePictureView *profPic = [[FBSDKProfilePictureView alloc] initWithFrame:picViewContainer.bounds];
@@ -640,8 +740,6 @@
         }
     }
     
-
-    return cell;
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
@@ -650,6 +748,107 @@
         return 22;
     }
     return 33;
+}
+
+- (void)didRsvpsChange {
+    
+    NSMutableDictionary *extraSectionsCopy = [NSMutableDictionary dictionary];
+    
+    for (NSString *theId in eventIdsArray) {
+        
+        NSMutableDictionary *extras = [NSMutableDictionary dictionary];
+        [extraSectionsCopy setObject:extras forKey:theId];
+        [extras setObject:[NSMutableArray arrayWithArray:fbIds] forKey:@"maybe"];
+        [extras setObject:[NSMutableArray array] forKey:@"no"];
+        [extras setObject:[NSMutableArray array] forKey:@"yes"];
+    }
+    
+    PFQuery *groupRSVPQuery = [PFQuery queryWithClassName:@"Group_RSVP"];
+    [groupRSVPQuery whereKey:@"EventID" containedIn:eventIdsArray];
+    [groupRSVPQuery whereKey:@"GroupID" equalTo:group.objectId];
+    [groupRSVPQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error){
+        
+        if (!error) {
+        
+            //NSMutableDictionary *extraSectionsCopy = [NSMutableDictionary dictionary]; //WithDictionary:extraSections];
+            
+            for (PFObject *rsvpObject in objects) {
+            
+                NSMutableDictionary *dict = [extraSectionsCopy objectForKey:rsvpObject[@"EventID"]];
+                NSMutableArray *yes = [dict objectForKey:@"yes"];
+                NSMutableArray *no = [dict objectForKey:@"no"];
+                NSMutableArray *maybe = [dict objectForKey:@"maybe"];
+                
+                NSString *userFBID = rsvpObject[@"UserFBID"];
+                
+                if ([rsvpObject[@"GoingType"] isEqualToString:@"yes"]) {
+                    [yes addObject:userFBID];
+                    [maybe removeObject:userFBID];
+                    [dict setObject:yes forKey:@"yes"];
+                    [dict setObject:maybe forKey:@"maybe"];
+                } else if ([rsvpObject[@"GoingType"] isEqualToString:@"no"]) {
+                    [no addObject:userFBID];
+                    [maybe removeObject:userFBID];
+                    [dict setObject:no forKey:@"no"];
+                    [dict setObject:maybe forKey:@"maybe"];
+                } else if ([rsvpObject[@"GoingType"] isEqualToString:@"maybe"]) {
+                    //[maybeUsers addObject:rsvpObject[@"User_Object"]];
+                }
+            
+            }
+            
+            BOOL shouldReload = NO;
+            
+            for (NSString *eventId in eventIdsArray) {
+                
+                NSDictionary *originalDict = [extraSections objectForKey:eventId];
+                NSDictionary *copiedDict = [extraSectionsCopy objectForKey:eventId];
+                
+                NSLog(@"%@", originalDict);
+                NSLog(@"%@", copiedDict);
+                
+                NSArray *yes1 = [originalDict objectForKey:@"yes"];
+                yes1 = [yes1 sortedArrayUsingSelector:@selector(compare:)];
+                NSArray *no1 = [originalDict objectForKey:@"no"];
+                no1 = [no1 sortedArrayUsingSelector:@selector(compare:)];
+                NSArray *maybe1 = [originalDict objectForKey:@"maybe"];
+                maybe1 = [maybe1 sortedArrayUsingSelector:@selector(compare:)];
+
+                
+                NSArray *yes2 = [copiedDict objectForKey:@"yes"];
+                yes2 = [yes2 sortedArrayUsingSelector:@selector(compare:)];
+                NSArray *no2 = [copiedDict objectForKey:@"no"];
+                no2 = [no2 sortedArrayUsingSelector:@selector(compare:)];
+                NSArray *maybe2 = [copiedDict objectForKey:@"maybe"];
+                maybe2 = [maybe2 sortedArrayUsingSelector:@selector(compare:)];
+
+
+                BOOL arraysContainTheSameObjects = YES;
+                
+                if (![yes1 isEqual:yes2] || ![no1 isEqual:no2] || ![maybe1 isEqual:maybe2]) {
+                    
+                    arraysContainTheSameObjects = NO;
+        
+                    NSMutableDictionary *dict = [extraSections objectForKey:eventId];
+                    
+                    [dict setObject:yes2 forKey:@"yes"];
+                    [dict setObject:no2 forKey:@"no"];
+                    [dict setObject:maybe2 forKey:@"maybe"];
+                    [dict setObject:@YES forKey:@"didChange"];
+                    shouldReload = YES;
+                    
+                    [extraSections setObject:dict forKey:eventId];
+                }
+                
+            }
+            
+            if (shouldReload) [self.tableView reloadData];
+            
+        }
+        
+    }];
+
+    
 }
 
 - (IBAction)refreshTable:(id)sender {

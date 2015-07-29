@@ -26,7 +26,6 @@
 		50248C8319BBAB2800329910 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50248C8219BBAB2800329910 /* QuartzCore.framework */; };
 		50248C8519BBAB2F00329910 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50248C8419BBAB2F00329910 /* Security.framework */; };
 		50248C8919BBAB3D00329910 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50248C8819BBAB3D00329910 /* SystemConfiguration.framework */; };
-		5028636F1AC213F20029BD15 /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 5028636E1AC213F20029BD15 /* Reachability.m */; };
 		502A55821B5F0D45006B44AB /* PermissionsView.m in Sources */ = {isa = PBXBuildFile; fileRef = 502A55811B5F0D44006B44AB /* PermissionsView.m */; };
 		502CA2B01B3A545C00576E82 /* SystemCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 502CA2AF1B3A545C00576E82 /* SystemCollectionViewCell.m */; };
 		502CA2B31B3B4F6B00576E82 /* GroupAddFriendsTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 502CA2B21B3B4F6B00576E82 /* GroupAddFriendsTVC.m */; };
@@ -68,6 +67,7 @@
 		50478F171A44DE6900161D01 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 50478F111A44DE6900161D01 /* Main.storyboard */; };
 		50478F181A44DE6900161D01 /* TabBarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50478F131A44DE6900161D01 /* TabBarViewController.m */; };
 		50478F251A45049300161D01 /* MyEventTableCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50478F241A45049300161D01 /* MyEventTableCell.m */; };
+		5048F82A1B66A9C8004D05AD /* LocationConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 5048F8291B66A9C8004D05AD /* LocationConstants.m */; };
 		50512F051AB389B600118FD9 /* UIButton+Extensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 50512F041AB389B600118FD9 /* UIButton+Extensions.m */; };
 		50512F111ABB51DB00118FD9 /* ProfileSettingsTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 50512F101ABB51DB00118FD9 /* ProfileSettingsTVC.m */; };
 		50512F171ABB6E9100118FD9 /* NotificationsTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 50512F161ABB6E9100118FD9 /* NotificationsTVC.m */; };
@@ -95,6 +95,8 @@
 		506DC5471A46014300DD4591 /* OpenSans-SemiboldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50478F221A44DF1500161D01 /* OpenSans-SemiboldItalic.ttf */; };
 		506DFD801A60A94600715079 /* UIImage+ImageEffects.m in Sources */ = {isa = PBXBuildFile; fileRef = 506DFD7F1A60A94600715079 /* UIImage+ImageEffects.m */; };
 		506DFD831A6113CF00715079 /* FXBlurView.m in Sources */ = {isa = PBXBuildFile; fileRef = 506DFD821A6113CF00715079 /* FXBlurView.m */; };
+		507018361B6740E400212CA4 /* Rdio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 507018351B6740E400212CA4 /* Rdio.framework */; };
+		507018381B67432000212CA4 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 507018371B67432000212CA4 /* CoreMedia.framework */; };
 		5072D85B1B45C20C00518278 /* ExpandedCardVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 5072D85A1B45C20C00518278 /* ExpandedCardVC.m */; };
 		5072D8611B4612FC00518278 /* SwipeableCardVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 5072D8601B4612FC00518278 /* SwipeableCardVC.m */; };
 		5072D8801B49D6DE00518278 /* Bolts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5072D87A1B49D6DE00518278 /* Bolts.framework */; };
@@ -195,8 +197,6 @@
 		50248C8219BBAB2800329910 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		50248C8419BBAB2F00329910 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		50248C8819BBAB3D00329910 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
-		5028636D1AC213F20029BD15 /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Reachability.h; path = Happening/Extras/Reachability.h; sourceTree = SOURCE_ROOT; };
-		5028636E1AC213F20029BD15 /* Reachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Reachability.m; path = Happening/Extras/Reachability.m; sourceTree = SOURCE_ROOT; };
 		502A55801B5F0D44006B44AB /* PermissionsView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PermissionsView.h; path = Happening/Extras/PermissionsView.h; sourceTree = SOURCE_ROOT; };
 		502A55811B5F0D44006B44AB /* PermissionsView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PermissionsView.m; path = Happening/Extras/PermissionsView.m; sourceTree = SOURCE_ROOT; };
 		502CA2AE1B3A545C00576E82 /* SystemCollectionViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SystemCollectionViewCell.h; path = Happening/Groups/SystemCollectionViewCell.h; sourceTree = SOURCE_ROOT; };
@@ -292,6 +292,8 @@
 		50478F221A44DF1500161D01 /* OpenSans-SemiboldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "OpenSans-SemiboldItalic.ttf"; path = "Happening/Extras/Open Sans/OpenSans-SemiboldItalic.ttf"; sourceTree = SOURCE_ROOT; };
 		50478F231A45049300161D01 /* MyEventTableCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MyEventTableCell.h; path = "Happening/Create Tab/MyEventTableCell.h"; sourceTree = SOURCE_ROOT; };
 		50478F241A45049300161D01 /* MyEventTableCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MyEventTableCell.m; path = "Happening/Create Tab/MyEventTableCell.m"; sourceTree = SOURCE_ROOT; };
+		5048F8281B66A9C8004D05AD /* LocationConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LocationConstants.h; path = "Happening/Discover Tab/Settings/LocationConstants.h"; sourceTree = SOURCE_ROOT; };
+		5048F8291B66A9C8004D05AD /* LocationConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LocationConstants.m; path = "Happening/Discover Tab/Settings/LocationConstants.m"; sourceTree = SOURCE_ROOT; };
 		50512F031AB389B600118FD9 /* UIButton+Extensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIButton+Extensions.h"; path = "Happening/Extras/UIButton+Extensions.h"; sourceTree = SOURCE_ROOT; };
 		50512F041AB389B600118FD9 /* UIButton+Extensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIButton+Extensions.m"; path = "Happening/Extras/UIButton+Extensions.m"; sourceTree = SOURCE_ROOT; };
 		50512F0F1ABB51DB00118FD9 /* ProfileSettingsTVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ProfileSettingsTVC.h; path = "Happening/Create Tab/ProfileSettingsTVC.h"; sourceTree = SOURCE_ROOT; };
@@ -321,6 +323,8 @@
 		506DFD7F1A60A94600715079 /* UIImage+ImageEffects.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIImage+ImageEffects.m"; path = "Happening/Extras/UIImage+ImageEffects.m"; sourceTree = SOURCE_ROOT; };
 		506DFD811A6113CF00715079 /* FXBlurView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FXBlurView.h; path = Happening/Extras/FXBlurView.h; sourceTree = SOURCE_ROOT; };
 		506DFD821A6113CF00715079 /* FXBlurView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FXBlurView.m; path = Happening/Extras/FXBlurView.m; sourceTree = SOURCE_ROOT; };
+		507018351B6740E400212CA4 /* Rdio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Rdio.framework; path = "Happening/Frameworks/rdio-ios-3.0.3/Rdio.framework"; sourceTree = "<group>"; };
+		507018371B67432000212CA4 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
 		5072D8591B45C20C00518278 /* ExpandedCardVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ExpandedCardVC.h; path = "Happening/Discover Tab/ExpandedCardVC.h"; sourceTree = SOURCE_ROOT; };
 		5072D85A1B45C20C00518278 /* ExpandedCardVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ExpandedCardVC.m; path = "Happening/Discover Tab/ExpandedCardVC.m"; sourceTree = SOURCE_ROOT; };
 		5072D85F1B4612FC00518278 /* SwipeableCardVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwipeableCardVC.h; path = "Happening/Discover Tab/SwipeableCardVC.h"; sourceTree = SOURCE_ROOT; };
@@ -448,6 +452,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				50248C7719BBAAE000329910 /* AudioToolbox.framework in Frameworks */,
+				50248C7919BBAAF800329910 /* CFNetwork.framework in Frameworks */,
+				507018381B67432000212CA4 /* CoreMedia.framework in Frameworks */,
+				50248C8519BBAB2F00329910 /* Security.framework in Frameworks */,
 				50248C8919BBAB3D00329910 /* SystemConfiguration.framework in Frameworks */,
 				505F9FBC1A98C33B00CE5C7E /* EventKit.framework in Frameworks */,
 				5072D8911B49D6EB00518278 /* FBSDKLoginKit.framework in Frameworks */,
@@ -458,6 +466,7 @@
 				5072D8851B49D6DE00518278 /* ParseUI.framework in Frameworks */,
 				505CDD591A65B5BF005876DC /* Social.framework in Frameworks */,
 				505CDD571A65B5BA005876DC /* Accounts.framework in Frameworks */,
+				507018361B6740E400212CA4 /* Rdio.framework in Frameworks */,
 				5076B5C51A58A0E300B05ABB /* libsqlite3.dylib in Frameworks */,
 				5072D8931B49D6EB00518278 /* FBSDKShareKit.framework in Frameworks */,
 				50F7DEA71A5794D6008B8C2B /* MessageUI.framework in Frameworks */,
@@ -476,14 +485,11 @@
 				500910F019C9FC06006542CA /* CoreData.framework in Frameworks */,
 				500910EE19C9FBE9006542CA /* AVFoundation.framework in Frameworks */,
 				5072D8901B49D6EB00518278 /* FBSDKCoreKit.framework in Frameworks */,
-				50248C8519BBAB2F00329910 /* Security.framework in Frameworks */,
 				50248C8119BBAB2000329910 /* MobileCoreServices.framework in Frameworks */,
 				50248C7F19BBAB1300329910 /* libz.dylib in Frameworks */,
 				50248C7D19BBAB0A00329910 /* CoreLocation.framework in Frameworks */,
 				50248C7B19BBAB0300329910 /* CoreGraphics.framework in Frameworks */,
-				50248C7919BBAAF800329910 /* CFNetwork.framework in Frameworks */,
 				5072D88D1B49D6EB00518278 /* Bolts.framework in Frameworks */,
-				50248C7719BBAAE000329910 /* AudioToolbox.framework in Frameworks */,
 				3643E2262081D2E30983F5A1 /* libPods-Happening.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -557,6 +563,8 @@
 		50248C7519BBAAB500329910 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				507018371B67432000212CA4 /* CoreMedia.framework */,
+				507018351B6740E400212CA4 /* Rdio.framework */,
 				5072D8861B49D6EB00518278 /* Bolts.framework */,
 				5072D8871B49D6EB00518278 /* FacebookSDKStrings.bundle */,
 				5072D8881B49D6EB00518278 /* FBAudienceNetwork.framework */,
@@ -734,6 +742,8 @@
 				50478EEF1A44DD9800161D01 /* SettingsChoosingLoc.m */,
 				50965A621A76A6DB00EDF5FC /* dropdownSettingsView.h */,
 				50965A631A76A6DB00EDF5FC /* dropdownSettingsView.m */,
+				5048F8281B66A9C8004D05AD /* LocationConstants.h */,
+				5048F8291B66A9C8004D05AD /* LocationConstants.m */,
 			);
 			name = Settings;
 			sourceTree = "<group>";
@@ -817,8 +827,6 @@
 		50512F081ABB459400118FD9 /* General */ = {
 			isa = PBXGroup;
 			children = (
-				5028636D1AC213F20029BD15 /* Reachability.h */,
-				5028636E1AC213F20029BD15 /* Reachability.m */,
 				508DD3251AC9AE9A005E2E95 /* AMPopTip.h */,
 				508DD3261AC9AE9A005E2E95 /* AMPopTip.m */,
 				50A677741A59B67C00E1E12A /* RKDropdownAlert.h */,
@@ -1255,6 +1263,7 @@
 				50B707271B1D26A90080657E /* GroupsTVC.m in Sources */,
 				50B707551B1FA7CD0080657E /* FBShimmeringView.m in Sources */,
 				50478EF21A44DD9800161D01 /* SettingsChoosingLoc.m in Sources */,
+				5048F82A1B66A9C8004D05AD /* LocationConstants.m in Sources */,
 				50478EEA1A44DD6C00161D01 /* DragViewController.m in Sources */,
 				50478EBB1A44DBCC00161D01 /* ChoosingLocation.m in Sources */,
 				50A677761A59B67C00E1E12A /* RKDropdownAlert.m in Sources */,
@@ -1262,7 +1271,6 @@
 				5091C9D21B4F0FCE00158CB5 /* FlatButton.m in Sources */,
 				50478F001A44DE0500161D01 /* AttendEvent.m in Sources */,
 				5031EBEC1A939489007E3523 /* webViewController.m in Sources */,
-				5028636F1AC213F20029BD15 /* Reachability.m in Sources */,
 				5011C5261ACAB6A500BAAF74 /* QuestionMarkPage.m in Sources */,
 				50B17CED1B60894600AF880B /* LoginButton.m in Sources */,
 				502CA2B01B3A545C00576E82 /* SystemCollectionViewCell.m in Sources */,
@@ -1441,6 +1449,7 @@
 					"$(PROJECT_DIR)/Happening/Frameworks/FacebookSDK",
 					"$(PROJECT_DIR)/Happening/Frameworks/parse-library",
 					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/Happening/Frameworks/rdio-ios-3.0.3",
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/Happening/Main Files/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
@@ -1449,7 +1458,10 @@
 					"$(inherited)",
 					"$(SDKROOT)/usr/lib/system",
 				);
-				OTHER_LDFLAGS = "$(inherited)";
+				OTHER_LDFLAGS = (
+					"-all_load",
+					"$(inherited)",
+				);
 				PRODUCT_NAME = "${PRODUCT_NAME}";
 				PROVISIONING_PROFILE = "";
 			};
@@ -1469,6 +1481,7 @@
 					"$(PROJECT_DIR)/Happening/Frameworks/FacebookSDK",
 					"$(PROJECT_DIR)/Happening/Frameworks/parse-library",
 					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/Happening/Frameworks/rdio-ios-3.0.3",
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/Happening/Main Files/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
@@ -1477,7 +1490,10 @@
 					"$(inherited)",
 					"$(SDKROOT)/usr/lib/system",
 				);
-				OTHER_LDFLAGS = "$(inherited)";
+				OTHER_LDFLAGS = (
+					"-all_load",
+					"$(inherited)",
+				);
 				PRODUCT_NAME = "${PRODUCT_NAME}";
 				PROVISIONING_PROFILE = "";
 			};

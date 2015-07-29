@@ -8,7 +8,6 @@
 
 #import "movieLoginVC.h"
 #import "RKSwipeBetweenViewControllers.h"
-#import "Reachability.h"
 #import "AppDelegate.h"
 #import <TTTAttributedLabel/TTTAttributedLabel.h>
 #import "webViewController.h"
@@ -53,11 +52,13 @@
     self.fbButton.enabled = NO;
     self.noAccountButton.enabled = NO;
     
-    if ([[PFUser currentUser][@"hasLoggedIn"] boolValue] != YES) {
+    //NSLog(@"%@", [PFUser currentUser]);
+    
+    if ([PFUser currentUser][@"firstName"] == nil) {
         
         [PFAnonymousUtils logInWithBlock:^(PFUser *user, NSError *error) {
             if (!error) {
-                NSLog(@"anon");
+                NSLog(@"anon: %@", user);
 
             } else {
                 NSLog(@"--> %@", error);
@@ -68,7 +69,16 @@
             self.fbButton.enabled = YES;
             self.noAccountButton.enabled = YES;
         }];
+        //self.fbButton.enabled = YES;
+        //self.noAccountButton.enabled = YES;
+    } else {
         
+        self.fbButton.userExists = YES;
+        self.noAccountButton.userExists = YES;
+        
+        self.fbButton.enabled = YES;
+        self.noAccountButton.enabled = NO;
+        [self.noAccountButton removeFromSuperview];
     }
     
     imv = [[UIImageView alloc] initWithFrame:self.view.frame];
@@ -202,7 +212,7 @@
                            [NSNumber numberWithFloat:0.0], nil];
             
             [maskView.layer insertSublayer:l atIndex:0];
-            [player.view addSubview:maskView];
+            [imv addSubview:maskView];
         }
     }
 }

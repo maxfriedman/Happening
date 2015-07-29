@@ -28,7 +28,7 @@
 @end
 
 @implementation InviteHomiesToGroup {
-    NSMutableArray *headerList;
+
     NSMutableArray *friendsArray;
     NSArray *sortedFriends;
     NSMutableArray *uniqueFriendsByLetter;
@@ -56,12 +56,12 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+
     self.navigationController.navigationBar.barTintColor = [UIColor clearColor]; //%%% bartint
     [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"navBar"] forBarMetrics:UIBarMetricsDefault];
     self.navigationController.navigationBar.translucent = NO;
+    [self.navigationController.navigationBar addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(scrollToTop)]];
     
-    headerList = [[NSMutableArray alloc] initWithObjects:@"GROUPS", @"INTERESTED", @"", /*@"NOT INTERESTED",*/ nil];
     friendsArray = [[NSMutableArray alloc] init];
     selectedNamesArray = [[NSMutableArray alloc] init];
     selectedImagesArray = [[NSMutableArray alloc] init];
@@ -110,6 +110,10 @@
     } else {
         [self loadFriends];
     }
+}
+
+- (void)scrollToTop {
+    [self.tableView setContentOffset:CGPointZero animated:YES];
 }
 
 - (void)facebookSuccessfulSignup {
@@ -201,8 +205,8 @@
             imagesArray = [NSMutableArray array];
         }
         [letterDict setObject:imagesArray forKey:@"Images"];
-        FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(10, 5, 30, 30)];
-        profPicView.layer.cornerRadius = 15;
+        FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(10, 7.5, 40, 40)];
+        profPicView.layer.cornerRadius = 20;
         profPicView.layer.masksToBounds = YES;
         profPicView.profileID = friendObjectIDs[i];
         profPicView.tag = 9;
@@ -253,7 +257,7 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     
-    return 40;
+    return 55;
     
 }
 
@@ -985,9 +989,9 @@
 
 -(void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
     
-    [self interactionEnabled:NO];
-    
     if (alertView.tag == 3) {
+        
+        [self interactionEnabled:NO];
         
         if (buttonIndex == 0) {
             

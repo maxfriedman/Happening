@@ -23,22 +23,35 @@
     self = [super initWithFrame:frame];
     if(self)
     {
-        UIView *backgroundView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, frame.size.height)];
+        //UIView *backgroundView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, frame.size.height)];
         //backgroundView.backgroundColor = [UIColor groupTableViewBackgroundColor];
-        [self addSubview:backgroundView];
+        //[self addSubview:backgroundView];
         
         //self.backgroundColor = [UIColor groupTableViewBackgroundColor];
         [self shouldDisplayAvatarItem:NO];
         
-        messageLabel = [[UILabel alloc] initWithFrame:CGRectMake(25, 0, 320-50, backgroundView.frame.size.height)];
+        messageLabel = [[UILabel alloc] init]; //WithFrame:CGRectMake(25, 0, 320-50, backgroundView.frame.size.height)];
         messageLabel.font = [UIFont fontWithName:@"OpenSans" size:10.0];
         messageLabel.textAlignment = NSTextAlignmentCenter;
         messageLabel.textColor = [UIColor darkTextColor];
         messageLabel.numberOfLines = 2;
-        [backgroundView addSubview:messageLabel];
+        messageLabel.translatesAutoresizingMaskIntoConstraints = NO;
+        [messageLabel setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh + 1 forAxis:UILayoutConstraintAxisHorizontal];
+        [self addSubview:messageLabel];
+        
+        [self configureConstraints];
         
     }
     return self;
+}
+
+// I am not good with constraints at all- What I am looking for is a way to dynamically set contraints based on the height of the cell, which may be 1, 2, or 3 lines of text.
+- (void)configureConstraints
+{
+    [self addConstraint:[NSLayoutConstraint constraintWithItem:messageLabel attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTop multiplier:1.0 constant:ATLMessageBubbleLabelVerticalPadding]];
+    [self addConstraint:[NSLayoutConstraint constraintWithItem:messageLabel attribute:NSLayoutAttributeLeft relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeLeft multiplier:1.0 constant:ATLMessageBubbleLabelHorizontalPadding]];
+    [self addConstraint:[NSLayoutConstraint constraintWithItem:messageLabel attribute:NSLayoutAttributeRight relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeRight multiplier:1.0 constant:-ATLMessageBubbleLabelHorizontalPadding]];
+    [self addConstraint:[NSLayoutConstraint constraintWithItem:messageLabel attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationGreaterThanOrEqual toItem:self attribute:NSLayoutAttributeBottom multiplier:1.0 constant:-ATLMessageBubbleLabelVerticalPadding]];
 }
 
 - (void)buttonTapped:(id)sender {
@@ -84,6 +97,8 @@
     return;
 }
 
+
+// How do I implement an avatar identical to those normally presented OR show nothing at all?
 - (void)shouldDisplayAvatarItem:(BOOL)shouldDisplayAvatarItem{
     
     LYRMessagePart *part = self.message.parts[0];

@@ -24,10 +24,20 @@
 #import "UIButton+Extensions.h"
 #import "CategoryBubbleView.h"
 
+@interface DraggableView () <RdioDelegate, RDPlayerDelegate>
+@end
 
 @implementation DraggableView {
     CGFloat xFromCenter;
     CGFloat yFromCenter;
+    
+    RDPlayer *_player;
+    Rdio *_rdio;
+    
+    BOOL _playing;
+    BOOL _paused;
+    BOOL _loggedIn;
+    
 }
 
 //delegate is instance of ViewController
@@ -35,48 +45,40 @@
 
 @synthesize panGestureRecognizer;
 @synthesize overlayView;
-
 @synthesize eventImage;
-
 @synthesize title;
 @synthesize subtitle;
 @synthesize location;
 @synthesize date;
-@synthesize time;
 @synthesize hashtag;
 @synthesize objectID;
 @synthesize createdBy;
-
 @synthesize transpBackground;
-
-@synthesize eventDate;
-
 @synthesize geoLoc;
 @synthesize geoPoint;
 @synthesize swipesRight;
 
-@synthesize locImage, userImage, shareButton;
-@synthesize activityView, cardBackground, cardView, greyLocImageView, calImageView, calDayLabel, calDayOfWeekLabel, calMonthLabel, calTimeLabel, moreButton, friendArrow, startPriceNumLabel, avePriceNumLabel;
+@synthesize locImage, userImage, shareButton, extraDescHeight;
+@synthesize cardBackground, cardView, calImageView, calDayLabel, calDayOfWeekLabel, calMonthLabel, calTimeLabel, moreButton, startPriceNumLabel, avePriceNumLabel, friendArrow, hapLogoButton, friendScrollView, mapView, goingButton, goingLabel, notInterestedButton, notInterestedLabel, interestedButton, interestedLabel, uberBTN, ticketsButton;
+@synthesize playPauseButton1, playPauseButton2, musicHeaderLabel, albumCover, albumNameAndArtist, songName;
 
-@synthesize xButton, checkButton, eventStore, blurEffectView;
+@synthesize eventStore, blurEffectView;
 
 - (id)initWithFrame:(CGRect)frame {
     
     self = [super initWithFrame:frame];
     if (self) {
         
+        [self setupView:frame];
+        
         self.actionMargin = ACTION_MARGIN;
         self.swipeDownMargin = SWIPE_DOWN_MARGIN;
         
+        /* %%%%%%%%%%%%%%%% TO BE ASSIGNED %%%%%%%%%%%%%%%%% */
+        objectID = [[NSString alloc]init];
+        geoPoint = [[PFGeoPoint alloc]init];
         eventStore = [[EKEventStore alloc] init];
-        
-        cardBackground = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"cardBackground"]];
-        cardBackground.frame = CGRectMake(7, 349, 270, cardBackground.image.size.height - 5);
-        [self addSubview:cardBackground];
-        
-        [self setupView:frame];
-
-        cardView.backgroundColor = [UIColor whiteColor];
+        /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
         
         eventImage = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, 284, 180)];
         //eventImage.layer.cornerRadius = 10.0;
@@ -84,135 +86,40 @@
         eventImage.layer.borderColor = [UIColor lightGrayColor].CGColor;
         eventImage.layer.borderWidth = 1.0;
         //eventImage.alpha = 0.7;
-        
         UIBezierPath *maskPath;
         maskPath = [UIBezierPath bezierPathWithRoundedRect:eventImage.bounds
                                          byRoundingCorners:(UIRectCornerTopLeft | UIRectCornerTopRight)
                                                cornerRadii:CGSizeMake(10.0, 10.0)];
-        
         CAShapeLayer *maskLayer = [[CAShapeLayer alloc] init];
         maskLayer.frame = self.bounds;
         maskLayer.path = maskPath.CGPath;
         eventImage.layer.mask = maskLayer;
+        [cardView addSubview:eventImage];
         
-        
-        //[self.Xinformation setContentMode:UIViewContentModeScaleAspectFit];
-        
-        panGestureRecognizer = [[UIPanGestureRecognizer alloc]initWithTarget:self action:@selector(beingDragged:)];
-        
-        [self.cardView addGestureRecognizer:panGestureRecognizer];
-        
-        
-        /*
-        // Label for vibrant text
-        UILabel *vibrantLabel = [[UILabel alloc] init];
-        [vibrantLabel setText:@"Vibrant"];
-        [vibrantLabel setFont:[UIFont systemFontOfSize:72.0f]];
-        [vibrantLabel sizeToFit];
-        [vibrantLabel setCenter: self.view.center];
-        
-        // Add label to the vibrancy view
-        [[vibrancyEffectView contentView] addSubview:vibrantLabel];
-        
-        // Add the vibrancy view to the blur view
-        [[blurEffectView contentView] addSubview:vibrancyEffectView];
-        */
         
         title = [[UILabel alloc]initWithFrame:CGRectMake(15, 103, eventImage.frame.size.width - 30, 100)];
-        
-        subtitle = [[UILabel alloc]initWithFrame:CGRectMake(15, 355 + 35, self.frame.size.width - 30, 33)];
-        location = [[UILabel alloc]initWithFrame:CGRectMake(15, 150, self.frame.size.width - 30, 100)];
-        
-        date = [[UILabel alloc]initWithFrame:CGRectMake(15, 172, self.frame.size.width - 100, 100)];
-        time = [[UILabel alloc]initWithFrame:CGRectMake(0, 309, self.frame.size.width - 30, 100)];
-        
-        //date = [[UILabel alloc]initWithFrame:CGRectMake(0, 285, self.frame.size.width, 100)];
-        //time = [[UILabel alloc]initWithFrame:CGRectMake(0, 315, self.frame.size.width, 100)];
-
-        //hashtag = [[UILabel alloc]initWithFrame:CGRectMake(15, 240, self.frame.size.width - 30, 100)];
-        geoLoc = [[UILabel alloc]initWithFrame:CGRectMake(15, 172, self.frame.size.width - 30, 100)];
-        swipesRight = [[UILabel alloc]initWithFrame:CGRectMake(35, 280, 65, 100)];
-        createdBy = [[UILabel alloc]initWithFrame:CGRectMake(15, 322, 160, 30)];
-        
-        shareButton = [[UIButton alloc] initWithFrame:CGRectMake(self.frame.size.width - 45, 15, 30, 30)];
-        
-        UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleLight];
-        blurEffectView = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
-        
-        blurEffectView.frame = CGRectMake(0, 120, eventImage.frame.size.width, 60);
-        //[eventImage addSubview:blurEffectView];
-        
-        //UIImage *blurredImage = [eventImage.image applyLightEffect];
-        
-        UIView *view = [[UIView alloc]initWithFrame:self.blurEffectView.bounds];
-        view.backgroundColor = [UIColor clearColor];
-        
-    // %%%%%%%%%%%%%%%% CODE FOR 
-        //UIImageView *imageView = [[UIImageView alloc]initWithImage: [self convertViewToImage:view]];
-        //imageView.image = [imageView.image applyLightEffect];
-        
-        //[eventImage addSubview:imageView];
-
-        UIVibrancyEffect *vibrancyEffect = [UIVibrancyEffect effectForBlurEffect:blurEffect];
-        UIVisualEffectView *vibrancyEffectView = [[UIVisualEffectView alloc] initWithEffect:vibrancyEffect];
-        vibrancyEffectView.frame = blurEffectView.bounds;
-        
         [title setTextAlignment:NSTextAlignmentLeft];
         title.textColor = [UIColor whiteColor];
         title.font = [UIFont fontWithName:@"OpenSans-Bold" size:23];
         title.minimumScaleFactor = 0.6;
         title.adjustsFontSizeToFitWidth = YES;
+        [cardView addSubview:title];
+
         
-        [date setTextAlignment:NSTextAlignmentLeft];
-        date.textColor = [UIColor colorWithHue:196.36/360.0 saturation:1.0 brightness:0.949 alpha:0.95];
-        date.font = [UIFont fontWithName:@"OpenSans-Semibold" size:12];
-        date.minimumScaleFactor = 0.75;
-        date.adjustsFontSizeToFitWidth = YES;
-        //[vibrancyEffectView.contentView addSubview:date];
-        
-        //[time setTextAlignment:NSTextAlignmentCenter];
-        //time.textColor = [UIColor blackColor];
-        //time.font = [UIFont fontWithName:@"OpenSans-Italic" size:17.0];
-        
-        [blurEffectView.contentView addSubview:vibrancyEffectView];
-        
-        //[eventImage addSubview:blurEffectView];
-        
-        [cardView addSubview:eventImage];
-        
-        transpBackground = [[UILabel alloc]initWithFrame:CGRectMake(0, 120, eventImage.frame.size.width, 60)];
-        
-        objectID = [[NSString alloc]init];
-        geoPoint = [[PFGeoPoint alloc]init];
-        
-        locImage = [[UIImageView alloc]initWithFrame:CGRectMake(219, 215, 12, 15)];
-        userImage = [[UIImageView alloc]initWithFrame:CGRectMake(15, 322, 18, 18)];
-        
-        locImage.image = [UIImage imageNamed:@"locationGrey"];
-        userImage.image = [UIImage imageNamed:@"interested_face"];
-        
-        greyLocImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"locationGrey"]];
-        greyLocImageView.frame = CGRectMake(216, 186, 14, 18);
-        greyLocImageView.alpha = 0;
-        [self.cardView addSubview:greyLocImageView];
-        
-        /*
-        [title setTextAlignment:NSTextAlignmentCenter];
-        title.textColor = [UIColor blackColor];
-        title.font = [UIFont fontWithName:@"OpenSans-Semibold" size:22];
-        */
-         
+        subtitle = [[UILabel alloc]initWithFrame:CGRectMake(15, 355 + 31, self.frame.size.width - 30, 33)];
         [subtitle setTextAlignment:NSTextAlignmentLeft];
         //subtitle.textColor = [UIColor darkGrayColor];
-        subtitle.textColor = [UIColor colorWithHue:0 saturation:0 brightness:.50 alpha:1.0];
-        subtitle.font = [UIFont fontWithName:@"OpenSans" size:12];
-        subtitle.numberOfLines = 3;
+        //subtitle.textColor = [UIColor colorWithHue:0 saturation:0 brightness:.50 alpha:1.0];
+        subtitle.textColor = [UIColor colorWithRed:136.0/255 green:136.0/255 blue:136.0/255 alpha:1.0];
+        subtitle.font = [UIFont fontWithName:@"OpenSans-Light" size:12];
+        subtitle.numberOfLines = 0;
         [subtitle setLineBreakMode:NSLineBreakByTruncatingTail];
         subtitle.userInteractionEnabled = YES;
+        //subtitle.alpha = 0;
+        [cardView addSubview:subtitle];
+
         
-        subtitle.alpha = 0;
-        
-        
+        location = [[UILabel alloc]initWithFrame:CGRectMake(15, 150, self.frame.size.width - 30, 100)];
         [location setTextAlignment:NSTextAlignmentLeft];
         //location.textColor = [UIColor colorWithRed:70/255 green:70/255 blue:70/255 alpha:0.7];
         location.textColor = [UIColor colorWithHue:0 saturation:0 brightness:.27 alpha:1.0];
@@ -220,76 +127,120 @@
         location.minimumScaleFactor = 0.6;
         location.adjustsFontSizeToFitWidth = YES;
         //location.shadowColor = [UIColor blackColor];
+        [cardView addSubview:location];
+
         
-        transpBackground.backgroundColor = [UIColor redColor];
-        transpBackground.backgroundColor = [UIColor colorWithHue:196.36/360.0 saturation:1.0 brightness:0.949 alpha:0.95];
-        //transpBackground.backgroundColor = [UIColor colorWithHue:1.0 saturation:0.0 brightness:0.7 alpha:0.9];
-        //transpBackground. = 0.6
-        
-        /*
-        [date setTextAlignment:NSTextAlignmentCenter];
-        date.textColor = [UIColor blackColor];
-        date.font = [UIFont fontWithName:@"OpenSans-Italic" size:17.0];
-        
-        [time setTextAlignment:NSTextAlignmentCenter];
-        time.textColor = [UIColor blackColor];
-        time.font = [UIFont fontWithName:@"OpenSans-Italic" size:17.0];
-        */
-         
+        date = [[UILabel alloc]initWithFrame:CGRectMake(15, 172, self.frame.size.width - 100, 100)];
+        [date setTextAlignment:NSTextAlignmentLeft];
+        date.textColor = [UIColor colorWithHue:196.36/360.0 saturation:1.0 brightness:0.949 alpha:0.95];
+        date.font = [UIFont fontWithName:@"OpenSans-Semibold" size:12];
+        date.minimumScaleFactor = 0.75;
+        date.adjustsFontSizeToFitWidth = YES;
+        [cardView addSubview:date];
+
+
+        hashtag = [[UILabel alloc]initWithFrame:CGRectMake(15, 240, self.frame.size.width - 30, 100)];
         [hashtag setTextAlignment:NSTextAlignmentLeft];
         //hashtag.textColor = [UIColor grayColor];
         hashtag.textColor = [UIColor colorWithHue:0 saturation:0 brightness:.50 alpha:1.0];
         hashtag.font = [UIFont fontWithName:@"OpenSans" size:11.0];
         //hashtag.font = [UIFont boldSystemFontOfSize:15];
         //hashtag.shadowColor = [UIColor blackColor];
+        //[cardView addSubview:hashtag];
         
+        geoLoc = [[UILabel alloc]initWithFrame:CGRectMake(15, 172, self.frame.size.width - 30, 100)];
         [geoLoc setTextAlignment:NSTextAlignmentRight];
         geoLoc.textColor = [UIColor colorWithHue:0 saturation:0 brightness:.50 alpha:1.0];
         geoLoc.font = [UIFont fontWithName:@"OpenSans" size:12.0];
+        [cardView addSubview:geoLoc];
+
         
+        swipesRight = [[UILabel alloc]initWithFrame:CGRectMake(35, 280, 65, 100)];
         [swipesRight setTextAlignment:NSTextAlignmentRight];
         //swipesRight.textColor = [UIColor grayColor];
         swipesRight.textColor = [UIColor colorWithHue:0 saturation:0 brightness:.50 alpha:1.0];
         swipesRight.font = [UIFont fontWithName:@"OpenSans" size:11.0];
         swipesRight.minimumScaleFactor = 0.6;
         swipesRight.adjustsFontSizeToFitWidth = YES;
+        //[cardView addSubview:swipesRight];
+
         
+        createdBy = [[UILabel alloc]initWithFrame:CGRectMake(15, 322, 160, 30)];
         [createdBy setUserInteractionEnabled:YES];
         [createdBy setTextAlignment:NSTextAlignmentLeft];
         createdBy.textColor = [UIColor colorWithHue:0 saturation:0 brightness:.50 alpha:1.0];
         createdBy.font = [UIFont fontWithName:@"OpenSans" size:11.0];
+        //[cardView addSubview:createdBy];
+
         
+        shareButton = [[UIButton alloc] initWithFrame:CGRectMake(self.frame.size.width - 45, 15, 30, 30)];
         [shareButton setImage:[UIImage imageNamed:@"share"] forState:UIControlStateNormal];
         [shareButton setImage:[UIImage imageNamed:@"share pressed"] forState:UIControlStateHighlighted];
         [shareButton setHitTestEdgeInsets:UIEdgeInsetsMake(-20, -20, -20, -20)];
         [cardView addSubview:shareButton];
         
-        //locImage.image = [UIImage imageNamed:@"locImage"];
-        [cardView addSubview:locImage];
-        //userImage.image = [UIImage imageNamed:@"userImage"];
-        [cardView addSubview:userImage];
         
-         activityView = [[MFActivityIndicatorView alloc] initWithFrame:CGRectMake((self.frame.size.width / 2) - 25, ((self.frame.size.height / 2) - 80), 50, 50)];
-        [cardView addSubview:activityView];
-        
+        transpBackground = [[UILabel alloc]initWithFrame:CGRectMake(0, 120, eventImage.frame.size.width, 60)];
+        transpBackground.backgroundColor = [UIColor redColor];
+        transpBackground.backgroundColor = [UIColor colorWithHue:196.36/360.0 saturation:1.0 brightness:0.949 alpha:0.95];
+        //transpBackground.backgroundColor = [UIColor colorWithHue:1.0 saturation:0.0 brightness:0.7 alpha:0.9];
+        //transpBackground. = 0.6
         //[cardView addSubview:transpBackground];
-        [cardView addSubview:title];
-        [cardView addSubview:subtitle];
-        [cardView addSubview:location];
-        [cardView addSubview:date];
-        //[cardView addSubview:time];
-        //[cardView addSubview:hashtag];
-        [cardView addSubview:geoLoc];
-        [cardView addSubview:swipesRight];
-        //[cardView addSubview:createdBy];
+
         
+        locImage = [[UIImageView alloc]initWithFrame:CGRectMake(219, 215, 12, 15)];
+        locImage.image = [UIImage imageNamed:@"locationGrey"];
+        [cardView addSubview:locImage];
+
+        
+        userImage = [[UIImageView alloc]initWithFrame:CGRectMake(15, 322, 18, 18)];
+        userImage.image = [UIImage imageNamed:@"interested_face"];
+        //[cardView addSubview:userImage];
+        
+    
         //overlayView = [[OverlayView alloc]initWithFrame:CGRectMake(self.frame.size.width/2-100, 0, 100, 100)];
         overlayView = [[OverlayView alloc]initWithFrame:CGRectMake(0, 0, eventImage.frame.size.width, 70)];
         overlayView.alpha = 0;
         [cardView addSubview:overlayView];
         
-        //[activityView stopAnimating];
+
+        friendScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(15 + 46 + 10, 255, 254 - 46 - 10, 50)];
+        friendScrollView.scrollEnabled = YES;
+        friendScrollView.showsHorizontalScrollIndicator = NO;
+        [cardView addSubview:friendScrollView];
+        friendScrollView.tag = 33;
         
+        
+        hapLogoButton = [[UIButton alloc] initWithFrame:CGRectMake(15, 252, 46, 46)];
+        //[hapLogoButton setImage:[UIImage imageNamed:@"AppLogoButton"] forState:UIControlStateNormal];
+        
+        [hapLogoButton setTitle:@"INVITE" forState:UIControlStateNormal];
+        [hapLogoButton setTitleColor:[UIColor colorWithRed:0 green:176.0/255 blue:242.0/255 alpha:1.0] forState:UIControlStateNormal];
+        [hapLogoButton setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];
+        hapLogoButton.titleLabel.font = [UIFont fontWithName:@"OpenSans" size:9.0];
+        
+        hapLogoButton.layer.cornerRadius = 23;
+        hapLogoButton.layer.masksToBounds = YES;
+        hapLogoButton.layer.borderColor = [UIColor colorWithRed:0 green:176.0/255 blue:242.0/255 alpha:1.0].CGColor;
+        hapLogoButton.layer.borderWidth = 1;
+        hapLogoButton.accessibilityIdentifier = @"hap";
+        hapLogoButton.userInteractionEnabled = YES;
+        [cardView addSubview:hapLogoButton];
+        
+        [hapLogoButton addTarget:delegate action:@selector(inviteButtonTap) forControlEvents:UIControlEventTouchUpInside];
+        [hapLogoButton addTarget:self action:@selector(buttonHighlight:) forControlEvents:UIControlEventTouchDown];
+        [hapLogoButton addTarget:self action:@selector(buttonNormal:) forControlEvents:UIControlEventTouchUpInside];
+        [hapLogoButton addTarget:self action:@selector(buttonNormal:) forControlEvents:UIControlEventTouchDragExit];
+        
+        
+        friendArrow = [[UIImageView alloc] initWithFrame:CGRectMake(268, 270, 10, 10)];
+        friendArrow.image = [UIImage imageNamed:@"rightArrow"];
+        friendArrow.alpha = 0;
+        [cardView addSubview:friendArrow];
+        
+        
+        /*  Unused, but good code --
+         
         calImageView = [[UIImageView alloc] initWithFrame:CGRectMake(15, 230, 25, 25)];
         calImageView.alpha = 0;
         calImageView.userInteractionEnabled = YES;
@@ -333,58 +284,546 @@
         calTimeLabel.alpha = 0;
         calTimeLabel.userInteractionEnabled = YES;
         [cardView addSubview:calTimeLabel];
+        */
         
+        
+        
+        /* %%%%%%%%%%%%%%%%% EXPANDED CARD ITEMS -- ALPHA = 0 AND TAG = 3 FOR ALL (EXCEPT BTN) %%%%%%%%%%%%%%%%%% */
         
         moreButton = [[UIButton alloc] initWithFrame:CGRectMake(self.frame.size.width - 50, 352, 35, 20)];
         [moreButton setTitleColor:[UIColor blueColor] forState:UIControlStateNormal];
         moreButton.titleLabel.font = [UIFont fontWithName:@"OpenSans" size:11.0];
-        
         NSMutableAttributedString *attString = [[NSMutableAttributedString alloc] initWithString:@"more info >>"];
         [attString addAttribute:(NSString*)kCTUnderlineStyleAttributeName
                           value:[NSNumber numberWithInt:kCTUnderlineStyleSingle]
                           range:(NSRange){0,[attString length]}];
-        [attString addAttribute:NSForegroundColorAttributeName value:[UIColor colorWithRed:41.0/255 green:181.0/255 blue:1.0 alpha:1.0] range:NSMakeRange(0, [attString length])];
-        
-        [moreButton setAttributedTitle:attString forState:UIControlStateNormal];
-        [moreButton sizeToFit];
-        
-        
-        NSMutableAttributedString *attString2 = [[NSMutableAttributedString alloc] initWithString:@"more info >>"];
-        [attString2 addAttribute:(NSString*)kCTUnderlineStyleAttributeName
-                          value:[NSNumber numberWithInt:kCTUnderlineStyleSingle]
-                          range:(NSRange){0,[attString2 length]}];
-        [attString2 addAttribute:NSForegroundColorAttributeName value:[UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:1.0] range:NSMakeRange(0, [attString2 length])];
-        
-        [moreButton setAttributedTitle:attString2 forState:UIControlStateHighlighted];
-        
-        moreButton.alpha = 0;
-        
+        [attString addAttribute:NSForegroundColorAttributeName value:[UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:1.0] range:NSMakeRange(0, [attString length])];
+        [moreButton setAttributedTitle:attString forState:UIControlStateHighlighted];
+        //moreButton.alpha = 0;
+        moreButton.tag = 3;
         [cardView addSubview:moreButton];
-
         
-        friendArrow = [[UIImageView alloc] initWithFrame:CGRectMake(268, 270, 10, 10)];
-        friendArrow.image = [UIImage imageNamed:@"rightArrow"];
-        friendArrow.alpha = 0;
-        [cardView addSubview:friendArrow];
+        
+        CGPoint center = cardView.center;
+        
+        notInterestedButton = [[UIButton alloc] initWithFrame:CGRectMake(50, 620, 35, 35)];
+        notInterestedButton.center = CGPointMake((center.x - 80), notInterestedButton.center.y);
+        [notInterestedButton setImage:[UIImage imageNamed:@"frown"] forState:UIControlStateNormal];
+        [cardView addSubview:notInterestedButton];
+        [notInterestedButton addTarget:self action:@selector(manualSwipeLeft) forControlEvents:UIControlEventTouchUpInside];
+        notInterestedButton.tag = 3;
+        
+        notInterestedLabel = [[UILabel alloc] initWithFrame:notInterestedButton.frame];
+        notInterestedLabel.text = @"Not Interested";
+        notInterestedLabel.font = [UIFont fontWithName:@"OpenSans-Light" size:8.0];
+        notInterestedLabel.textColor = [UIColor colorWithRed:50.0/255 green:50.0/255 blue:50.0/255 alpha:1.0];
+        [notInterestedLabel sizeToFit];
+        notInterestedLabel.center = CGPointMake(notInterestedButton.center.x, notInterestedButton.center.y + 25);
+        notInterestedLabel.tag = 3;
+        [cardView addSubview:notInterestedLabel];
+        
+        interestedButton = [[UIButton alloc] initWithFrame:CGRectMake(50, 620, 35, 35)];
+        interestedButton.center = CGPointMake((center.x + 80), interestedButton.center.y);
+        [interestedButton setImage:[UIImage imageNamed:@"smile"] forState:UIControlStateNormal];
+        [cardView addSubview:interestedButton];
+        [interestedButton addTarget:self action:@selector(manualSwipeRight) forControlEvents:UIControlEventTouchUpInside];
+        interestedButton.tag = 3;
+        
+        interestedLabel = [[UILabel alloc] initWithFrame:interestedButton.frame];
+        interestedLabel.text = @"Interested";
+        interestedLabel.font = [UIFont fontWithName:@"OpenSans-Light" size:8.0];
+        interestedLabel.textColor = [UIColor colorWithRed:50.0/255 green:50.0/255 blue:50.0/255 alpha:1.0];
+        [interestedLabel sizeToFit];
+        interestedLabel.center = CGPointMake(interestedButton.center.x, interestedButton.center.y + 25);
+        interestedLabel.tag = 3;
+        [cardView addSubview:interestedLabel];
+        
+        goingButton = [[UIButton alloc] initWithFrame:CGRectMake(50, 620, 35, 35)];
+        goingButton.center = CGPointMake(center.x, goingButton.center.y);
+        [goingButton setImage:[UIImage imageNamed:@"upArrow"] forState:UIControlStateNormal];
+        [cardView addSubview:goingButton];
+        [goingButton addTarget:self action:@selector(manualSwipeDown) forControlEvents:UIControlEventTouchUpInside];
+        goingButton.tag = 3;
+        
+        goingLabel = [[UILabel alloc] initWithFrame:goingButton.frame];
+        goingLabel.text = @"Back to top";
+        goingLabel.font = [UIFont fontWithName:@"OpenSans-Light" size:8.0];
+        goingLabel.textColor = [UIColor colorWithRed:50.0/255 green:50.0/255 blue:50.0/255 alpha:1.0];
+        [goingLabel sizeToFit];
+        goingLabel.center = CGPointMake(goingButton.center.x, goingButton.center.y + 25);
+        goingLabel.tag = 3;
+        [cardView addSubview:goingLabel];
         
         
         startPriceNumLabel = [[UILabel alloc] init];
-        startPriceNumLabel.textAlignment = NSTextAlignmentCenter;
-        startPriceNumLabel.font = [UIFont fontWithName:@"OpenSans-Light" size:13.0];
-        startPriceNumLabel.textColor = [UIColor grayColor];
-        //startPriceNumLabel.text = @"Starting";
-        startPriceNumLabel.tag = 3;
-        
         avePriceNumLabel = [[UILabel alloc] init];
-        avePriceNumLabel.textAlignment = NSTextAlignmentCenter;
-        avePriceNumLabel.font = [UIFont fontWithName:@"OpenSans-Light" size:13.0];
-        avePriceNumLabel.textColor = [UIColor grayColor];
-        //avePriceNumLabel.text = @"Avg";
-        avePriceNumLabel.tag = 3;
+        
+        
+        _rdio = [AppDelegate sharedRdio];
+        [_rdio setDelegate:self];
+        _player = [_rdio preparePlayerWithDelegate:self];
+        
+        
+        /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+        
+        
+        
+        /* %%%%%%%%%%%%%%%%% DELEGATE METHODS %%%%%%%%%%%%%%%%%% */
+        
+        [moreButton addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:delegate action:@selector(moreButtonTap)]];
+        
+        [shareButton addTarget:delegate action:@selector(shareButtonTap:) forControlEvents:UIControlEventTouchUpInside];
+        
+        [createdBy addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:delegate action:@selector(createdByTap)]];
+        
+        /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
         
     }
     
     return self;
+}
+
+- (void)loadCardWithData {
+    
+    [self addSubviewsToCard:self];
+    
+}
+
+-(CGFloat) moreButtonUpdateFrame {
+    
+    /*
+    if (![self doesString:subtitle.text contain:@"Details: "]) {
+        
+        UIFont *font = [UIFont fontWithName:@"OpenSans-Bold" size:12.0];
+        NSMutableDictionary *attrsDictionary = [NSMutableDictionary dictionaryWithObject:font
+                                                                                  forKey:NSFontAttributeName];
+        //[attrsDictionary setObject:[UIColor colorWithRed:0.0/255 green:176.0/255 blue:242.0/255 alpha:1.0] forKey:NSForegroundColorAttributeName];
+        [attrsDictionary setObject:[UIColor grayColor] forKey:NSForegroundColorAttributeName];
+        NSMutableAttributedString *aAttrString1 = [[NSMutableAttributedString alloc] initWithString:@"Details: " attributes:attrsDictionary];
+        
+        NSMutableAttributedString *aAttrString2 = [[NSMutableAttributedString alloc] initWithString:subtitle.text];
+        
+        [aAttrString1 appendAttributedString:aAttrString2];
+        
+        subtitle.attributedText = aAttrString1;
+        
+    }*/
+    
+    // Each line = approx 16.5
+    CGFloat lineSizeTotal = 0;
+    
+    CGRect rect = [subtitle.attributedText boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesLineFragmentOrigin context:nil];
+    
+    CGSize actualSize = rect.size;
+    
+    if (actualSize.height > 65) // > 4 lines
+    {
+        // show your more button
+        subtitle.numberOfLines = 4;
+        lineSizeTotal = actualSize.height;
+        moreButton.alpha = 1.0;
+        
+    } else {
+        
+        lineSizeTotal = actualSize.height;
+    }
+    
+    [subtitle sizeToFit];
+    moreButton.center = CGPointMake(self.center.x, subtitle.frame.origin.y + actualSize.height + 7);
+    
+    return lineSizeTotal + 7 + moreButton.frame.size.height;
+    
+}
+
+- (void)addSubviewsToCard:(DraggableView *)card {
+    
+    extraDescHeight = [self moreButtonUpdateFrame];
+    
+    mapView = [[MKMapView alloc] initWithFrame:CGRectMake(0, 440 + extraDescHeight - 60, 284, 133)];
+    mapView.layer.borderColor = [UIColor colorWithRed:204.0/255 green:204.0/255 blue:204.0/255 alpha:1.0].CGColor;
+    mapView.layer.borderWidth = 1.0;
+    [mapView setZoomEnabled:NO];
+    //mapView.alpha = 0;
+    mapView.tag = 3;
+    [cardView addSubview:mapView];
+    mapView.userInteractionEnabled = YES;
+    [mapView addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:delegate action:@selector(mapViewTap)]];
+    
+    
+    uberBTN = [[BTNDropinButton alloc] initWithButtonId:@"btn-0acf02149a673eb6"];
+    
+    NSString *locationText = [NSString stringWithString:location.text];
+    locationText = [locationText stringByReplacingOccurrencesOfString:@"at " withString:@""];
+    
+    BTNVenue *venue = [BTNVenue venueWithId:@"abc123" venueName:locationText latitude:geoPoint.latitude longitude:geoPoint.longitude];
+    
+    NSDate *eventDate = self.eventObject[@"Date"];
+    
+    if ([eventDate compare:[NSDate dateWithTimeIntervalSinceNow:-3600]] == NSOrderedDescending) { // more than 1 hr before, show reminder
+        
+        [uberBTN setFrame:CGRectMake(0, 530 + extraDescHeight, 217, 30)];
+        uberBTN.center = CGPointMake(142, uberBTN.center.y);
+        
+        NSDictionary *context = @{
+                                  BTNContextApplicableDateKey: eventDate,
+                                  BTNContextEndLocationKey:venue.location,
+                                  BTNContextReminderUseDebugIntervalKey: @YES
+                                  };
+        [uberBTN prepareForDisplayWithContext:context completion:^(BOOL isDisplayable) {
+            if (isDisplayable) {
+                [cardView addSubview:uberBTN];
+            }
+        }];
+        
+    } else {
+        
+        [uberBTN setFrame:CGRectMake(0, 530 + extraDescHeight, 175, 30)];
+        uberBTN.center = CGPointMake(142, uberBTN.center.y);
+        
+        [uberBTN prepareForDisplayWithVenue:venue completion:^(BOOL isDisplayable) {
+            if (isDisplayable) {
+                [cardView addSubview:uberBTN];
+            }
+        }];
+    }
+    
+    ticketsButton = [[UIButton alloc] initWithFrame:CGRectMake(15, 360.5 + extraDescHeight - 62, 100, 25)];
+
+    ticketsButton.enabled = YES;
+    ticketsButton.userInteractionEnabled = YES;
+    ticketsButton.tag = 3;
+    UIColor *hapBlue = [UIColor colorWithRed:0.0 green:185.0/255 blue:245.0/255 alpha:1.0];
+    [ticketsButton setTitle:@"GET TICKETS" forState:UIControlStateNormal];
+    //[ticketsButton setTitleColor:hapBlue forState:UIControlStateNormal];
+    //[ticketsButton setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];
+    [ticketsButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [ticketsButton setTitleColor:hapBlue forState:UIControlStateHighlighted];
+    [ticketsButton setBackgroundColor:hapBlue];
+    
+    ticketsButton.titleLabel.font = [UIFont fontWithName:@"OpenSans-Bold" size:13.0];
+    
+    ticketsButton.layer.masksToBounds = YES;
+    ticketsButton.layer.borderColor = hapBlue.CGColor;
+    ticketsButton.layer.borderWidth = 1.0;
+    ticketsButton.layer.cornerRadius = 28/2;
+    
+    [ticketsButton addTarget:self action:@selector(buttonHighlight:) forControlEvents:UIControlEventTouchDown];
+    [ticketsButton addTarget:self action:@selector(buttonNormal:) forControlEvents:UIControlEventTouchUpInside];
+    [ticketsButton addTarget:self action:@selector(buttonNormal:) forControlEvents:UIControlEventTouchDragExit];
+    
+    [cardView addSubview:ticketsButton];
+    
+    NSString *ticketLink = self.eventObject[@"TicketLink"];
+    int height = 0;
+    
+    if (ticketLink != nil && (![ticketLink isEqualToString:@""] || ![ticketLink isEqualToString:@"$0"])) {
+        
+        height += 20;
+        
+        ticketsButton.frame = CGRectMake((284-120)/2, 360.5 + extraDescHeight - 62, 120, 28);
+        
+        ticketsButton.accessibilityIdentifier = ticketLink;
+        [ticketsButton addTarget:delegate action:@selector(ticketsButtonTap:) forControlEvents:UIControlEventTouchUpInside];
+        
+        if ([self doesString:ticketLink contain:@"seatgeek.com"]) {
+            
+            if (![startPriceNumLabel.text isEqualToString:@""] && ![startPriceNumLabel.text isEqualToString:@"$0"] && startPriceNumLabel.text != nil) {
+               
+                NSString *startingString = [NSString stringWithFormat:@"GET TICKETS - STARTING AT %@", startPriceNumLabel.text];
+                [ticketsButton setTitle:startingString forState:UIControlStateNormal];
+                ticketsButton.frame = CGRectMake((284-230)/2, 360.5 + extraDescHeight - 62, 230, 28);
+                
+                /*
+                startPriceNumLabel = [[UILabel alloc] init];
+                startPriceNumLabel.textAlignment = NSTextAlignmentCenter;
+                startPriceNumLabel.font = [UIFont fontWithName:@"OpenSans-Light" size:13.0];
+                startPriceNumLabel.textColor = [UIColor grayColor];
+                //startPriceNumLabel.text = @"Starting";
+                startPriceNumLabel.tag = 3;
+                startPriceNumLabel.alpha = 0;
+                [cardView addSubview:startPriceNumLabel];
+                
+                
+                avePriceNumLabel = [[UILabel alloc] init];
+                avePriceNumLabel.textAlignment = NSTextAlignmentCenter;
+                avePriceNumLabel.font = [UIFont fontWithName:@"OpenSans-Light" size:13.0];
+                avePriceNumLabel.textColor = [UIColor grayColor];
+                //avePriceNumLabel.text = @"Avg";
+                avePriceNumLabel.tag = 3;
+                avePriceNumLabel.alpha = 0;
+                [cardView addSubview:avePriceNumLabel];
+                
+                UILabel *startingPriceLabel = [[UILabel alloc] initWithFrame:CGRectMake(160, 349 + extraDescHeight - 62, 100, 30)];
+                startingPriceLabel.textAlignment = NSTextAlignmentCenter;
+                startingPriceLabel.font = [UIFont fontWithName:@"OpenSans-Semibold" size:12.0];
+                startingPriceLabel.textColor = [UIColor darkGrayColor];
+                startingPriceLabel.text = @"Starting";
+                [startingPriceLabel sizeToFit];
+                startingPriceLabel.center = CGPointMake(ticketsButton.center.x + 85 , ticketsButton.center.y);
+                startingPriceLabel.tag = 3;
+                [card.cardView addSubview:startingPriceLabel];
+                
+                startPriceNumLabel.frame = CGRectMake(startingPriceLabel.frame.size.width + startingPriceLabel.frame.origin.x + 5, startingPriceLabel.frame.origin.y, 50, 30);
+                [startPriceNumLabel sizeToFit];
+                startPriceNumLabel.center = CGPointMake(startPriceNumLabel.center.x, startingPriceLabel.center.y);
+                [card.cardView addSubview:startPriceNumLabel];
+                
+                if (![avePriceNumLabel.text isEqualToString:@""] && ![avePriceNumLabel.text isEqualToString:@"$0"]) {
+                    
+                    UILabel *avgPriceLabel = [[UILabel alloc] initWithFrame:CGRectMake(startPriceNumLabel.frame.origin.x + startPriceNumLabel.frame.size.width + 10, 349 + extraDescHeight - 62, 100, 30)];
+                    avgPriceLabel.textAlignment = NSTextAlignmentCenter;
+                    avgPriceLabel.font = [UIFont fontWithName:@"OpenSans-Semibold" size:12.0];
+                    avgPriceLabel.textColor = [UIColor darkGrayColor];
+                    avgPriceLabel.text = @"Avg";
+                    [avgPriceLabel sizeToFit];
+                    avgPriceLabel.center = CGPointMake(avgPriceLabel.center.x , ticketsButton.center.y);
+                    avgPriceLabel.tag = 3;
+                    [card.cardView addSubview:avgPriceLabel];
+                    
+                    avePriceNumLabel.frame = CGRectMake(avgPriceLabel.frame.size.width + avgPriceLabel.frame.origin.x + 5, avgPriceLabel.frame.origin.y, 50, 30);
+                    [avePriceNumLabel sizeToFit];
+                    avePriceNumLabel.center = CGPointMake(avePriceNumLabel.center.x, avgPriceLabel.center.y);
+                    [card.cardView addSubview:avePriceNumLabel];
+
+                } */
+            }
+            
+        } else if ([self doesString:ticketLink contain:@"facebook.com"]) {
+            
+            [ticketsButton setTitle:@"RSVP TO FACEBOOK EVENT" forState:UIControlStateNormal];
+            ticketsButton.frame = CGRectMake(15, 360.5 + extraDescHeight - 62, 200, 25);
+            ticketsButton.center = CGPointMake(self.center.x, ticketsButton.center.y);
+            
+        } else if ([self doesString:ticketLink contain:@"meetup.com"]) {
+            
+            [ticketsButton setTitle:@"RSVP ON MEETUP.COM" forState:UIControlStateNormal];
+            ticketsButton.frame = CGRectMake(15, 360.5 + extraDescHeight - 62, 200, 25);
+            ticketsButton.center = CGPointMake(self.center.x, ticketsButton.center.y);
+            
+        } else if ([[self.eventObject objectForKey:@"isFreeEvent"] isEqualToNumber:@YES]) {
+            
+            [ticketsButton setTitle:@"THIS EVENT IS FREE!" forState:UIControlStateNormal];
+            ticketsButton.frame = CGRectMake(15, 360.5 + extraDescHeight - 62, 200, 25);
+            ticketsButton.center = CGPointMake(self.center.x, ticketsButton.center.y);
+            
+        }
+        
+    } else { //no tix
+        
+        UILabel *noTixLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 360.5 + extraDescHeight - 62, 250, 25)];
+        noTixLabel.textAlignment = NSTextAlignmentCenter;
+        noTixLabel.font = [UIFont fontWithName:@"OpenSans-Extrabold" size:12.0];
+        noTixLabel.textColor = [UIColor colorWithRed:0.0 green:176.0/255 blue:242.0/255 alpha:1.0];
+        noTixLabel.tag = 3;
+        
+        if ([[self.eventObject objectForKey:@"isTicketedEvent"] isEqualToNumber:@NO]) {
+            noTixLabel.text = @"This event does not have tickets.";
+        } else if ([[self.eventObject objectForKey:@"isFreeEvent"] isEqualToNumber:@YES]){
+            noTixLabel.text = @"This event is free! No tickets required.";
+        } else {
+            noTixLabel.text = @"No ticket information is available.";
+        }
+        
+        noTixLabel.center = CGPointMake(self.center.x, noTixLabel.center.y);
+        [cardView addSubview:noTixLabel];
+        
+    }
+    
+    //[self ticketsAndUberUpdateFrameBy:height + 8];
+    
+    if ([self.hashtag.text isEqualToString:@"Music"]) {
+        [self checkForMusicForArtist:self.title.text];
+    }
+    
+    [cardView bringSubviewToFront:self.mapView];
+    
+}
+
+
+-(BOOL)doesString:(NSString *)first contain:(NSString*)other {
+    NSRange range = [first rangeOfString:other];
+    return range.length != 0;
+}
+
+/*
+- (void)noFriendsAddButton:(UIScrollView *)friendScrollView {
+    
+    friendScrollView.scrollEnabled = NO;
+    
+    UIButton *noFriendsButton = [[UIButton alloc] initWithFrame:CGRectMake(35, 5, 184, 40)];
+    [noFriendsButton setTitle:@"Invite your friends" forState:UIControlStateNormal];
+    noFriendsButton.titleLabel.font = [UIFont fontWithName:@"OpenSans" size:15.0];
+    [noFriendsButton setTitleColor:[UIColor colorWithRed:41.0/255 green:181.0/255 blue:1.0 alpha:1.0] forState:UIControlStateNormal];
+    [noFriendsButton setTitleColor:[UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:1.0] forState:UIControlStateHighlighted];
+    noFriendsButton.layer.masksToBounds = YES;
+    noFriendsButton.layer.borderColor = [UIColor colorWithRed:41.0/255 green:181.0/255 blue:1.0 alpha:1.0].CGColor;
+    noFriendsButton.layer.borderWidth = 2.0;
+    noFriendsButton.layer.cornerRadius = 5.0;
+    
+    [noFriendsButton setReversesTitleShadowWhenHighlighted:YES];
+    [noFriendsButton addTarget:self action:@selector(shareAction:) forControlEvents:UIControlEventTouchUpInside];
+    
+    noFriendsButton.tag = 99; // so we don't show calendar on sharesheet
+    
+    [friendScrollView addSubview:noFriendsButton];
+    
+}*/
+
+
+- (void)checkForMusicForArtist:(NSString *)artistName {
+    
+    NSLog(@"Searching for: %@", artistName);
+    
+    [_rdio callAPIMethod:@"search" withParameters:@{@"query":artistName, @"types":@"Artist", @"count":@"1"} success:^(NSDictionary *result) {
+        
+        NSLog(@"%@", result);
+        
+        NSArray *results = result[@"results"];
+        
+        if (results.count > 0) {
+            
+            NSDictionary *dict = results[0];
+            
+            if (dict[@"topSongsKey"] != nil) {
+                
+                CGRect subtitleFrame = subtitle.frame;
+                
+                playPauseButton2 = [[UIButton alloc] initWithFrame:CGRectMake(subtitleFrame.origin.x + 50, subtitleFrame.origin.y, 100, 25)];
+                [playPauseButton2 setTitle:@"Play" forState:UIControlStateNormal];
+                playPauseButton2.titleLabel.font = [UIFont fontWithName:@"OpenSans" size:15.0];
+                [playPauseButton2 setTitleColor:[UIColor blueColor] forState:UIControlStateNormal];
+                [playPauseButton2 addTarget:self action:@selector(playPauseTapped:) forControlEvents:UIControlEventTouchUpInside];
+                
+                [_player.queue add:dict[@"topSongsKey"]];
+                [cardView addSubview:playPauseButton2];
+                [subtitle removeFromSuperview];
+                
+                NSString *urlStr = dict[@"dynamicIcon"];
+                if ([urlStr containsString:@"%"]) {
+                    NSRange range = [urlStr rangeOfString:@"%"];
+                    urlStr = [urlStr substringWithRange:NSMakeRange(0, range.location)];
+                }
+                
+                NSLog(@"%@",urlStr);
+                
+                UIImageView *imv = [[UIImageView alloc] initWithFrame:CGRectMake(subtitleFrame.origin.x, subtitleFrame.origin.y - 5, 40, 40)];
+                NSData *data = [NSData dataWithContentsOfURL: [NSURL URLWithString:urlStr] ];
+                imv.image = [UIImage imageWithData:data];
+                [cardView addSubview:imv];
+                
+                [self updateFramesForMusic];
+            }
+            
+        }
+        
+    } failure:^(NSError *error) {
+        
+        NSLog(@"Error: %@", error);
+        
+    }];
+    
+    
+}
+
+- (void)playPauseTapped:(id)sender
+{
+    NSLog(@"Play/pause button tapped!");
+    
+    if (!_playing) {
+        // Nothing's been "played" yet, so queue up and play something
+        
+        //NSArray *keys = [@"t15907959,t1992210,t7418766,t8816323" componentsSeparatedByString:@","];
+        //[_player.queue add:keys];
+        [_player playFromQueue:0];
+    } else {
+        // Otherwise, just toggle play/pause
+        [_player togglePause];
+    }
+}
+
+-(void)rdioPlayerChangedFromState:(RDPlayerState)oldState toState:(RDPlayerState)newState
+{
+    NSLog(@"Rdio Player changed from state %u to state %u", oldState, newState);
+    
+    // Your internal state machine logic may differ, but for the sake of simplicity,
+    // this Hello app considers Playing, Paused, and Buffering all as "playing" states.
+    _playing = (newState != RDPlayerStateInitializing && newState != RDPlayerStateStopped);
+    _paused = (newState == RDPlayerStatePaused);
+    
+    if (_paused || !_playing) {
+        [playPauseButton2 setTitle:@"Play " forState:UIControlStateNormal];
+    } else {
+        [playPauseButton2 setTitle:@"Pause" forState:UIControlStateNormal];
+        
+        if (_player.currentTrack != nil) {
+            
+            NSLog(@"%@", _player.currentTrack);
+            
+            
+            [_rdio callAPIMethod:@"get" withParameters:@{@"keys":_player.currentTrack} success:^(NSDictionary *result) {
+                
+                NSLog(@"%@", result);
+                
+                NSDictionary *dict = result[_player.currentTrack];
+                
+                if (dict != nil) {
+                    
+                    CGRect playerFrame = playPauseButton2.frame;
+                    UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(playerFrame.origin.x + playerFrame.size.width + 10, playerFrame.origin.y, 100, 30)];
+                    label.text = dict[@"name"];
+                    label.font = [UIFont fontWithName:@"OpenSans-Semibold" size:14.0];
+                    [cardView addSubview:label];
+                    
+                }
+                
+            } failure:^(NSError *error) {
+                
+                
+            }];
+            
+            
+        }
+        
+    }
+}
+
+- (void)updateFramesForMusic {
+    
+    CGRect mapRect =  mapView.frame;
+    CGRect uberRect = uberBTN.frame;
+    CGRect leftButton = notInterestedButton.frame;
+    CGRect leftLabel = notInterestedLabel.frame;
+    CGRect middleButton = goingButton.frame;
+    CGRect middleLabel = goingLabel.frame;
+    CGRect rightButton = interestedButton.frame;
+    CGRect rightLabel = interestedLabel.frame;
+    
+    float y = 30;
+    mapRect.origin.y = mapRect.origin.y + y;
+    uberRect.origin.y = uberRect.origin.y + y;
+    leftButton.origin.y = leftButton.origin.y + y;
+    leftLabel.origin.y = leftLabel.origin.y + y;
+    middleButton.origin.y = middleButton.origin.y + y;
+    middleLabel.origin.y = middleLabel.origin.y + y;
+    rightButton.origin.y = rightButton.origin.y + y;
+    rightLabel.origin.y = rightLabel.origin.y + y;
+    
+    mapView.frame = mapRect;
+    uberBTN.frame = uberRect;
+    notInterestedButton.frame = leftButton;
+    notInterestedLabel.frame = leftLabel;
+    goingButton.frame = middleButton;
+    goingLabel.frame = middleLabel;
+    interestedButton.frame = rightButton;
+    interestedLabel.frame = rightLabel;
+    
+}
+
+-(void)rdioAuthorizationFailed:(NSError *)error {
+    
+    NSLog(@"Error: %@", error);
 }
 
 -(void)arrangeCornerViews {
@@ -409,15 +848,38 @@
     }
 }
 
--(void)swipeLeft {
-    NSLog(@"Made it");
+-(void)manualSwipeLeft {
+
+    overlayView.mode = GGOverlayViewModeLeft;
+    //[UIView animateWithDuration:0.2 animations:^{
+    overlayView.alpha = 1;
+    //}];
+    [self leftClickAction];
+}
+
+-(void)manualSwipeRight {
+
+    overlayView.mode = GGOverlayViewModeRight;
+    //[UIView animateWithDuration:0.2 animations:^{
+    overlayView.alpha = 1;
+    //}];
+    [self rightClickAction];
+}
+
+-(void)manualSwipeDown {
+
+    overlayView.mode = GGOverlayViewModeDown;
+    //[UIView animateWithDuration:0.2 animations:^{
+    overlayView.alpha = 1;
+    //}];
+    [self downAction];
 }
 
 -(void)setupView:(CGRect)frame
 {
     cardView = [[UIView alloc]initWithFrame:frame];
     [self addSubview:cardView];
-    cardView.layer.masksToBounds = NO;
+    cardView.layer.masksToBounds = YES;
     
     [cardView.layer setCornerRadius:10.0];
     [cardView.layer setShadowOpacity:0.05];
@@ -425,6 +887,14 @@
     //UIColor *color = [UIColor colorWithRed:<#(CGFloat)#> green:<#(CGFloat)#> blue:<#(CGFloat)#> alpha:<#(CGFloat)#>]
     [cardView.layer setBorderColor:[UIColor lightGrayColor].CGColor];
     [cardView.layer setBorderWidth:1.0];
+    cardView.backgroundColor = [UIColor whiteColor];
+
+    panGestureRecognizer = [[UIPanGestureRecognizer alloc]initWithTarget:self action:@selector(beingDragged:)];
+    [self.cardView addGestureRecognizer:panGestureRecognizer];
+
+    cardBackground = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"cardBackground"]];
+    cardBackground.frame = CGRectMake(7, 349, 270, cardBackground.image.size.height - 5);
+    [self addSubview:cardBackground];
     
     /*
     self.layer.shadowRadius = 5;
@@ -727,6 +1197,18 @@
     RKSwipeBetweenViewControllers *rk = appDelegate.rk;
     [rk scrolling:enabled];
     
+}
+
+-(void)buttonNormal:(id)sender {
+    UIButton *button = (UIButton *)sender;
+    panGestureRecognizer.enabled = YES;
+    [button setBackgroundColor:[UIColor whiteColor]];
+}
+
+-(void)buttonHighlight:(id)sender {
+    UIButton *button = (UIButton *)sender;
+    panGestureRecognizer.enabled = NO;
+    [button setBackgroundColor:[UIColor colorWithRed:0.0 green:176.0/255 blue:242.0/255 alpha:1.0]];
 }
 
 /*

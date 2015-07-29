@@ -15,6 +15,7 @@
 #import "SVProgressHUD.h"
 #import "AppDelegate.h"
 #import "CategoryBubbleView.h"
+#import "LocationConstants.h"
 
 @interface DraggableViewBackground() <UIScrollViewDelegate>
 
@@ -233,6 +234,29 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             
         }
         
+        LocationConstants *locConstants = [[LocationConstants alloc] init];
+        
+        NSString *selectedCity = user[@"userLocTitle"];
+        CLLocation *theCityLoc = [locConstants getLocForCity:selectedCity];
+        CLLocation *theUserLoc = [[CLLocation alloc] initWithLatitude:userLoc.latitude longitude:userLoc.longitude];
+        
+        CLLocationDistance distance = [theUserLoc distanceFromLocation:theCityLoc];
+        
+        //NSLog(@"%f", distance);
+        
+        CLLocationCoordinate2D finalLoc;
+        
+        if (distance > 20 * 1609.344 || distance == 0) { // User's current location is > 20 miles outside of the city, use default
+            
+            NSLog(@"User's current location is > 20 miles outside of the city, use default");
+            finalLoc = theCityLoc.coordinate;
+            
+        } else {
+            
+            NSLog(@"Use the user's current location!");
+            finalLoc = theUserLoc.coordinate;
+        }
+        
         float milesToLat = 69;
         //float milesToLong = 45;
         
@@ -242,29 +266,30 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         float earthRadius = 6378137.0;
         
         //offsets in meters
-        float dn = radius * 1609.344;
-        float de = radius * 1609.344;
+        //float dn = radius * 1609.344;
+        //float de = radius * 1609.344;
+        float dn = 50 * 1609.344;
+        float de = 50 * 1609.344;
         
         //Coordinate offsets in radians
         float dLat = dn/earthRadius;
-        float dLon = de/(earthRadius*cosf(M_PI*userLoc.latitude/180));
+        float dLon = de/(earthRadius*cosf(M_PI*finalLoc.latitude/180));
         
         //OffsetPosition, decimal degrees
-        float lat1 = userLoc.latitude - dLat * 180/M_PI;
-        float lon1 = userLoc.longitude - dLon * 180/M_PI;
+        float lat1 = finalLoc.latitude - dLat * 180/M_PI;
+        float lon1 = finalLoc.longitude - dLon * 180/M_PI;
         
-        float lat2 = userLoc.latitude + dLat * 180/M_PI;
-        float lon2 = userLoc.longitude + dLon * 180/M_PI;
+        float lat2 = finalLoc.latitude + dLat * 180/M_PI;
+        float lon2 = finalLoc.longitude + dLon * 180/M_PI;
         
         float blah = cosf(userLoc.latitude) * 69;
         
         PFGeoPoint *swc = [PFGeoPoint geoPointWithLatitude:lat1 longitude:lon1];
         PFGeoPoint *nwc = [PFGeoPoint geoPointWithLatitude:lat2 longitude:lon2];
-        
+        [finalQuery whereKey:@"GeoLoc" withinGeoBoxFromSouthwest:swc toNortheast:nwc];
+
         // F this query, screws up the entire logic
         //[finalQuery whereKey:@"GeoLoc" nearGeoPoint:userLoc withinMiles:radius];
-        
-        [finalQuery whereKey:@"GeoLoc" withinGeoBoxFromSouthwest:swc toNortheast:nwc];
         
         //finalQuery.limit = 500;
         
@@ -549,6 +574,9 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             CategoryBubbleView *stillInterestedView = [[CategoryBubbleView alloc] initWithText:@"Still Interested?" type:@"repeat"];
             [draggableView.cardView addSubview:stillInterestedView];
             [draggableView arrangeCornerViews];
+        
+        } else {
+            
         }
         
     }];
@@ -634,7 +662,13 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         PFUser *user = [PFUser currentUser];
         PFGeoPoint *userLoc = user[@"userLoc"];
         NSNumber *miles = [NSNumber numberWithDouble:([loc distanceInMilesTo:userLoc])];
-        if ([miles integerValue] > 10) {
+        if (miles.floatValue >= 100.0) {
+            NSString *distance = [NSString stringWithFormat:(@"100+ mi")];
+            draggableView.geoLoc.text = distance;
+            CGRect locFrame = draggableView.locImage.frame;
+            locFrame.origin.x = locFrame.origin.x - 10;
+            draggableView.locImage.frame = locFrame;
+        } else if ([miles integerValue] >= 10) {
             NSString *distance = [NSString stringWithFormat:(@"%ld mi"), (long)miles.integerValue];
             draggableView.geoLoc.text = distance;
         } else {
@@ -642,7 +676,6 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             draggableView.geoLoc.text = distance;
         }
     }
-
     
     if (event[@"Image"] != nil) {
         
@@ -734,46 +767,13 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     UIGestureRecognizer *gr5 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(checkEventStoreAccessForCalendar)];
     [draggableView.calTimeLabel addGestureRecognizer:gr5];
      */
-
-
-    UIGestureRecognizer *tgr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(moreButtonTap)];
-    [draggableView.moreButton addGestureRecognizer:tgr];
     
-    [draggableView.shareButton addTarget:self action:@selector(shareAction:) forControlEvents:UIControlEventTouchUpInside];
-    
-    UITapGestureRecognizer *createdByTapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(createdByTap)];
-    [draggableView.createdBy addGestureRecognizer:createdByTapRecognizer];
+    [draggableView loadCardWithData];
     
     [self sendSubviewToBack:dragView.cardBackground];
     
-    UIScrollView *friendScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(15 + 46 + 10, 255, 254 - 46 - 10, 50)];
-    friendScrollView.scrollEnabled = YES;
-    friendScrollView.showsHorizontalScrollIndicator = NO;
-    [draggableView.cardView addSubview:friendScrollView];
-    friendScrollView.delegate = self;
-    [self loadFBFriends:friendScrollView withCard:draggableView];
-    friendScrollView.tag = 33;
-    
-    UIButton *hapLogoButton = [[UIButton alloc] initWithFrame:CGRectMake(15, 252, 46, 46)];
-    //[hapLogoButton setImage:[UIImage imageNamed:@"AppLogoButton"] forState:UIControlStateNormal];
-    
-    [hapLogoButton setTitle:@"INVITE" forState:UIControlStateNormal];
-    [hapLogoButton setTitleColor:[UIColor colorWithRed:0 green:176.0/255 blue:242.0/255 alpha:1.0] forState:UIControlStateNormal];
-    [hapLogoButton setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];
-    hapLogoButton.titleLabel.font = [UIFont fontWithName:@"OpenSans" size:9.0];
-    
-    hapLogoButton.layer.cornerRadius = 23;
-    hapLogoButton.layer.masksToBounds = YES;
-    hapLogoButton.layer.borderColor = [UIColor colorWithRed:0 green:176.0/255 blue:242.0/255 alpha:1.0].CGColor;
-    hapLogoButton.layer.borderWidth = 1;
-    hapLogoButton.accessibilityIdentifier = @"hap";
-    hapLogoButton.userInteractionEnabled = YES;
-    [draggableView.cardView addSubview:hapLogoButton];
-    
-    [hapLogoButton addTarget:self action:@selector(inviteHomies) forControlEvents:UIControlEventTouchUpInside];
-    [hapLogoButton addTarget:self action:@selector(buttonHighlight:) forControlEvents:UIControlEventTouchDown];
-    [hapLogoButton addTarget:self action:@selector(buttonNormal:) forControlEvents:UIControlEventTouchUpInside];
-    [hapLogoButton addTarget:self action:@selector(buttonNormal:) forControlEvents:UIControlEventTouchDragExit];
+    self.dragView.friendScrollView.delegate = self;
+    [self loadFBFriends:self.dragView.friendScrollView withCard:draggableView];
     
     draggableView.delegate = self;
     return draggableView;
@@ -879,136 +879,111 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     card.interestedNames = [NSMutableArray new];
     card.interestedIds = [NSMutableArray new];
     
-    if ([FBSDKAccessToken currentAccessToken]) {
-        
-        
-        [[[FBSDKGraphRequest alloc] initWithGraphPath:@"/me/friends?limit=1000" parameters:nil] startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
-            //code
-            
-            NSArray* friends = [result objectForKey:@"data"];
-            //NSLog(@"Found: %lu friends", (unsigned long)friends.count);
-            
-            __block int friendCount = 0;
-            
-            NSMutableArray *friendObjectIDs = [[NSMutableArray alloc] init];
-            for (int i = 0; i < friends.count; i ++) {
-                NSDictionary *friend = friends[i];
-                [friendObjectIDs addObject:[friend objectForKey:@"id"]];
-            }
-            
-            PFQuery *friendQuery = [PFQuery queryWithClassName:@"Swipes"];
-            [friendQuery whereKey:@"FBObjectID" containedIn:friendObjectIDs];
-            [friendQuery whereKey:@"EventID" equalTo:card.objectID];
-            [friendQuery whereKey:@"swipedRight" equalTo:@YES];
-            
-            PFQuery *userQuery = [PFUser query];
-            [userQuery whereKey:@"objectId" matchesKey:@"UserID" inQuery:friendQuery];
-            
-            [userQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-                
-               // NSLog(@"%lu friends interested", (unsigned long)objects.count);
-                
-                if (!error) {
-                    
-                    NSMutableArray *orderedObjects = [NSMutableArray arrayWithArray:objects];
-                    
-                    for (PFObject *object in objects) {
-                        
-                        if ([bestFriendIds containsObject:object[@"FBObjectID"]]) {
-                            [orderedObjects removeObject:object];
-                            [orderedObjects insertObject:object atIndex:0];
-                        }
-                        
-                    }
-                    
-                    for (PFObject *object in orderedObjects) {
-                        
-                        FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(50 * friendCount, 0, 40, 40)]; // initWithProfileID:user[@"FBObjectID"] pictureCropping:FBSDKProfilePictureModeSquare];
-                        profPicView.profileID = object[@"FBObjectID"];
-                        profPicView.pictureMode = FBSDKProfilePictureModeSquare;
-                        
-                        profPicView.layer.cornerRadius = 20;
-                        profPicView.layer.masksToBounds = YES;
-                        profPicView.accessibilityIdentifier = object.objectId;
-                        profPicView.userInteractionEnabled = YES;
-                        [friendScrollView addSubview:profPicView];
-                        
-                        UITapGestureRecognizer *gr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(showFriendProfile:)];
-                        [profPicView addGestureRecognizer:gr];
-                        
-                        UILabel *nameLabel = [[UILabel alloc] init];
-                        nameLabel.font = [UIFont fontWithName:@"OpenSans" size:7];
-                        nameLabel.textColor = [UIColor blackColor];
-                        nameLabel.textAlignment = NSTextAlignmentCenter;
-                        nameLabel.text = object[@"firstName"];
-                        nameLabel.frame = CGRectMake(5 + (50 * friendCount), 42, 30, 8);
-                        [friendScrollView addSubview:nameLabel];
-                        
-                        friendScrollView.contentSize = CGSizeMake((50 * friendCount) + 40, 50);
-                        
-                        //[self friendsUpdateFrameBy:50];
-                        
-                        if ([bestFriendIds containsObject:object[@"FBObjectID"]]) {
-                            
-                            UIImageView *starImageView = [[UIImageView alloc] initWithFrame:CGRectMake(50 * friendCount + 25, 0, 15, 15)];
-                            starImageView.image = [UIImage imageNamed:@"star-blue-bordered"];
-                            [friendScrollView addSubview:starImageView];
-                        }
-                        
-                        [card.interestedIds addObject:object[@"FBObjectID"]];
-                        [card.interestedNames addObject:[NSString stringWithFormat:@"%@ %@", object[@"firstName"], object[@"lastName"]]];
-                        //[interestedPics addObject:profPicView];
-                        
-                        friendCount++;
-                        
-                        if (friendCount == 1) {
-                            card.friendsInterested.text = [NSString stringWithFormat:@"%d friend interested", friendCount - 1];
-                        } else {
-                            card.friendsInterested.text = [NSString stringWithFormat:@"%d friends interested", friendCount - 1];
-                        }
-                        
-                    }
-                    
-                    if (objects.count > 4) {
-                        
-                        card.friendArrow.alpha = 1;
-                    }
-                    
-                    if (objects.count == 0) {
-                       // NSLog(@"No new friends");
-                        
-                        //[self noFriendsAddButton:friendScrollView];
-                        
-                    }
-                }
-                
-            }];
-            
-        }];
-        
-    } else {
-        
-        NSLog(@"no token......");
+    NSArray *friends = [PFUser currentUser][@"friends"];
+    NSMutableArray *idsArray = [NSMutableArray array];
+    for (NSDictionary *dict in friends) {
+        [idsArray addObject:[dict valueForKey:@"id"]];
     }
     
-}
-
--(void)showFriendProfile:(UITapGestureRecognizer *)gr {
+    __block int friendCount = 0;
     
-    UIView *view = gr.view;
-    self.myViewController.friendObjectID = view.accessibilityIdentifier;
-    [self.myViewController showFriendProfile:gr];
+    PFQuery *friendQuery = [PFQuery queryWithClassName:@"Swipes"];
+    [friendQuery whereKey:@"FBObjectID" containedIn:idsArray];
+    [friendQuery whereKey:@"EventID" equalTo:card.objectID];
+    [friendQuery whereKey:@"swipedRight" equalTo:@YES];
     
-}
-
--(void)inviteHomies {
-    [self.myViewController inviteHomies];
+    PFQuery *userQuery = [PFUser query];
+    [userQuery whereKey:@"objectId" matchesKey:@"UserID" inQuery:friendQuery];
+    
+    [userQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+        
+       // NSLog(@"%lu friends interested", (unsigned long)objects.count);
+        
+        if (!error) {
+            
+            NSMutableArray *orderedObjects = [NSMutableArray arrayWithArray:objects];
+            
+            for (PFObject *object in objects) {
+                
+                if ([bestFriendIds containsObject:object[@"FBObjectID"]]) {
+                    [orderedObjects removeObject:object];
+                    [orderedObjects insertObject:object atIndex:0];
+                }
+                
+            }
+            
+            for (PFObject *object in orderedObjects) {
+                
+                FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(50 * friendCount, 0, 40, 40)]; // initWithProfileID:user[@"FBObjectID"] pictureCropping:FBSDKProfilePictureModeSquare];
+                profPicView.profileID = object[@"FBObjectID"];
+                profPicView.pictureMode = FBSDKProfilePictureModeSquare;
+                
+                profPicView.layer.cornerRadius = 20;
+                profPicView.layer.masksToBounds = YES;
+                profPicView.accessibilityIdentifier = object.objectId;
+                profPicView.userInteractionEnabled = YES;
+                [friendScrollView addSubview:profPicView];
+                
+                UITapGestureRecognizer *gr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(showFriendProfile:)];
+                [profPicView addGestureRecognizer:gr];
+                
+                UILabel *nameLabel = [[UILabel alloc] init];
+                nameLabel.font = [UIFont fontWithName:@"OpenSans" size:7];
+                nameLabel.textColor = [UIColor blackColor];
+                nameLabel.textAlignment = NSTextAlignmentCenter;
+                nameLabel.text = object[@"firstName"];
+                nameLabel.frame = CGRectMake(5 + (50 * friendCount), 42, 30, 8);
+                [friendScrollView addSubview:nameLabel];
+                
+                friendScrollView.contentSize = CGSizeMake((50 * friendCount) + 40, 50);
+                
+                //[self friendsUpdateFrameBy:50];
+                
+                if ([bestFriendIds containsObject:object[@"FBObjectID"]]) {
+                    
+                    UIImageView *starImageView = [[UIImageView alloc] initWithFrame:CGRectMake(50 * friendCount + 25, 0, 15, 15)];
+                    starImageView.image = [UIImage imageNamed:@"star-blue-bordered"];
+                    [friendScrollView addSubview:starImageView];
+                }
+                
+                [card.interestedIds addObject:object[@"FBObjectID"]];
+                [card.interestedNames addObject:[NSString stringWithFormat:@"%@ %@", object[@"firstName"], object[@"lastName"]]];
+                //[interestedPics addObject:profPicView];
+                
+                friendCount++;
+                
+                if (friendCount == 1) {
+                    card.friendsInterested.text = [NSString stringWithFormat:@"%d friend interested", friendCount - 1];
+                } else {
+                    card.friendsInterested.text = [NSString stringWithFormat:@"%d friends interested", friendCount - 1];
+                }
+                
+            }
+            
+            if (objects.count > 4) {
+                
+                card.friendArrow.alpha = 1;
+            }
+            
+            if (objects.count == 0) {
+               // NSLog(@"No new friends");
+                
+                //[self noFriendsAddButton:friendScrollView];
+                
+            }
+        }
+        
+    }];
+    
 }
 
 //%%% action called when the card goes to the left.
 // This should be customized with your own action
 -(void)cardSwipedLeft:(UIView *)card fromExpandedView:(BOOL)expandedBool
 {
+    Rdio *rdio = [AppDelegate sharedRdio];
+    [rdio.player stop];
+    
     //do whatever you want with the card that was swiped
     DraggableView *c = (DraggableView *)card;
     
@@ -1136,6 +1111,9 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 // This should be customized with your own action
 -(void)cardSwipedRight:(UIView *)card fromExpandedView:(BOOL)expandedBool isGoing:(BOOL)isGoing
 {
+    Rdio *rdio = [AppDelegate sharedRdio];
+    [rdio.player stop];
+    
     //do whatever you want with the card that was swiped
     DraggableView *c = (DraggableView *)card;
     
@@ -1164,11 +1142,14 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     
     if (![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
 
+        NSString *locString = [dragView.location.text stringByReplacingOccurrencesOfString:@"at " withString:@""];
+        NSString *name = [NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]];
+        
         [PFCloud callFunctionInBackground:@"swipeRight"
-                           withParameters:@{@"user":user.objectId, @"event":dragView.objectID, @"fbID":user[@"FBObjectID"], @"fbToken":[FBSDKAccessToken currentAccessToken].tokenString, @"title":dragView.title.text, @"loc":dragView.location.text}
+                           withParameters:@{@"user":user.objectId, @"event":dragView.objectID, @"fbID":user[@"FBObjectID"], @"fbToken":[FBSDKAccessToken currentAccessToken].tokenString, @"title":dragView.title.text, @"loc":locString, @"isGoing":@(isGoing), @"name":name, @"eventDate":dragView.eventObject[@"Date"]}
                                     block:^(NSString *result, NSError *error) {
                                         if (!error) {
-                                            // result is @"Hello world!"
+
                                             //NSLog(@"%@", result);
                                         }
                                     }];
@@ -1178,8 +1159,8 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                        withParameters:@{@"userID":user.objectId, @"eventID":dragView.objectID, @"swiped":@"right"}
                                 block:^(NSString *result, NSError *error) {
                                     if (!error) {
-                                        // result is @"Hello world!"
-                                        NSLog(@"%@", result);
+
+                                        //NSLog(@"%@", result);
                                     }
                                 }];
     
@@ -1191,90 +1172,86 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     PFQuery *swipesQuery = [PFQuery queryWithClassName:@"Swipes"];
     [swipesQuery whereKey:@"EventID" equalTo:dragView.objectID];
     [swipesQuery whereKey:@"UserID" equalTo:user.objectId];
-    
-    PFObject *swipesObject = [PFObject objectWithClassName:@"Swipes"];
-    
-        [swipesQuery countObjectsInBackgroundWithBlock:^(int count, NSError *error) {
-            
-            if (count > 0) {
-                
-                NSLog(@"SECOND time Swiping");
-                
-                [swipesQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error){
-                    
-                    object[@"swipedAgain"] = @YES;
-                    object[@"swipedAgain"] = @NO;
-                    object[@"swipedRight"] = @YES;
-                    object[@"isGoing"] = @(isGoing);
-                    
-                    if (loadedCards.count == 0) {
-                        
-                        [object saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
-                            
-                            if (succeeded) {
-                                
-                                if (!shouldLimit || events.count != 10) {
-                                    [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"noMoreEvents"];
-                                    [[NSUserDefaults standardUserDefaults] synchronize];
-                                }
-                                [self.myViewController refreshData];
-                            }
-                            
-                        }];
-                        
-                    } else {
-                        [object saveInBackground];
+    [swipesQuery fromLocalDatastore];
 
+    [swipesQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error){
+       
+        if (!error) {
+            
+            NSLog(@"SECOND time Swiping");
+        
+            object[@"swipedAgain"] = @YES;
+            object[@"swipedAgain"] = @NO;
+            object[@"swipedRight"] = @YES;
+            object[@"isGoing"] = @(isGoing);
+            
+            if (loadedCards.count == 0) {
+                
+                [object saveEventually:^(BOOL succeeded, NSError *error) {
+                    
+                    if (succeeded) {
+                        
+                        if (!shouldLimit || events.count != 10) {
+                            [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"noMoreEvents"];
+                            [[NSUserDefaults standardUserDefaults] synchronize];
+                        }
+                        [self.myViewController refreshData];
                     }
                     
                 }];
                 
-                
             } else {
                 
-                NSLog(@"FIRST time Swiping");
-                
-                PFObject *swipesObject = [PFObject objectWithClassName:@"Swipes"];
-                swipesObject[@"UserID"] = user.objectId;
-                if (![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
-                    swipesObject[@"username"] = user.username;
-                }
-                swipesObject[@"EventID"] = c.objectID;
-                swipesObject[@"swipedRight"] = @YES;
-                swipesObject[@"swipedLeft"] = @NO;
-                swipesObject[@"isGoing"] = @(isGoing);
-                
-                if (shouldLimit) {
-                    swipesObject[@"swipedAgain"] = @YES;
-                }
-                
-                if ([[PFUser currentUser][@"socialMode"] isEqualToNumber:@YES] && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
-                    swipesObject[@"FBObjectID"] = user[@"FBObjectID"];
-                }
-                
-                if (loadedCards.count == 0) {
-                    
-                    [swipesObject saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
-                        
-                        if (succeeded) {
-                            
-                            if (!shouldLimit || events.count != 10) {
-                                [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"noMoreEvents"];
-                                [[NSUserDefaults standardUserDefaults] synchronize];
-                            }
-                            [self.myViewController refreshData];
-                        }
-                        
-                    }];
-                    
-                } else {
-                    [swipesObject saveInBackground];
-                }
+                [object saveEventually];
+
+            }
+        
+        } else {
             
+            NSLog(@"FIRST time Swiping");
+            
+            PFObject *swipesObject = [PFObject objectWithClassName:@"Swipes"];
+            swipesObject[@"UserID"] = user.objectId;
+            if (![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
+                swipesObject[@"username"] = user.username;
+            }
+            swipesObject[@"EventID"] = c.objectID;
+            swipesObject[@"swipedRight"] = @YES;
+            swipesObject[@"swipedLeft"] = @NO;
+            swipesObject[@"isGoing"] = @(isGoing);
+            [swipesObject pinInBackground];
+            
+            if (shouldLimit) {
+                swipesObject[@"swipedAgain"] = @YES;
             }
             
-        }];
+            if ([[PFUser currentUser][@"socialMode"] isEqualToNumber:@YES] && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
+                swipesObject[@"FBObjectID"] = user[@"FBObjectID"];
+            }
+            
+            if (loadedCards.count == 0) {
+                
+                [swipesObject saveEventually:^(BOOL succeeded, NSError *error) {
+                    
+                    if (succeeded) {
+                        
+                        if (!shouldLimit || events.count != 10) {
+                            [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"noMoreEvents"];
+                            [[NSUserDefaults standardUserDefaults] synchronize];
+                        }
+                        [self.myViewController refreshData];
+                    }
+                    
+                }];
+                
+            } else {
+                [swipesObject pinInBackground];
+                [swipesObject saveEventually];
+            }
+        }
     
+    }];
+        
     if (isGoing) {
         [self swipeDownForWhat:c];
     }
@@ -1513,7 +1490,9 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 
 }
 
-- (void)shareAction:(id)sender {
+#pragma delegate methods for draggableview
+
+- (void)shareButtonTap:(id)sender {
     [self.myViewController shareAction:sender];
 }
 
@@ -1528,6 +1507,27 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 - (void)moreButtonTap {
     [self.myViewController showMoreDetail];
 }
+
+-(void)inviteButtonTap {
+    [self.myViewController inviteHomies];
+}
+
+-(void)mapViewTap {
+    [self.myViewController mapViewTap];
+}
+
+-(void)ticketsButtonTap:(id)sender {
+    [self.myViewController ticketsButtonTapped:sender];
+}
+
+-(void)showFriendProfile:(UITapGestureRecognizer *)gr {
+    
+    UIView *view = gr.view;
+    self.myViewController.friendObjectID = view.accessibilityIdentifier;
+    [self.myViewController showFriendProfile:gr];
+    
+}
+
 
 - (NSMutableArray *) setCategories {
     

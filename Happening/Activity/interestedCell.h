@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <Parse/Parse.h>
 
 @interface interestedCell : UITableViewCell
 
@@ -17,5 +18,7 @@
 @property (strong, nonatomic) IBOutlet UIImageView *eventImageView;
 
 @property (strong, nonatomic) IBOutlet UIButton *likeButton;
+
+@property (strong, nonatomic) PFObject *eventObject;
 
 @end

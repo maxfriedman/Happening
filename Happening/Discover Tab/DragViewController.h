@@ -37,6 +37,7 @@
 - (void)tutorialCardTapped:(UIView *)view ;
 - (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event;
 - (void)shareAction:(id)sender;
+- (void)ticketsButtonTapped:(id)sender;
 - (void)showCreatedByProfile;
 - (void)showMoreDetail;
 - (void)showEditEventVCWithEvent:(EKEvent *)event eventStore:(EKEventStore *)es;
@@ -45,6 +46,7 @@
 - (void)inviteHomies;
 - (void)updateTopLabel;
 - (void)swipeDown:(UIView *)card;
+- (void)mapViewTap;
 
 @property (weak) id <DragViewControllerDelegate> delegate;
 

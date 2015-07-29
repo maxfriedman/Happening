@@ -20,6 +20,7 @@
 
 @property (weak) id <GroupDetailsTVCDelegate> delegate;
 
+@property (strong, nonatomic) IBOutlet UIBarButtonItem *editItem;
 @property PFObject *group;
 @property (strong, nonatomic) IBOutlet UIImageView *groupImageView;
 @property (strong, nonatomic) IBOutlet UILabel *groupNameLabel;

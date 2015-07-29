@@ -14,6 +14,7 @@
 #import "moreDetailFromTable.h"
 #import <Parse/Parse.h>
 #import <FBSDKCoreKit/FBSDKCoreKit.h>
+#import "ExpandedCardVC.h"
 
 @interface ExternalProfileTVC ()
 
@@ -239,6 +240,8 @@
     NSArray *eventsOnThisDay = [self.sections objectForKey:dateRepresentingThisDay];
     
     PFObject *Event = eventsOnThisDay[indexPath.row];
+    
+    cell.eventObject = Event;
     
     [cell.titleLabel setText:[NSString stringWithFormat:@"%@",Event[@"Title"]]];
     
@@ -602,7 +605,20 @@
     
         vc.hidesBottomBarWhenPushed = YES;
         
+    } else if ([segue.identifier isEqualToString:@"toEvent"]) {
+        
+        NSIndexPath *selectedIndexPath = [self.tableView indexPathForSelectedRow];
+        AttendTableCell *cell = (AttendTableCell *)[self.tableView cellForRowAtIndexPath:selectedIndexPath];
+        
+        ExpandedCardVC *vc = (ExpandedCardVC *)[[segue destinationViewController] topViewController];
+        vc.event = cell.eventObject;
+        vc.image = cell.eventImageView.image;
+        vc.eventID = cell.eventID;
+        vc.distanceString = cell.distance.text;
+        vc.presentedAsModal = YES;
+        
     }
+    
 }
 
 - (BOOL)prefersStatusBarHidden {

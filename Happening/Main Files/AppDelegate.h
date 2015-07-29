@@ -17,7 +17,7 @@
 #import "MHCustomTabBarController.h"
 #import <LayerKit/LayerKit.h>
 #import <LocationKit/LocationKit.h>
-
+#import <Rdio/Rdio.h>
 
 @interface AppDelegate : UIResponder <UIApplicationDelegate, CLLocationManagerDelegate, LocationKitDelegate>
 
@@ -45,6 +45,7 @@
 - (void)loadGroups;
 - (void)loadEvents;
 
++ (Rdio *)sharedRdio;
 
 @end
 

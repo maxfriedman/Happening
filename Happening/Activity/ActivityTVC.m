@@ -13,18 +13,25 @@
 #import "matchesCell.h"
 #import <FBSDKCoreKit/FBSDKCoreKit.h>
 #import "ExpandedCardVC.h"
+#import "ExternalProfileTVC.h"
 
-@interface ActivityTVC () <UIScrollViewDelegate>
+@interface ActivityTVC () <UIScrollViewDelegate, UITableViewDataSource, UITableViewDelegate>
+
+@property NSMutableArray *MEactivityObjects;
+@property NSMutableArray *FRIENDSactivityObjects;
 
 @end
 
 @implementation ActivityTVC {
     
     BOOL meButtonPressed;
+    NSString *selectedFriendId;
+    NSArray *funnyEndings;
+    NSMutableDictionary *eventObjectDict;
     
 }
 
-@synthesize meButton, sliderView, friendsButton, containerView;
+@synthesize meButton, sliderView, friendsButton, containerView, MEactivityObjects, FRIENDSactivityObjects;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -35,36 +42,205 @@
     
     meButtonPressed = NO;
     
+    selectedFriendId = @"";
     
     // The className to query on
-    self.parseClassName = @"Activity";
+    //self.parseClassName = @"Activity";
     
     // The key of the PFObject to display in the label of the default cell style
-    self.textKey = @"Title";
+    //self.textKey = @"Title";
     
     // The title for this table in the Navigation Controller.
-    self.title = @"Activity";
+    //self.title = @"Activity";
     
     // Whether the built-in pull-to-refresh is enabled
-    self.pullToRefreshEnabled = YES;
+    //self.pullToRefreshEnabled = YES;
     
     // Whether the built-in pagination is enabled
-    self.paginationEnabled = YES;
+    //self.paginationEnabled = YES;
     
     // The number of objects to show per page
-    self.objectsPerPage = 15;
+    //self.objectsPerPage = 15;
     
     [self.tableView setSeparatorInset:UIEdgeInsetsZero];
     [self.tableView setSeparatorColor:[UIColor colorWithRed:210.0/255 green:210.0/255 blue:210.0/255 alpha:1.0]];
     [self.tableView setSeparatorStyle:UITableViewCellSeparatorStyleSingleLine];
     
+    funnyEndings = @[@" Hold the applause.", @" Hollah!", @" Now it's a party.", @" About time.", @" Heck yes.", @" Aw yeah.", @" *Air five*", @" Whoop whoop.", @" *fist pump*", @" *slow clap*", @" *fist bump*", @" Turn up?", @" Leggo.", @" Booyah.", @" Oh ya.", @" Awesome sauce.", @" &$^* #@*&%!!!"];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
-    [self loadObjects];
+    if (!MEactivityObjects || !FRIENDSactivityObjects) {
+        MEactivityObjects = [NSMutableArray array];
+        FRIENDSactivityObjects = [NSMutableArray array];
+        eventObjectDict = [NSMutableDictionary dictionary];
+        [self loadObjectsFromCache];
+    } else {
+        [self checkForUpdatedActivities];
+    }
+    
+    
 }
+
+- (void)loadObjectsFromCache {
+    
+    
+    NSArray *friends = [[PFUser currentUser] objectForKey:@"friends"];
+    NSMutableArray *idsArray = [NSMutableArray new];
+    for (NSDictionary *dict in friends) {
+        [idsArray addObject:[dict valueForKey:@"parseId"]];
+    }
+    
+    PFQuery *finalQuery = [PFQuery queryWithClassName:@"Activity"];
+    
+    /*
+     PFQuery *reminderQuery = [PFQuery queryWithClassName:@"Activity"];
+     [reminderQuery whereKey:@"type" equalTo:@"reminder"];
+     [reminderQuery whereKey:@"userParseId" equalTo:[PFUser currentUser].objectId];
+     
+     PFQuery *friendJoinedQuery = [PFQuery queryWithClassName:@"Activity"];
+     [friendJoinedQuery whereKey:@"type" equalTo:@"friendJoined"];
+     [friendJoinedQuery whereKey:@"userParseId" containedIn:idsArray];
+     
+     
+     PFQuery *interestedQuery = [PFQuery queryWithClassName:@"Activity"];
+     [interestedQuery whereKey:@"type" equalTo:@"interested"];
+     [interestedQuery whereKey:@"userParseId" containedIn:idsArray];
+     
+     finalQuery = [PFQuery orQueryWithSubqueries:[NSArray arrayWithObjects:reminderQuery,friendJoinedQuery,interestedQuery, nil]];
+     */
+    
+    //[finalQuery includeKey:@"eventObject"];
+    [finalQuery orderByAscending:@"createdAt"];
+    [finalQuery fromLocalDatastore];
+    
+    [finalQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+        
+        if (!error) {
+            
+            for (PFObject *object in objects) {
+                
+                [object pinInBackground];
+                
+                NSString *type = object[@"type"];
+                
+                if ([type isEqualToString:@"interested"] || [type isEqualToString:@"match"] || [type isEqualToString:@"going"]) {
+                    
+                    if (object[@"eventId"] != nil)
+                        [eventObjectDict setObject:[NSMutableDictionary dictionary] forKey:object[@"eventId"]];
+                    [FRIENDSactivityObjects addObject:object];
+                    
+                } else if ([type isEqualToString:@"reminder"] || [type isEqualToString:@"match"] || [type isEqualToString:@"friendJoined"]) {
+                    
+                    if (object[@"eventId"] != nil)
+                        [eventObjectDict setObject:[NSMutableDictionary dictionary] forKey:object[@"eventId"]];
+                    [MEactivityObjects addObject:object];
+                    
+                }
+                
+            }
+            
+            [self.tableView reloadData];
+            [self checkForUpdatedActivities];
+            
+        } else {
+            
+            NSLog(@"Error loading activity objects: %@", error);
+        }
+        
+    }];
+
+}
+
+- (void)checkForUpdatedActivities {
+    
+    
+    NSArray *friends = [[PFUser currentUser] objectForKey:@"friends"];
+    NSMutableArray *idsArray = [NSMutableArray new];
+    for (NSDictionary *dict in friends) {
+        [idsArray addObject:[dict valueForKey:@"parseId"]];
+    }
+    
+    PFQuery *finalQuery = [PFQuery queryWithClassName:@"Activity"];
+    
+    //if (meButtonPressed) {
+    
+    PFQuery *reminderQuery = [PFQuery queryWithClassName:@"Activity"];
+    [reminderQuery whereKey:@"type" equalTo:@"reminder"];
+    [reminderQuery whereKey:@"userParseId" equalTo:[PFUser currentUser].objectId];
+    
+    PFQuery *friendJoinedQuery = [PFQuery queryWithClassName:@"Activity"];
+    [friendJoinedQuery whereKey:@"type" equalTo:@"friendJoined"];
+    [friendJoinedQuery whereKey:@"userParseId" containedIn:idsArray];
+    
+    //finalQuery = [PFQuery orQueryWithSubqueries:[NSArray arrayWithObjects:reminderQuery, friendJoinedQuery, nil]];
+    
+    //} else {
+    
+    PFQuery *interestedQuery = [PFQuery queryWithClassName:@"Activity"];
+    [interestedQuery whereKey:@"type" equalTo:@"interested"];
+    [interestedQuery whereKey:@"userParseId" containedIn:idsArray];
+    
+    finalQuery = [PFQuery orQueryWithSubqueries:[NSArray arrayWithObjects:reminderQuery,friendJoinedQuery,interestedQuery, nil]];
+    //}
+    
+    [finalQuery includeKey:@"eventObject"];
+    [finalQuery orderByDescending:@"createdAt"];
+    
+    NSArray *friendsArrayCopy = [NSArray arrayWithArray:FRIENDSactivityObjects];
+    NSArray *meArrayCopy = [NSArray arrayWithArray:MEactivityObjects];
+    
+    [finalQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+        
+        if (!error) {
+            
+            BOOL shouldReload = NO;
+            
+            for (PFObject *object in objects) {
+                
+                [object pinInBackground];
+                
+                NSString *type = object[@"type"];
+                
+                if ([type isEqualToString:@"interested"] || [type isEqualToString:@"match"] || [type isEqualToString:@"going"]) {
+                    
+                    if (![FRIENDSactivityObjects containsObject:object]) {
+                        [object pinInBackground];
+                        if (object[@"eventId"] != nil)
+                            [eventObjectDict setObject:[NSMutableDictionary dictionary] forKey:object[@"eventId"]];
+                        shouldReload = YES;
+                        [FRIENDSactivityObjects insertObject:object atIndex:0];
+                    }
+                    
+                } else if ([type isEqualToString:@"reminder"] || [type isEqualToString:@"match"] || [type isEqualToString:@"friendJoined"]) {
+                    
+                    if (![MEactivityObjects containsObject:object]) {
+                        [object pinInBackground];
+                        if (object[@"eventId"] != nil)
+                            [eventObjectDict setObject:[NSMutableDictionary dictionary] forKey:object[@"eventId"]];
+                        shouldReload = YES;
+                        [MEactivityObjects insertObject:object atIndex:0];
+                    }
+                }
+                
+            }
+            
+            if (shouldReload) {
+                NSLog(@"New activities! Updating...");
+                [self.tableView reloadData];
+            }
+            
+        } else {
+            
+            NSLog(@"Error loading activity objects: %@", error);
+        }
+        
+    }];
+    
+}
+
 
 -(void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath
 {
@@ -84,7 +260,6 @@
     }
 }
 
-#pragma mark - View lifecycle
 
 - (void)didReceiveMemoryWarning
 {
@@ -94,20 +269,13 @@
     // Release any cached data, images, etc that aren't in use.
 }
 
-#pragma mark - Parse
-
-- (void)objectsDidLoad:(NSError *)error {
-    [super objectsDidLoad:error];
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     
-    // This method is called every time objects are loaded from Parse via the PFQuery
-}
-
-- (void)objectsWillLoad {
-    [super objectsWillLoad];
+    if (meButtonPressed)
+        return MEactivityObjects.count;
     
-    // This method is called before a PFQuery is fired to get more objects
+    return FRIENDSactivityObjects.count;
 }
-
 
 // Override to customize what kind of query to perform on the class. The default is to query for
 // all objects ordered by createdAt descending.
@@ -147,10 +315,7 @@
     
     // If no objects are loaded in memory, we look to the cache first to fill the table
     // and then subsequently do a query against the network.
-    if ([self.objects count] == 0) {
-        //query.cachePolicy = kPFCachePolicyCacheThenNetwork;
-        //[finalQuery fromLocalDatastore];
-    }
+
     
     //[query orderByAscending:@"priority"];
     
@@ -161,8 +326,9 @@
 
 // Override to customize the look of a cell representing an object. The default is to display
 // a UITableViewCellStyleDefault style cell with the label being the first key in the object.
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath object:(PFObject *)object {
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
     
+    PFObject *object = [self objectAtIndex:indexPath.row];
     NSString *type = object[@"type"];
     
     if ([type isEqualToString:@"interested"]) {
@@ -181,11 +347,13 @@
             
             profPicView.layer.cornerRadius = 25/2;
             profPicView.layer.masksToBounds = YES;
-            profPicView.accessibilityIdentifier = object.objectId;
+            profPicView.accessibilityIdentifier = object[@"userParseId"];
             profPicView.userInteractionEnabled = YES;
             
             profPicView.tag = 99;
             [cell addSubview:profPicView];
+            
+            [profPicView addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(profileTapped:)]];
         }
         
         UIFont *font = [UIFont fontWithName:@"OpenSans-Semibold" size:10.0];
@@ -198,23 +366,65 @@
         
         cell.messageLabel.attributedText = aAttrString1;
         
-        PFObject *event = object[@"eventObject"];
-        
-        cell.eventTitleLabel.text = event[@"Title"];
-        cell.eventLocLabel.text = event[@"Location"];
+        cell.eventTitleLabel.text = object[@"eventName"];
+        cell.eventLocLabel.text = object[@"eventLoc"];
         
         NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
         [formatter setDateFormat:@"EEE, MMM d"];
-        NSDate *eventDate = event[@"Date"];
+        NSDate *eventDate = object[@"eventDate"];
         cell.eventDateLabel.text = [formatter stringFromDate:eventDate];
-
-        cell.eventImageView.image = [UIImage imageNamed:event[@"Hashtag"]];
-        PFFile *file = event[@"Image"];
-        if (file) {
-            [file getDataInBackgroundWithBlock:^(NSData *data, NSError *error) {
-                
-                cell.eventImageView.image = [UIImage imageWithData:data];
+        
+        NSMutableDictionary *eventDict = [eventObjectDict objectForKey:object[@"eventId"]];
+        
+        if ([eventDict objectForKey:@"event"] == nil) {
+            PFObject *event = object[@"eventObject"];
+            [event fetchInBackgroundWithBlock:^(PFObject *event, NSError *error) {
+                [eventDict setObject:event forKey:@"event"];
+                cell.eventObject = event;
+                PFFile *file = event[@"Image"];
+                cell.eventImageView.alpha = 0;
+                if (file) {
+                    [file getDataInBackgroundWithBlock:^(NSData *data, NSError *error) {
+                        cell.eventImageView.image = [UIImage imageWithData:data];
+                        [eventDict setObject:cell.eventImageView.image forKey:@"image"];
+                        [UIView animateWithDuration:0.2 animations:^{
+                            cell.eventImageView.alpha = 1.0;
+                        }];
+                    }];
+                } else {
+                    cell.eventImageView.image = [UIImage imageNamed:event[@"Hashtag"]];
+                    [eventDict setObject:cell.eventImageView.image forKey:@"image"];
+                    [UIView animateWithDuration:0.2 animations:^{
+                        cell.eventImageView.alpha = 1.0;
+                    }];
+                }
             }];
+            
+        } else if ([eventDict objectForKey:@"image"] == nil) {
+            
+            PFObject *event = [eventDict objectForKey:@"event"];
+            PFFile *file = event[@"Image"];
+            cell.eventImageView.alpha = 0;
+            if (file) {
+                [file getDataInBackgroundWithBlock:^(NSData *data, NSError *error) {
+                    cell.eventImageView.image = [UIImage imageWithData:data];
+                    [eventDict setObject:cell.eventImageView.image forKey:@"image"];
+                    [UIView animateWithDuration:0.2 animations:^{
+                        cell.eventImageView.alpha = 1.0;
+                    }];
+                }];
+            } else {
+                cell.eventImageView.image = [UIImage imageNamed:event[@"Hashtag"]];
+                [eventDict setObject:cell.eventImageView.image forKey:@"image"];
+                [UIView animateWithDuration:0.2 animations:^{
+                    cell.eventImageView.alpha = 1.0;
+                }];
+            }
+            
+        } else {
+        
+            cell.eventObject = [eventDict objectForKey:@"event"];
+            cell.eventImageView.image = [eventDict objectForKey:@"image"];
         }
         
         return cell;
@@ -231,36 +441,78 @@
         UITapGestureRecognizer *gr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(showFriendProfile:)];
         [profPicView addGestureRecognizer:gr]; */
         
-        PFObject *event = object[@"eventObject"];
-        
         UIFont *font = [UIFont fontWithName:@"OpenSans-Semibold" size:10.0];
         NSMutableDictionary *attrsDictionary = [NSMutableDictionary dictionaryWithObject:font
                                                                                   forKey:NSFontAttributeName];
         //[attrsDictionary setObject:[UIColor colorWithRed:0.0/255 green:176.0/255 blue:242.0/255 alpha:1.0] forKey:NSForegroundColorAttributeName];
         NSMutableAttributedString *aAttrString1 = [[NSMutableAttributedString alloc] initWithString:@"Reminder: " attributes:attrsDictionary];
         NSMutableAttributedString *aAttrString2 = [[NSMutableAttributedString alloc] initWithString:@"event starts in "];
-        NSString *timeFromNow = [NSString stringWithFormat:@"%.f minutes.", [event[@"Date"] timeIntervalSinceNow] / 60];
+        NSString *timeFromNow = [NSString stringWithFormat:@"%.f minutes.", [object[@"eventDate"] timeIntervalSinceNow] / 60];
         NSMutableAttributedString *aAttrString3 = [[NSMutableAttributedString alloc] initWithString:timeFromNow attributes:attrsDictionary];
         [aAttrString1 appendAttributedString:aAttrString2];
         [aAttrString1 appendAttributedString:aAttrString3];
         
         cell.messageLabel.attributedText = aAttrString1;
         
-        cell.eventTitleLabel.text = event[@"Title"];
-        cell.eventLocationLabel.text = event[@"Location"];
+        cell.eventTitleLabel.text = object[@"eventName"];
+        cell.eventLocationLabel.text = object[@"eventLoc"];
         
         NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
         [formatter setDateFormat:@"EEE, MMM d"];
-        NSDate *eventDate = event[@"Date"];
+        NSDate *eventDate = object[@"eventDate"];
         cell.eventDateLabel.text = [formatter stringFromDate:eventDate];
         
-        cell.eventImageView.image = [UIImage imageNamed:event[@"Hashtag"]];
-        PFFile *file = event[@"Image"];
-        if (file) {
-            [file getDataInBackgroundWithBlock:^(NSData *data, NSError *error) {
-                
-                cell.eventImageView.image = [UIImage imageWithData:data];
+        NSMutableDictionary *eventDict = [eventObjectDict objectForKey:object[@"eventId"]];
+        
+        if ([eventDict objectForKey:@"event"] == nil) {
+            PFObject *event = object[@"eventObject"];
+            [event fetchInBackgroundWithBlock:^(PFObject *event, NSError *error) {
+                [eventDict setObject:event forKey:@"event"];
+                cell.eventObject = event;
+                PFFile *file = event[@"Image"];
+                cell.eventImageView.alpha = 0;
+                if (file) {
+                    [file getDataInBackgroundWithBlock:^(NSData *data, NSError *error) {
+                        cell.eventImageView.image = [UIImage imageWithData:data];
+                        [eventDict setObject:cell.eventImageView.image forKey:@"image"];
+                        [UIView animateWithDuration:0.2 animations:^{
+                            cell.eventImageView.alpha = 1.0;
+                        }];
+                    }];
+                } else {
+                    cell.eventImageView.image = [UIImage imageNamed:event[@"Hashtag"]];
+                    [eventDict setObject:cell.eventImageView.image forKey:@"image"];
+                    [UIView animateWithDuration:0.2 animations:^{
+                        cell.eventImageView.alpha = 1.0;
+                    }];
+                }
             }];
+            
+        } else if ([eventDict objectForKey:@"image"] == nil) {
+            
+            PFObject *event = [eventDict objectForKey:@"event"];
+            PFFile *file = event[@"Image"];
+            cell.eventImageView.alpha = 0;
+            if (file) {
+                [file getDataInBackgroundWithBlock:^(NSData *data, NSError *error) {
+                    cell.eventImageView.image = [UIImage imageWithData:data];
+                    [eventDict setObject:cell.eventImageView.image forKey:@"image"];
+                    [UIView animateWithDuration:0.2 animations:^{
+                        cell.eventImageView.alpha = 1.0;
+                    }];
+                }];
+            } else {
+                cell.eventImageView.image = [UIImage imageNamed:event[@"Hashtag"]];
+                [eventDict setObject:cell.eventImageView.image forKey:@"image"];
+                [UIView animateWithDuration:0.2 animations:^{
+                    cell.eventImageView.alpha = 1.0;
+                }];
+            }
+            
+        } else {
+            
+            cell.eventObject = [eventDict objectForKey:@"event"];
+            cell.eventImageView.image = [eventDict objectForKey:@"image"];
         }
         
         return cell;
@@ -274,7 +526,6 @@
         }
         
         
-        
         return cell;
 
     } else if ([type isEqualToString:@"friendJoined"]) {
@@ -284,6 +535,8 @@
         if (cell == nil) {
             cell = [[friendJoinedCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
         }
+        
+        cell.activityObject = object;
         
         if (![cell viewWithTag:99]) {
             FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(5, 5, 34, 34)];
@@ -299,7 +552,10 @@
             [cell addSubview:profPicView];
         }
         
-        cell.messageLabel.text = [NSString stringWithFormat:@"Your Facebook friend %@ just joined Happening. Hold the applause.", object[@"userFullName"]];
+        cell.messageLabel.text = [NSString stringWithFormat:@"Your Facebook friend %@ just joined Happening.", object[@"userFullName"]];
+        NSUInteger randomIndex = arc4random() % [funnyEndings count];
+        
+        cell.messageLabel.text = [cell.messageLabel.text stringByAppendingString:funnyEndings[randomIndex]];
         
         return cell;
         
@@ -315,42 +571,48 @@
     return cell;
 }
 
+- (PFObject *)objectAtIndex:(NSInteger)index {
+    
+    if (meButtonPressed)
+        return MEactivityObjects[index];
+    
+    return FRIENDSactivityObjects[index];
+}
+
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     
     
-    if (indexPath.row < self.objectsPerPage) {
-        
-        PFObject *object = [self objectAtIndexPath:indexPath];
-        
-        if (object) {
-            
-            NSString *type = [object objectForKey:@"type"];
-
-            if ([type isEqualToString:@"interested"]) {
-                
-                return 70;
-                
-            } else if ([type isEqualToString:@"reminder"]) {
-                
-                return 70;
-                
-            } else if ([type isEqualToString:@"match"]) {
-                
-                return 44;
-                
-            } else if ([type isEqualToString:@"friendJoined"]) {
-                
-                return 44;
-                
-            }
-        }
+    PFObject *object = [self objectAtIndex:indexPath.row];
     
+    if (object) {
+        
+        NSString *type = [object objectForKey:@"type"];
+
+        if ([type isEqualToString:@"interested"]) {
+            
+            return 70;
+            
+        } else if ([type isEqualToString:@"reminder"]) {
+            
+            return 70;
+            
+        } else if ([type isEqualToString:@"match"]) {
+            
+            return 44;
+            
+        } else if ([type isEqualToString:@"friendJoined"]) {
+            
+            return 44;
+            
+        }
     }
     
     return 44;
 }
 
 - (IBAction)meButtonPressed:(id)sender {
+    
+    NSLog(@"Made it");
     
     [meButton setTitleColor:[UIColor colorWithRed:0 green:176.0/255 blue:242.0/255 alpha:1.0] forState:UIControlStateNormal];
     [friendsButton setTitleColor:[UIColor darkTextColor] forState:UIControlStateNormal];
@@ -364,8 +626,9 @@
     }];
 
     meButtonPressed = YES;
-    [self clear];
-    [self loadObjects];
+    [self.tableView reloadData];
+    //[self clear];
+    //[self loadObjects];
 }
 
 - (IBAction)friendsButtonPressed:(id)sender {
@@ -380,8 +643,9 @@
     }];
     
     meButtonPressed = NO;
-    [self clear];
-    [self loadObjects];
+    [self.tableView reloadData];
+    //[self clear];
+    //[self loadObjects];
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
@@ -469,37 +733,44 @@
  }
  */
 
+- (void)profileTapped:(UIGestureRecognizer *)gr {
+    
+    FBSDKProfilePictureView *ppView = (FBSDKProfilePictureView *)gr.view;
+    selectedFriendId = ppView.accessibilityIdentifier;
+    [self performSegueWithIdentifier:@"toProf" sender:self];
+    
+}
+
 #pragma mark - Table view delegate
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    [super tableView:tableView didSelectRowAtIndexPath:indexPath];
+
+    PFObject *object = [self objectAtIndex:indexPath.row];
     
-    if (indexPath.row < self.objectsPerPage) {
+    if (object) {
         
-        PFObject *object = [self objectAtIndexPath:indexPath];
+        NSString *type = [object objectForKey:@"type"];
         
-        if (object) {
+        if ([type isEqualToString:@"interested"]) {
             
-            NSString *type = [object objectForKey:@"type"];
+            [self performSegueWithIdentifier:@"toEvent" sender:self];
             
-            if ([type isEqualToString:@"interested"]) {
-                
-                [self performSegueWithIdentifier:@"toEvent" sender:self];
-                
-            } else if ([type isEqualToString:@"reminder"]) {
-                
-                [self performSegueWithIdentifier:@"toEvent" sender:self];
-                
-            } else if ([type isEqualToString:@"match"]) {
-                
-                
-            } else if ([type isEqualToString:@"friendJoined"]) {
-                
-                    
-            }
+        } else if ([type isEqualToString:@"reminder"]) {
+            
+            [self performSegueWithIdentifier:@"toEvent" sender:self];
+            
+        } else if ([type isEqualToString:@"match"]) {
+            
+            
+        } else if ([type isEqualToString:@"friendJoined"]) {
+            
+            NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
+            friendJoinedCell *cell = (friendJoinedCell *)[self.tableView cellForRowAtIndexPath:indexPath];
+            selectedFriendId = cell.activityObject[@"userParseId"];
+            
+            [self performSegueWithIdentifier:@"toProf" sender:self];
         }
-        
     }
     
 }
@@ -521,51 +792,64 @@
         
         NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
         
-        if (indexPath.row < self.objectsPerPage) {
+        PFObject *object = [self objectAtIndex:indexPath.row];
+        
+        if (object) {
             
-            PFObject *object = [self objectAtIndexPath:indexPath];
+            NSString *type = [object objectForKey:@"type"];
             
-            if (object) {
+            if ([type isEqualToString:@"interested"]) {
                 
-                NSString *type = [object objectForKey:@"type"];
+                interestedCell *cell = (interestedCell *)[self.tableView cellForRowAtIndexPath:indexPath];
+                ExpandedCardVC *vc = (ExpandedCardVC *)[[segue destinationViewController] topViewController];
                 
-                if ([type isEqualToString:@"interested"]) {
-                    
-                    interestedCell *cell = (interestedCell *)[self.tableView cellForRowAtIndexPath:indexPath];
-                    PFObject *event = object[@"eventObject"];
-
-                    ExpandedCardVC *vc = [segue destinationViewController];
-                    
-                    vc.event = event;
-                    vc.eventID = event.objectId;
-                    vc.image = cell.eventImageView.image;
-                    
-                } else if ([type isEqualToString:@"reminder"]) {
-                    
-                    reminderCell *cell = (reminderCell *)[self.tableView cellForRowAtIndexPath:indexPath];
-                    PFObject *event = object[@"eventObject"];
-                    
-                    ExpandedCardVC *vc = [segue destinationViewController];
-                    
-                    vc.event = event;
-                    vc.eventID = event.objectId;
-                    vc.image = cell.eventImageView.image;
-                    
-                } else if ([type isEqualToString:@"match"]) {
-                    
-                    matchesCell *cell = (matchesCell *)[self.tableView cellForRowAtIndexPath:indexPath];
-                    
-                } else if ([type isEqualToString:@"friendJoined"]) {
-                    
-                    friendJoinedCell *cell = (friendJoinedCell *)[self.tableView cellForRowAtIndexPath:indexPath];
-                    
+                PFObject *activityObject = [self objectAtIndex:indexPath.row];
+                
+                NSDictionary *dict = [eventObjectDict objectForKey:activityObject[@"eventId"]];
+                
+                if (cell.eventObject != nil) {
+                    vc.event = cell.eventObject;
+                    if (cell.eventImageView.image)
+                        vc.image = [dict objectForKey:@"image"];
                 }
+                
+                vc.eventID = activityObject.objectId;
+                
+            } else if ([type isEqualToString:@"reminder"]) {
+                
+                reminderCell *cell = (reminderCell *)[self.tableView cellForRowAtIndexPath:indexPath];
+                ExpandedCardVC *vc = (ExpandedCardVC *) [[segue destinationViewController] topViewController];
+                
+                PFObject *activityObject = [self objectAtIndex:indexPath.row];
+                
+                NSDictionary *dict = [eventObjectDict objectForKey:activityObject[@"eventId"]];
+                
+                if (cell.eventObject != nil) {
+                    vc.event = cell.eventObject;
+                    if (cell.eventImageView.image)
+                        vc.image = [dict objectForKey:@"image"];
+                }
+                
+                vc.eventID = activityObject.objectId;
+                
+            } else if ([type isEqualToString:@"match"]) {
+                
+                matchesCell *cell = (matchesCell *)[self.tableView cellForRowAtIndexPath:indexPath];
+                
+            } else if ([type isEqualToString:@"friendJoined"]) {
+                
+                friendJoinedCell *cell = (friendJoinedCell *)[self.tableView cellForRowAtIndexPath:indexPath];
+                
             }
-            
         }
+    
+    }  else if ([segue.identifier isEqualToString:@"toProf"]) {
 
+        ExternalProfileTVC *vc = (ExternalProfileTVC *)[segue destinationViewController];
+        vc.userID = selectedFriendId;
         
     }
+    
 }
 
 

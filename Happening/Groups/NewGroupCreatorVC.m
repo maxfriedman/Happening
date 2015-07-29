@@ -460,6 +460,7 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
                         groupEvent[@"invitedByName"] = [NSString stringWithFormat:@"%@ %@", currentUser[@"firstName"], currentUser[@"lastName"]];
                         groupEvent[@"invitedByID"] = currentUser.objectId;
                         [event pinInBackground];
+                        [groupEvent pinInBackground];
                         [groupEvent saveEventually:^(BOOL success, NSError *error) {
                             
                             PFObject *rsvpObject = [PFObject objectWithClassName:@"Group_RSVP"];
@@ -474,6 +475,19 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
                             [rsvpObject saveEventually];
                             
                         }];
+                        
+                        PFObject *swipesObject = [PFObject objectWithClassName:@"Swipes"];
+                        swipesObject[@"UserID"] = currentUser.objectId;
+                        swipesObject[@"username"] = currentUser.username;
+                        swipesObject[@"EventID"] = event.objectId;
+                        swipesObject[@"swipedRight"] = @YES;
+                        swipesObject[@"swipedLeft"] = @NO;
+                        swipesObject[@"isGoing"] = @(YES);
+                        if ([[PFUser currentUser][@"socialMode"] isEqualToNumber:@YES] && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
+                            swipesObject[@"FBObjectID"] = currentUser[@"FBObjectID"];
+                        }
+                        [swipesObject pinInBackground];
+                        [swipesObject saveEventually];
                     
                     }
                     

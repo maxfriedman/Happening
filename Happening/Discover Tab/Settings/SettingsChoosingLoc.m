@@ -8,6 +8,7 @@
 
 #import "SettingsChoosingLoc.h"
 #import "RKDropdownAlert.h"
+#import "LocationConstants.h"
 
 #define SYSTEM_VERSION_EQUAL_TO(v)                  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedSame)
 #define SYSTEM_VERSION_GREATER_THAN(v)              ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedDescending)
@@ -23,6 +24,9 @@
     MKLocalSearch *localSearch;
     MKLocalSearchResponse *results;
     BOOL choseCurrentLoc;
+    LocationConstants *locConstants;
+    NSArray *cityNames;
+    NSArray *cityImages;
 }
 
 @synthesize user;
@@ -59,6 +63,12 @@
         CLLocation *currentLocation = locManager.location;
         NSLog(@"Current Location is: %@", currentLocation);
     }
+    
+    [self.searchBar removeFromSuperview];
+    
+    locConstants = [[LocationConstants alloc] init];
+    cityNames = [locConstants getCityNamesArray];
+    cityImages = [locConstants getCityImagesArray];
     
     /*
     NSIndexPath *ipzero = [NSIndexPath indexPathForRow:0 inSection:0];
@@ -115,10 +125,12 @@
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     
     if (section == 0) {
-        return 3;
+        return cityNames.count; //3;
     }
     
-    return [results.mapItems count];
+    return 1;
+    
+    //return [results.mapItems count];
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
@@ -150,7 +162,7 @@
         if (cell == nil) {
             cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"one"];
         }
-        
+        /*
         if (indexPath.row == 0) {
         
             cell.textLabel.text = @"Current Location";
@@ -161,16 +173,10 @@
             cell.imageView.frame = CGRectMake(10, 10, cell.imageView.frame.size.width - 20, cell.imageView.frame.size.height - 20);
             cell.imageView.image = im;
             
-        } else if (indexPath.row == 1) {
+        }*/
         
-            cell.textLabel.text = @"Washington, DC";
-            cell.imageView.image = [UIImage imageNamed:@"cities icon dc"];
-            
-        } else if (indexPath.row == 2) {
-        
-            cell.textLabel.text = @"Boston, MA";
-            cell.imageView.image = [UIImage imageNamed:@"cities icon boston"];
-        }
+        cell.textLabel.text = cityNames[indexPath.row];
+        cell.imageView.image = cityImages[indexPath.row];
 
         CGSize itemSize = CGSizeMake(40, 40);
         UIGraphicsBeginImageContextWithOptions(itemSize, NO, UIScreen.mainScreen.scale);
@@ -182,7 +188,7 @@
         
         return cell;
     }
-    
+    /*
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"two"];
     if (cell == nil) {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:@"two"];
@@ -201,9 +207,55 @@
     } else {
         cell.detailTextLabel.text = [NSString stringWithFormat:@"%@, %@, %@", cityName, stateName, country];
     }
+    */
+    
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"request"];
+    if (cell == nil) {
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:@"request"];
+    }
+    
     
     
     return cell;
+}
+
+- (void)setLocForCity: (NSString *)cityString {
+    
+    user[@"userLocTitle"] = cityString;
+    user[@"userLocSubtitle"] = @"";
+    
+    if (SYSTEM_VERSION_LESS_THAN(@"8.0")) {
+        
+        NSLog(@" ====== iOS 7 ====== ");
+        
+        if ([CLLocationManager authorizationStatus] == kCLAuthorizationStatusAuthorized || user[@"userLoc"] == nil) {
+            //PFGeoPoint *geoPoint = [PFGeoPoint geoPointWithLocation:[locConstants getLocForCity:cityString]];
+            //user[@"userLoc"] = geoPoint;
+        }
+        
+        [user saveEventually];
+        
+        [self dismissViewControllerAnimated:YES completion:^{
+            [delegate refreshSettings];
+            [delegate iOS7Touch];
+        }];
+        
+    } else {
+        
+        if ([CLLocationManager authorizationStatus] == kCLAuthorizationStatusAuthorizedAlways || [CLLocationManager authorizationStatus] == kCLAuthorizationStatusAuthorizedWhenInUse || user[@"userLoc"] == nil) {
+            
+            //PFGeoPoint *geoPoint = [PFGeoPoint geoPointWithLocation:[locConstants getLocForCity:cityString]];
+            //user[@"userLoc"] = geoPoint;
+            
+        }
+        
+        [user saveEventually];
+        
+        [self dismissViewControllerAnimated:YES completion:^{
+            [delegate refreshSettings];
+        }];
+    }
+    
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -214,79 +266,11 @@
     
     if (indexPath.section == 0) {
         
-        if (indexPath.row == 0) {
-            
-            [self didChooseCurrentLoc];
-            //[delegate refreshSettings];
-            
-        } else if (indexPath.row == 1) {
-            
-            user[@"userLocTitle"] = @"Washington, DC";
-            
-            PFGeoPoint *geoPoint = [PFGeoPoint geoPointWithLatitude:38.907192 longitude:-77.036871];
-            user[@"userLoc"] = geoPoint;
-            
-            [user saveEventually]; //:^(BOOL succeeded, NSError *error) {
-               // if (succeeded) {
-                    
-                    NSLog(@"Saved user");
-                    
-                    
-                    if (SYSTEM_VERSION_LESS_THAN(@"8.0")) {
-                        
-                        NSLog(@" ====== iOS 7 ====== ");
-                        
-                        [self dismissViewControllerAnimated:YES completion:^{
-                            [delegate refreshSettings];
-                            [delegate iOS7Touch];
-                        }];
-
-                    } else {
-                        
-                        [self dismissViewControllerAnimated:YES completion:^{
-                            [delegate refreshSettings];
-                        }];
-                    }
-                    
-                //}
-            //}];
-            
-        } else if (indexPath.row == 2) {
-            
-            user[@"userLocTitle"] = @"Boston, MA";
-            
-            PFGeoPoint *geoPoint = [PFGeoPoint geoPointWithLatitude:42.358431 longitude:-71.059773];
-            user[@"userLoc"] = geoPoint;
-            
-            [user saveEventually]; //:^(BOOL succeeded, NSError *error) {
-                //if (succeeded) {
-                    
-                    NSLog(@"Saved user");
-                    
-                    if (SYSTEM_VERSION_LESS_THAN(@"8.0")) {
-                        
-                        NSLog(@" ====== iOS 7 ====== ");
-                        
-                        [self dismissViewControllerAnimated:YES completion:^{
-                            [delegate refreshSettings];
-                            [delegate iOS7Touch];
-                        }];
-                        
-                    } else {
-                        
-                        [self dismissViewControllerAnimated:YES completion:^{
-                            [delegate refreshSettings];
-                        }];
-                    }
-                //}
-            //}];
-            
-        }
-        
-        user[@"userLocSubtitle"] = @"";
+        [self setLocForCity:cityNames[indexPath.row]];
         
     } else {
-    
+        
+        /*
         MKMapItem *item = results.mapItems[indexPath.row];
         user[@"userLocTitle"] = item.name;
     
@@ -312,6 +296,7 @@
         [delegate refreshSettings];
         
         [self dismissViewControllerAnimated:YES completion:nil];
+         */
     }
     
 }
@@ -337,7 +322,7 @@
         if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0")) {
             
             NSLog(@" ====== iOS 8 ====== ");
-            [locManager requestWhenInUseAuthorization];
+            [locManager requestAlwaysAuthorization];
         }
         
         locManager.desiredAccuracy=kCLLocationAccuracyBest;
@@ -422,8 +407,10 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     
-    if (indexPath.row == 0 || indexPath.row == 1 || indexPath.row == 2) {
-        
+    //if (indexPath.row == 0 || indexPath.row == 1 || indexPath.row == 2) {
+    
+    if (indexPath.section == 0) {
+    
         return 54;
     }
     

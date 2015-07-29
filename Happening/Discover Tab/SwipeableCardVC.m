@@ -158,6 +158,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         
         NSLog(@"EVENT: %@", event);
         dragView.objectID = event.objectId;
+        dragView.eventObject = event;
         
         NSString *titleString = event[@"Title"];
         
@@ -654,7 +655,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         
         if ([self doesString:ticketLink contain:@"seatgeek.com"]) {
             
-            if (![dragView.startPriceNumLabel.text isEqualToString:@""] || ![dragView.startPriceNumLabel.text isEqualToString:@"$0"]) {
+            if (![dragView.startPriceNumLabel.text isEqualToString:@""] && ![dragView.startPriceNumLabel.text isEqualToString:@"$0"]) {
                 
                 UILabel *startingPriceLabel = [[UILabel alloc] initWithFrame:CGRectMake(160, 349 + extraDescHeight - 62, 100, 30)];
                 startingPriceLabel.textAlignment = NSTextAlignmentCenter;
@@ -672,7 +673,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                 [dragView.cardView addSubview:dragView.startPriceNumLabel];
                 //draggableBackground.dragView.startPriceNumLabel.text = @"$19";
                 
-                if (![dragView.avePriceNumLabel.text isEqualToString:@""] || ![dragView.avePriceNumLabel.text isEqualToString:@"$0"]) {
+                if (![dragView.avePriceNumLabel.text isEqualToString:@""] && ![dragView.avePriceNumLabel.text isEqualToString:@"$0"]) {
                     
                     UILabel *avgPriceLabel = [[UILabel alloc] initWithFrame:CGRectMake(dragView.startPriceNumLabel.frame.origin.x + dragView.startPriceNumLabel.frame.size.width + 10, 349 + extraDescHeight - 62, 100, 30)];
                     avgPriceLabel.textAlignment = NSTextAlignmentCenter;
