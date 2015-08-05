@@ -251,16 +251,6 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         
         dragView.geoLoc.text = self.distanceString;
         
-        CAGradientLayer *l = [CAGradientLayer layer];
-        l.frame = dragView.eventImage.bounds;
-        l.colors = [NSArray arrayWithObjects:(id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:0.0] CGColor], (id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:0.1] CGColor], (id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:0.5] CGColor], (id)[[UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.9] CGColor], nil];
-        
-        l.locations = [NSArray arrayWithObjects:[NSNumber numberWithFloat:0.0], [NSNumber numberWithFloat:0.2],
-                       [NSNumber numberWithFloat:0.5],
-                       [NSNumber numberWithFloat:1.0], nil];
-        
-        [dragView.eventImage.layer insertSublayer:l atIndex:0];
-        
         NSString *name = event[@"CreatedByName"];
         dragView.createdBy.text = name;
         

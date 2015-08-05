@@ -30,15 +30,17 @@
 #import <Hoko/Hoko.h>
 #import "ChecklistModalVC.h"
 #import "UIImage+ImageEffects.h"
+#import "CreateHappeningView.h"
 
 #define MCANIMATE_SHORTHAND
 #import <POP+MCAnimate.h>
 
-@interface DragViewController () <ChoosingLocationDelegate, dropdownSettingsViewDelegate, inviteHomiesDelegate>
+@interface DragViewController () <ChoosingLocationDelegate, dropdownSettingsViewDelegate, inviteHomiesDelegate , ModalPopupDelegate>
 
 @property (strong, nonatomic) DraggableViewBackground *draggableBackground;
-@property (strong, nonatomic) FlippedDVB *flippedDVB;
+@property (strong, nonatomic) CreateHappeningView *createHappeningView;
 @property (assign, nonatomic) CGRect mySensitiveRect;
+@property (strong, nonatomic) UIImageView *backgroundImageView;
 @property (strong, nonatomic) IBOutlet dropdownSettingsView *settingsView;
 
 @end
@@ -72,7 +74,7 @@
     RKSwipeBetweenViewControllers *rk;
 }
 
-@synthesize shareButton, draggableBackground, flippedDVB, xButton, checkButton, delegate, scrollView, mySensitiveRect, cardView, settingsView, dropdownExpanded, tutIsShown;
+@synthesize shareButton, draggableBackground, createHappeningView, xButton, checkButton, delegate, scrollView, mySensitiveRect, cardView, settingsView, dropdownExpanded, tutIsShown, backgroundImageView;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -90,11 +92,19 @@
     
     UIView *navigationView = [[UIView alloc]initWithFrame:CGRectMake(0,0,self.view.frame.size.width,self.navigationController.navigationBar.frame.size.height)];
     NSInteger width = 304/3;
-    UIButton *middleButton = [[UIButton alloc]initWithFrame:CGRectMake(width-15, 12, width + 30, 21.5)];
+    UIButton *middleButton = [[UIButton alloc]initWithFrame:CGRectMake(15, 8, 153, 25)];
+
+    // if you need to resize the image to fit the UIImageView frame
+    middleButton.imageView.contentMode = UIViewContentModeScaleAspectFit;
+    // no extension name needed for image_name
+
+    //middleButton.center = self.navigationController.navigationBar.topItem.titleView.center;
     [middleButton setImage:[UIImage imageNamed:@"happening text logo"] forState:UIControlStateNormal];
+    UIView *logoView = [[UIView alloc] initWithFrame:CGRectMake(25, 2, middleButton.frame.size.width, middleButton.frame.size.height)];
+    [logoView addSubview:middleButton];
     middleButton.backgroundColor = [UIColor clearColor]; //[UIColor colorWithRed:41.0/255 green:181.0/255 blue:1.0 alpha:1.0];;
+    [navigationView addSubview:logoView];
     [middleButton addTarget:self action:@selector(refreshData) forControlEvents:UIControlEventTouchUpInside];
-    [navigationView addSubview:middleButton];
     self.navigationController.navigationBar.topItem.titleView = navigationView;
         
     //[defaults setBool:YES forKey:@"hasLaunched"];
@@ -117,11 +127,11 @@
                                 }];
     */
     
-    UIImageView *imv = [[UIImageView alloc] initWithFrame:CGRectMake(0, -40, self.view.frame.size.width, self.view.frame.size.height)];
+    backgroundImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, -40, self.view.frame.size.width, self.view.frame.size.height)];
     UIImage *im = [[UIImage imageNamed:@"party"] applyBlurWithRadius:10.0 tintColor:[UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:0.2] saturationDeltaFactor:1.6 maskImage:nil];
-    imv.image = im; //[[UIImage imageNamed:@"party"] applyLightEffect];
+    backgroundImageView.image = im; //[[UIImage imageNamed:@"party"] applyLightEffect];
     
-    [[self.view viewWithTag:32] insertSubview:imv belowSubview:scrollView];
+    [[self.view viewWithTag:32] insertSubview:backgroundImageView belowSubview:scrollView];
     
     if ([[PFUser currentUser][@"hasLaunched"] boolValue] == NO) {
         showTut = YES;
@@ -190,8 +200,9 @@
     //[self.view sendSubviewToBack:xButton];
     [self.view bringSubviewToFront:scrollView];
     
-    self.frontViewIsVisible = YES;
+    self.isCardExpanded = NO;
     self.userSwipedFromExpandedView = NO;
+    self.isCreatingHappening = NO;
     
     /*
     dropdownSettingsView *settingsView = [[dropdownSettingsView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 40)];
@@ -213,7 +224,8 @@
 
 -(void)viewWillAppear:(BOOL)animated {
 
-    //[super viewWillAppear:animated];
+    [super viewWillAppear:animated];
+    
    // NSLog(@"MAADEEE ITT!!!");
     //NSLog(@"scroll view subviews: %@", scrollView.subviews);
 
@@ -245,7 +257,7 @@
         tutIsShown = NO;
         [self refreshData];
         
-    } else if (!self.frontViewIsVisible) {
+    } else if (self.isCardExpanded) {
         draggableBackground.dragView.panGestureRecognizer.enabled = NO;
     }
 }
@@ -299,7 +311,7 @@
         [[scrollView viewWithTag:999] removeFromSuperview];
         [tutorialScreens removeFromSuperview];
     
-        if (self.frontViewIsVisible == NO) {
+        if (self.isCardExpanded == YES) {
             [self expandCurrentView]; // Makes blur view look weird and messes with seg control when flipping
             [draggableBackground removeFromSuperview];
 
@@ -324,7 +336,7 @@
             }];
         
         }
-        self.frontViewIsVisible = YES;
+        self.isCardExpanded = NO;
         self.dropdownExpanded = NO;
         self.userSwipedFromExpandedView = NO;
     
@@ -337,8 +349,11 @@
         //[self.view addSubview:activityView];
     
     
-        draggableBackground = [[DraggableViewBackground alloc]initWithFrame:CGRectMake(18, 18 + 8 + 45, 284, 350)];
-    
+        //draggableBackground = [[DraggableViewBackground alloc]initWithFrame:CGRectMake(18, 18 + 8 + 45, 284, 350)];
+        draggableBackground = [[DraggableViewBackground alloc]initWithFrame:CGRectMake(18, 18 + 8, 284, 400)];
+        //settingsView.alpha = 0;
+        
+        
         [scrollView addSubview:draggableBackground];
         [scrollView bringSubviewToFront:draggableBackground];
         
@@ -374,6 +389,12 @@
     
     //refreshingData = NO;
     
+    
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+    ModalPopup *controller = [storyboard instantiateViewControllerWithIdentifier:@"ModalPopup"];
+    //controller.event = c.eventObject;
+    //[self mh_presentSemiModalViewController:controller animated:YES];
+
 }
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {
@@ -462,7 +483,7 @@
     
     NSLog(@"Tap");
     
-    [draggableBackground.dragView cardExpanded:self.frontViewIsVisible];
+    [draggableBackground.dragView cardExpanded:!self.isCardExpanded]; // !is.. because its not expanded just yet...
     [self expandCurrentView];
     
 }
@@ -514,13 +535,16 @@
     //scrollView.delaysContentTouches = NO;
 
     
-    if (self.frontViewIsVisible == YES && draggableBackground.isLoaded) {
+    if (self.isCardExpanded == NO && draggableBackground.isLoaded) {
         
         extraDescHeight = draggableBackground.dragView.extraDescHeight;
         
         [self addSubviewsToCard:draggableBackground.dragView];
         
         [self setEnabledSidewaysScrolling:NO];
+        
+        //[draggableBackground.dragView.eventImage setContentMode:UIViewContentModeScaleAspectFill];
+        draggableBackground.dragView.eventImage.autoresizingMask = UIViewAutoresizingNone;
         
         
         NSLog(@"EXTRA DESC HEIGHT ==== %f", extraDescHeight);
@@ -529,12 +553,12 @@
         
         [UIView animateWithDuration:0.2 animations:^{
             
-            settingsView.frame = CGRectMake(0, 0 - settingsView.frame.size.height, 320, settingsView.frame.size.height);
+            settingsView.frame = CGRectMake(0, 0 - settingsView.frame.size.height - 45, 320, settingsView.frame.size.height);
             //scrollView.frame = CGRectMake(0, -8, 320, scrollView.frame.size.height);
             
         }];
         
-        draggableBackground.spring.frame = CGRectMake(draggableBackground.frame.origin.x, draggableBackground.frame.origin.y - 45, draggableBackground.frame.size.width, 320 + 235 + 16 + 60 + extraDescHeight);
+        draggableBackground.spring.frame = CGRectMake(draggableBackground.frame.origin.x, draggableBackground.frame.origin.y, draggableBackground.frame.size.width, 320 + 235 + 16 + 60 + extraDescHeight);
         draggableBackground.springBounciness = 15;
         draggableBackground.springSpeed = 15;
         
@@ -564,7 +588,7 @@
             
         }];
         
-        self.frontViewIsVisible =! self.frontViewIsVisible;
+        self.isCardExpanded =! self.isCardExpanded;
 
         
     } else if (draggableBackground.isLoaded) {
@@ -584,14 +608,14 @@
         
         //[UIView animateWithDuration:0.3 animations:^{
            
-        settingsView.spring.frame = CGRectMake(0, 0, 320, settingsView.frame.size.height);
+        settingsView.frame = CGRectMake(0, -45, 320, settingsView.frame.size.height);
         settingsView.springBounciness = 10;
         settingsView.springSpeed = 10;
             //scrollView.frame = CGRectMake(0, 45, 320, scrollView.frame.size.height);
             
         //}];
         
-        draggableBackground.spring.frame = CGRectMake(draggableBackground.frame.origin.x, draggableBackground.frame.origin.y + 45, draggableBackground.frame.size.width, 350);
+        draggableBackground.spring.frame = CGRectMake(draggableBackground.frame.origin.x, draggableBackground.frame.origin.y, draggableBackground.frame.size.width, 390);
         draggableBackground.springBounciness = 10;
         draggableBackground.springSpeed = 10;
         
@@ -599,8 +623,8 @@
             
             //cardView.frame = CGRectMake(cardView.frame.origin.x, cardView.frame.origin.y, cardView.frame.size.width, 310);
             //draggableBackground.frame = CGRectMake(draggableBackground.frame.origin.x, draggableBackground.frame.origin.y + 45, draggableBackground.frame.size.width, 350);
-            draggableBackground.dragView.frame = CGRectMake(draggableBackground.dragView.frame.origin.x, draggableBackground.dragView.frame.origin.y, draggableBackground.dragView.frame.size.width, 350);
-            draggableBackground.dragView.cardView.frame = CGRectMake(draggableBackground.dragView.cardView.frame.origin.x, draggableBackground.dragView.cardView.frame.origin.y, draggableBackground.dragView.cardView.frame.size.width, 350);
+            draggableBackground.dragView.frame = CGRectMake(draggableBackground.dragView.frame.origin.x, draggableBackground.dragView.frame.origin.y, draggableBackground.dragView.frame.size.width, 390);
+            draggableBackground.dragView.cardView.frame = CGRectMake(draggableBackground.dragView.cardView.frame.origin.x, draggableBackground.dragView.cardView.frame.origin.y, draggableBackground.dragView.cardView.frame.size.width, 390);
             
             xButton.center = CGPointMake(21.75, xButton.center.y);
             checkButton.center = CGPointMake(302.25, checkButton.center.y);
@@ -616,143 +640,116 @@
             draggableBackground.dragView.subtitle.alpha = 0;
             //draggableBackground.dragView.cardView.layer.masksToBounds = NO;
             
-        }];
-
-        
-        self.frontViewIsVisible =! self.frontViewIsVisible;
-
-    }
-    
-    /*
-    NSLog(@"VC CODE");
-    // disable user interaction during the flip animation
-    self.view.userInteractionEnabled = NO;
-    
-    // setup the animation group
-    [UIView beginAnimations:nil context:nil];
-    [UIView setAnimationDuration:0.6];
-    [UIView setAnimationDelegate:self];
-    [UIView setAnimationDidStopSelector:@selector(myTransitionDidStop:finished:context:)];
-    
-    // swap the views and transition
-    if (self.frontViewIsVisible == YES) {
-        [UIView setAnimationTransition:UIViewAnimationTransitionFlipFromRight forView:cardView cache:YES];
-        [self.draggableBackground removeFromSuperview];
-        
-        // Create the flipped view
-        flippedDVB = [[FlippedDVB alloc]initWithFrame:CGRectMake(-1, -1, 291, 321)];
-        flippedDVB.viewController = self;
-        flippedDVB.delegate = draggableBackground; // THE MISSING DELGATE CALL!!
-        
-        //Add tap to return label
-        [flippedDVB addLabels];
-        
-        // %%%%% Pass variables to flipped card
-        NSLog(@"Tapped Event: %@",self.title);
-        flippedDVB.eventID = self.eventID;
-        flippedDVB.mapLocation = self.mapLocation;
-        flippedDVB.eventTitle = self.eventTitle;
-        flippedDVB.eventLocationTitle = self.locationTitle;
-        
-        flippedDVB.dragView = self.draggableBackground.dragView;
-        // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        
-        CGPoint xButtonFinishPoint = CGPointMake(-600, xButton.center.y);
-        CGPoint checkButtonFinishPoint = CGPointMake(900, checkButton.center.y);
-        [UIView animateWithDuration:0.6 animations:^{
-            xButton.center = xButtonFinishPoint;
-            checkButton.center = checkButtonFinishPoint;
-            //xButton.transform = CGAffineTransformMakeRotation(1);
-        }];
-     
-        
-        [cardView addSubview:self.flippedDVB];
-    } else {
-        
-        if (self.userSwipedFromFlippedView == YES) {
-            NSLog(@"User swiped from flipped view!");
-            [UIView setAnimationTransition:UIViewAnimationTransitionCurlDown forView:cardView cache:YES];
-        } else {
-            [UIView setAnimationTransition:UIViewAnimationTransitionFlipFromLeft forView:cardView cache:YES];
-            [self.flippedDVB removeFromSuperview];
+            draggableBackground.dragView.eventImage.autoresizingMask =
+            ( UIViewAutoresizingFlexibleBottomMargin
+             | UIViewAutoresizingFlexibleHeight
+             | UIViewAutoresizingFlexibleLeftMargin
+             | UIViewAutoresizingFlexibleRightMargin
+             | UIViewAutoresizingFlexibleTopMargin
+             | UIViewAutoresizingFlexibleWidth );
             
-        }
-        
-        [flippedDVB removeLabels];
-
-        CGPoint xButtonFinishPoint = CGPointMake(21.75, xButton.center.y);
-        CGPoint checkButtonFinishPoint = CGPointMake(302.25, checkButton.center.y);
-        [UIView animateWithDuration:0.6 animations:^{
-            xButton.center = xButtonFinishPoint;
-            checkButton.center = checkButtonFinishPoint;
         }];
 
+        
+        self.isCardExpanded =! self.isCardExpanded;
 
-        [cardView addSubview:self.draggableBackground];
     }
-    [UIView commitAnimations];
-    
-    [UIView beginAnimations:nil context:nil];
-    [UIView setAnimationDuration:0.6];
-    [UIView setAnimationDelegate:self];
-    [UIView setAnimationDidStopSelector:@selector(myTransitionDidStop:finished:context:)];
-    
-    [UIView commitAnimations];
-    
-    // invert the front view state
-    self.frontViewIsVisible =! self.frontViewIsVisible;
-
-*/
 }
 
-/*
--(CGFloat) moreButtonUpdateFrame {
-    
-    draggableBackground.dragView.subtitle.numberOfLines = 0;
-    draggableBackground.dragView.subtitle.alpha = 1.0;
-    
-    if (![self doesString:draggableBackground.dragView.subtitle.text contain:@"Details: "]) {
 
-        UIFont *font = [UIFont fontWithName:@"OpenSans-Bold" size:12.0];
-        NSMutableDictionary *attrsDictionary = [NSMutableDictionary dictionaryWithObject:font
-                                                                                  forKey:NSFontAttributeName];
-        //[attrsDictionary setObject:[UIColor colorWithRed:0.0/255 green:176.0/255 blue:242.0/255 alpha:1.0] forKey:NSForegroundColorAttributeName];
-        [attrsDictionary setObject:[UIColor grayColor] forKey:NSForegroundColorAttributeName];
-        NSMutableAttributedString *aAttrString1 = [[NSMutableAttributedString alloc] initWithString:@"Details: " attributes:attrsDictionary];
+- (IBAction)createButtonPressed:(id)sender {
+    
+    // disable user interaction during the flip animation
+    //self.view.userInteractionEnabled = NO;
+
+
+    // swap the views and transition
+    if (self.isCreatingHappening == NO) {
         
-        NSMutableAttributedString *aAttrString2 = [[NSMutableAttributedString alloc] initWithString:draggableBackground.dragView.subtitle.text];
+        NSLog(@"Creating Happening!");
         
-        [aAttrString1 appendAttributedString:aAttrString2];
+        [UIView beginAnimations:nil context:nil];
+        [UIView setAnimationDuration:0.8];
+        [UIView setAnimationDelegate:self];
+        [UIView setAnimationDidStopSelector:@selector(myTransitionDidStop:finished:context:)];
+        [UIView setAnimationTransition:UIViewAnimationTransitionFlipFromRight forView:self.view cache:YES];
+        [UIView commitAnimations];
         
-        draggableBackground.dragView.subtitle.attributedText = aAttrString1;
-    
-    }
-    
-    // Each line = approx 16.5
-    CGFloat lineSizeTotal = 0;
-    
-    CGRect rect = [draggableBackground.dragView.subtitle.attributedText boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesLineFragmentOrigin context:nil];
-    
-    CGSize actualSize = rect.size;
-    
-    if (actualSize.height > 65) // > 4 lines
-    {
-        // show your more button
-        draggableBackground.dragView.subtitle.numberOfLines = 4;
-        lineSizeTotal = actualSize.height;
-        draggableBackground.dragView.moreButton.alpha = 1.0;
+        [self.draggableBackground removeFromSuperview];
+        self.view.userInteractionEnabled = NO;
+        self.createButton.userInteractionEnabled = NO;
+        self.view.backgroundColor = [UIColor whiteColor];
+        [self.backgroundImageView removeFromSuperview];
+
+        // Create the flipped view
         
+        createHappeningView = [[CreateHappeningView alloc]initWithFrame:self.view.bounds];
+        [createHappeningView addDragView];
+        createHappeningView.vc = self;
+        [self.view addSubview:createHappeningView];
+        
+        [UIView animateWithDuration:0.4 animations:^{
+            self.filterButton.alpha = 0;
+            self.createButton.alpha = 0;
+        } completion:^(BOOL finished) {
+            [self.filterButton setImage:[UIImage imageNamed:@"x_white"] forState:UIControlStateNormal];
+            [self.filterButton removeTarget:self action:@selector(dropdownPressed) forControlEvents:UIControlEventTouchUpInside];
+            [self.filterButton addTarget:self action:@selector(createButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+            [UIView animateWithDuration:0.4 animations:^{
+                self.filterButton.alpha = 1.0;
+            } completion:nil];
+        }];
+     
+     
     } else {
+
+        NSLog(@"Going back from creating Happening. Did user create one??");
         
-        lineSizeTotal = actualSize.height;
+        [createHappeningView.fastCamera stopRunning];
+        [self fastttRemoveChildViewController:createHappeningView.fastCamera];
+        [createHappeningView resignAllResponders];
+        
+        [UIView beginAnimations:nil context:nil];
+        [UIView setAnimationDuration:0.8];
+        [UIView setAnimationDelegate:self];
+        [UIView setAnimationDidStopSelector:@selector(myTransitionDidStop:finished:context:)];
+        [UIView setAnimationTransition:UIViewAnimationTransitionFlipFromLeft forView:self.view cache:YES];
+        [UIView commitAnimations];
+        
+        [self refreshData];
+        
+        [self.scrollView addSubview:draggableBackground];
+        [[self.view viewWithTag:32] insertSubview:backgroundImageView belowSubview:scrollView];
+        [createHappeningView removeFromSuperview];
+        
+        [UIView animateWithDuration:0.4 animations:^{
+            self.filterButton.alpha = 0;
+        } completion:^(BOOL finished) {
+            [self.filterButton setImage:[UIImage imageNamed:@"filter"] forState:UIControlStateNormal];
+            [self.filterButton removeTarget:self action:@selector(createButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+            [self.filterButton addTarget:self action:@selector(dropdownPressed) forControlEvents:UIControlEventTouchUpInside];
+            [UIView animateWithDuration:0.4 animations:^{
+                self.filterButton.alpha = 1.0;
+                self.createButton.alpha = 1.0;
+            } completion:nil];
+        }];
+
     }
     
-    [draggableBackground.dragView.subtitle sizeToFit];
-    draggableBackground.dragView.moreButton.center = CGPointMake(draggableBackground.dragView.center.x, draggableBackground.dragView.subtitle.frame.origin.y + actualSize.height + 7);
+     // invert the front view state
+    self.isCreatingHappening =! self.isCreatingHappening;
     
-    return lineSizeTotal + 7 + draggableBackground.dragView.moreButton.frame.size.height;
     
-}*/
+}
+
+- (void)myTransitionDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context {
+    
+    // re-enable user interaction when the flip animation is completed
+    self.view.userInteractionEnabled = YES;
+    self.createButton.userInteractionEnabled = YES;
+    [createHappeningView performSelector:@selector(animatingDidStop)];
+    
+}
 
 - (void)addSubviewsToCard:(DraggableView *)card {
     
@@ -869,44 +866,23 @@
 
 - (void)ticketsAndUberUpdateFrameBy:(int)height {
     
-    if (!self.frontViewIsVisible) {
+    if (self.isCardExpanded) {
     
-    [UIView animateWithDuration:0.2 animations:^{
-        
-        //uberButton.center = CGPointMake(uberButton.center.x, uberButton.center.y + height);
-        //ticketsButton.center = CGPointMake(ticketsButton.center.x, ticketsButton.center.y + height);
-        
-        draggableBackground.frame = CGRectMake(draggableBackground.frame.origin.x, draggableBackground.frame.origin.y, draggableBackground.frame.size.width, draggableBackground.frame.size.height + height);
-        draggableBackground.dragView.frame = CGRectMake(draggableBackground.dragView.frame.origin.x, draggableBackground.dragView.frame.origin.y, draggableBackground.dragView.frame.size.width, draggableBackground.dragView.frame.size.height + height);
-        draggableBackground.dragView.cardView.frame = CGRectMake(draggableBackground.dragView.cardView.frame.origin.x, draggableBackground.dragView.cardView.frame.origin.y, draggableBackground.dragView.cardView.frame.size.width, draggableBackground.dragView.cardView.frame.size.height + height);
-        
-        scrollView.contentSize = CGSizeMake(320, scrollView.contentSize.height + height);
-        
-        
-    } completion:^(BOOL finished) {
-        
-    }];
-        
-    }
-    
-}
-
-- (void)uberUpdateFrameBy:(int)height {
-    
-    if (!self.frontViewIsVisible) {
-    
-    [UIView animateWithDuration:0.2 animations:^{
-        
-        draggableBackground.frame = CGRectMake(draggableBackground.frame.origin.x, draggableBackground.frame.origin.y, draggableBackground.frame.size.width, draggableBackground.frame.size.height + height);
-        draggableBackground.dragView.frame = CGRectMake(draggableBackground.dragView.frame.origin.x, draggableBackground.dragView.frame.origin.y, draggableBackground.dragView.frame.size.width, draggableBackground.dragView.frame.size.height + height);
-        draggableBackground.dragView.cardView.frame = CGRectMake(draggableBackground.dragView.cardView.frame.origin.x, draggableBackground.dragView.cardView.frame.origin.y, draggableBackground.dragView.cardView.frame.size.width, draggableBackground.dragView.cardView.frame.size.height + height);
-        
-        scrollView.contentSize = CGSizeMake(320, scrollView.contentSize.height + height);
-        
-        
-    } completion:^(BOOL finished) {
-        
-    }];
+        [UIView animateWithDuration:0.2 animations:^{
+            
+            //uberButton.center = CGPointMake(uberButton.center.x, uberButton.center.y + height);
+            //ticketsButton.center = CGPointMake(ticketsButton.center.x, ticketsButton.center.y + height);
+            
+            draggableBackground.frame = CGRectMake(draggableBackground.frame.origin.x, draggableBackground.frame.origin.y, draggableBackground.frame.size.width, draggableBackground.frame.size.height + height);
+            draggableBackground.dragView.frame = CGRectMake(draggableBackground.dragView.frame.origin.x, draggableBackground.dragView.frame.origin.y, draggableBackground.dragView.frame.size.width, draggableBackground.dragView.frame.size.height + height);
+            draggableBackground.dragView.cardView.frame = CGRectMake(draggableBackground.dragView.cardView.frame.origin.x, draggableBackground.dragView.cardView.frame.origin.y, draggableBackground.dragView.cardView.frame.size.width, draggableBackground.dragView.cardView.frame.size.height + height);
+            
+            scrollView.contentSize = CGSizeMake(320, scrollView.contentSize.height + height);
+            
+            
+        } completion:^(BOOL finished) {
+            
+        }];
         
     }
     
@@ -1194,7 +1170,7 @@
         [settingsView.categoryTableView selectRowAtIndexPath:indexPath animated:NO scrollPosition:UITableViewScrollPositionMiddle];
         
         [UIView animateWithDuration:0.5 animations:^{
-            settingsView.frame = CGRectMake(0, 0, self.view.frame.size.width, 502);
+            settingsView.frame = CGRectMake(0, -45, self.view.frame.size.width, 502 + 45);
         } completion:^(BOOL finished) {
             dropdownExpanded = YES;
             
@@ -1226,7 +1202,7 @@
             [settingsView.cogImageView.layer addAnimation:rotation forKey:@"Spin"];
         
             [UIView animateWithDuration:0.5 animations:^{
-                settingsView.frame = CGRectMake(0, 0, self.view.frame.size.width, 45);
+                settingsView.frame = CGRectMake(0, -45, self.view.frame.size.width, 45);
             
 
                 if ([settingsView didPreferencesChange]) {
@@ -1276,108 +1252,15 @@
     
 }
 
-
-- (void)myTransitionDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context {
-    
-    // re-enable user interaction when the flip animation is completed
-    self.view.userInteractionEnabled = YES;
-    if (flippedDVB.userSwipedFromFlippedView == YES)
-        [flippedDVB removeFromSuperview];
-}
-
 - (void)shareAction:(id)sender {
     
-    __block BOOL showCalendar = YES;
-    
-    if ([sender isKindOfClass:[UIButton class]]) {
-        
-        UIButton *sharingButton = sender;
-        
-        if (sharingButton.tag == 99) {
-            
-            showCalendar = NO;
-        }
-    }
-    
-    HOKDeeplink *deeplink = [HOKDeeplink deeplinkWithRoute:@"events/:EventID"
-                                           routeParameters:@{@"EventID": self.draggableBackground.dragView.objectID}
-                                           queryParameters:@{@"referrer": [PFUser currentUser].objectId}];
-                                                /*  metadata:@{@"coupon": @"20"}]; */
-    [[Hoko deeplinking] generateSmartlinkForDeeplink:deeplink success:^(NSString *smartlink) {
-        NSURL *myWebsite = [NSURL URLWithString:smartlink];
-        [self shareEventWithURL:myWebsite shouldShowCalendar:showCalendar];
-
-    } failure:^(NSError *error) {
-        // Share web link instead
-        NSURL *myWebsite = [NSURL URLWithString:[NSString stringWithFormat:@"http://www.happening.city/events/%@", draggableBackground.dragView.objectID]];
-        [self shareEventWithURL:myWebsite shouldShowCalendar:showCalendar];
-    }];
-    
-}
-
-- (void)shareEventWithURL:(NSURL *)link shouldShowCalendar:(BOOL)showCalendar {
-
-    CustomAPActivityProvider *ActivityProvider = [[CustomAPActivityProvider alloc] init];
-    ActivityProvider.eventObject = draggableBackground.dragView.eventObject;
-    
-    NSArray *itemsToShare = @[ActivityProvider, link];
-    
-    UIActivityViewController *activityVC;
-    
-    if (showCalendar) {
-        
-        CustomCalendarActivity *addToCalendar = [[CustomCalendarActivity alloc]init];
-        addToCalendar.draggableView = draggableBackground.dragView;
-        addToCalendar.myViewController = self;
-        
-        activityVC = [[UIActivityViewController alloc]initWithActivityItems:itemsToShare applicationActivities:[NSArray arrayWithObject:addToCalendar]];
-    } else {
-        
-        activityVC = [[UIActivityViewController alloc]initWithActivityItems:itemsToShare applicationActivities:nil];
-    }
-
-    activityVC.excludedActivityTypes = @[UIActivityTypeAirDrop,
-                                         UIActivityTypePrint,
-                                         UIActivityTypeAssignToContact,
-                                         UIActivityTypeSaveToCameraRoll,
-                                         UIActivityTypeAddToReadingList,
-                                         UIActivityTypePostToFlickr,
-                                         UIActivityTypePostToVimeo,
-                                         UIActivityTypePostToWeibo,
-                                         UIActivityTypeCopyToPasteboard,
-                                         ];
-    
-    
-    [self presentViewController:activityVC animated:YES completion:nil];
-  
-    [activityVC setCompletionHandler:^(NSString *act, BOOL done)
-     {
-         NSString *ServiceMsg = @"Done!";
-         BOOL calendarAction = NO;
-         
-         if ( [act isEqualToString:UIActivityTypeMail] ) {
-             ServiceMsg = @"Mail sent!";
-         }
-         else if ( [act isEqualToString:UIActivityTypePostToTwitter] ) {
-             ServiceMsg = @"Your tweet has been posted!";
-         }
-         else if ( [act isEqualToString:UIActivityTypePostToFacebook] ){
-             ServiceMsg = @"Your Facebook status has been updated!";
-         }
-         else if ( [act isEqualToString:UIActivityTypeMessage] ) {
-             ServiceMsg = @"Message sent!";
-         } else {
-             calendarAction = YES;
-         }
-         if ( done && (calendarAction == NO) )
-         {
-             
-             // Custom action for other activity types...
-             [RKDropdownAlert title:ServiceMsg backgroundColor:[UIColor colorWithRed:.05 green:.29 blue:.49 alpha:1.0] textColor:[UIColor whiteColor]];
-             
-         }
-     }];
-    
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+    ModalPopup *popup = [storyboard instantiateViewControllerWithIdentifier:@"ModalPopup"];
+    popup.eventObject = draggableBackground.dragView.eventObject;
+    popup.eventDateString = draggableBackground.dragView.date.text;
+    popup.eventImage = draggableBackground.dragView.eventImage.image;
+    popup.type = @"share";
+    [self showModalPopup:popup];
 }
 
 -(void)showCreatedByProfile {
@@ -1386,10 +1269,9 @@
      */
 }
 
--(void)showFriendProfile:(UITapGestureRecognizer *)gr {
+-(void)showFriendProfile:(NSString *)friendId {
     
-    UIView *view = gr.view;
-    self.friendObjectID = view.accessibilityIdentifier;
+    self.friendObjectID = friendId;
     [self performSegueWithIdentifier:@"showFriendProfile" sender:self];
      
     /*
@@ -1583,6 +1465,27 @@
 
 }
 */
+
+- (void)showModalPopup:(ModalPopup *)popup {
+    
+    //UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+    //ModalPopup *controller = [storyboard instantiateViewControllerWithIdentifier:@"ModalPopup"];
+    //controller.event = c.eventObject;
+    NSLog(@"Presenting popup...");
+    popup.delegate = self;
+    [self mh_presentSemiModalViewController:popup animated:YES];
+    
+}
+
+- (void)userFinishedAction:(BOOL)wasSuccessful type:(NSString *)t {
+    
+    if ([t isEqualToString:@"create"]) {
+        
+        [self createButtonPressed:nil];
+        
+    }
+    
+}
 
 -(void)showBoom {
     

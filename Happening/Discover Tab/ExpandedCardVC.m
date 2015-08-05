@@ -20,8 +20,10 @@
 #import "webViewController.h"
 #import "moreDetailFromCard.h"
 
+#import "ModalPopup.h"
 
-@interface ExpandedCardVC () <inviteHomiesDelegate, UINavigationControllerDelegate, DraggableViewDelegate>
+
+@interface ExpandedCardVC () <inviteHomiesDelegate, UINavigationControllerDelegate, DraggableViewDelegate, ModalPopupDelegate>
 
 @property DraggableView *dragView;
 @property UIButton *smileButton;
@@ -71,7 +73,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         smileButton.enabled = NO;
         frownButton.enabled = NO;
         
-        scrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds];
+        scrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, 320, 568-49-64)];
         [self.view addSubview:scrollView];
         
         dragView = [[DraggableView alloc] initWithFrame:CGRectMake(0, 0, CARD_WIDTH, CARD_HEIGHT)];
@@ -257,17 +259,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             locFrame.origin.x = locFrame.origin.x - 10;
             dragView.locImage.frame = locFrame;
         }
-        
-        CAGradientLayer *l = [CAGradientLayer layer];
-        l.frame = dragView.eventImage.bounds;
-        l.colors = [NSArray arrayWithObjects:(id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:0.0] CGColor], (id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:0.1] CGColor], (id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:0.5] CGColor], (id)[[UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.9] CGColor], nil];
-
-        l.locations = [NSArray arrayWithObjects:[NSNumber numberWithFloat:0.0], [NSNumber numberWithFloat:0.2],
-                       [NSNumber numberWithFloat:0.5],
-                       [NSNumber numberWithFloat:1.0], nil];
-        
-        [dragView.eventImage.layer insertSublayer:l atIndex:0];
-        
+                
         NSString *name = event[@"CreatedByName"];
         dragView.createdBy.text = name;
         
@@ -297,12 +289,12 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             dragView.avePriceNumLabel.text = @"";
         }
         
+        
+        [self addExtrasToCard];
+        
         self.dragView.friendScrollView.delegate = self;
-        [self loadFBFriends:dragView.friendScrollView withCard:dragView];
         
         dragView.delegate = self;
-
-        [self addExtrasToCard];
         
     }
     
@@ -392,135 +384,70 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     }
 }
 
-- (void)loadFBFriends:(UIScrollView *)friendScrollView withCard:(DraggableView *)card {
+- (void)showModalPopup:(ModalPopup *)popup {
     
-    card.interestedNames = [NSMutableArray new];
-    card.interestedIds = [NSMutableArray new];
-    
-    if ([FBSDKAccessToken currentAccessToken]) {
-        
-        
-        [[[FBSDKGraphRequest alloc] initWithGraphPath:@"/me/friends?limit=1000" parameters:nil] startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
-            //code
-            
-            NSArray* friends = [result objectForKey:@"data"];
-            //NSLog(@"Found: %lu friends", (unsigned long)friends.count);
-            
-            __block int friendCount = 0;
-            
-            NSMutableArray *friendObjectIDs = [[NSMutableArray alloc] init];
-            for (int i = 0; i < friends.count; i ++) {
-                NSDictionary *friend = friends[i];
-                [friendObjectIDs addObject:[friend objectForKey:@"id"]];
-            }
-            
-            PFQuery *friendQuery = [PFQuery queryWithClassName:@"Swipes"];
-            [friendQuery whereKey:@"FBObjectID" containedIn:friendObjectIDs];
-            [friendQuery whereKey:@"EventID" equalTo:card.objectID];
-            [friendQuery whereKey:@"swipedRight" equalTo:@YES];
-            
-            PFQuery *userQuery = [PFUser query];
-            [userQuery whereKey:@"objectId" matchesKey:@"UserID" inQuery:friendQuery];
-            
-            [userQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-                
-                // NSLog(@"%lu friends interested", (unsigned long)objects.count);
-                
-                if (!error) {
-                    
-                    NSMutableArray *orderedObjects = [NSMutableArray arrayWithArray:objects];
-                    
-                    for (PFObject *object in objects) {
-                        
-                        if ([bestFriendIds containsObject:object[@"FBObjectID"]]) {
-                            [orderedObjects removeObject:object];
-                            [orderedObjects insertObject:object atIndex:0];
-                        }
-                        
-                    }
-                    
-                    for (PFObject *object in orderedObjects) {
-                        
-                        FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(50 * friendCount, 0, 40, 40)]; // initWithProfileID:user[@"FBObjectID"] pictureCropping:FBSDKProfilePictureModeSquare];
-                        profPicView.profileID = object[@"FBObjectID"];
-                        profPicView.pictureMode = FBSDKProfilePictureModeSquare;
-                        
-                        profPicView.layer.cornerRadius = 20;
-                        profPicView.layer.masksToBounds = YES;
-                        profPicView.accessibilityIdentifier = object.objectId;
-                        profPicView.userInteractionEnabled = YES;
-                        [friendScrollView addSubview:profPicView];
-                        
-                        UITapGestureRecognizer *gr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(showFriendProfile:)];
-                        [profPicView addGestureRecognizer:gr];
-                        
-                        UILabel *nameLabel = [[UILabel alloc] init];
-                        nameLabel.font = [UIFont fontWithName:@"OpenSans" size:7];
-                        nameLabel.textColor = [UIColor blackColor];
-                        nameLabel.textAlignment = NSTextAlignmentCenter;
-                        nameLabel.text = object[@"firstName"];
-                        nameLabel.frame = CGRectMake(5 + (50 * friendCount), 42, 30, 8);
-                        [friendScrollView addSubview:nameLabel];
-                        
-                        friendScrollView.contentSize = CGSizeMake((50 * friendCount) + 40, 50);
-                        
-                        //[self friendsUpdateFrameBy:50];
-                        
-                        if ([bestFriendIds containsObject:object[@"FBObjectID"]]) {
-                            
-                            UIImageView *starImageView = [[UIImageView alloc] initWithFrame:CGRectMake(50 * friendCount + 25, 0, 15, 15)];
-                            starImageView.image = [UIImage imageNamed:@"star-blue-bordered"];
-                            [friendScrollView addSubview:starImageView];
-                        }
-                        
-                        [card.interestedIds addObject:object[@"FBObjectID"]];
-                        [card.interestedNames addObject:[NSString stringWithFormat:@"%@ %@", object[@"firstName"], object[@"lastName"]]];
-                        //[interestedPics addObject:profPicView];
-                        
-                        friendCount++;
-                        
-                        if (friendCount == 1) {
-                            card.friendsInterested.text = [NSString stringWithFormat:@"%d friend interested", friendCount - 1];
-                        } else {
-                            card.friendsInterested.text = [NSString stringWithFormat:@"%d friends interested", friendCount - 1];
-                        }
-                        
-                    }
-                    
-                    if (objects.count > 4) {
-                        
-                        card.friendArrow.alpha = 1;
-                    }
-                    
-                    if (objects.count == 0) {
-                        // NSLog(@"No new friends");
-                        
-                        //[self noFriendsAddButton:friendScrollView];
-                        
-                    }
-                }
-                
-            }];
-            
-        }];
-        
-    } else {
-        
-        NSLog(@"no token......");
-    }
+    //UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+    //ModalPopup *controller = [storyboard instantiateViewControllerWithIdentifier:@"ModalPopup"];
+    //controller.event = c.eventObject;
+    NSLog(@"Presenting popup...");
+    popup.delegate = self;
+    [self mh_presentSemiModalViewController:popup animated:YES];
     
 }
 
--(void)showFriendProfile:(UITapGestureRecognizer *)gr {
+- (void)userFinishedAction:(BOOL)wasSuccessful type:(NSString *)t {
     
-    UIView *view = gr.view;
+    // Callback from share popup
+    
+}
+
+- (void)shareButtonTap:(id)sender {
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+    ModalPopup *popup = [storyboard instantiateViewControllerWithIdentifier:@"ModalPopup"];
+    popup.eventObject = dragView.eventObject;
+    popup.eventDateString = dragView.date.text;
+    popup.eventImage = dragView.eventImage.image;
+    popup.type = @"share";
+    [self showModalPopup:popup];
+}
+
+
+#pragma DraggableView delegate methods
+
+- (void)createdByTap {
+    /*
+     [self performSegueWithIdentifier:@"showProfile" sender:self];
+     */
+}
+
+- (void)subtitleTap {
+    [self performSegueWithIdentifier:@"toMoreDetail" sender:self];
+}
+
+- (void)moreButtonTap {
+    [self performSegueWithIdentifier:@"toMoreDetail" sender:self];
+}
+
+-(void)inviteButtonTap {
+    [self performSegueWithIdentifier:@"inviteHomies" sender:self];
+}
+
+-(void)mapViewTap {
+    [self performSegueWithIdentifier:@"toMapView" sender:self];
+}
+
+-(void)ticketsButtonTap:(id)sender {
+    
+    UIButton *button = (UIButton *)sender;
+    urlString = button.accessibilityIdentifier;
+    [self performSegueWithIdentifier:@"toWebView" sender:self];
+}
+
+-(void)friendProfileTap:(id)sender {
+    
+    UIView *view = (UIView *)sender;
     friendObjectID = view.accessibilityIdentifier;
     [self performSegueWithIdentifier:@"showFriendProfile" sender:self];
-    
-}
-
--(void)inviteHomies {
-    [self performSegueWithIdentifier:@"toInviteHomies" sender:self];
 }
 
 
@@ -529,17 +456,6 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     return range.length != 0;
 }
 
-- (void)ticketsButtonTapped:(UIButton *)button {
-    
-    urlString = button.accessibilityIdentifier;
-    [self performSegueWithIdentifier:@"toWebView" sender:self];
-    
-}
-
-- (void)mapViewTapped {
-    
-    [self performSegueWithIdentifier:@"toMapView" sender:self];
-}
 
 -(void)showEditEventVCWithEvent:(EKEvent *)ev eventStore:(EKEventStore *)es {
     calEvent = ev;
@@ -647,7 +563,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     } else if ([segue.identifier isEqualToString:@"toWebView"]) {
         
         webViewController *vc = (webViewController *)[[segue destinationViewController] topViewController];
-        vc.urlString = ticketsButton.accessibilityIdentifier;
+        vc.urlString = urlString;
         vc.titleString = dragView.title.text;
         
     } else if ([segue.identifier isEqualToString:@"toEKEventEdit"]) {

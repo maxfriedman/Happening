@@ -98,6 +98,30 @@
 }
 
 
+- (CGFloat)conversationViewController:(ATLConversationViewController *)viewController heightForMessage:(LYRMessage *)message withCellWidth:(CGFloat)cellWidth
+{
+    
+    LYRMessagePart *part = message.parts[0];
+    
+    // if message contains the custom mimetype, then grab the cell info from the other message part
+    if([part.MIMEType isEqual: ATLMimeTypeCustomObject])
+    {
+        LYRMessagePart *cellMessagePart = message.parts[1];
+        NSData *data = cellMessagePart.data;
+        NSError* error;
+        NSDictionary* json = [NSJSONSerialization JSONObjectWithData:data
+                                                             options:kNilOptions
+                                                               error:&error];
+        
+        // Grab the height value from the JSON
+        NSString *height = [json objectForKey:@"height"];
+        NSInteger heightInt = [height integerValue];
+        return heightInt;
+    }
+    return 0;
+}
+
+
 // How do I implement an avatar identical to those normally presented OR show nothing at all?
 - (void)shouldDisplayAvatarItem:(BOOL)shouldDisplayAvatarItem{
     

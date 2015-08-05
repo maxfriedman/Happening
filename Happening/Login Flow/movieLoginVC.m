@@ -56,21 +56,9 @@
     
     if ([PFUser currentUser][@"firstName"] == nil) {
         
-        [PFAnonymousUtils logInWithBlock:^(PFUser *user, NSError *error) {
-            if (!error) {
-                NSLog(@"anon: %@", user);
-
-            } else {
-                NSLog(@"--> %@", error);
-                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Error" message:@"Something isn't working quite right. Try checking your internet connection or closing the app and trying again. If issues persist, please email hello@happening.city." delegate:nil cancelButtonTitle:@"I'm on it" otherButtonTitles:nil, nil];
-                [alert show];
-            }
-            
-            self.fbButton.enabled = YES;
-            self.noAccountButton.enabled = YES;
-        }];
-        //self.fbButton.enabled = YES;
-        //self.noAccountButton.enabled = YES;
+        self.fbButton.enabled = YES;
+        self.noAccountButton.enabled = YES;
+        
     } else {
         
         self.fbButton.userExists = YES;
@@ -105,12 +93,15 @@
 
         PFUser *user = [PFUser currentUser];
         user[@"fbToken"] = [FBSDKAccessToken currentAccessToken].tokenString;
+        if ([PFUser currentUser][@"score"] == nil) [PFUser currentUser][@"score"] = @10;
         [user saveEventually];
+        [self loadFriends];
 
         [self performSegueWithIdentifier:@"toMainTabBar" sender:self];
 
     } else if ([PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]] && [[PFUser currentUser][@"hasLoggedIn"] isEqualToNumber:@YES]) {
-                
+        
+        if ([PFUser currentUser][@"score"] == nil) [PFUser currentUser][@"score"] = @10;
         [self performSegueWithIdentifier:@"toMainTabBar" sender:self];
         
     } else {
@@ -428,6 +419,87 @@
     }
 }
 */
+
+- (void)loadFriends {
+    NSLog(@"made it");
+    PFUser *currentUser = [PFUser currentUser];
+    NSLog(@"%d", [FBSDKAccessToken currentAccessToken] && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]);
+    if ([FBSDKAccessToken currentAccessToken] && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]] /* && (ReachableViaWiFi | ReachableViaWWAN) */) {
+        
+        NSLog(@"testing");
+        NSLog(@"%@", [FBSDKAccessToken currentAccessToken].tokenString);
+        
+        //dispatch_async(dispatch_get_main_queue(), ^{
+        
+        [[[FBSDKGraphRequest alloc] initWithGraphPath:@"/me/friends?limit=1000" parameters:nil] startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
+            //code
+            if (error)
+                NSLog(@"FB GRAPH REQ ERROR ---- %@", error);
+            
+            NSArray* friends = [result objectForKey:@"data"];
+            NSMutableArray *friendObjectIds = [NSMutableArray new];
+            
+            
+            for (int i = 0; i < friends.count; i ++) {
+                [friendObjectIds addObject:[friends[i] objectForKey:@"id"]];
+            }
+            
+            
+            NSArray *friendsArray = currentUser[@"friends"];
+            NSMutableArray *currentFriendIds = [NSMutableArray array];
+            for (NSDictionary *dict in friendsArray) {
+                [currentFriendIds addObject:[dict objectForKey:@"id"]];
+            }
+            
+            
+            NSMutableArray *friendIdsToQueryFor = [NSMutableArray array];
+            for (NSString *fbid in friendObjectIds){
+                if (![currentFriendIds containsObject:fbid])
+                    [friendIdsToQueryFor addObject:fbid];
+            }
+            
+            if (friendIdsToQueryFor.count > 0) {
+                
+                //NSLog(@"query for: %@", friendIdsToQueryFor);
+                
+                PFQuery *query = [PFUser query];
+                [query whereKey:@"FBObjectID" containedIn:friendIdsToQueryFor];
+                query.limit = 1000;
+                
+                [query findObjectsInBackgroundWithBlock:^(NSArray *users, NSError *error) {
+                    
+                    NSMutableArray *array = currentUser[@"friends"];
+                    if (array == nil) {
+                        array = [NSMutableArray array];
+                    }
+                    
+                    for (PFUser *user in users) {
+                        
+                        NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+                        
+                        [dict setObject:user.objectId forKey:@"parseId"];
+                        [dict setObject:[NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]] forKey:@"name"];
+                        [dict setObject:user[@"FBObjectID"] forKey:@"id"];
+                        
+                        [array addObject:dict];
+                    }
+                    
+                    [PFUser currentUser][@"friends"] = array;
+                    [[PFUser currentUser] saveEventually:^(BOOL success, NSError *error){
+                    }];
+                    
+                }];
+            }
+        }];
+        
+        //});
+        
+    } else {
+        
+        NSLog(@"no token......");
+    }
+    
+}
 
 
 #pragma mark - Navigation

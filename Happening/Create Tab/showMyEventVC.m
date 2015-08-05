@@ -301,7 +301,6 @@
     
     [self dismissViewControllerAnimated:YES completion:^{
         
-        [self.profileVC showNavTitle];
     }];
 }
 

@@ -47,7 +47,7 @@
 //this makes it so only two cards are loaded at a time to
 //avoid performance and memory costs
 static const int MAX_BUFFER_SIZE = 2; //%%% max number of cards loaded at any given time, must be greater than 1
-static const float CARD_HEIGHT = 350; //%%% height of the draggable card
+static const float CARD_HEIGHT = 390; //%%% height of the draggable card
 static const float CARD_WIDTH = 284; //%%% width of the draggable card
 
 @synthesize allCards;//%%% all the cards
@@ -74,7 +74,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         //self.superview.superview.userInteractionEnabled = YES;
         //self.myViewController.view.userInteractionEnabled = YES;
         
-        self.myViewController.frontViewIsVisible = YES; // Cards start off with front view visible
+        self.myViewController.isCardExpanded = NO; // Cards start off with front view visible
         
         eventStore = [[EKEventStore alloc] init];
         
@@ -188,7 +188,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         
         PFQuery *weightedQuery = [PFQuery queryWithClassName:@"Event"];
         [weightedQuery whereKey:@"globalWeight" greaterThan:@0];
-        [weightedQuery whereKey:@"EndTime" greaterThan:[NSDate date]];
+        [weightedQuery whereKey:@"Date" greaterThan:[NSDate dateWithTimeIntervalSinceNow:-60*60*4]];
         
 
         finalQuery = [PFQuery orQueryWithSubqueries:@[eventQuery, weightedQuery]];
@@ -215,6 +215,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             mySwipesQuery.limit = 1000;
             [mySwipesQuery whereKey:@"UserID" equalTo:user.objectId];
             [mySwipesQuery whereKey:@"swipedAgain" equalTo:@YES];
+            [mySwipesQuery whereKey:@"createdAt" greaterThan:[NSDate dateWithTimeIntervalSinceNow:-(60*60*24*28)]];
             //[mySwipesQuery whereKey:@"UserID" notContainedIn:idsArray];
             
             [finalQuery whereKey:@"objectId" doesNotMatchKey:@"EventID" inQuery:mySwipesQuery];
@@ -230,6 +231,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             
             mySwipesQuery.limit = 1000;
             [mySwipesQuery whereKey:@"UserID" equalTo:user.objectId];
+            [mySwipesQuery whereKey:@"createdAt" greaterThan:[NSDate dateWithTimeIntervalSinceNow:-(60*60*24*28)]];
             [finalQuery whereKey:@"objectId" doesNotMatchKey:@"EventID" inQuery:mySwipesQuery];
             
         }
@@ -257,19 +259,14 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             finalLoc = theUserLoc.coordinate;
         }
         
-        float milesToLat = 69;
-        //float milesToLong = 45;
-        
-        //Position, decimal degrees
-        
         //Earth’s radius, sphere
         float earthRadius = 6378137.0;
         
         //offsets in meters
         //float dn = radius * 1609.344;
         //float de = radius * 1609.344;
-        float dn = 50 * 1609.344;
-        float de = 50 * 1609.344;
+        float dn = radius * 1609.344;
+        float de = radius * 1609.344;
         
         //Coordinate offsets in radians
         float dLat = dn/earthRadius;
@@ -281,8 +278,6 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         
         float lat2 = finalLoc.latitude + dLat * 180/M_PI;
         float lon2 = finalLoc.longitude + dLon * 180/M_PI;
-        
-        float blah = cosf(userLoc.latitude) * 69;
         
         PFGeoPoint *swc = [PFGeoPoint geoPointWithLatitude:lat1 longitude:lon1];
         PFGeoPoint *nwc = [PFGeoPoint geoPointWithLatitude:lat2 longitude:lon2];
@@ -374,7 +369,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                     [formatter setDateFormat:@"EEEE"];
                     [calDayOfWeekArray addObject:[formatter stringFromDate:eventDate]];
                     
-                } else if (![[eventDate beginningOfDay] isEqualToDate:[endDate beginningOfDay]]) { //MULTI-DAY EVENT
+                } else if (![[eventDate beginningOfDay] isEqualToDate:[endDate beginningOfDay]] && endDate != nil) { //MULTI-DAY EVENT
                     
                     [formatter setDateFormat:@"MMM d"];
                     NSString *dateString = [formatter stringFromDate:eventDate];
@@ -607,11 +602,11 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     else
         draggableView.ticketLink = ticketLinkString;
     
-    NSString *locationString = [NSString stringWithFormat:@"at %@", event[@"Location"]];
+    NSString *locationString = event[@"Location"];
     if (locationString == nil || [locationString isEqualToString:@""])
         draggableView.location.text = @"";
     else
-        draggableView.location.text = locationString;
+        draggableView.location.text = [NSString stringWithFormat:@"at %@", locationString];
     
     NSNumber *swipe = event[@"swipesRight"];
     draggableView.swipesRight.text = [NSString stringWithFormat:@"%@ interested", [swipe stringValue]];
@@ -700,20 +695,6 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                 
                 //[draggableView.cardView insertSubview:draggableView.transpBackground belowSubview:draggableView.locImage];
                 
-
-                CAGradientLayer *l = [CAGradientLayer layer];
-                l.frame = draggableView.eventImage.bounds;
-                l.colors = [NSArray arrayWithObjects:(id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:0.0] CGColor], (id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:0.1] CGColor], (id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:0.5] CGColor], (id)[[UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.9] CGColor], nil];
-                
-                //l.startPoint = CGPointMake(0.0, 0.7f);
-                //l.endPoint = CGPointMake(0.0f, 1.0f);
-                l.locations = [NSArray arrayWithObjects:[NSNumber numberWithFloat:0.0], [NSNumber numberWithFloat:0.2],
-                [NSNumber numberWithFloat:0.5],
-                //[NSNumber numberWithFloat:0.9],
-                [NSNumber numberWithFloat:1.0], nil];
-                
-                [draggableView.eventImage.layer insertSublayer:l atIndex:0];
-                
                 //blurView.layer.mask = l;
                 
 
@@ -773,9 +754,9 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     [self sendSubviewToBack:dragView.cardBackground];
     
     self.dragView.friendScrollView.delegate = self;
-    [self loadFBFriends:self.dragView.friendScrollView withCard:draggableView];
     
     draggableView.delegate = self;
+    
     return draggableView;
 }
 
@@ -872,109 +853,6 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 
 - (void)dismissHUD {
     [SVProgressHUD dismiss];
-}
-
-- (void)loadFBFriends:(UIScrollView *)friendScrollView withCard:(DraggableView *)card {
-    
-    card.interestedNames = [NSMutableArray new];
-    card.interestedIds = [NSMutableArray new];
-    
-    NSArray *friends = [PFUser currentUser][@"friends"];
-    NSMutableArray *idsArray = [NSMutableArray array];
-    for (NSDictionary *dict in friends) {
-        [idsArray addObject:[dict valueForKey:@"id"]];
-    }
-    
-    __block int friendCount = 0;
-    
-    PFQuery *friendQuery = [PFQuery queryWithClassName:@"Swipes"];
-    [friendQuery whereKey:@"FBObjectID" containedIn:idsArray];
-    [friendQuery whereKey:@"EventID" equalTo:card.objectID];
-    [friendQuery whereKey:@"swipedRight" equalTo:@YES];
-    
-    PFQuery *userQuery = [PFUser query];
-    [userQuery whereKey:@"objectId" matchesKey:@"UserID" inQuery:friendQuery];
-    
-    [userQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-        
-       // NSLog(@"%lu friends interested", (unsigned long)objects.count);
-        
-        if (!error) {
-            
-            NSMutableArray *orderedObjects = [NSMutableArray arrayWithArray:objects];
-            
-            for (PFObject *object in objects) {
-                
-                if ([bestFriendIds containsObject:object[@"FBObjectID"]]) {
-                    [orderedObjects removeObject:object];
-                    [orderedObjects insertObject:object atIndex:0];
-                }
-                
-            }
-            
-            for (PFObject *object in orderedObjects) {
-                
-                FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(50 * friendCount, 0, 40, 40)]; // initWithProfileID:user[@"FBObjectID"] pictureCropping:FBSDKProfilePictureModeSquare];
-                profPicView.profileID = object[@"FBObjectID"];
-                profPicView.pictureMode = FBSDKProfilePictureModeSquare;
-                
-                profPicView.layer.cornerRadius = 20;
-                profPicView.layer.masksToBounds = YES;
-                profPicView.accessibilityIdentifier = object.objectId;
-                profPicView.userInteractionEnabled = YES;
-                [friendScrollView addSubview:profPicView];
-                
-                UITapGestureRecognizer *gr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(showFriendProfile:)];
-                [profPicView addGestureRecognizer:gr];
-                
-                UILabel *nameLabel = [[UILabel alloc] init];
-                nameLabel.font = [UIFont fontWithName:@"OpenSans" size:7];
-                nameLabel.textColor = [UIColor blackColor];
-                nameLabel.textAlignment = NSTextAlignmentCenter;
-                nameLabel.text = object[@"firstName"];
-                nameLabel.frame = CGRectMake(5 + (50 * friendCount), 42, 30, 8);
-                [friendScrollView addSubview:nameLabel];
-                
-                friendScrollView.contentSize = CGSizeMake((50 * friendCount) + 40, 50);
-                
-                //[self friendsUpdateFrameBy:50];
-                
-                if ([bestFriendIds containsObject:object[@"FBObjectID"]]) {
-                    
-                    UIImageView *starImageView = [[UIImageView alloc] initWithFrame:CGRectMake(50 * friendCount + 25, 0, 15, 15)];
-                    starImageView.image = [UIImage imageNamed:@"star-blue-bordered"];
-                    [friendScrollView addSubview:starImageView];
-                }
-                
-                [card.interestedIds addObject:object[@"FBObjectID"]];
-                [card.interestedNames addObject:[NSString stringWithFormat:@"%@ %@", object[@"firstName"], object[@"lastName"]]];
-                //[interestedPics addObject:profPicView];
-                
-                friendCount++;
-                
-                if (friendCount == 1) {
-                    card.friendsInterested.text = [NSString stringWithFormat:@"%d friend interested", friendCount - 1];
-                } else {
-                    card.friendsInterested.text = [NSString stringWithFormat:@"%d friends interested", friendCount - 1];
-                }
-                
-            }
-            
-            if (objects.count > 4) {
-                
-                card.friendArrow.alpha = 1;
-            }
-            
-            if (objects.count == 0) {
-               // NSLog(@"No new friends");
-                
-                //[self noFriendsAddButton:friendScrollView];
-                
-            }
-        }
-        
-    }];
-    
 }
 
 //%%% action called when the card goes to the left.
@@ -1130,6 +1008,9 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         [user incrementKey:tag];
     }
     
+    if (isGoing) [user incrementKey:@"score" byAmount:@3];
+    else [user incrementKey:@"score" byAmount:@1];
+    
     [user saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
         if (!error) {
             // The currentUser saved successfully.
@@ -1139,6 +1020,19 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             NSLog(@"Parse error: %@", errorString);
         }
     }];
+    
+    PFObject *timelineObject = [PFObject objectWithClassName:@"Timeline"];
+    
+    if (isGoing) timelineObject[@"type"] = @"going";
+    else timelineObject[@"type"] = @"swipeRight";
+    
+    timelineObject[@"userId"] = user.objectId;
+    timelineObject[@"eventId"] = dragView.objectID;
+    timelineObject[@"createdDate"] = [NSDate date];
+    timelineObject[@"eventTitle"] = dragView.title.text;
+    [timelineObject pinInBackground];
+    [timelineObject saveEventually];
+        
     
     if (![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
 
@@ -1350,16 +1244,16 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     
     [self.myViewController expandCurrentView];
     
-    [dragView cardExpanded:!self.myViewController.frontViewIsVisible];
+    [dragView cardExpanded:self.myViewController.isCardExpanded];
 }
 
 - (BOOL) gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch
 {
     //if (CGRectContainsPoint(self.dragView.bounds, [touch locationInView:self.dragView]))
-    if (self.myViewController.frontViewIsVisible)
-        return YES;
+    if (self.myViewController.isCardExpanded)
+        return NO;
     
-    return NO;
+    return YES;
 }
 
 // Check the authorization status of our application for Calendar
@@ -1513,6 +1407,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 }
 
 -(void)mapViewTap {
+    NSLog(@"Made it");
     [self.myViewController mapViewTap];
 }
 
@@ -1520,11 +1415,11 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     [self.myViewController ticketsButtonTapped:sender];
 }
 
--(void)showFriendProfile:(UITapGestureRecognizer *)gr {
+-(void)friendProfileTap:(id)sender {
     
-    UIView *view = gr.view;
-    self.myViewController.friendObjectID = view.accessibilityIdentifier;
-    [self.myViewController showFriendProfile:gr];
+    UIView *view = (UIView *)sender;
+    //self.myViewController.friendObjectID = view.accessibilityIdentifier;
+    [self.myViewController showFriendProfile:view.accessibilityIdentifier];
     
 }
 
@@ -1539,13 +1434,6 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
     
     if (scrollView.tag == 33) {
-        
-       // NSLog(@"contentOffset.x: %f", scrollView.contentOffset.x);
-        //NSLog(@"contentSize.width: %f", scrollView.contentSize.width);
-        //NSLog(@"frame.size.width: %f", scrollView.frame.size.width);
-        
-        //NSLog(@"math: %f", (scrollView.contentSize.width - scrollView.frame.size.width));
-
         
         if (scrollView.contentOffset.x >= (scrollView.contentSize.width - scrollView.frame.size.width)) {
             

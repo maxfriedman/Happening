@@ -24,4 +24,6 @@ typedef NS_ENUM(NSUInteger , GGOverlayViewMode) {
 @property (assign) BOOL forDragView;
 @property (assign) BOOL forFlippedDVB;
 
+@property (assign) BOOL isCreateCard;
+
 @end

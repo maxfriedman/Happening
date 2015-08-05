@@ -47,6 +47,7 @@ static Rdio * _rdioInstance;
                                              andSecret:@"LtKsfB3aZQhrOyk6rpthCg"
                                               delegate:nil];
     }
+
     return _rdioInstance;
 }
 
@@ -87,8 +88,13 @@ static Rdio * _rdioInstance;
     
     if ([PFUser currentUser] == nil) {
         NSLog(@"ENABLE AUTOMATIC USER");
-        [PFUser enableAutomaticUser];
+        [PFAnonymousUtils logInInBackground];
+        /*
+        [[PFUser currentUser] saveInBackgroundWithBlock:^(BOOL success, NSError *error){
+            NSLog(@"current user: %@ - %@", [PFUser currentUser].objectId, [PFUser currentUser]);
+        }];*/
     }
+    
     
     NSURL *appID = [NSURL URLWithString:@"layer:///apps/staging/337f6c52-0eb7-11e5-b8c8-aa9e2d006589"];
     self.layerClient = [LYRClient clientWithAppID:appID];
@@ -110,6 +116,12 @@ static Rdio * _rdioInstance;
     }
     
     _rdioInstance = [AppDelegate sharedRdio]; //initialize
+    [_rdioInstance preparePlayerWithDelegate:nil];
+    [_rdioInstance callAPIMethod:@"access_token" withParameters:@{@"access_token":@"mF_9.B5f-4.1JqM"} success:^(NSDictionary *result) {
+        NSLog(@"lala %@", result);
+    } failure:^(NSError *error) {
+        NSLog(@"lala %@", error);
+    }];
     
     //[rdio preparePlayerWithDelegate:nil];
     //[rdio.player performSelector:@selector(play:) withObject:@"t1" afterDelay:2.0];
@@ -304,20 +316,27 @@ static Rdio * _rdioInstance;
     {
         NSLog(@"not first launch");
     
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        //dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
         
             PFInstallation *currentInstallation = [PFInstallation currentInstallation];
             if (currentInstallation.badge != 0) {
                 currentInstallation.badge = 0;
                 [currentInstallation saveEventually];
             }
-            
-            [self loadFriends];
-            
+        
             [self loadEvents];
             
             [self loadGroups];
-            
+        
+        
+            [[PFUser currentUser] fetchInBackgroundWithBlock:^(PFObject *object, NSError *error) {
+                
+                if (!error){
+                    [object pinInBackground];
+                    //[self performSelector:@selector(loadFriends) withObject:nil afterDelay:5.0];
+                }
+            }];
+        
             /*
             PFQuery *localUserQuery = [PFUser query];
             [localUserQuery fromLocalDatastore];
@@ -349,55 +368,11 @@ static Rdio * _rdioInstance;
                 
             }]; */
             
-        });
+        //});
     }
     
 }
 
-- (void)loadFriends {
-    
-    if ([FBSDKAccessToken currentAccessToken] && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]] /* && (ReachableViaWiFi | ReachableViaWWAN) */) {
-        
-        [[[FBSDKGraphRequest alloc] initWithGraphPath:@"/me/friends?limit=1000" parameters:nil] startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
-            //code
-            
-            NSArray* friends = [result objectForKey:@"data"];
-            NSMutableArray *friendObjectIds = [NSMutableArray new];
-            
-            for (int i = 0; i < friends.count; i ++) {
-                [friendObjectIds addObject:[friends[i] objectForKey:@"id"]];
-            }
-            
-            PFQuery *query = [PFUser query];
-            [query whereKey:@"FBObjectID" containedIn:friendObjectIds];
-            query.limit = 1000;
-            [query findObjectsInBackgroundWithBlock:^(NSArray *users, NSError *error) {
-                
-                NSMutableArray *array = [NSMutableArray array];
-                
-                for (PFUser *user in users) {
-                    
-                    NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-                    
-                    [dict setObject:user.objectId forKey:@"parseId"];
-                    [dict setObject:[NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]] forKey:@"name"];
-                    [dict setObject:user[@"FBObjectID"] forKey:@"id"];
-                    
-                    [array addObject:dict];
-                }
-                
-                [PFUser currentUser][@"friends"] = array;
-                [[PFUser currentUser] saveEventually];
-            }];
-            
-        }];
-        
-    } else {
-        
-        NSLog(@"no token......");
-    }
-        
-}
 
 -(void)loadEvents {
     

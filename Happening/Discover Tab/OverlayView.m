@@ -53,6 +53,8 @@
         
         label.backgroundColor = [UIColor redColor];
         
+        self.isCreateCard = NO;
+        
         //label.alpha = 0;
         [self addSubview:label];
     }
@@ -67,7 +69,7 @@
     
     _mode = mode;
     
-    if(mode == GGOverlayViewModeLeft) {
+    if(mode == GGOverlayViewModeLeft && !self.isCreateCard) {
         /*
         UIImage *image = [UIImage imageNamed:@"noButton"];
         image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
@@ -80,7 +82,7 @@
         
         label.backgroundColor = [UIColor redColor];
         
-    } else if (mode == GGOverlayViewModeRight){
+    } else if (mode == GGOverlayViewModeRight && !self.isCreateCard){
         //imageView.image = [UIImage imageNamed:@"yesButton"];
         
         NSUInteger randomIndex = arc4random() % [yesArray count];

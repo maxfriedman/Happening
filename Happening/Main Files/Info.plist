@@ -47,7 +47,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>1.0.4</string>
+	<string>1.0.6</string>
 	<key>FacebookAppID</key>
 	<string>670930332992069</string>
 	<key>FacebookDisplayName</key>
@@ -57,9 +57,9 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>We use your location to tell you how far away you are from an event, and notify your friends when you arrive (configurable in settings).</string>
+	<string>Happening needs your location to determine how far away you are from an event, and notify your friends when you arrive (configurable in settings).</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>We use your location to tell you how far away you are from an event.</string>
+	<string>Happening needs your location to determine how far away you are from an event.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>/Happening/Extras/Open Sans/OpenSans-Bold.ttf</string>

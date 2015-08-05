@@ -61,10 +61,10 @@
     UIView *whiteRoundedCornerView = [[UIView alloc] initWithFrame:CGRectMake(18,5,284,138)];
     whiteRoundedCornerView.backgroundColor = [UIColor whiteColor];
     whiteRoundedCornerView.layer.masksToBounds = YES;
-    whiteRoundedCornerView.layer.cornerRadius = 8.0;
+    whiteRoundedCornerView.layer.cornerRadius = 10.0;
     whiteRoundedCornerView.layer.shadowOffset = CGSizeMake(-1, 1);
     whiteRoundedCornerView.layer.shadowOpacity = 1.0;
-    whiteRoundedCornerView.layer.borderColor = [UIColor grayColor].CGColor;
+    whiteRoundedCornerView.layer.borderColor = [UIColor lightGrayColor].CGColor;
     whiteRoundedCornerView.layer.borderWidth = 1.0;
     
     [self.contentView addSubview:whiteRoundedCornerView];

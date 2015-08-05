@@ -281,8 +281,6 @@
     AppDelegate *appDelegate=(AppDelegate *)[UIApplication sharedApplication].delegate;
     appDelegate.item = nil;
     [self dismissViewControllerAnimated:YES completion:^{
-        
-        [self.profileVC showNavTitle];
     }];
     
 }
@@ -454,8 +452,6 @@
                 
                  // dismiss when event is saved
                 [self dismissViewControllerAnimated:YES completion:^{
-                    
-                    [self.profileVC showNavTitle];
                 }];
                 
             } else {
@@ -521,8 +517,6 @@ clickedButtonAtIndex:(NSInteger)buttonIndex{
                 
                 // dismiss when event is saved
                 [self dismissViewControllerAnimated:YES completion:^{
-                    
-                    [self.profileVC showNavTitle];
                 }];
 
             } else {

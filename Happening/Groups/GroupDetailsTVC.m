@@ -18,7 +18,7 @@
 
 @import MobileCoreServices;
 
-@interface GroupDetailsTVC () <UIAlertViewDelegate, UIActionSheetDelegate, FastttCameraDelegate, UITextFieldDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, GroupAddFriendsTVCDelegate, UITextFieldDelegate>
+@interface GroupDetailsTVC () <UIAlertViewDelegate, UIActionSheetDelegate, FastttCameraDelegate, UITextFieldDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, GroupAddFriendsTVCDelegate>
 
 @property (nonatomic, strong) FastttCamera *fastCamera;
 @property (nonatomic, strong) UIButton *flashButton;

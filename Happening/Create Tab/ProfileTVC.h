@@ -9,16 +9,18 @@
 #import <UIKit/UIKit.h>
 #import <CoreLocation/CoreLocation.h>
 
-@interface ProfileTVC : UITableViewController <CLLocationManagerDelegate>
+@interface ProfileTVC : UIViewController <CLLocationManagerDelegate>
 
 @property (strong, nonatomic) IBOutlet UIImageView *profilePicImageView;
 @property (strong, nonatomic) IBOutlet UILabel *nameLabel;
 @property (strong, nonatomic) IBOutlet UILabel *detailLabel;
 
-@property (strong, nonatomic) IBOutlet UITableView *myEventsTableView;
+@property (strong, nonatomic) IBOutlet UITableView *tableView;
+@property (strong, nonatomic) IBOutlet UIView *containerView;
+@property (strong, nonatomic) IBOutlet UIView *segContainerView;
+@property (strong, nonatomic) IBOutlet UIButton *scoreButton;
+@property (strong, nonatomic) IBOutlet UIScrollView *scrollView;
 
 @property CLLocationManager *locManager;
-
--(void)showNavTitle;
 
 @end

@@ -31,6 +31,7 @@
 -(void)inviteButtonTap;
 -(void)mapViewTap;
 -(void)ticketsButtonTap:(id)sender;
+-(void)friendProfileTap:(id)sender;
 
 @end
 
@@ -111,6 +112,8 @@
 
 @property (assign) CGFloat extraDescHeight;
 
+@property (assign) BOOL isSwipeable;
+
 @property PFObject *eventObject;
 
 - (void)leftClickAction;
@@ -119,5 +122,6 @@
 - (void)arrangeCornerViews;
 - (void)cardExpanded:(BOOL)b;
 - (void)loadCardWithData;
+- (void)setEditableCard;
 
 @end

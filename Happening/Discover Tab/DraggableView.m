@@ -73,6 +73,7 @@
         
         self.actionMargin = ACTION_MARGIN;
         self.swipeDownMargin = SWIPE_DOWN_MARGIN;
+        self.isSwipeable = YES;
         
         /* %%%%%%%%%%%%%%%% TO BE ASSIGNED %%%%%%%%%%%%%%%%% */
         objectID = [[NSString alloc]init];
@@ -95,6 +96,27 @@
         maskLayer.path = maskPath.CGPath;
         eventImage.layer.mask = maskLayer;
         [cardView addSubview:eventImage];
+        [eventImage setContentMode:UIViewContentModeScaleAspectFill];
+        eventImage.autoresizingMask =
+        ( UIViewAutoresizingFlexibleBottomMargin
+         | UIViewAutoresizingFlexibleHeight
+         | UIViewAutoresizingFlexibleLeftMargin
+         | UIViewAutoresizingFlexibleRightMargin
+         | UIViewAutoresizingFlexibleTopMargin
+         | UIViewAutoresizingFlexibleWidth );
+        
+        CAGradientLayer *l = [CAGradientLayer layer];
+        l.frame = eventImage.bounds;
+        l.colors = [NSArray arrayWithObjects:(id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:0.0] CGColor], (id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:0.1] CGColor], (id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:0.5] CGColor], (id)[[UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.9] CGColor], nil];
+        
+        //l.startPoint = CGPointMake(0.0, 0.7f);
+        //l.endPoint = CGPointMake(0.0f, 1.0f);
+        l.locations = [NSArray arrayWithObjects:[NSNumber numberWithFloat:0.0], [NSNumber numberWithFloat:0.2],
+                       [NSNumber numberWithFloat:0.5],
+                       //[NSNumber numberWithFloat:0.9],
+                       [NSNumber numberWithFloat:1.0], nil];
+        
+        [eventImage.layer insertSublayer:l atIndex:0];
         
         
         title = [[UILabel alloc]initWithFrame:CGRectMake(15, 103, eventImage.frame.size.width - 30, 100)];
@@ -152,7 +174,7 @@
         [geoLoc setTextAlignment:NSTextAlignmentRight];
         geoLoc.textColor = [UIColor colorWithHue:0 saturation:0 brightness:.50 alpha:1.0];
         geoLoc.font = [UIFont fontWithName:@"OpenSans" size:12.0];
-        [cardView addSubview:geoLoc];
+        //[cardView addSubview:geoLoc];
 
         
         swipesRight = [[UILabel alloc]initWithFrame:CGRectMake(35, 280, 65, 100)];
@@ -190,7 +212,7 @@
         
         locImage = [[UIImageView alloc]initWithFrame:CGRectMake(219, 215, 12, 15)];
         locImage.image = [UIImage imageNamed:@"locationGrey"];
-        [cardView addSubview:locImage];
+        //[cardView addSubview:locImage];
 
         
         userImage = [[UIImageView alloc]initWithFrame:CGRectMake(15, 322, 18, 18)];
@@ -312,6 +334,7 @@
         [cardView addSubview:notInterestedButton];
         [notInterestedButton addTarget:self action:@selector(manualSwipeLeft) forControlEvents:UIControlEventTouchUpInside];
         notInterestedButton.tag = 3;
+        notInterestedButton.alpha = 0;
         
         notInterestedLabel = [[UILabel alloc] initWithFrame:notInterestedButton.frame];
         notInterestedLabel.text = @"Not Interested";
@@ -320,6 +343,7 @@
         [notInterestedLabel sizeToFit];
         notInterestedLabel.center = CGPointMake(notInterestedButton.center.x, notInterestedButton.center.y + 25);
         notInterestedLabel.tag = 3;
+        notInterestedLabel.alpha = 0;
         [cardView addSubview:notInterestedLabel];
         
         interestedButton = [[UIButton alloc] initWithFrame:CGRectMake(50, 620, 35, 35)];
@@ -328,6 +352,7 @@
         [cardView addSubview:interestedButton];
         [interestedButton addTarget:self action:@selector(manualSwipeRight) forControlEvents:UIControlEventTouchUpInside];
         interestedButton.tag = 3;
+        interestedButton.alpha = 0;
         
         interestedLabel = [[UILabel alloc] initWithFrame:interestedButton.frame];
         interestedLabel.text = @"Interested";
@@ -336,6 +361,7 @@
         [interestedLabel sizeToFit];
         interestedLabel.center = CGPointMake(interestedButton.center.x, interestedButton.center.y + 25);
         interestedLabel.tag = 3;
+        interestedLabel.alpha = 0;
         [cardView addSubview:interestedLabel];
         
         goingButton = [[UIButton alloc] initWithFrame:CGRectMake(50, 620, 35, 35)];
@@ -344,6 +370,7 @@
         [cardView addSubview:goingButton];
         [goingButton addTarget:self action:@selector(manualSwipeDown) forControlEvents:UIControlEventTouchUpInside];
         goingButton.tag = 3;
+        goingButton.alpha = 0;
         
         goingLabel = [[UILabel alloc] initWithFrame:goingButton.frame];
         goingLabel.text = @"Back to top";
@@ -352,6 +379,7 @@
         [goingLabel sizeToFit];
         goingLabel.center = CGPointMake(goingButton.center.x, goingButton.center.y + 25);
         goingLabel.tag = 3;
+        goingLabel.alpha = 0;
         [cardView addSubview:goingLabel];
         
         
@@ -445,11 +473,17 @@
     mapView.layer.borderColor = [UIColor colorWithRed:204.0/255 green:204.0/255 blue:204.0/255 alpha:1.0].CGColor;
     mapView.layer.borderWidth = 1.0;
     [mapView setZoomEnabled:NO];
+    mapView.scrollEnabled = NO;
     //mapView.alpha = 0;
     mapView.tag = 3;
     [cardView addSubview:mapView];
     mapView.userInteractionEnabled = YES;
-    [mapView addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:delegate action:@selector(mapViewTap)]];
+    
+    UIButton *clearButton = [[UIButton alloc] initWithFrame:mapView.bounds];
+    [clearButton setBackgroundColor:[UIColor clearColor]];
+    [clearButton addTarget:delegate action:@selector(mapViewTap) forControlEvents:UIControlEventTouchUpInside];
+    [mapView addSubview:clearButton];
+    
     
     
     uberBTN = [[BTNDropinButton alloc] initWithButtonId:@"btn-0acf02149a673eb6"];
@@ -509,9 +543,10 @@
     ticketsButton.layer.borderWidth = 1.0;
     ticketsButton.layer.cornerRadius = 28/2;
     
-    [ticketsButton addTarget:self action:@selector(buttonHighlight:) forControlEvents:UIControlEventTouchDown];
-    [ticketsButton addTarget:self action:@selector(buttonNormal:) forControlEvents:UIControlEventTouchUpInside];
-    [ticketsButton addTarget:self action:@selector(buttonNormal:) forControlEvents:UIControlEventTouchDragExit];
+    [ticketsButton addTarget:self action:@selector(tixButtonHighlight:) forControlEvents:UIControlEventTouchDown];
+    [ticketsButton addTarget:self action:@selector(tixButtonNormal:) forControlEvents:UIControlEventTouchUpInside];
+    [ticketsButton addTarget:self action:@selector(tixButtonNormal:) forControlEvents:UIControlEventTouchDragExit];
+    
     
     [cardView addSubview:ticketsButton];
     
@@ -622,9 +657,13 @@
             noTixLabel.text = @"This event does not have tickets.";
         } else if ([[self.eventObject objectForKey:@"isFreeEvent"] isEqualToNumber:@YES]){
             noTixLabel.text = @"This event is free! No tickets required.";
+        } else if ([[self.eventObject objectForKey:@"private"] isEqualToNumber:@YES]) {
+        
         } else {
             noTixLabel.text = @"No ticket information is available.";
         }
+        
+        [ticketsButton removeFromSuperview];
         
         noTixLabel.center = CGPointMake(self.center.x, noTixLabel.center.y);
         [cardView addSubview:noTixLabel];
@@ -638,7 +677,8 @@
     }
     
     [cardView bringSubviewToFront:self.mapView];
-    
+    [self loadFBFriends];
+
 }
 
 
@@ -701,7 +741,7 @@
                 [subtitle removeFromSuperview];
                 
                 NSString *urlStr = dict[@"dynamicIcon"];
-                if ([urlStr containsString:@"%"]) {
+                if ([self doesString:urlStr contain:@"%"]) {
                     NSRange range = [urlStr rangeOfString:@"%"];
                     urlStr = [urlStr substringWithRange:NSMakeRange(0, range.location)];
                 }
@@ -848,6 +888,142 @@
     }
 }
 
+
+- (void)loadFBFriends {
+    
+    self.interestedNames = [NSMutableArray new];
+    self.interestedIds = [NSMutableArray new];
+    
+    NSArray *friends = [PFUser currentUser][@"friends"];
+    NSMutableArray *idsArray = [NSMutableArray array];
+    for (NSDictionary *dict in friends) {
+        [idsArray addObject:[dict valueForKey:@"id"]];
+    }
+    
+    __block int friendCount = 0;
+    
+    PFQuery *friendQuery = [PFQuery queryWithClassName:@"Swipes"];
+    [friendQuery whereKey:@"FBObjectID" containedIn:idsArray];
+    [friendQuery whereKey:@"EventID" equalTo:self.objectID];
+    [friendQuery whereKey:@"swipedRight" equalTo:@YES];
+    
+    [friendQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+        
+        // NSLog(@"%lu friends interested", (unsigned long)objects.count);
+        
+        if (!error) {
+            
+            NSMutableArray *orderedObjects = [NSMutableArray arrayWithArray:objects];
+            
+            /*
+            for (PFObject *object in objects) {
+                
+                
+                if ([bestFriendIds containsObject:object[@"FBObjectID"]]) {
+                    [orderedObjects removeObject:object];
+                    [orderedObjects insertObject:object atIndex:0];
+                }
+                
+            } */
+            
+            for (PFObject *object in orderedObjects) {
+                
+                NSString *fbid = object[@"FBObjectID"];
+                
+                FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(50 * friendCount, 0, 40, 40)]; // initWithProfileID:user[@"FBObjectID"] pictureCropping:FBSDKProfilePictureModeSquare];
+                profPicView.profileID = fbid;
+                //profPicView.pictureMode = FBSDKProfilePictureModeSquare;
+                
+                profPicView.layer.cornerRadius = 20;
+                profPicView.layer.masksToBounds = YES;
+                profPicView.accessibilityIdentifier = object.objectId;
+                profPicView.userInteractionEnabled = YES;
+                [friendScrollView addSubview:profPicView];
+                
+                UITapGestureRecognizer *gr = [[UITapGestureRecognizer alloc] initWithTarget:delegate action:@selector(friendProfileTap:)];
+                [profPicView addGestureRecognizer:gr];
+                
+                UILabel *nameLabel = [[UILabel alloc] init];
+                nameLabel.font = [UIFont fontWithName:@"OpenSans" size:7];
+                nameLabel.textColor = [UIColor blackColor];
+                nameLabel.textAlignment = NSTextAlignmentCenter;
+                for (NSDictionary *dict in friends) {
+                    if ([[dict objectForKey:@"id"] isEqualToString:fbid]) {
+                        NSString *fullName = [dict objectForKey:@"name"];
+                        NSRange range = [fullName rangeOfString:@" "];
+                        nameLabel.text = [fullName substringToIndex:range.location];
+                        break;
+                    }
+                }
+                nameLabel.frame = CGRectMake(5 + (50 * friendCount), 42, 30, 8);
+                [friendScrollView addSubview:nameLabel];
+                
+                friendScrollView.contentSize = CGSizeMake((50 * friendCount) + 40, 50);
+                
+                UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(50 * friendCount + 30, 24, 16, 16)];
+                containerView.clipsToBounds = YES;
+                containerView.layer.cornerRadius = containerView.frame.size.height / 2;
+                //containerView.layer.borderColor = [UIColor groupTableViewBackgroundColor].CGColor;
+                //containerView.layer.borderWidth = 2.0;
+                UIImageView *imv = [[UIImageView alloc] initWithFrame:CGRectMake(4, 4, 8, 8)];
+                [containerView addSubview:imv];
+                [friendScrollView addSubview:containerView];
+                
+                if ([object[@"isGoing"] boolValue] == YES) {
+                    
+                    containerView.backgroundColor = [UIColor colorWithRed:0.0 green:1.0 blue:120.0/255 alpha:1.0];
+                    imv.image = [UIImage imageNamed: @"timeline_going"];
+                    
+                } else {
+                    
+                    containerView.backgroundColor = [UIColor colorWithRed:1.0 green:0 blue:121.0/255 alpha:1.0];
+                    imv.image = [UIImage imageNamed:@"timeline_swipeRight"];
+                    
+                }
+
+                
+                
+                //[self friendsUpdateFrameBy:50];
+                
+                /*
+                if ([bestFriendIds containsObject:object[@"FBObjectID"]]) {
+                    
+                    UIImageView *starImageView = [[UIImageView alloc] initWithFrame:CGRectMake(50 * friendCount + 25, 0, 15, 15)];
+                    starImageView.image = [UIImage imageNamed:@"star-blue-bordered"];
+                    [friendScrollView addSubview:starImageView];
+                }*/
+                
+                [self.interestedIds addObject:object[@"FBObjectID"]];
+                [self.interestedNames addObject:[NSString stringWithFormat:@"%@ %@", object[@"firstName"], object[@"lastName"]]];
+                //[interestedPics addObject:profPicView];
+                
+                friendCount++;
+                
+                if (friendCount == 1) {
+                    self.friendsInterested.text = [NSString stringWithFormat:@"%d friend interested", friendCount - 1];
+                } else {
+                    self.friendsInterested.text = [NSString stringWithFormat:@"%d friends interested", friendCount - 1];
+                }
+                
+            }
+            
+            if (objects.count > 4) {
+                
+                self.friendArrow.alpha = 1;
+            }
+            
+            if (objects.count == 0) {
+                // NSLog(@"No new friends");
+                
+                //[self noFriendsAddButton:friendScrollView];
+                
+            }
+        }
+        
+    }];
+   
+}
+
 -(void)manualSwipeLeft {
 
     overlayView.mode = GGOverlayViewModeLeft;
@@ -893,7 +1069,7 @@
     [self.cardView addGestureRecognizer:panGestureRecognizer];
 
     cardBackground = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"cardBackground"]];
-    cardBackground.frame = CGRectMake(7, 349, 270, cardBackground.image.size.height - 5);
+    cardBackground.frame = CGRectMake(7, 390, 270, cardBackground.image.size.height - 7);
     [self addSubview:cardBackground];
     
     /*
@@ -980,19 +1156,22 @@
 -(void)updateOverlay:(CGFloat)xDistance :(CGFloat)yDistance
 {
     
-    if (xDistance > 15 && yFromCenter < SWIPE_DOWN_MARGIN) {
+    if (xDistance > 15 && yFromCenter < SWIPE_DOWN_MARGIN && !overlayView.isCreateCard && self.isSwipeable) {
         overlayView.mode = GGOverlayViewModeRight;
-        overlayView.alpha = MIN(fabsf(xDistance)/100, 1.0); //based on x coordinate
+        overlayView.alpha = MIN(fabs(xDistance)/100, 1.0); //based on x coordinate
 
-    } else if (xDistance < -15 && yFromCenter < SWIPE_DOWN_MARGIN + 50) { //Higher on swipe left b/c of intent for left swipe
+    } else if (xDistance < -15 && yFromCenter < SWIPE_DOWN_MARGIN + 50 && !overlayView.isCreateCard && self.isSwipeable) { //Higher on swipe left b/c of intent for left swipe
         overlayView.mode = GGOverlayViewModeLeft;
-        overlayView.alpha = MIN(fabsf(xDistance)/100, 1.0); //based on x
+        overlayView.alpha = MIN(fabs(xDistance)/100, 1.0); //based on x
 
-    } else if (yDistance > 0 ){
+    } else if (yDistance > 0 && self.isSwipeable){
         overlayView.mode = GGOverlayViewModeDown;
-        overlayView.alpha = MIN(fabsf(yDistance)/100, 1.0); //based on y
+        overlayView.alpha = MIN(fabs(yDistance)/100, 1.0); //based on y
 
+    } else {
+        overlayView.alpha = 0;
     }
+    
     /*
     else {
         overlayView.alpha = MIN(fabsf(xDistance)/100, 1.0); //based on x, fixes a bug and makes overlay view go away in middle
@@ -1003,19 +1182,27 @@
 //%%% called when the card is let go
 - (void)afterSwipeAction
 {
-    if (xFromCenter > self.actionMargin && yFromCenter < self.swipeDownMargin) {
+    if (xFromCenter > self.actionMargin && yFromCenter < self.swipeDownMargin && self.isSwipeable) {
         [self rightAction];
-    } else if (xFromCenter < -self.actionMargin && yFromCenter < self.swipeDownMargin + 50) { //Higher on swipe left b/c of intent for left swipe
+    } else if (xFromCenter < -self.actionMargin && yFromCenter < self.swipeDownMargin + 50 && self.isSwipeable) { //Higher on swipe left b/c of intent for left swipe
         [self leftAction];
-    } else if (yFromCenter > self.swipeDownMargin) { //add to cal
+    } else if (yFromCenter > self.swipeDownMargin && self.isSwipeable) { //add to cal
         [self downAction];
     } else { //%%% resets the card
+        
+        [UIView animateWithDuration:0.5 delay:0 usingSpringWithDamping:0.5 initialSpringVelocity:0.5 options:UIViewAnimationOptionCurveEaseOut animations:^{
+            cardView.center = self.originalPoint;
+            cardView.transform = CGAffineTransformMakeRotation(0);
+            overlayView.alpha = 0;
+        } completion:nil];
+        
+        /*
         [UIView animateWithDuration:0.3
                          animations:^{
                              cardView.center = self.originalPoint;
                              cardView.transform = CGAffineTransformMakeRotation(0);
                              overlayView.alpha = 0;
-                         }];
+                         }]; */
     }
 }
 
@@ -1072,6 +1259,7 @@
                      animations:^{
                          cardView.center = finishPoint;
                      }completion:^(BOOL complete){
+                         NSLog(@"1");
                          self.superview.superview.superview.userInteractionEnabled = YES;
                          [self setEnabledSidewaysScrolling:YES];
                          [self removeFromSuperview];
@@ -1127,16 +1315,11 @@
     NSLog(@"NO");
 }
 
--(void)cardExpanded:(BOOL)b
+-(void)cardExpanded:(BOOL)isExpanded
 {
     NSLog(@"Drag view tapped");
     
-    if (b) {
-        panGestureRecognizer.enabled = NO;
-    } else {
-        panGestureRecognizer.enabled = YES;
-    }
-    
+    panGestureRecognizer.enabled = !isExpanded;
     
 }
 
@@ -1209,6 +1392,25 @@
     UIButton *button = (UIButton *)sender;
     panGestureRecognizer.enabled = NO;
     [button setBackgroundColor:[UIColor colorWithRed:0.0 green:176.0/255 blue:242.0/255 alpha:1.0]];
+}
+
+-(void)tixButtonNormal:(id)sender {
+    UIButton *button = (UIButton *)sender;
+    panGestureRecognizer.enabled = NO;
+    [button setBackgroundColor:[UIColor colorWithRed:0.0 green:185.0/255 blue:245.0/255 alpha:1.0]];
+}
+
+-(void)tixButtonHighlight:(id)sender {
+    UIButton *button = (UIButton *)sender;
+    panGestureRecognizer.enabled = YES;
+    [button setBackgroundColor:[UIColor whiteColor]];
+}
+
+
+-(void)setEditableCard {
+    
+    self.actionMargin = 10000;
+    
 }
 
 /*

@@ -14,6 +14,7 @@
 #import <EventKitUI/EventKitUI.h>
 #import <FBSDKCoreKit/FBSDKCoreKit.h>
 #import "DraggableView.h"
+#import "ModalPopup.h"
 
 @protocol DragViewControllerDelegate <NSObject>
 
@@ -42,11 +43,14 @@
 - (void)showMoreDetail;
 - (void)showEditEventVCWithEvent:(EKEvent *)event eventStore:(EKEventStore *)es;
 - (void)updateMainTixButton;
-- (void)showFriendProfile:(UITapGestureRecognizer *)gr;
+- (void)showFriendProfile:(NSString *)friendId;
 - (void)inviteHomies;
 - (void)updateTopLabel;
 - (void)swipeDown:(UIView *)card;
 - (void)mapViewTap;
+- (void)showModalPopup:(ModalPopup *)popup;
+- (IBAction)createButtonPressed:(id)sender;
+
 
 @property (weak) id <DragViewControllerDelegate> delegate;
 
@@ -61,10 +65,13 @@
 
 @property (strong, nonatomic) IBOutlet UIView *cardView;
 @property (strong, nonatomic) IBOutlet UIScrollView *scrollView;
+@property (strong, nonatomic) IBOutlet UIButton *createButton;
+@property (strong, nonatomic) IBOutlet UIButton *filterButton;
 
 @property (strong, nonatomic) UIScrollView *pageScrollView;
 
-@property (assign) BOOL frontViewIsVisible;
+@property (assign) BOOL isCardExpanded;
+@property (assign) BOOL isCreatingHappening;
 @property (assign) BOOL userSwipedFromExpandedView;
 @property (assign) BOOL dropdownExpanded;
 @property (assign) BOOL tutIsShown;

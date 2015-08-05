@@ -97,7 +97,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     if (self) {
         [super layoutSubviews];
         [self setupView];
-        self.myViewController.frontViewIsVisible = YES; // Cards start off with front view visible
+        self.myViewController.isCardExpanded = NO; // Cards start off with front view visible
         
         
         // %%%%%%%%%% SO I CAN REMOVE FROM SUPERVIEW %%%%%%%%%

@@ -49,8 +49,6 @@
 
 - (void)setButtonType:(NSString *)type {
     
-    currentUser = [PFUser currentUser];
-        
     if ([type isEqualToString:@"fb"]) {
         [self addTarget:self action:@selector(fbButton) forControlEvents:UIControlEventTouchUpInside];
     } else if ([type isEqualToString:@"anon"]) {
@@ -63,7 +61,8 @@
 - (void)fbButton {
     
     [self.delegate buttonPressStart];
-     
+    currentUser = [PFUser currentUser];
+    
     FBSDKLoginManager *loginManager = [[FBSDKLoginManager alloc] init];
     loginManager.loginBehavior = FBSDKLoginBehaviorSystemAccount;
     [loginManager logInWithReadPermissions:@[@"public_profile", @"email", @"user_friends", @"user_location", @"user_birthday"] handler:^(FBSDKLoginManagerLoginResult *result, NSError *error) {
@@ -122,14 +121,14 @@
                      
                      if ([user objectForKey:@"email"] != nil) {
                          
-                         currentUser.username = [user objectForKey:@"email"];
+                         currentUser.username = [user objectForKey:@"id"];
                          currentUser.email = [user objectForKey:@"email"];
                          
                      } else {
                          NSLog(@"User disabled email permissions");
                          currentUser.username = [user objectForKey:@"link"];
                      }
-                     currentUser.password = [user objectForKey:@"link"];
+                     currentUser.password = @"password";
                      
                      
                      currentUser[@"FBObjectID"] = [user objectForKey:@"id"];
@@ -231,7 +230,7 @@
                       NSLog(@"user_friends ===> %d", [grantedPermissions containsObject:@"user_friends"]);
                       NSLog(@"basic_info ===> %d", [grantedPermissions containsObject:@"basic_info"]);
                       NSLog(@"contact_email ===> %d", [grantedPermissions containsObject:@"contact_email"]);
-                      
+                      */
                       NSLog(@"location ===> %@", [user valueForKey:@"location"]);
                       NSLog(@"birthday ===> %@", [user valueForKey:@"birthday"]);
                       NSLog(@"first_name ===> %@", [user valueForKey:@"first_name"]);
@@ -239,118 +238,142 @@
                       NSLog(@"email ===> %@", [user valueForKey:@"email"]);
                       NSLog(@"gender ===> %@", [user valueForKey:@"gender"]);
                       NSLog(@"link ===> %@", [user valueForKey:@"link"]);
-                      */
-                    
-                     PFUser *newUser = [PFUser user];
+                     NSLog(@"fbtoken ===> %@", [FBSDKAccessToken currentAccessToken].tokenString);
                      
-                    NSString *username = [self randomStringWithLength:10];
-                    //user.username = username;
-                     
-                     if ([user objectForKey:@"email"] != nil) {
+                     PFQuery *userQuery = [PFUser query];
+                     [userQuery whereKey:@"FBObjectID" equalTo:[user objectForKey:@"id"]];
+                     [userQuery getFirstObjectInBackgroundWithBlock:^(PFObject *userObject, NSError *error) {
                          
-                         newUser.username = [user objectForKey:@"email"];
-                         newUser.email = [user objectForKey:@"email"];
-                         
-                     } else {
-                         NSLog(@"User disabled email permissions");
-                         newUser.username = [user objectForKey:@"link"];
-                     }
-                     newUser.password = [user objectForKey:@"link"];
-                     
-                     
-                     newUser[@"FBObjectID"] = [user objectForKey:@"id"];
-                     newUser[@"link"] = [user objectForKey:@"link"];
-                     
-                     
-                     if ([user objectForKey:@"first_name"] != nil)
-                         newUser[@"firstName"] = [user objectForKey:@"first_name"];
-                     
-                     if ([user objectForKey:@"last_name"] != nil)
-                         newUser[@"lastName"] = [user objectForKey:@"last_name"];
-                     
-                     if ([user objectForKey:@"gender"] != nil)
-                         newUser[@"gender"] = [user objectForKey:@"gender"];
-                     
-                     /*
-                      if ([grantedPermissions containsObject:@"bio"])
-                      parseUser[@"bio"] = [user objectForKey:@"bio"];
-                      */
-                     
-                     if ([user objectForKey:@"birthday"] != nil)
-                         newUser[@"birthday"] = [user objectForKey:@"birthday"];
-                     
-                     if ([user objectForKey:@"location"] != nil) {
-                         NSDictionary *locationDict = [user objectForKey:@"location"];
-                         
-                         if ([locationDict objectForKey:@"name"] != nil)
-                             newUser[@"fbLocationName"] = [locationDict objectForKey:@"name"];
-                         newUser[@"city"] = [locationDict objectForKey:@"name"];
-                         
-                     }
-                     
-                     // Defaults
-                     newUser[@"fbToken"] = [FBSDKAccessToken currentAccessToken].tokenString;
-                     //parseUser[@"userLoc"] = [PFGeoPoint geoPointWithLatitude:38.907192 longitude:-77.036871];
-                     
-                     NSLog(@"Sign up new user");
-                     
-                     [newUser signUpInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
-                         
-                         if (!error) {
+                         if (!error) { // User exists, log in
                              
-                             NSLog(@"New user successfully signed up.");
+                             PFUser *user1 = (PFUser *)userObject;
                              
-                             // Hooray! Let them use the app now.
-                             NSLog(@"New user: %@", currentUser.username);
-                             
-                             if (newUser) {
+                             [PFUser logInWithUsernameInBackground:user1.username password:[user objectForKey:@"link"] block:^(PFUser *user2, NSError *error) {
                                  
-                                 NSString *name = @"";
-                                 if ([user objectForKey:@"first_name"] != nil)
-                                     name = [user objectForKey:@"first_name"];
-                                 
-                                 if ([user objectForKey:@"last_name"] != nil)
-                                     name = [NSString stringWithFormat:@"%@ %@", name, [user objectForKey:@"last_name"]];
-                                 
-                                 [PFCloud callFunctionInBackground:@"newUser"
-                                                    withParameters:@{@"user":newUser.objectId, @"name":name, @"fbID":newUser[@"FBObjectID"], @"fbToken":[FBSDKAccessToken currentAccessToken].tokenString}
-                                                             block:^(NSString *result, NSError *error) {
-                                                                 if (!error) {
-                                                                     // result is @"Hello world!"
-                                                                     NSLog(@"%@", result);
-                                                                 }
-                                                             }];
-                                 
-                                 [self setDefaultsForUser:newUser];
-                             }
+                                 if (user2  && !error) {
+                                     // Do stuff after successful login.
+                                     [self setDefaultsForUser:user2];
+                                     
+                                 } else {
+                                     
+                                     NSLog(@"Trying again...");
+                                     
+                                     [PFUser logInWithUsernameInBackground:user1.username password:[NSString stringWithFormat:@"password"] block:^(PFUser *user3, NSError *error) {
+                                         
+                                         if (user3  && !error) {
+                                             // Do stuff after successful login.
+                                             [self setDefaultsForUser:user3];
+                                             
+                                         } else {
+
+                                             [self.delegate buttonPressEnd];
+                                             [self.delegate loginUnsuccessful];
+                                             NSLog(@"Error ~~ %@", error);
+                                         }
+                                     }];
+                                 }
+                             }];
                              
                          } else {
-                                 
-                             NSLog(@"User exists. Log them in!");
                              
-                             if (newUser) {
-                                 
-                                 [PFUser logInWithUsernameInBackground:newUser.username password:newUser.password block:^(PFUser *user, NSError *error) {
-                                     
-                                     if (user) {
-                                         // Do stuff after successful login.
-                                         [self setDefaultsForUser:user];
-                                         
-                                     } else {
-                                         // The login failed. Check error to see why.
-                                         [self.delegate buttonPressEnd];
-                                         [self.delegate loginUnsuccessful];
-                                         NSLog(@"%@", error);
-                                     }
-                                }];
+                             //PFUser *newUser = [PFUser user];
+                             currentUser.username = [user objectForKey:@"id"];
+                             currentUser.password = [NSString stringWithFormat:@"password"];
+                             currentUser[@"FBObjectID"] = [user objectForKey:@"id"];
+                             currentUser[@"link"] = [user objectForKey:@"link"];
+                             currentUser[@"fbToken"] = [FBSDKAccessToken currentAccessToken].tokenString;
+                             
+                             if ([user objectForKey:@"email"] != nil) {
+                                 currentUser.email = [user objectForKey:@"email"];
+                                 currentUser.username = [user objectForKey:@"email"];
                              }
+                             if ([user objectForKey:@"first_name"] != nil)
+                                 currentUser[@"firstName"] = [user objectForKey:@"first_name"];
+                             if ([user objectForKey:@"last_name"] != nil)
+                                 currentUser[@"lastName"] = [user objectForKey:@"last_name"];
+                             if ([user objectForKey:@"gender"] != nil)
+                                 currentUser[@"gender"] = [user objectForKey:@"gender"];
+                             if ([user objectForKey:@"birthday"] != nil)
+                                 currentUser[@"birthday"] = [user objectForKey:@"birthday"];
+                             if ([user objectForKey:@"location"] != nil) {
+                                 NSDictionary *locationDict = [user objectForKey:@"location"];
+                                 if ([locationDict objectForKey:@"name"] != nil) {
+                                     currentUser[@"fbLocationName"] = [locationDict objectForKey:@"name"];
+                                     currentUser[@"city"] = [locationDict objectForKey:@"name"];
+                                 }
+                             }
+                             /*
+                              if ([grantedPermissions containsObject:@"bio"])
+                              parseUser[@"bio"] = [user objectForKey:@"bio"];
+                              */
+                             
+                             NSLog(@"%@", currentUser);
+                             
+                             [currentUser saveInBackgroundWithBlock:^(BOOL success, NSError *error) {
+                                 
+                                 if (success) {
+                                     [PFUser logInWithUsernameInBackground:currentUser.username password:currentUser.password block:^(PFUser *user, NSError *error) {
+                                         
+                                         if (user) {
+                                             // Do stuff after successful login.
+                                             [self setDefaultsForUser:user];
+                                             
+                                         } else {
+                                             // The login failed. Check error to see why.
+                                             [self.delegate buttonPressEnd];
+                                             [self.delegate loginUnsuccessful];
+                                             NSLog(@"%@", error);
+                                         }
+                                     }];
+                                     
+                                 } else {
+                                     // The login failed. Check error to see why.
+                                     [self.delegate buttonPressEnd];
+                                     [self.delegate loginUnsuccessful];
+                                     NSLog(@"%@", error);
+                                 }
+                             }];
+
+                             
+                             /*
+                             [currentUser signUpInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+                                 
+                                 if (!error) {
+                                     
+                                     NSLog(@"New user successfully signed up.");
+                                     
+                                     // Hooray! Let them use the app now.
+                                     NSLog(@"New user: %@", currentUser);
+                                     
+                                     NSString *name = @"";
+                                     if ([user objectForKey:@"first_name"] != nil)
+                                         name = [user objectForKey:@"first_name"];
+                                     
+                                     if ([user objectForKey:@"last_name"] != nil)
+                                         name = [NSString stringWithFormat:@"%@ %@", name, [user objectForKey:@"last_name"]];
+                                     
+                                     [PFCloud callFunctionInBackground:@"newUser"
+                                                        withParameters:@{@"user":currentUser.objectId, @"name":name, @"fbID":currentUser[@"FBObjectID"], @"fbToken":[FBSDKAccessToken currentAccessToken].tokenString}
+                                                                 block:^(NSString *result, NSError *error) {
+                                                                     if (!error) {
+                                                                         // result is @"Hello world!"
+                                                                         NSLog(@"%@", result);
+                                                                     }
+                                                                 }];
+                                     
+                                     [self setDefaultsForUser:currentUser];
+                                 
+                                 } else {
+                                     
+                                     [self.delegate buttonPressEnd];
+                                     [self.delegate loginUnsuccessful];
+                                     NSLog(@"Error ~~ %@", error);
+                                     
+                                 }
+                             }];*/
+                            
                          }
                      }];
-                     
-                 } else {
-                     [self.delegate buttonPressEnd];
-                     [self.delegate loginUnsuccessful];
-                     NSLog(@"%@", error);
                  }
              }];
         }
@@ -374,6 +397,7 @@
 
 - (void)noAccountButtonPressed {
     
+    currentUser = [PFUser currentUser];
     [self.delegate buttonPressStart];
     /*
     [PFAnonymousUtils logInWithBlock:^(PFUser *user, NSError *error) {
@@ -399,6 +423,7 @@
 - (void)anonToNormal {
     
     [self.delegate buttonPressStart];
+    currentUser = [PFUser currentUser];
     
     FBSDKLoginManager *loginManager = [[FBSDKLoginManager alloc] init];
     loginManager.loginBehavior = FBSDKLoginBehaviorSystemAccount;
@@ -454,50 +479,32 @@
                      
                      NSDictionary *user = result;
                      
-                     if ([user objectForKey:@"email"] != nil) {
-                         
-                         currentUser.username = [user objectForKey:@"email"];
-                         currentUser.email = [user objectForKey:@"email"];
-                         
-                     } else {
-                         NSLog(@"User disabled email permissions");
-                         currentUser.username = [user objectForKey:@"link"];
-                     }
-                     currentUser.password = [user objectForKey:@"link"];
-                     
-                     
+                     currentUser.username = [user objectForKey:@"id"];
+                     currentUser.password = [NSString stringWithFormat:@"password"];
                      currentUser[@"FBObjectID"] = [user objectForKey:@"id"];
                      currentUser[@"link"] = [user objectForKey:@"link"];
+                     currentUser[@"fbToken"] = [FBSDKAccessToken currentAccessToken].tokenString;
                      
-                     
+                     if ([user objectForKey:@"email"] != nil) {
+                         currentUser.email = [user objectForKey:@"email"];
+                         currentUser.username = [user objectForKey:@"email"];
+                     }
                      if ([user objectForKey:@"first_name"] != nil)
                          currentUser[@"firstName"] = [user objectForKey:@"first_name"];
-                     
                      if ([user objectForKey:@"last_name"] != nil)
                          currentUser[@"lastName"] = [user objectForKey:@"last_name"];
-                     
                      if ([user objectForKey:@"gender"] != nil)
                          currentUser[@"gender"] = [user objectForKey:@"gender"];
-                     
-                     /*
-                      if ([grantedPermissions containsObject:@"bio"])
-                      parseUser[@"bio"] = [user objectForKey:@"bio"];
-                      */
-                     
                      if ([user objectForKey:@"birthday"] != nil)
                          currentUser[@"birthday"] = [user objectForKey:@"birthday"];
-                     
                      if ([user objectForKey:@"location"] != nil) {
                          NSDictionary *locationDict = [user objectForKey:@"location"];
-                         
-                         if ([locationDict objectForKey:@"name"] != nil)
+                         if ([locationDict objectForKey:@"name"] != nil) {
                              currentUser[@"fbLocationName"] = [locationDict objectForKey:@"name"];
-                         currentUser[@"city"] = [locationDict objectForKey:@"name"];
-                         
+                             currentUser[@"city"] = [locationDict objectForKey:@"name"];
+                         }
                      }
                      
-                     // Defaults
-                     currentUser[@"radius"] = @50;
                      currentUser[@"fbToken"] = [FBSDKAccessToken currentAccessToken].tokenString;
                      //parseUser[@"userLoc"] = [PFGeoPoint geoPointWithLatitude:38.907192 longitude:-77.036871];
                      
@@ -526,6 +533,13 @@
                                                                  }
                                                              }];
                                  
+                                 PFObject *timelineObject = [PFObject objectWithClassName:@"Timeline"];
+                                 timelineObject[@"type"] = @"newUser";
+                                 timelineObject[@"userId"] = currentUser.objectId;
+                                 timelineObject[@"createdDate"] = [NSDate date];
+                                 [timelineObject pinInBackground];
+                                 [timelineObject saveEventually];
+
                                  [self setDefaultsForUser:currentUser];
                                  
                              }
@@ -615,6 +629,8 @@
     if (user[@"categories"] == nil) user[@"categories"] = categories;
     if (user[@"categoryName"] == nil) user[@"categoryName"] = @"Most Popular";
     if (user[@"time"] == nil) user[@"time"] = @"today";
+    
+    if (user[@"score"] == nil) user[@"score"] = @10;
         
     AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
     
@@ -624,7 +640,7 @@
     
     } else {
         
-        [appDelegate loadFriends];
+        [self loadFriends];
     }
     
     [defaults synchronize];
@@ -649,6 +665,87 @@
         }];
         
     }];
+    
+}
+
+- (void)loadFriends {
+    NSLog(@"made it");
+    PFUser *currentUser = [PFUser currentUser];
+    NSLog(@"%d", [FBSDKAccessToken currentAccessToken] && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]);
+    if ([FBSDKAccessToken currentAccessToken] && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]] /* && (ReachableViaWiFi | ReachableViaWWAN) */) {
+        
+        NSLog(@"testing");
+        NSLog(@"%@", [FBSDKAccessToken currentAccessToken].tokenString);
+        
+        //dispatch_async(dispatch_get_main_queue(), ^{
+        
+        [[[FBSDKGraphRequest alloc] initWithGraphPath:@"/me/friends?limit=1000" parameters:nil] startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
+            //code
+            if (error)
+                NSLog(@"FB GRAPH REQ ERROR ---- %@", error);
+            
+            NSArray* friends = [result objectForKey:@"data"];
+            NSMutableArray *friendObjectIds = [NSMutableArray new];
+            
+            
+            for (int i = 0; i < friends.count; i ++) {
+                [friendObjectIds addObject:[friends[i] objectForKey:@"id"]];
+            }
+            
+            
+            NSArray *friendsArray = currentUser[@"friends"];
+            NSMutableArray *currentFriendIds = [NSMutableArray array];
+            for (NSDictionary *dict in friendsArray) {
+                [currentFriendIds addObject:[dict objectForKey:@"id"]];
+            }
+            
+            
+            NSMutableArray *friendIdsToQueryFor = [NSMutableArray array];
+            for (NSString *fbid in friendObjectIds){
+                if (![currentFriendIds containsObject:fbid])
+                    [friendIdsToQueryFor addObject:fbid];
+            }
+            
+            if (friendIdsToQueryFor.count > 0) {
+                
+                //NSLog(@"query for: %@", friendIdsToQueryFor);
+                
+                PFQuery *query = [PFUser query];
+                [query whereKey:@"FBObjectID" containedIn:friendIdsToQueryFor];
+                query.limit = 1000;
+                
+                [query findObjectsInBackgroundWithBlock:^(NSArray *users, NSError *error) {
+                    
+                    NSMutableArray *array = currentUser[@"friends"];
+                    if (array == nil) {
+                        array = [NSMutableArray array];
+                    }
+                    
+                    for (PFUser *user in users) {
+                        
+                        NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+                        
+                        [dict setObject:user.objectId forKey:@"parseId"];
+                        [dict setObject:[NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]] forKey:@"name"];
+                        [dict setObject:user[@"FBObjectID"] forKey:@"id"];
+                        
+                        [array addObject:dict];
+                    }
+                    
+                    [PFUser currentUser][@"friends"] = array;
+                    [[PFUser currentUser] saveEventually:^(BOOL success, NSError *error){
+                    }];
+                    
+                }];
+            }
+        }];
+        
+        //});
+        
+    } else {
+        
+        NSLog(@"no token......");
+    }
     
 }
 

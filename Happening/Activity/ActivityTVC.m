@@ -19,6 +19,8 @@
 
 @property NSMutableArray *MEactivityObjects;
 @property NSMutableArray *FRIENDSactivityObjects;
+@property (nonatomic, strong) UIButton *scrollToTopButton;
+@property (nonatomic, assign) CGFloat lastContentOffset;
 
 @end
 
@@ -27,11 +29,12 @@
     BOOL meButtonPressed;
     NSString *selectedFriendId;
     NSArray *funnyEndings;
-    NSMutableDictionary *eventObjectDict;
+    NSMutableDictionary *activityObjectDict;
+    
     
 }
 
-@synthesize meButton, sliderView, friendsButton, containerView, MEactivityObjects, FRIENDSactivityObjects;
+@synthesize meButton, sliderView, friendsButton, containerView, MEactivityObjects, FRIENDSactivityObjects, scrollToTopButton;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -67,15 +70,34 @@
     [self.tableView setSeparatorStyle:UITableViewCellSeparatorStyleSingleLine];
     
     funnyEndings = @[@" Hold the applause.", @" Hollah!", @" Now it's a party.", @" About time.", @" Heck yes.", @" Aw yeah.", @" *Air five*", @" Whoop whoop.", @" *fist pump*", @" *slow clap*", @" *fist bump*", @" Turn up?", @" Leggo.", @" Booyah.", @" Oh ya.", @" Awesome sauce.", @" &$^* #@*&%!!!"];
+    
+    scrollToTopButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 110, 25)];
+    scrollToTopButton.center = CGPointMake(self.view.center.x, -100);
+    scrollToTopButton.alpha = 0;
+    scrollToTopButton.backgroundColor = [UIColor colorWithRed:0.0 green:185.0/255 blue:245.0/255 alpha:1.0];
+    scrollToTopButton.layer.cornerRadius = 25/2;
+    scrollToTopButton.clipsToBounds = YES;
+    [scrollToTopButton setTitle:@"New stuff!" forState:UIControlStateNormal];
+    [scrollToTopButton.titleLabel setFont:[UIFont fontWithName:@"OpenSans" size:12.0]];
+    [scrollToTopButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [scrollToTopButton addTarget:self action:@selector(toTop) forControlEvents:UIControlEventTouchUpInside];
+    [self.view insertSubview:scrollToTopButton atIndex:0];
+    
+}
+
+-(void)toTop {
+    [self.tableView setContentOffset:CGPointZero];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
+    [self.tableView deselectRowAtIndexPath:[self.tableView indexPathForSelectedRow] animated:YES];
+    
     if (!MEactivityObjects || !FRIENDSactivityObjects) {
         MEactivityObjects = [NSMutableArray array];
         FRIENDSactivityObjects = [NSMutableArray array];
-        eventObjectDict = [NSMutableDictionary dictionary];
+        activityObjectDict = [NSMutableDictionary dictionary];
         [self loadObjectsFromCache];
     } else {
         [self checkForUpdatedActivities];
@@ -123,19 +145,25 @@
             for (PFObject *object in objects) {
                 
                 [object pinInBackground];
+                NSMutableDictionary *activityDict = [NSMutableDictionary dictionary];
+                [activityObjectDict setObject:activityDict forKey:object.objectId];
                 
                 NSString *type = object[@"type"];
                 
                 if ([type isEqualToString:@"interested"] || [type isEqualToString:@"match"] || [type isEqualToString:@"going"]) {
                     
-                    if (object[@"eventId"] != nil)
-                        [eventObjectDict setObject:[NSMutableDictionary dictionary] forKey:object[@"eventId"]];
+                    if (object[@"eventId"] != nil) {
+                        [activityDict setObject:[NSMutableDictionary dictionary] forKey:object[@"eventId"]];
+                    }
+                    [activityDict setObject:@NO forKey:@"isNew"];
                     [FRIENDSactivityObjects addObject:object];
                     
                 } else if ([type isEqualToString:@"reminder"] || [type isEqualToString:@"match"] || [type isEqualToString:@"friendJoined"]) {
                     
-                    if (object[@"eventId"] != nil)
-                        [eventObjectDict setObject:[NSMutableDictionary dictionary] forKey:object[@"eventId"]];
+                    if (object[@"eventId"] != nil) {
+                        [activityDict setObject:[NSMutableDictionary dictionary] forKey:object[@"eventId"]];
+                    }
+                    [activityDict setObject:@NO forKey:@"isNew"];
                     [MEactivityObjects addObject:object];
                     
                 }
@@ -189,47 +217,73 @@
     [finalQuery includeKey:@"eventObject"];
     [finalQuery orderByDescending:@"createdAt"];
     
-    NSArray *friendsArrayCopy = [NSArray arrayWithArray:FRIENDSactivityObjects];
-    NSArray *meArrayCopy = [NSArray arrayWithArray:MEactivityObjects];
-    
     [finalQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         
         if (!error) {
             
             BOOL shouldReload = NO;
+            BOOL tableIsEmpty = NO;
+            if (meButtonPressed && MEactivityObjects.count == 0) tableIsEmpty = YES;
+            if (!meButtonPressed && FRIENDSactivityObjects.count == 0) tableIsEmpty = YES;
             
             for (PFObject *object in objects) {
-                
-                [object pinInBackground];
-                
-                NSString *type = object[@"type"];
-                
-                if ([type isEqualToString:@"interested"] || [type isEqualToString:@"match"] || [type isEqualToString:@"going"]) {
+               
+                if ([activityObjectDict objectForKey:object.objectId] == nil) { // activity object doesn't exist
                     
-                    if (![FRIENDSactivityObjects containsObject:object]) {
-                        [object pinInBackground];
-                        if (object[@"eventId"] != nil)
-                            [eventObjectDict setObject:[NSMutableDictionary dictionary] forKey:object[@"eventId"]];
-                        shouldReload = YES;
-                        [FRIENDSactivityObjects insertObject:object atIndex:0];
-                    }
+                    [object pinInBackground];
                     
-                } else if ([type isEqualToString:@"reminder"] || [type isEqualToString:@"match"] || [type isEqualToString:@"friendJoined"]) {
+                    NSMutableDictionary *activityDict = [NSMutableDictionary dictionary];
+                    [activityObjectDict setObject:activityDict forKey:object.objectId];
+                
+                    NSString *type = object[@"type"];
                     
-                    if (![MEactivityObjects containsObject:object]) {
-                        [object pinInBackground];
-                        if (object[@"eventId"] != nil)
-                            [eventObjectDict setObject:[NSMutableDictionary dictionary] forKey:object[@"eventId"]];
-                        shouldReload = YES;
-                        [MEactivityObjects insertObject:object atIndex:0];
+                    if ([type isEqualToString:@"interested"] || [type isEqualToString:@"match"] || [type isEqualToString:@"going"]) {
+                        
+                            if (object[@"eventId"] != nil) {
+                                [activityDict setObject:[NSMutableDictionary dictionary] forKey:object[@"eventId"]];
+                            }
+                            [activityDict setObject:@YES forKey:@"isNew"];
+                            shouldReload = YES;
+                            [FRIENDSactivityObjects insertObject:object atIndex:0];
+                        
+                    } else if ([type isEqualToString:@"reminder"] || [type isEqualToString:@"match"] || [type isEqualToString:@"friendJoined"]) {
+                        
+                        if (![MEactivityObjects containsObject:object]) {
+                            [object pinInBackground];
+                            if (object[@"eventId"] != nil) {
+                                [activityDict setObject:[NSMutableDictionary dictionary] forKey:object[@"eventId"]];
+                            }
+                            [activityDict setObject:@YES forKey:@"isNew"];
+                            shouldReload = YES;
+                            [MEactivityObjects insertObject:object atIndex:0];
+                        }
                     }
                 }
-                
             }
             
             if (shouldReload) {
                 NSLog(@"New activities! Updating...");
-                [self.tableView reloadData];
+                
+                if (!tableIsEmpty) {
+                    CGSize beforeContentSize = self.tableView.contentSize;
+                    [self.tableView reloadData];
+                    CGSize afterContentSize = self.tableView.contentSize;
+                    
+                    CGPoint afterContentOffset = self.tableView.contentOffset;
+                    CGPoint newContentOffset = CGPointMake(afterContentOffset.x, afterContentOffset.y + afterContentSize.height - beforeContentSize.height  -  10  );
+                    
+                    self.tableView.contentOffset = newContentOffset;
+                    
+                    
+                    scrollToTopButton.alpha = 1;
+                    [UIView animateWithDuration:0.5 delay:0 usingSpringWithDamping:0.9 initialSpringVelocity:1.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+                        scrollToTopButton.center = CGPointMake(scrollToTopButton.center.x, containerView.frame.size.height + 50);
+                    } completion:^(BOOL finished) {
+                        
+                    }];
+                    
+                }
+                
             }
             
         } else {
@@ -260,15 +314,6 @@
     }
 }
 
-
-- (void)didReceiveMemoryWarning
-{
-    // Releases the view if it doesn't have a superview.
-    [super didReceiveMemoryWarning];
-    
-    // Release any cached data, images, etc that aren't in use.
-}
-
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     
     if (meButtonPressed)
@@ -276,52 +321,6 @@
     
     return FRIENDSactivityObjects.count;
 }
-
-// Override to customize what kind of query to perform on the class. The default is to query for
-// all objects ordered by createdAt descending.
-- (PFQuery *)queryForTable {
-    
-    NSArray *friends = [[PFUser currentUser] objectForKey:@"friends"];
-    NSMutableArray *idsArray = [NSMutableArray new];
-    for (NSDictionary *dict in friends) {
-        [idsArray addObject:[dict valueForKey:@"parseId"]];
-    }
-    
-    PFQuery *finalQuery = [PFQuery queryWithClassName:@"Activity"];
-    
-    if (meButtonPressed) {
-        
-        PFQuery *reminderQuery = [PFQuery queryWithClassName:@"Activity"];
-        [reminderQuery whereKey:@"type" equalTo:@"reminder"];
-        [reminderQuery whereKey:@"userParseId" equalTo:[PFUser currentUser].objectId];
-        
-        PFQuery *friendJoinedQuery = [PFQuery queryWithClassName:@"Activity"];
-        [friendJoinedQuery whereKey:@"type" equalTo:@"friendJoined"];
-        [friendJoinedQuery whereKey:@"userParseId" containedIn:idsArray];
-        
-        finalQuery = [PFQuery orQueryWithSubqueries:[NSArray arrayWithObjects:reminderQuery, friendJoinedQuery, nil]];
-        
-    } else {
-     
-        PFQuery *interestedQuery = [PFQuery queryWithClassName:@"Activity"];
-        [interestedQuery whereKey:@"type" equalTo:@"interested"];
-        [interestedQuery whereKey:@"userParseId" containedIn:idsArray];
-        
-        finalQuery = [PFQuery orQueryWithSubqueries:[NSArray arrayWithObjects:interestedQuery, nil]];
-    }
-
-    [finalQuery includeKey:@"eventObject"];
-    [finalQuery orderByAscending:@"createdAt"];
-    
-    // If no objects are loaded in memory, we look to the cache first to fill the table
-    // and then subsequently do a query against the network.
-
-    
-    //[query orderByAscending:@"priority"];
-    
-    return finalQuery;
-}
-
 
 
 // Override to customize the look of a cell representing an object. The default is to display
@@ -331,6 +330,8 @@
     PFObject *object = [self objectAtIndex:indexPath.row];
     NSString *type = object[@"type"];
     
+    NSMutableDictionary *activityDict = [activityObjectDict objectForKey:object.objectId];
+    
     if ([type isEqualToString:@"interested"]) {
         
         NSString *CellIdentifier = type;
@@ -339,13 +340,24 @@
             cell = [[interestedCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
         }
         
+        if ([[activityDict objectForKey:@"isNew"] boolValue] == NO) {
+            cell.backgroundColor = [UIColor whiteColor];
+        } else {
+            cell.backgroundColor = [UIColor groupTableViewBackgroundColor];
+            [activityDict setObject:@NO forKey:@"isNew"];
+        }
         
-        if (![cell viewWithTag:99]) {
-            FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(0, 3, 25, 25)];
+        if ([activityDict objectForKey:@"profPicView"] == nil) {
+            
+            for (UIView *view in cell.subviews) {
+                if (view.tag == 99) [view removeFromSuperview];
+            }
+            
+            FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(7, 7, 36, 36)];
             profPicView.profileID = object[@"userFBId"];
             profPicView.pictureMode = FBSDKProfilePictureModeSquare;
             
-            profPicView.layer.cornerRadius = 25/2;
+            profPicView.layer.cornerRadius = 36/2;
             profPicView.layer.masksToBounds = YES;
             profPicView.accessibilityIdentifier = object[@"userParseId"];
             profPicView.userInteractionEnabled = YES;
@@ -354,14 +366,25 @@
             [cell addSubview:profPicView];
             
             [profPicView addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(profileTapped:)]];
+            
+            [activityDict setObject:profPicView forKey:@"profPicView"];
+            
+        } else {
+            
+            NSLog(@"MADE IT");
+            for (UIView *view in cell.subviews) {
+                if (view.tag == 99) [view removeFromSuperview];
+            }
+
+            [cell addSubview:[activityDict objectForKey:@"profPicView"]];
         }
         
-        UIFont *font = [UIFont fontWithName:@"OpenSans-Semibold" size:10.0];
+        UIFont *font = [UIFont fontWithName:@"OpenSans-Bold" size:12.0];
         NSMutableDictionary *attrsDictionary = [NSMutableDictionary dictionaryWithObject:font
                                                                                   forKey:NSFontAttributeName];
         //[attrsDictionary setObject:[UIColor colorWithRed:0.0/255 green:176.0/255 blue:242.0/255 alpha:1.0] forKey:NSForegroundColorAttributeName];
         NSMutableAttributedString *aAttrString1 = [[NSMutableAttributedString alloc] initWithString:object[@"userFullName"] attributes:attrsDictionary];
-        NSMutableAttributedString *aAttrString2 = [[NSMutableAttributedString alloc] initWithString:@" is interested in an event."];
+        NSMutableAttributedString *aAttrString2 = [[NSMutableAttributedString alloc] initWithString:@" is interested in:"];
         [aAttrString1 appendAttributedString:aAttrString2];
         
         cell.messageLabel.attributedText = aAttrString1;
@@ -374,57 +397,57 @@
         NSDate *eventDate = object[@"eventDate"];
         cell.eventDateLabel.text = [formatter stringFromDate:eventDate];
         
-        NSMutableDictionary *eventDict = [eventObjectDict objectForKey:object[@"eventId"]];
+        cell.eventImageView.image = nil;
         
-        if ([eventDict objectForKey:@"event"] == nil) {
+        if ([activityDict objectForKey:@"event"] == nil) {
             PFObject *event = object[@"eventObject"];
             [event fetchInBackgroundWithBlock:^(PFObject *event, NSError *error) {
-                [eventDict setObject:event forKey:@"event"];
+                [activityDict setObject:event forKey:@"event"];
                 cell.eventObject = event;
                 PFFile *file = event[@"Image"];
                 cell.eventImageView.alpha = 0;
                 if (file) {
                     [file getDataInBackgroundWithBlock:^(NSData *data, NSError *error) {
                         cell.eventImageView.image = [UIImage imageWithData:data];
-                        [eventDict setObject:cell.eventImageView.image forKey:@"image"];
-                        [UIView animateWithDuration:0.2 animations:^{
+                        [activityDict setObject:cell.eventImageView.image forKey:@"image"];
+                        [UIView animateWithDuration:0.4 animations:^{
                             cell.eventImageView.alpha = 1.0;
                         }];
                     }];
                 } else {
                     cell.eventImageView.image = [UIImage imageNamed:event[@"Hashtag"]];
-                    [eventDict setObject:cell.eventImageView.image forKey:@"image"];
-                    [UIView animateWithDuration:0.2 animations:^{
+                    [activityDict setObject:cell.eventImageView.image forKey:@"image"];
+                    [UIView animateWithDuration:0.4 animations:^{
                         cell.eventImageView.alpha = 1.0;
                     }];
                 }
             }];
             
-        } else if ([eventDict objectForKey:@"image"] == nil) {
+        } else if ([activityDict objectForKey:@"image"] == nil) {
             
-            PFObject *event = [eventDict objectForKey:@"event"];
+            PFObject *event = [activityDict objectForKey:@"event"];
             PFFile *file = event[@"Image"];
             cell.eventImageView.alpha = 0;
             if (file) {
                 [file getDataInBackgroundWithBlock:^(NSData *data, NSError *error) {
                     cell.eventImageView.image = [UIImage imageWithData:data];
-                    [eventDict setObject:cell.eventImageView.image forKey:@"image"];
-                    [UIView animateWithDuration:0.2 animations:^{
+                    [activityDict setObject:cell.eventImageView.image forKey:@"image"];
+                    [UIView animateWithDuration:0.4 animations:^{
                         cell.eventImageView.alpha = 1.0;
                     }];
                 }];
             } else {
                 cell.eventImageView.image = [UIImage imageNamed:event[@"Hashtag"]];
-                [eventDict setObject:cell.eventImageView.image forKey:@"image"];
-                [UIView animateWithDuration:0.2 animations:^{
+                [activityDict setObject:cell.eventImageView.image forKey:@"image"];
+                [UIView animateWithDuration:0.4 animations:^{
                     cell.eventImageView.alpha = 1.0;
                 }];
             }
             
         } else {
         
-            cell.eventObject = [eventDict objectForKey:@"event"];
-            cell.eventImageView.image = [eventDict objectForKey:@"image"];
+            cell.eventObject = [activityDict objectForKey:@"event"];
+            cell.eventImageView.image = [activityDict objectForKey:@"image"];
         }
         
         return cell;
@@ -435,6 +458,13 @@
         reminderCell *cell = (reminderCell *)[tableView dequeueReusableCellWithIdentifier:CellIdentifier];
         if (cell == nil) {
             cell = [[reminderCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
+        }
+        
+        if ([[activityDict objectForKey:@"isNew"] boolValue] == NO) {
+            cell.backgroundColor = [UIColor whiteColor];
+        } else {
+            cell.backgroundColor = [UIColor groupTableViewBackgroundColor];
+            [activityDict setObject:@NO forKey:@"isNew"];
         }
         
         /*
@@ -462,57 +492,57 @@
         NSDate *eventDate = object[@"eventDate"];
         cell.eventDateLabel.text = [formatter stringFromDate:eventDate];
         
-        NSMutableDictionary *eventDict = [eventObjectDict objectForKey:object[@"eventId"]];
+        cell.eventImageView.image = nil;
         
-        if ([eventDict objectForKey:@"event"] == nil) {
+        if ([activityDict objectForKey:@"event"] == nil) {
             PFObject *event = object[@"eventObject"];
             [event fetchInBackgroundWithBlock:^(PFObject *event, NSError *error) {
-                [eventDict setObject:event forKey:@"event"];
+                [activityDict setObject:event forKey:@"event"];
                 cell.eventObject = event;
                 PFFile *file = event[@"Image"];
                 cell.eventImageView.alpha = 0;
                 if (file) {
                     [file getDataInBackgroundWithBlock:^(NSData *data, NSError *error) {
                         cell.eventImageView.image = [UIImage imageWithData:data];
-                        [eventDict setObject:cell.eventImageView.image forKey:@"image"];
-                        [UIView animateWithDuration:0.2 animations:^{
+                        [activityDict setObject:cell.eventImageView.image forKey:@"image"];
+                        [UIView animateWithDuration:0.4 animations:^{
                             cell.eventImageView.alpha = 1.0;
                         }];
                     }];
                 } else {
                     cell.eventImageView.image = [UIImage imageNamed:event[@"Hashtag"]];
-                    [eventDict setObject:cell.eventImageView.image forKey:@"image"];
-                    [UIView animateWithDuration:0.2 animations:^{
+                    [activityDict setObject:cell.eventImageView.image forKey:@"image"];
+                    [UIView animateWithDuration:0.4 animations:^{
                         cell.eventImageView.alpha = 1.0;
                     }];
                 }
             }];
             
-        } else if ([eventDict objectForKey:@"image"] == nil) {
+        } else if ([activityDict objectForKey:@"image"] == nil) {
             
-            PFObject *event = [eventDict objectForKey:@"event"];
+            PFObject *event = [activityDict objectForKey:@"event"];
             PFFile *file = event[@"Image"];
             cell.eventImageView.alpha = 0;
             if (file) {
                 [file getDataInBackgroundWithBlock:^(NSData *data, NSError *error) {
                     cell.eventImageView.image = [UIImage imageWithData:data];
-                    [eventDict setObject:cell.eventImageView.image forKey:@"image"];
-                    [UIView animateWithDuration:0.2 animations:^{
+                    [activityDict setObject:cell.eventImageView.image forKey:@"image"];
+                    [UIView animateWithDuration:0.4 animations:^{
                         cell.eventImageView.alpha = 1.0;
                     }];
                 }];
             } else {
                 cell.eventImageView.image = [UIImage imageNamed:event[@"Hashtag"]];
-                [eventDict setObject:cell.eventImageView.image forKey:@"image"];
-                [UIView animateWithDuration:0.2 animations:^{
+                [activityDict setObject:cell.eventImageView.image forKey:@"image"];
+                [UIView animateWithDuration:0.4 animations:^{
                     cell.eventImageView.alpha = 1.0;
                 }];
             }
             
         } else {
             
-            cell.eventObject = [eventDict objectForKey:@"event"];
-            cell.eventImageView.image = [eventDict objectForKey:@"image"];
+            cell.eventObject = [activityDict objectForKey:@"event"];
+            cell.eventImageView.image = [activityDict objectForKey:@"image"];
         }
         
         return cell;
@@ -538,20 +568,52 @@
         
         cell.activityObject = object;
         
-        if (![cell viewWithTag:99]) {
-            FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(5, 5, 34, 34)];
+        if ([[activityDict objectForKey:@"isNew"] boolValue] == NO) {
+            cell.backgroundColor = [UIColor whiteColor];
+        } else {
+            cell.backgroundColor = [UIColor groupTableViewBackgroundColor];
+            [activityDict setObject:@NO forKey:@"isNew"];
+        }
+        
+        if ([activityDict objectForKey:@"profPicView"] == nil) {
+            FBSDKProfilePictureView *profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(7, 4, 36, 36)];
             profPicView.profileID = object[@"userFBId"];
             profPicView.pictureMode = FBSDKProfilePictureModeSquare;
             
-            profPicView.layer.cornerRadius = 34/2;
+            profPicView.layer.cornerRadius = 36/2;
             profPicView.layer.masksToBounds = YES;
-            profPicView.accessibilityIdentifier = object.objectId;
+            profPicView.accessibilityIdentifier = object[@"userParseId"];
             profPicView.userInteractionEnabled = YES;
             
             profPicView.tag = 99;
             [cell addSubview:profPicView];
+            
+            [profPicView addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(profileTapped:)]];
+            
+            [activityDict setObject:profPicView forKey:@"profPicView"];
+            
+        } else {
+            
+            for (UIView *view in cell.subviews) {
+                if (view.tag == 99) [view removeFromSuperview];
+            }
+
+            [cell addSubview:[activityDict objectForKey:@"profPicView"]];
         }
+
         
+        UIFont *font = [UIFont fontWithName:@"OpenSans-Light" size:10.0];
+        NSMutableDictionary *attrsDictionary = [NSMutableDictionary dictionaryWithObject:font
+                                                                                  forKey:NSFontAttributeName];
+        NSMutableAttributedString *aAttrString1 = [[NSMutableAttributedString alloc] initWithString:@"Your Facebook friend "];
+        NSString *name = object[@"userFullName"];
+        NSMutableAttributedString *aAttrString2 = [[NSMutableAttributedString alloc] initWithString:name attributes:attrsDictionary];
+        NSMutableAttributedString *aAttrString3 = [[NSMutableAttributedString alloc] initWithString:@" just joined Happening."];
+        [aAttrString1 appendAttributedString:aAttrString2];
+        [aAttrString1 appendAttributedString:aAttrString3];
+        
+        cell.messageLabel.attributedText = aAttrString1;
+
         cell.messageLabel.text = [NSString stringWithFormat:@"Your Facebook friend %@ just joined Happening.", object[@"userFullName"]];
         NSUInteger randomIndex = arc4random() % [funnyEndings count];
         
@@ -648,6 +710,25 @@
     //[self loadObjects];
 }
 
+-(void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    
+    
+    if (scrollToTopButton.alpha == 1.0 && self.lastContentOffset < scrollView.contentOffset.y) {
+        
+        scrollToTopButton.alpha = 0.9999;
+        [UIView animateWithDuration:0.3 animations:^{
+            scrollToTopButton.center = CGPointMake(self.view.center.x, -100);
+        } completion:^(BOOL finished) {
+            scrollToTopButton.alpha = 0;
+        }];
+        
+    }
+    
+    self.lastContentOffset = scrollView.contentOffset.y;
+    
+}
+
+/*
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
     
     if (self.tableView.contentOffset.y > 0) {
@@ -662,9 +743,8 @@
         containerView.frame = CGRectMake(0, 0, 320, 40);
         
     }
-    
-    
-}
+ 
+}*/
 
 /*
  // Override if you need to change the ordering of objects in the table.
@@ -689,47 +769,6 @@
  cell.textLabel.text = @"Load more...";
  
  return cell;
- }
- */
-
-#pragma mark - Table view data source
-
-/*
- // Override to support conditional editing of the table view.
- - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath
- {
- // Return NO if you do not want the specified item to be editable.
- return YES;
- }
- */
-
-/*
- // Override to support editing the table view.
- - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
- {
- if (editingStyle == UITableViewCellEditingStyleDelete) {
- // Delete the row from the data source
- [tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationFade];
- }
- else if (editingStyle == UITableViewCellEditingStyleInsert) {
- // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
- }
- }
- */
-
-/*
- // Override to support rearranging the table view.
- - (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath
- {
- }
- */
-
-/*
- // Override to support conditional rearranging of the table view.
- - (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath
- {
- // Return NO if you do not want the item to be re-orderable.
- return YES;
  }
  */
 
@@ -805,7 +844,7 @@
                 
                 PFObject *activityObject = [self objectAtIndex:indexPath.row];
                 
-                NSDictionary *dict = [eventObjectDict objectForKey:activityObject[@"eventId"]];
+                NSDictionary *dict = [activityObjectDict objectForKey:activityObject.objectId];
                 
                 if (cell.eventObject != nil) {
                     vc.event = cell.eventObject;
@@ -822,7 +861,7 @@
                 
                 PFObject *activityObject = [self objectAtIndex:indexPath.row];
                 
-                NSDictionary *dict = [eventObjectDict objectForKey:activityObject[@"eventId"]];
+                NSDictionary *dict = [activityObjectDict objectForKey:activityObject.objectId];
                 
                 if (cell.eventObject != nil) {
                     vc.event = cell.eventObject;
