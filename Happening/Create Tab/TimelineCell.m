@@ -27,14 +27,13 @@
     NSString *type = object[@"type"];
     UIColor *color;
     
-    
     if ([type isEqualToString:@"newUser"]) {
         
         color = [UIColor colorWithRed:0.0 green:176.0/255 blue:242.0/255 alpha:1.0];
         
         imv.image = [UIImage imageNamed: @"timeline_newUser"];
         
-        messageLabel.text = [NSString stringWithFormat:@"Welcome to Happening! Accumulate points by swiping right or down, inviting friends, and sharing events."];
+        messageLabel.text = [NSString stringWithFormat:@"Welcome to Happening! Earn points by swiping right/down, inviting friends & sharing events."];
         
     } else if ([type isEqualToString:@"swipeRight"]) {
         
@@ -43,12 +42,22 @@
         imv.image = [UIImage imageNamed: @"timeline_swipeRight"];
         
         messageLabel.text = [NSString stringWithFormat:@"You swiped right on %@.", object[@"eventTitle"]];
-
         
-    } else if ([type isEqualToString:@"invite"]) {
+    } else if ([type isEqualToString:@"eventInvite"]) {
         
-        imv.image = [UIImage imageNamed: @"timeline_invite"];
-
+        color = [UIColor colorWithRed:0/255 green:191.0/255 blue:216.0/255 alpha:1.0];
+        
+        imv.image = [UIImage imageNamed: @"timeline_eventInvite"];
+        
+        messageLabel.text = [NSString stringWithFormat:@"You invited friends to an event!"];
+        
+    } else if ([type isEqualToString:@"groupCreate"]) {
+        
+        color = [UIColor colorWithRed:0/255 green:184.0/255 blue:82.0/255 alpha:1.0];
+        
+        imv.image = [UIImage imageNamed: @"timeline_groupCreate"];
+        
+        messageLabel.text = [NSString stringWithFormat:@"You created a new group!"];
         
     } else if ([type isEqualToString:@"share"]) {
         

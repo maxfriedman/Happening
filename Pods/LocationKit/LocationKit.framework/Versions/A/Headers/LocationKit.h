@@ -8,6 +8,8 @@
 #import <UIKit/UIKit.h>
 #import "LKVisit.h"
 #import "LKSearchRequest.h"
+#import "LKSetting.h"
+#import "LKFilter.h"
 
 UIKIT_EXTERN NSString *const LKUserValueIdentifier;
 UIKIT_EXTERN NSString *const LKUserValueName;
@@ -20,28 +22,43 @@ UIKIT_EXTERN NSString *const LKUserValueHasInAppPurchases;
 UIKIT_EXTERN NSString *const LKUserValueInAppPurchaseTotal;
 UIKIT_EXTERN NSString *const LKUserValueDateInstalled;
 
+UIKIT_EXTERN NSString *const LKOptionWhenInUseOnly;
+UIKIT_EXTERN NSString *const LKOptionUseiOSMotionActivity;
+UIKIT_EXTERN NSString *const LKOptionTimedUpdatesInterval;
+UIKIT_EXTERN NSString *const LKOptionFilter;
+
+
+
+typedef NS_OPTIONS(NSUInteger, LKActivityMode) {
+    LKActivityModeUnknown,
+    LKActivityModeStationary,
+    LKActivityModeWalking,
+    LKActivityModeRunning,
+    LKActivityModeCycling,
+    LKActivityModeAutomotive
+};
+
 
 @protocol LocationKitDelegate;
-
 
 
 @interface LocationKit : NSObject
 
 @property(nonatomic, readonly) BOOL isRunning;
 
+@property(nonatomic, readonly) NSString *deviceId;
 
 @property(nonatomic, copy) void (^getCurrentLocationCallback)(CLLocation *, NSError *);
 
-@property(nonatomic) BOOL isCompassOff;
 
 + (LocationKit *)sharedInstance;
 
-- (instancetype) init __attribute__((unavailable("init not available")));
+- (instancetype)init __attribute__((unavailable("init not available")));
 
 
-- (void)startWithApiToken:(NSString *)token andDelegate:(id <LocationKitDelegate>)delegate;
+- (void)startWithApiToken:(NSString *)token delegate:(id <LocationKitDelegate>)delegate;
 
-- (void)startWithApiToken:(NSString *)token withTimeInterval:(NSTimeInterval)timeInterval andDelegate:(id <LocationKitDelegate>)delegate;
+- (void)startWithApiToken:(NSString *)token delegate:(id <LocationKitDelegate>)delegate options:(NSDictionary *)options;
 
 
 - (void)getCurrentPlaceWithHandler:(void (^)(LKPlace *place, NSError *error))handler;
@@ -53,6 +70,16 @@ UIKIT_EXTERN NSString *const LKUserValueDateInstalled;
 
 - (void)searchForPlacesWithRequest:(LKSearchRequest *)request completionHandler:(void (^)(NSArray *places, NSError *error))handler;
 
+- (void)getPeopleAtCurrentVenue:(void (^)(NSArray *people, LKVenue *venue, NSError *error))handler;
+
+- (void)getPeopleNearby:(void (^)(NSArray *people, NSError *error))handler;
+
+- (void)getPriorVisits:(void (^)(NSArray *visits, NSError *error))handler;
+
+- (void)getHome:(void (^)(LKAddress *, NSError *))handler;
+
+- (void)getWork:(void (^)(LKAddress *, NSError *))handler;
+
 /*
  *  updateUserValues:
  *
@@ -63,11 +90,15 @@ UIKIT_EXTERN NSString *const LKUserValueDateInstalled;
 - (void)updateUserValues:(NSDictionary *)userValues;
 
 
+- (void)applyOperationMode:(LKSetting *)setting;
+
+
+
 - (void)pause;
 
 - (NSError *)resume;
 
-- (void)turnCompassOff:(BOOL)b;
+
 @end
 
 
@@ -82,5 +113,7 @@ UIKIT_EXTERN NSString *const LKUserValueDateInstalled;
 - (void)locationKit:(LocationKit *)locationKit didStartVisit:(LKVisit *)visit;
 
 - (void)locationKit:(LocationKit *)locationKit didFailWithError:(NSError *)error;
+
+- (void)locationKit:(LocationKit *)locationKit willChangeActivityMode:(LKActivityMode)mode;
 
 @end

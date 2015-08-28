@@ -35,23 +35,64 @@
     
     //[self.eventImageView.layer insertSublayer:gradient atIndex:0];
     //[blurEffectView.layer insertSublayer:gradient atIndex:2];
-    
+    /*
     CAGradientLayer *l = [CAGradientLayer layer];
     l.frame = self.eventImageView.bounds;
     l.colors = [NSArray arrayWithObjects:(id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:0.0] CGColor], (id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:1] CGColor], nil];
     
     l.startPoint = CGPointMake(0.0, 1.00f);
     l.endPoint = CGPointMake(0.0f, 0.0f);
+    */
     
-    
-    [blurView setUpdateInterval:0.1];
-    blurView.blurRadius = 30; //14
-    blurView.tintColor = [UIColor blackColor];
+    //[blurView setUpdateInterval:0.1];
     //blurView.dynamic = NO;
-    [self.eventImageView addSubview:blurView];
+    //blurView.blurRadius = 30; //14
+    //blurView.tintColor = [UIColor blackColor];
+    //blurView.dynamic = NO;
+    //[self.eventImageView addSubview:blurView];
     
     self.eventImageView.layer.borderColor = [UIColor groupTableViewBackgroundColor].CGColor;
     self.eventImageView.layer.borderWidth = 2.0;
+    
+    ////self.eventImageView.alpha = 0.97;
+    
+    [self.eventImageView setContentMode:UIViewContentModeScaleAspectFill];
+    self.eventImageView.autoresizingMask =
+    ( UIViewAutoresizingFlexibleBottomMargin
+     | UIViewAutoresizingFlexibleHeight
+     | UIViewAutoresizingFlexibleLeftMargin
+     | UIViewAutoresizingFlexibleRightMargin
+     | UIViewAutoresizingFlexibleTopMargin
+     | UIViewAutoresizingFlexibleWidth );
+    
+    
+    CAGradientLayer *maskLayer = [CAGradientLayer layer];
+    
+    // Hoizontal - commenting these two lines will make the gradient veritcal
+    //maskLayer.startPoint = CGPointMake(0.0, 0.5);
+    //maskLayer.endPoint = CGPointMake(1.0, 0.5);
+    //maskLayer.startPoint = CGPointMake(0.0, 0.5);
+    //maskLayer.endPoint = CGPointMake(1.0, 0.5);
+    
+    //maskLayer.colors = [NSArray arrayWithObjects:(id)[UIColor colorWithWhite:1.0 alpha:0.0].CGColor, (id)[UIColor colorWithWhite:1.0 alpha:0.1].CGColor, (id)[UIColor colorWithWhite:1.0 alpha:0.3].CGColor, (id)[UIColor colorWithWhite:1.0 alpha:1.0].CGColor, nil];
+    
+    maskLayer.colors = [NSArray arrayWithObjects:(id)[UIColor colorWithWhite:0.0 alpha:0.8].CGColor, (id)[UIColor colorWithWhite:0.0 alpha:0.6].CGColor, /*(id)[UIColor colorWithWhite:1.0 alpha:0.7].CGColor,*/ (id)[UIColor colorWithWhite:1.0 alpha:0.8].CGColor, nil];
+    
+    //l.startPoint = CGPointMake(0.0, 0.7f);
+    //l.endPoint = CGPointMake(0.0f, 1.0f);
+    maskLayer.locations = [NSArray arrayWithObjects:
+                           [NSNumber numberWithFloat:0.0],
+                           [NSNumber numberWithFloat:0.55],
+                           //[NSNumber numberWithFloat:0.7],
+                           //[NSNumber numberWithFloat:0.9],
+                           [NSNumber numberWithFloat:1.0], nil];
+    
+    maskLayer.bounds = self.eventImageView.bounds;
+    maskLayer.anchorPoint = CGPointZero;
+    [self.eventImageView.layer addSublayer:maskLayer];
+    
+    self.locLabel.textColor = [UIColor whiteColor];
+
     
     //self.eventImageView.layer.mask = l;
     //blurEffectView.layer.mask = l;
@@ -75,15 +116,18 @@
     UIView *internalShadowView = [[UIView alloc] initWithFrame:CGRectMake(0,135.5,284,2)];
     internalShadowView.backgroundColor = [UIColor groupTableViewBackgroundColor];
     //internalShadowView.alpha = 0.8;
-    [whiteRoundedCornerView addSubview:internalShadowView];
+    //[whiteRoundedCornerView addSubview:internalShadowView];
     
 
     UIView *externalShadowView = [[UIView alloc] initWithFrame:CGRectMake(19,135,282,10)];
     externalShadowView.layer.cornerRadius = 8.0;
     externalShadowView.backgroundColor = [UIColor lightGrayColor];
     externalShadowView.alpha = 0.3;
-    [self.contentView addSubview:externalShadowView];
+    //[self.contentView addSubview:externalShadowView];
     
+    CGRect lineViewFrame = self.lineView.frame;
+    //lineViewFrame.origin.x += 0.5;
+    self.lineView.frame = lineViewFrame;
     
     [self.contentView sendSubviewToBack:whiteRoundedCornerView];
     

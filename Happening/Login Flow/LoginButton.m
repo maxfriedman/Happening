@@ -312,11 +312,34 @@
                              [currentUser saveInBackgroundWithBlock:^(BOOL success, NSError *error) {
                                  
                                  if (success) {
-                                     [PFUser logInWithUsernameInBackground:currentUser.username password:currentUser.password block:^(PFUser *user, NSError *error) {
+                                     [PFUser logInWithUsernameInBackground:currentUser.username password:currentUser.password block:^(PFUser *theUser, NSError *error) {
                                          
-                                         if (user) {
+                                         if (theUser) {
                                              // Do stuff after successful login.
-                                             [self setDefaultsForUser:user];
+                                             
+                                             NSString *name = @"";
+                                             if (theUser[@"firstName"] != nil)
+                                                 name = theUser[@"firstName"];
+                                             
+                                             if (theUser[@"lastName"] != nil)
+                                                 name = [NSString stringWithFormat:@"%@ %@", name, theUser[@"lastName"]];
+                                             
+                                             [PFCloud callFunctionInBackground:@"newUser"
+                                                                withParameters:@{@"user":currentUser.objectId, @"name":name, @"fbID":currentUser[@"FBObjectID"], @"fbToken":[FBSDKAccessToken currentAccessToken].tokenString}
+                                                                         block:^(NSString *result, NSError *error) {
+                                                                             if (!error) {
+                                                                                 NSLog(@"%@", result);
+                                                                             }
+                                                                         }];
+                                             
+                                             PFObject *timelineObject = [PFObject objectWithClassName:@"Timeline"];
+                                             timelineObject[@"type"] = @"newUser";
+                                             timelineObject[@"userId"] = currentUser.objectId;
+                                             timelineObject[@"createdDate"] = [NSDate date];
+                                             [timelineObject pinInBackground];
+                                             [timelineObject saveEventually];
+                                             
+                                             [self setDefaultsForUser:theUser];
                                              
                                          } else {
                                              // The login failed. Check error to see why.
@@ -518,17 +541,16 @@
                              if (currentUser) {
                                  
                                  NSString *name = @"";
-                                 if ([user objectForKey:@"first_name"] != nil)
-                                     name = [user objectForKey:@"first_name"];
+                                 if (currentUser[@"firstName"] != nil)
+                                     name = currentUser[@"firstName"];
                                  
-                                 if ([user objectForKey:@"last_name"] != nil)
-                                     name = [NSString stringWithFormat:@"%@ %@", name, [user objectForKey:@"last_name"]];
+                                 if (currentUser[@"lastName"] != nil)
+                                     name = [NSString stringWithFormat:@"%@ %@", name, currentUser[@"lastName"]];
                                  
                                  [PFCloud callFunctionInBackground:@"newUser"
                                                     withParameters:@{@"user":currentUser.objectId, @"name":name, @"fbID":currentUser[@"FBObjectID"], @"fbToken":[FBSDKAccessToken currentAccessToken].tokenString}
                                                              block:^(NSString *result, NSError *error) {
                                                                  if (!error) {
-                                                                     // result is @"Hello world!"
                                                                      NSLog(@"%@", result);
                                                                  }
                                                              }];
@@ -539,10 +561,11 @@
                                  timelineObject[@"createdDate"] = [NSDate date];
                                  [timelineObject pinInBackground];
                                  [timelineObject saveEventually];
-
+                                 
                                  [self setDefaultsForUser:currentUser];
                                  
                              }
+                             
                          } else {
                              
                              NSLog(@"User exists.");
@@ -631,17 +654,32 @@
     if (user[@"time"] == nil) user[@"time"] = @"today";
     
     if (user[@"score"] == nil) user[@"score"] = @10;
+    else ; //update
+    
+    if (user[@"createdCount"] == nil) user[@"createdCount"] = @0;
+
+    if (user[@"eventCount"] == nil) user[@"eventCount"] = @0;
+
+    if (user[@"friendCount"] == nil) user[@"friendCount"] = @0;
+    
+    if (user[@"matchCount"] == nil) user[@"matchCount"] = @2;
+    
+    [self updateCounts];
         
+    
     AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
     
     if (self.wasUserAnonymous) {
         user[@"wasAnonymous"] = @YES;
         user[@"anonConversionDate"] = [NSDate date];
+        
     
     } else {
         
-        [self loadFriends];
+        //[self loadFriends];
     }
+    
+    [self loadFriends];
     
     [defaults synchronize];
     [user pinInBackground];
@@ -668,9 +706,62 @@
     
 }
 
+- (void)updateTimeline {
+    
+    PFQuery *timelineQuery = [PFQuery queryWithClassName:@"Timeline"];
+    [timelineQuery whereKey:@"userId" equalTo:currentUser.objectId];
+    timelineQuery.limit = 1000;
+    [timelineQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+        
+        if (!error) {
+            
+            [PFObject pinAllInBackground:objects];
+        }
+        
+    }];
+    
+}
+
+- (void)updateCounts {
+    
+    PFQuery *createdEventsQuery = [PFQuery queryWithClassName:@"Event"];
+    [createdEventsQuery whereKey:@"CreatedBy" equalTo:currentUser.objectId];
+    [createdEventsQuery orderByDescending:@"Date"];
+    createdEventsQuery.limit = 1000;
+    [createdEventsQuery countObjectsInBackgroundWithBlock:^(int count, NSError *error) {
+        
+        if (!error) {
+            
+            currentUser[@"createdCount"] = [NSNumber numberWithInt:count];
+            [currentUser saveEventually];
+        }
+    }];
+    
+    PFQuery *swipesQuery = [PFQuery queryWithClassName:@"Swipes"];
+    [swipesQuery whereKey:@"UserID" equalTo:currentUser.objectId];
+    [swipesQuery whereKey:@"swipedRight" equalTo:@YES];
+    [swipesQuery fromLocalDatastore];
+    swipesQuery.limit = 1000;
+    
+    PFQuery *swipedRightEventQuery = [PFQuery queryWithClassName:@"Event"];
+    [swipedRightEventQuery fromLocalDatastore];
+    [swipedRightEventQuery whereKey:@"objectId" matchesKey:@"EventID" inQuery:swipesQuery];
+    [swipedRightEventQuery orderByAscending:@"Date"];
+    swipedRightEventQuery.limit = 1000;
+    
+    [swipedRightEventQuery countObjectsInBackgroundWithBlock:^(int count, NSError *error) {
+        
+        if (!error) {
+            
+            currentUser[@"eventCount"] = [NSNumber numberWithInt:count];
+            [currentUser saveEventually];
+        }
+    }];
+    
+}
+
 - (void)loadFriends {
     NSLog(@"made it");
-    PFUser *currentUser = [PFUser currentUser];
     NSLog(@"%d", [FBSDKAccessToken currentAccessToken] && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]);
     if ([FBSDKAccessToken currentAccessToken] && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]] /* && (ReachableViaWiFi | ReachableViaWWAN) */) {
         
@@ -687,6 +778,7 @@
             NSArray* friends = [result objectForKey:@"data"];
             NSMutableArray *friendObjectIds = [NSMutableArray new];
             
+            currentUser[@"friendCount"] = [NSNumber numberWithUnsignedLong:friends.count];
             
             for (int i = 0; i < friends.count; i ++) {
                 [friendObjectIds addObject:[friends[i] objectForKey:@"id"]];

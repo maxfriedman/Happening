@@ -14,6 +14,8 @@
 #import "CupertinoYankee.h"
 #import "LocationConstants.h"
 #import "ModalPopup.h"
+#import "ProfilePictureView.h"
+#import "CustomConstants.h"
 
 @interface CreateHappeningView () <UITextFieldDelegate, UIActionSheetDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, FastttCameraDelegate, DraggableViewDelegate, UIPickerViewDataSource, UIPickerViewDelegate>
 
@@ -29,6 +31,7 @@
     UITextField *titleTextField;
     UITextField *locationTextField;
     UITextField *dateTextField;
+    UITextField *descriptionTextField;
     
     UIButton *takePictureButton;
     UILabel *changeImageLabel;
@@ -38,6 +41,9 @@
     UIButton *changeButton;
     UIView *containerView;
     
+    UILabel *inviteLabel;
+    UILabel *subInviteLabel;
+    
     BOOL addedImage;
     NSDate *eventDate;
     
@@ -45,6 +51,12 @@
     UIPickerView *catPicker;
     UIDatePicker *datePicker;
     NSArray *pickerRows;
+    
+    NSArray *selectedIds;
+    NSArray *selectedImages;
+    NSMutableArray *finalGroupIdArray;
+    NSMutableArray *finalUserIdArray;
+
 }
 
 @synthesize flashButton, switchCameraButton;
@@ -94,13 +106,13 @@
         titleTextField.tag = 1;
         [titleTextField clearsOnInsertion];
         [titleTextField addTarget:self action:@selector(textFieldDidChange:) forControlEvents:UIControlEventEditingChanged];
-        [dragView.cardView addSubview:titleTextField];
+        [dragView.cardView insertSubview:titleTextField belowSubview:dragView.overlayView];
         
         
         locationTextField = [[UITextField alloc] initWithFrame:CGRectMake(15, 189.5, dragView.frame.size.width - 30, 21)];
         locationTextField.textColor = dragView.location.textColor;
         locationTextField.font = dragView.location.font;
-        locationTextField.placeholder = @"Set a location (optional)";
+        locationTextField.placeholder = @"Set a location"; //@"Set a location (optional)";
         locationTextField.delegate = self;
         [locationTextField setReturnKeyType:UIReturnKeyNext];
         locationTextField.tag = 2;
@@ -138,16 +150,17 @@
         [dragView.cardView addSubview:changeImageLabel];
         
         
-        UILabel *inviteLabel = [[UILabel alloc] initWithFrame:CGRectMake(dragView.hapLogoButton.frame.size.width + 10 + 15, dragView.hapLogoButton.frame.origin.y,dragView.frame.size.width - dragView.hapLogoButton.frame.size.width - 45, 30)];
-        inviteLabel.font = [UIFont fontWithName:@"OpenSans" size:12.0];
+        inviteLabel = [[UILabel alloc] initWithFrame:CGRectMake(dragView.hapLogoButton.frame.size.width + 10 + 15, dragView.hapLogoButton.frame.origin.y,dragView.frame.size.width - dragView.hapLogoButton.frame.size.width - 45, 30)];
+        inviteLabel.font = [UIFont fontWithName:@"OpenSans-Semibold" size:11.0];
         inviteLabel.textColor = [UIColor darkGrayColor];
-        inviteLabel.text = @"All friends are invited by default.";
+        inviteLabel.text = @"All nearby friends will see this event";
         [dragView.cardView addSubview:inviteLabel];
         
-        UILabel *subInviteLabel = [[UILabel alloc] initWithFrame:CGRectMake(dragView.hapLogoButton.frame.size.width + 10 + 15, dragView.hapLogoButton.frame.origin.y + 17, dragView.frame.size.width - dragView.hapLogoButton.frame.size.width - 40, 30)];
-        subInviteLabel.font = [UIFont fontWithName:@"OpenSans" size:10.0];
+        subInviteLabel = [[UILabel alloc] initWithFrame:CGRectMake(dragView.hapLogoButton.frame.size.width + 10 + 15, dragView.hapLogoButton.center.y, dragView.frame.size.width - dragView.hapLogoButton.frame.size.width - 40, 30)];
+        subInviteLabel.center = CGPointMake(subInviteLabel.center.x, dragView.hapLogoButton.center.y + 7);
+        subInviteLabel.font = [UIFont fontWithName:@"OpenSans" size:9.0];
         subInviteLabel.textColor = [UIColor darkGrayColor];
-        subInviteLabel.text = @"Tap to invite specific friends or groups.";
+        subInviteLabel.text = @"unless you tap to invite specific friends/groups.";
         [dragView.cardView addSubview:subInviteLabel];
         
         
@@ -155,7 +168,8 @@
         [dragView addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(cardTap)]];
         [self addSubview:dragView];
     
-        
+        dragView.eventImage.userInteractionEnabled = YES;
+        [dragView.eventImage addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(changeImage)]];
         
 
         pickerContainerView = [[UIView alloc] initWithFrame:CGRectMake(0, self.frame.size.height, 320, 200)]; //(0, self.frame.size.height - 200, 320, 200)];
@@ -169,7 +183,8 @@
         datePicker = [[UIDatePicker alloc] initWithFrame:CGRectMake(0, 20, 320, 162)];
         datePicker.alpha = 0;
         [datePicker addTarget:self action:@selector(dateChanged) forControlEvents:UIControlEventValueChanged];
-        datePicker.minimumDate = [[NSDate alloc]initWithTimeIntervalSinceNow:-86400]; //24 hours ago
+        //datePicker.minimumDate = [[NSDate alloc]initWithTimeIntervalSinceNow:-86400]; //24 hours ago
+        datePicker.minimumDate = [[NSDate alloc]initWithTimeIntervalSinceNow:0];
         datePicker.maximumDate = [[NSDate alloc]initWithTimeIntervalSinceNow:17280000]; //200 days
         [datePicker setMinuteInterval:15];
         [pickerContainerView addSubview:datePicker];
@@ -249,6 +264,8 @@
         eventImage = image;
         addedImage = YES;
         
+        [self saveImage:image isDefault:YES];
+        
         [UIView animateWithDuration:0.4 animations:^{
             
             pickerContainerView.frame = CGRectMake(0, self.frame.size.height - 200, 320, 200);
@@ -265,6 +282,7 @@
     dragView.eventImage.image = image;
     eventImage = image;
     addedImage = YES;
+    [self saveImage:image isDefault:YES];
     
     //hashtagDetailLabel.text = [self.hashtagData objectAtIndex:row];
     
@@ -607,17 +625,17 @@
                        [NSNumber numberWithFloat:1.0], nil];
         
         [dragView.eventImage.layer insertSublayer:l atIndex:0];
-        
-        [changeImageLabel removeFromSuperview];
-        [containerView removeFromSuperview];
         chooseImageButton.alpha = 0;
         
+        /*
         UIView *whiteView = [[UIView alloc] initWithFrame:CGRectMake(9.5, 9.5, 41, 41)];
         whiteView.backgroundColor = [UIColor whiteColor];
         whiteView.layer.cornerRadius = whiteView.frame.size.height/2;
         whiteView.layer.masksToBounds = YES;
         [dragView.cardView addSubview:whiteView];
+        */
         
+        /*
         UILabel *createdByLabel = [[UILabel alloc] initWithFrame:CGRectMake(40, 17, 80, 26)];
         createdByLabel.textColor = [UIColor whiteColor];
         createdByLabel.backgroundColor = [UIColor colorWithRed:30.0/255 green:30.0/255 blue:30.0/255 alpha:1.0];
@@ -626,26 +644,20 @@
         createdByLabel.layer.borderColor = [UIColor whiteColor].CGColor;
         createdByLabel.clipsToBounds = YES;
         createdByLabel.numberOfLines = 2;
-        createdByLabel.text = @"Created by        Max Friedman  ";
-        createdByLabel.textAlignment =NSTextAlignmentRight;
+        createdByLabel.text = [NSString stringWithFormat:@"Created by\n%@ %@", [PFUser currentUser][@"firstName"], [PFUser currentUser][@"lastName"]];
+        //createdByLabel.textAlignment = NSTextAlignmentRight;
         createdByLabel.font = [UIFont fontWithName:@"OpenSans" size:9.0];
         [dragView.cardView addSubview:createdByLabel];
-    
-        
-        FBSDKProfilePictureView *ppView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(10, 10, 40, 40)];
-        ppView.profileID = [PFUser currentUser][@"FBObjectID"];
-        ppView.clipsToBounds = YES;
-        ppView.layer.cornerRadius = 40/2;
-        ppView.layer.borderColor = [UIColor whiteColor].CGColor;
-        [dragView.cardView addSubview:ppView];
-        
-        
-        dragView.eventImage.userInteractionEnabled = YES;
-        [dragView.eventImage addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(changeImage)]];
-     
+         */
         
         addedImage = YES;
     }
+    
+    [changeImageLabel removeFromSuperview];
+    [containerView removeFromSuperview];
+    ProfilePictureView *ppview = [[ProfilePictureView alloc] initWithFrame:CGRectMake(10, 10, 40, 40) type:@"create" fbid:[PFUser currentUser][@"FBObjectID"]];
+    ppview.layer.borderColor = [UIColor whiteColor].CGColor;
+    [dragView.cardView addSubview:ppview];
     
     /*
     UIView *maskView = [[UIView alloc] initWithFrame:dragView.eventImage.bounds];
@@ -856,6 +868,8 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
 - (void)chooseImage {
     
     [self.fastCamera stopRunning];
+    [changeImageLabel removeFromSuperview];
+    [containerView removeFromSuperview];
     flashButton.alpha = 0;
     switchCameraButton.alpha = 0;
     takePictureButton.alpha = 0;
@@ -984,6 +998,28 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
             
         });
         
+    } else if (locationTextField.text.length == 0) {
+        
+        [RKDropdownAlert title:@"Where is it?" message:@"Don't forget to set a location." backgroundColor:[UIColor redColor] textColor:[UIColor whiteColor]];
+        
+        double delayInSeconds = 0.4;
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+            // code to be executed on the main queue after delay
+            
+            [UIView animateWithDuration:0.5 delay:0.0 usingSpringWithDamping:0.5 initialSpringVelocity:0.5 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+                
+                [self insertSubview:dragView belowSubview:pickerContainerView];
+                dragView.overlayView.alpha = 0;
+                dragView.cardView.center = dragView.originalPoint;
+                dragView.cardView.transform = CGAffineTransformMakeRotation(0);
+                
+            } completion:^(BOOL finished) {
+                
+            }];
+            
+        });
+        
     } else if (dateTextField.text.length == 0) {
         
         [RKDropdownAlert title:@"One more thing..." message:@"You gotta set the date!" backgroundColor:[UIColor redColor] textColor:[UIColor whiteColor]];
@@ -1014,7 +1050,6 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
         [SVProgressHUD setViewForExtension:self];
         [SVProgressHUD showWithStatus:@"Just a sec..."];
         
-        
         PFUser *currentUser = [PFUser currentUser];
         
         PFObject *event = [PFObject objectWithClassName:@"Event"];
@@ -1029,9 +1064,18 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
         if (dateTextField.text.length > 0)
             event[@"Date"] = eventDate;
         
-        event[@"private"] = @YES;
-        event[@"globalWeight"] = @1;
         event[@"weight"] = @3;
+        event[@"globalWeight"] = @1;
+        
+        
+        /*
+        if (selectedIds.count > 0) {
+            event[@"private"] = @YES;
+        } else {
+            event[@"private"] = @NO;
+        }*/
+        
+        event[@"private"] = @YES;
         
 
         PFGeoPoint *userLoc = currentUser[@"userLoc"];
@@ -1070,37 +1114,117 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
         event[@"swipesLeft"] = @0;
         event[@"swipesRight"] = @1;
         
+        NSMutableArray *userIds = [[NSMutableArray alloc] initWithObjects:currentUser[@"FBObjectID"], nil];
+        finalUserIdArray = [NSMutableArray new];
+        finalGroupIdArray = [NSMutableArray new];
         
-        [event saveInBackgroundWithBlock:^(BOOL success, NSError *error) {
-           
-            if (success) {
+        if (selectedIds.count == 0) {
+            
+            NSArray *friends = currentUser[@"friends"];
+            for (NSDictionary *friend in friends) {
+                [userIds addObject:[friend valueForKey:@"id"]];
+            }
+            
+            event[@"invitedIds"] = userIds;
+            
+            [self saveEvent:event];
+            
+        } else {
+            
+            __block int count = 0;
+            
+            for (int i = 0; i < selectedImages.count; i++) {
                 
-                [event pinInBackground];
+                UIView *view = selectedImages[i];
+                NSString *theId = selectedIds[i];
                 
-                NSLog(@"USER EVENT CREATED!");
-                
+                if ([view isKindOfClass:[FBSDKProfilePictureView class]]) {
+                    
+                    [userIds addObject:theId];
+                    [finalUserIdArray addObject:theId];
+                    count++;
+                    if (count == selectedIds.count) {
+                        event[@"invitedIds"] = userIds;
+                        [self saveEvent:event];
+                    }
+                } else {
+                    
+                    PFQuery *groupQuery = [PFQuery queryWithClassName:@"Group"];
+                    [groupQuery fromLocalDatastore];
+                    [groupQuery getObjectInBackgroundWithId:theId block:^(PFObject *group, NSError *error) {
+                        
+                        if (!error) {
+                            
+                            NSArray *userDicts = group[@"user_dicts"];
+                            NSMutableArray *friendIds = [NSMutableArray array];
+                            for (NSDictionary *friend in userDicts) {
+                                [friendIds addObject:[friend valueForKey:@"id"]];
+                            }
+                            
+                            [userIds addObjectsFromArray:friendIds];
+                            [finalGroupIdArray addObject:theId];
+                            
+                            count++;
+                            if (count == selectedIds.count) {
+                                event[@"invitedIds"] = userIds;
+                                [self saveEvent:event];
+                            }
+                        }
+                        
+                    }];
+                    
+                }
+            
                 /*
-                PFObject *swipesObject = [PFObject objectWithClassName:@"Swipes"];
-                swipesObject[@"UserID"] = currentUser.objectId;
-                if (![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
-                    swipesObject[@"username"] = currentUser.username;
-                }
-                swipesObject[@"EventID"] = event.objectId;
-                swipesObject[@"swipedRight"] = @NO;
-                swipesObject[@"swipedLeft"] = @YES;
-                
-                if ([[PFUser currentUser][@"socialMode"] isEqualToNumber:@YES] && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
-                    swipesObject[@"FBObjectID"] = currentUser[@"FBObjectID"];
-                }
-                
-                [swipesObject pinInBackground];
-                 */
-                
-                NSString *name = [NSString stringWithFormat:@"%@ %@", currentUser[@"firstName"], currentUser[@"lastName"]];
-                
-                
+                NSCharacterSet* notDigits = [[NSCharacterSet decimalDigitCharacterSet] invertedSet];
+                if ([theId rangeOfCharacterFromSet:notDigits].location == NSNotFound && theId.length > 12)
+                {
+                    // newString consists only of the digits 0 through 9 ------ FBID
+                    [finalUserIdArray addObject:theId];
+                    count++;
+                    if (count == selectedIds.count) [self saveEvent:event];
+                    
+                } else { // group id */
+            }
+        }
+    }
+}
+
+- (void)saveEvent:(PFObject *)event {
+        
+    PFUser *currentUser = [PFUser currentUser];
+    
+    [event saveInBackgroundWithBlock:^(BOOL success, NSError *error) {
+       
+        if (success) {
+            
+            [event pinInBackground];
+            
+            NSLog(@"USER EVENT CREATED!");
+            
+            PFObject *swipesObject = [PFObject objectWithClassName:@"Swipes"];
+            swipesObject[@"UserID"] = currentUser.objectId;
+            swipesObject[@"username"] = currentUser.username;
+            swipesObject[@"EventID"] = event.objectId;
+            swipesObject[@"swipedRight"] = @YES;
+            swipesObject[@"swipedLeft"] = @NO;
+            swipesObject[@"isGoing"] = @(YES);
+            if ([[PFUser currentUser][@"socialMode"] isEqualToNumber:@YES] && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
+                swipesObject[@"FBObjectID"] = currentUser[@"FBObjectID"];
+            }
+            [swipesObject pinInBackground];
+            [swipesObject saveEventually];
+            
+            NSString *name = [NSString stringWithFormat:@"%@ %@", currentUser[@"firstName"], currentUser[@"lastName"]];
+            
+            NSString *locString = locationTextField.text; //[locationTextField.text stringByReplacingOccurrencesOfString:@"at " withString:@""];
+            if (locationTextField.text == nil) locString = @"";
+            
+            
+            if (selectedIds.count == 0) {
+            
                 [PFCloud callFunctionInBackground:@"newUserEvent"
-                                   withParameters:@{@"user":currentUser.objectId, @"event":event.objectId, @"fbID":currentUser[@"FBObjectID"], @"fbToken":[FBSDKAccessToken currentAccessToken].tokenString, @"title":event[@"Title"], @"name":name, @"eventDate":event[@"Date"]}
+                                   withParameters:@{@"user":currentUser.objectId, @"event":event.objectId, @"fbID":currentUser[@"FBObjectID"], @"fbToken":[FBSDKAccessToken currentAccessToken].tokenString, @"title":event[@"Title"], @"name":name, @"loc":locString, @"eventDate":event[@"Date"]}
                                             block:^(NSString *result, NSError *error) {
                                                 if (!error) {
                                                     
@@ -1108,47 +1232,399 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
                                                 }
                                             }];
                 
-                
-                [SVProgressHUD showSuccessWithStatus:@"Boom"];
-                
-                
-                
-                PFObject *timelineObject = [PFObject objectWithClassName:@"Timeline"];
-                
-                timelineObject[@"type"] = @"create";
-                
-                timelineObject[@"userId"] = [PFUser currentUser].objectId;
-                timelineObject[@"eventId"] = event.objectId;
-                timelineObject[@"createdDate"] = [NSDate date];
-                timelineObject[@"eventTitle"] = event[@"Title"];
-                [timelineObject pinInBackground];
-                [timelineObject saveEventually];
-                
-                [currentUser incrementKey:@"score" byAmount:@20];
-                [currentUser saveEventually];
-                
-                UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
-                ModalPopup *popup = [storyboard instantiateViewControllerWithIdentifier:@"ModalPopup"];
-                popup.eventObject = event;
-                popup.eventDateString = dateTextField.text;
-                popup.eventImage = dragView.eventImage.image;
-                popup.type = @"create";
-                [self.vc showModalPopup:popup];
-                
-                //[self.vc createButtonPressed:nil];
-                
-                
             } else {
                 
-                NSLog(@"error: %@", error);
+                __block int saveCount = 0;
+                
+                PFQuery *groupQuery = [PFQuery queryWithClassName:@"Group"];
+                [groupQuery whereKey:@"objectId" containedIn:finalGroupIdArray];
+                [groupQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+                    
+                    if (!error) {
+                        
+                        for (PFObject *group in objects) {
+                                    
+                            PFObject *groupEvent = [PFObject objectWithClassName:@"Group_Event"];
+                            groupEvent[@"EventID"] = event.objectId;
+                            groupEvent[@"GroupID"] = group.objectId;
+                            groupEvent[@"invitedByName"] = [NSString stringWithFormat:@"%@ %@", currentUser[@"firstName"], currentUser[@"lastName"]];
+                            groupEvent[@"invitedByID"] = currentUser.objectId;
+                            groupEvent[@"eventObject"] = event;
+                            [event pinInBackground];
+                            [groupEvent pinInBackground];
+                            [groupEvent saveEventually:^(BOOL success, NSError *error) {
+                                
+                                PFObject *rsvpObject = [PFObject objectWithClassName:@"Group_RSVP"];
+                                rsvpObject[@"EventID"] = event.objectId;
+                                rsvpObject[@"GroupID"] = group.objectId;
+                                rsvpObject[@"Group_Event_ID"] = groupEvent.objectId;
+                                rsvpObject[@"UserID"] = currentUser.objectId;
+                                rsvpObject[@"User_Object"] = currentUser;
+                                rsvpObject[@"UserFBID"] = currentUser[@"FBObjectID"];
+                                rsvpObject[@"GoingType"] = @"yes";
+                                [rsvpObject pinInBackground];
+                                [rsvpObject saveEventually];
+                                
+                            }];
+                            
+                            PFObject *timelineObject = [PFObject objectWithClassName:@"Timeline"];
+                            timelineObject[@"type"] = @"eventInvite";
+                            timelineObject[@"userId"] = currentUser.objectId;
+                            timelineObject[@"eventId"] = event.objectId;
+                            timelineObject[@"createdDate"] = [NSDate date];
+                            timelineObject[@"eventTitle"] = event[@"Title"];
+                            [timelineObject pinInBackground];
+                            [timelineObject saveEventually];
+                            
+                            [currentUser incrementKey:@"score" byAmount:@5];
+                            [currentUser saveEventually];
+                            
+                            [self setupConversationWithMessage:[NSString stringWithFormat:@"%@ %@ created a Happening and invited \"%@\" to %@", currentUser[@"firstName"], currentUser[@"lastName"], group[@"name"], event[@"Title"]] forGroup:group event:event];
+                            
+                            saveCount++;
+                            
+                        }
+                        
+                    } else {
+                        
+                        [SVProgressHUD showErrorWithStatus:@"Group invite failed :("];
+                    }
+                    
+                }];
+
+                
+                PFUser *currentUser = [PFUser currentUser];
+                PFQuery *userQuery = [PFUser query];
+                __block int saveCount2 = 0;
+                [userQuery whereKey:@"FBObjectID" containedIn:finalUserIdArray];
+                [userQuery findObjectsInBackgroundWithBlock:^(NSArray *users, NSError *error){
+                        
+                    if (!error) {
+                        
+                        for (int i = 0; i < users.count; i++) {
+                            
+                            PFObject *user = (PFObject *)users[i];
+                            
+                            PFObject *cu = (PFObject *)currentUser;
+                            
+                            NSMutableArray *usersForGroup = [[NSMutableArray alloc] initWithObjects:user, cu, nil];
+                            NSMutableArray *userIds = [NSMutableArray array];
+                            for (PFUser *user in usersForGroup) {
+                                [userIds addObject:user.objectId];
+                            }
+                            
+                            PFQuery *groupUserQuery1 = [PFQuery queryWithClassName:@"Group_User"];
+                            [groupUserQuery1 whereKey:@"user_id" equalTo:currentUser.objectId];
+                            
+                            NSLog(@"%@", userIds);
+                            
+                            PFQuery *groupQuery = [PFQuery queryWithClassName:@"Group"];
+                            [groupQuery fromLocalDatastore];
+                            [groupQuery whereKey:@"user_parse_ids" containsAllObjectsInArray:userIds];
+                            [groupQuery whereKey:@"memberCount" equalTo:@2];
+                            
+                            [groupQuery getFirstObjectInBackgroundWithBlock:^(PFObject *group, NSError *error){
+                                
+                                BOOL newGroupNewEvent = YES;
+                                
+                                if (!error) {
+                                    
+                                    NSLog(@"1-1 group exists!");
+                                    newGroupNewEvent = NO;
+                                    
+                                    NSLog(@"Event in group does NOT exist!");
+                                    
+                                    PFObject *groupEvent = [PFObject objectWithClassName:@"Group_Event"];
+                                    groupEvent[@"EventID"] = event.objectId;
+                                    groupEvent[@"GroupID"] = group.objectId;
+                                    groupEvent[@"invitedByName"] = [NSString stringWithFormat:@"%@ %@", currentUser[@"firstName"], currentUser[@"lastName"]];
+                                    groupEvent[@"invitedByID"] = currentUser.objectId;
+                                    groupEvent[@"eventObject"] = event;
+                                    [event pinInBackground];
+                                    [groupEvent pinInBackground];
+                                    [groupEvent saveEventually:^(BOOL success, NSError *error) {
+                                        
+                                        PFObject *rsvpObject = [PFObject objectWithClassName:@"Group_RSVP"];
+                                        rsvpObject[@"EventID"] = event.objectId;
+                                        rsvpObject[@"GroupID"] = group.objectId;
+                                        rsvpObject[@"Group_Event_ID"] = groupEvent.objectId;
+                                        rsvpObject[@"UserID"] = currentUser.objectId;
+                                        rsvpObject[@"User_Object"] = currentUser;
+                                        rsvpObject[@"UserFBID"] = currentUser[@"FBObjectID"];
+                                        rsvpObject[@"GoingType"] = @"yes";
+                                        [rsvpObject pinInBackground];
+                                        [rsvpObject saveEventually];
+                                        
+                                    }];
+                                    
+                                    PFObject *timelineObject = [PFObject objectWithClassName:@"Timeline"];
+                                    timelineObject[@"type"] = @"eventInvite";
+                                    timelineObject[@"userId"] = currentUser.objectId;
+                                    timelineObject[@"eventId"] = event.objectId;
+                                    timelineObject[@"createdDate"] = [NSDate date];
+                                    timelineObject[@"eventTitle"] = event[@"Title"];
+                                    [timelineObject pinInBackground];
+                                    [timelineObject saveEventually];
+                                    
+                                    [currentUser incrementKey:@"score" byAmount:@20];
+                                    [currentUser saveEventually];
+                                    
+                                    [self setupConversationWithMessage:[NSString stringWithFormat:@"%@ %@ created a Happening and invited you to %@", currentUser[@"firstName"], currentUser[@"lastName"], event[@"Title"]] forGroup:group event:event];
+                                    
+                                    saveCount++;
+                                    
+                                }
+                                
+                                if (newGroupNewEvent) {
+                                    
+                                    NSLog(@"users do not have a 1-1 group. Create new group and event!");
+                                    
+                                    PFObject *group = [PFObject objectWithClassName:@"Group"];
+                                    group[@"name"] =  [NSString stringWithFormat:@"%@ and %@", currentUser[@"firstName"], user[@"firstName"]]; //[NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]];
+                                    group[@"memberCount"] = @2;
+                                    group[@"avatar"] = [PFFile fileWithName:@"image.png" data:UIImagePNGRepresentation([UIImage imageNamed:@"userImage"])];
+                                    group[@"isDefaultImage"] = @YES;
+                                    group[@"isDefaultName"] = @YES;
+                                    
+                                    NSMutableArray *userDictsArray = [NSMutableArray array];
+                                    NSMutableArray *parseArray = [NSMutableArray array];
+                                    NSMutableArray *fbArray = [NSMutableArray array];
+                                    for (PFUser *user in usersForGroup) {
+                                        [parseArray addObject:user.objectId];
+                                        [fbArray addObject:user[@"FBObjectID"]];
+                                        
+                                        NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+                                        
+                                        [dict setObject:user.objectId forKey:@"parseId"];
+                                        [dict setObject:[NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]] forKey:@"name"];
+                                        [dict setObject:user[@"FBObjectID"] forKey:@"id"];
+                                        [userDictsArray addObject:dict];
+                                    }
+                                    
+                                    group[@"user_parse_ids"] = parseArray;
+                                    group[@"user_dicts"] = userDictsArray;
+                                    
+                                    NSLog(@"%@", group);
+                                    
+                                    [group saveInBackgroundWithBlock:^(BOOL success, NSError *error){
+                                        
+                                        NSLog(@"Made it");
+                                        
+                                        if (success) {
+                                            
+                                            [group pinInBackground];
+                                            
+                                            PFObject *groupUser1 = [PFObject objectWithClassName:@"Group_User"];
+                                            groupUser1[@"user_id"] = currentUser.objectId;
+                                            groupUser1[@"group_id"] = group.objectId;
+                                            [groupUser1 saveInBackground];
+                                            
+                                            PFObject *groupUser2 = [PFObject objectWithClassName:@"Group_User"];
+                                            groupUser2[@"user_id"] = user.objectId;
+                                            groupUser2[@"group_id"] = group.objectId;
+                                            [groupUser2 saveInBackground];
+ 
+                                            PFObject *groupEvent = [PFObject objectWithClassName:@"Group_Event"];
+                                            groupEvent[@"EventID"] = event.objectId;
+                                            groupEvent[@"GroupID"] = group.objectId;
+                                            groupEvent[@"invitedByName"] = [NSString stringWithFormat:@"%@ %@", currentUser[@"firstName"], currentUser[@"lastName"]];
+                                            groupEvent[@"invitedByID"] = currentUser.objectId;
+                                            groupEvent[@"eventObject"] = event;
+                                            [groupEvent pinInBackground];
+                                            [event pinInBackground];
+                                            [groupEvent saveEventually:^(BOOL success, NSError *error) {
+                                                
+                                                PFObject *rsvpObject = [PFObject objectWithClassName:@"Group_RSVP"];
+                                                rsvpObject[@"EventID"] = event.objectId;
+                                                rsvpObject[@"GroupID"] = group.objectId;
+                                                rsvpObject[@"Group_Event_ID"] = groupEvent.objectId;
+                                                rsvpObject[@"UserID"] = currentUser.objectId;
+                                                rsvpObject[@"User_Object"] = currentUser;
+                                                rsvpObject[@"UserFBID"] = currentUser[@"FBObjectID"];
+                                                rsvpObject[@"GoingType"] = @"yes";
+                                                [rsvpObject pinInBackground];
+                                                [rsvpObject saveEventually];
+                                                
+                                            }];
+                                            
+                                            PFObject *groupCreateTimelineObject = [PFObject objectWithClassName:@"Timeline"];
+                                            groupCreateTimelineObject[@"type"] = @"groupCreate";
+                                            groupCreateTimelineObject[@"userId"] = currentUser.objectId;
+                                            groupCreateTimelineObject[@"createdDate"] = [NSDate date];
+                                            [groupCreateTimelineObject pinInBackground];
+                                            [groupCreateTimelineObject saveEventually];
+                                            
+                                            PFObject *eventInviteTimelineObject = [PFObject objectWithClassName:@"Timeline"];
+                                            eventInviteTimelineObject[@"type"] = @"eventInvite";
+                                            eventInviteTimelineObject[@"userId"] = currentUser.objectId;
+                                            eventInviteTimelineObject[@"eventId"] = event.objectId;
+                                            eventInviteTimelineObject[@"createdDate"] = [NSDate date];
+                                            eventInviteTimelineObject[@"eventTitle"] = event[@"Title"];
+                                            [eventInviteTimelineObject pinInBackground];
+                                            [eventInviteTimelineObject saveEventually];
+                                            
+                                            [currentUser incrementKey:@"score" byAmount:@20];
+                                            [currentUser saveEventually];
+                                            
+                                            [self setupConversationWithMessage:[NSString stringWithFormat:@"%@ %@ created a Happening and invited you to %@", currentUser[@"firstName"], currentUser[@"lastName"], event[@"Title"]] forGroup:group event:event];
+                                            
+                                        } else {
+                                            
+
+                                        }
+                                    }];
+                                }
+                            }];
+                        }
+                    }
+                }];
+                
             }
             
-        }];
+            
+            
+            [SVProgressHUD showSuccessWithStatus:@"Boom"];
+            
+            
+            
+            PFObject *timelineObject = [PFObject objectWithClassName:@"Timeline"];
+            
+            timelineObject[@"type"] = @"create";
+            
+            timelineObject[@"userId"] = [PFUser currentUser].objectId;
+            timelineObject[@"eventId"] = event.objectId;
+            timelineObject[@"createdDate"] = [NSDate date];
+            timelineObject[@"eventTitle"] = event[@"Title"];
+            [timelineObject pinInBackground];
+            [timelineObject saveEventually];
+            
+            [currentUser incrementKey:@"score" byAmount:@20];
+            [currentUser incrementKey:@"createdCount" byAmount:@1];
+
+            [currentUser saveEventually];
+            
+            UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+            ModalPopup *popup = [storyboard instantiateViewControllerWithIdentifier:@"ModalPopup"];
+            popup.eventObject = event;
+            popup.eventDateString = dateTextField.text;
+            popup.eventImage = dragView.eventImage.image;
+            popup.type = @"create";
+            [self.vc showModalPopup:popup];
+            
+            //[self.vc createButtonPressed:nil];
+            
+            
+        } else {
+            
+            NSLog(@"error: %@", error);
+        }
         
+    }];
+
+    
+}
+
+- (void)setupConversationWithMessage:(NSString *)messageText forGroup:(PFObject *)group event:(PFObject *)event {
+    
+    
+    AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+    LYRQuery *query = [LYRQuery queryWithQueryableClass:[LYRConversation class]];
+    
+    LYRConversation *conversation = nil;
+    BOOL shouldCreateNewConvo = YES;
+    
+    NSError *error = nil;
+    NSOrderedSet *conversations = [appDelegate.layerClient executeQuery:query error:&error];
+    if (!error) {
         
+        NSLog(@"%tu conversations", conversations.count);
+        
+        for (LYRConversation *convo in conversations) {
+            
+            if ([[convo.metadata valueForKey:@"groupId"] isEqualToString:group.objectId]) {
+                
+                NSLog(@"group convo exists");
+                conversation = convo;
+                shouldCreateNewConvo = NO;
+                break;
+            }
+        }
+    }
+    
+    if (shouldCreateNewConvo) {
+        
+        NSArray *userObjects = group[@"user_dicts"];
+        NSMutableArray *idArray = [NSMutableArray new];
+        for (NSDictionary *user in userObjects) {
+            [idArray addObject:[user valueForKey:@"parseId"]];
+        }
+        
+        conversation = [appDelegate.layerClient newConversationWithParticipants:[NSSet setWithArray:idArray] options:nil error:&error];
+        [conversation setValue:group[@"name"] forMetadataAtKeyPath:@"title"];
+        [conversation setValue:group.objectId forMetadataAtKeyPath:@"groupId"];
+        
+        group[@"chatId"] = conversation.identifier.absoluteString;
+        [group saveEventually];
         
     }
     
+    if (!conversation || conversation == nil) {
+        NSLog(@"New Conversation creation failed: %@", error);
+        [SVProgressHUD showErrorWithStatus:@"Something went wrong :("];
+    }
+    
+    //Send messages w data
+    
+    /* %%%%%%%%%%%%%%% System notification message %%%%%%%%%%%%%%%%%% */
+    NSDictionary *dataDictionary = @{@"message":messageText,
+                                     @"type":@"invite",
+                                     @"groupId":group.objectId,
+                                     };
+    NSError *JSONSerializerError;
+    NSData *dataDictionaryJSON = [NSJSONSerialization dataWithJSONObject:dataDictionary options:NSJSONWritingPrettyPrinted error:&JSONSerializerError];
+    LYRMessagePart *dataMessagePart = [LYRMessagePart messagePartWithMIMEType:ATLMimeTypeSystemObject data:dataDictionaryJSON];
+    // Create messagepart with info about cell
+    float actualLineSize = [messageText boundingRectWithSize:CGSizeMake(270, CGFLOAT_MAX)
+                                                     options:NSStringDrawingUsesLineFragmentOrigin
+                                                  attributes:@{NSFontAttributeName:[UIFont fontWithName:@"OpenSans" size:10.0]}
+                                                     context:nil].size.height;
+    NSDictionary *cellInfoDictionary = @{@"height": [NSString stringWithFormat:@"%f", actualLineSize]};
+    NSData *cellInfoDictionaryJSON = [NSJSONSerialization dataWithJSONObject:cellInfoDictionary options:NSJSONWritingPrettyPrinted error:&JSONSerializerError];
+    LYRMessagePart *cellInfoMessagePart = [LYRMessagePart messagePartWithMIMEType:ATLMimeTypeSystemCellInfo data:cellInfoDictionaryJSON];
+    // Add message to ordered set.  This ordered set messages will get sent to the participants
+    LYRMessage *message = [appDelegate.layerClient newMessageWithParts:@[dataMessagePart,cellInfoMessagePart] options:@{LYRMessageOptionsPushNotificationAlertKey: messageText} error:&error];
+    // Sends the specified message
+    
+    BOOL success = [conversation sendMessage:message error:&error];
+    if (success) {
+        //NSLog(@"Message queued to be sent: %@", message);
+    } else {
+        NSLog(@"Message send failed: %@", error);
+    }
+    
+    
+    /* %%%%%%%%%%%%%%% Embedded RSVP Invite %%%%%%%%%%%%%%%%%% */
+    NSDictionary *dataDictionary2 = @{@"message":messageText,
+                                      @"eventId":event.objectId,
+                                      @"groupId":group.objectId,
+                                      };
+    NSError *JSONSerializerError2;
+    NSData *dataDictionaryJSON2 = [NSJSONSerialization dataWithJSONObject:dataDictionary2 options:NSJSONWritingPrettyPrinted error:&JSONSerializerError2];
+    LYRMessagePart *dataMessagePart2 = [LYRMessagePart messagePartWithMIMEType:ATLMimeTypeCustomObject data:dataDictionaryJSON2];
+    // Create messagepart with info about cell
+    NSDictionary *cellInfoDictionary2 = @{@"height":@"180"};
+    NSData *cellInfoDictionaryJSON2 = [NSJSONSerialization dataWithJSONObject:cellInfoDictionary2 options:NSJSONWritingPrettyPrinted error:&JSONSerializerError2];
+    LYRMessagePart *cellInfoMessagePart2 = [LYRMessagePart messagePartWithMIMEType:ATLMimeTypeCustomCellInfo data:cellInfoDictionaryJSON2];
+    // Add message to ordered set.  This ordered set messages will get sent to the participants
+    LYRMessage *message2 = [appDelegate.layerClient newMessageWithParts:@[dataMessagePart2,cellInfoMessagePart2] options:nil error:&error];
+    
+    // Sends the specified message
+    BOOL success2 = [conversation sendMessage:message2 error:&error];
+    if (success2) {
+        NSLog(@"Message queued to be sent: %@", message);
+    } else {
+        NSLog(@"Message send failed: %@", error);
+    }
     
 }
 
@@ -1158,12 +1634,12 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
  
     stepsView = [[UIView alloc] initWithFrame:CGRectMake(0, 5, 320, 25)];
     stepsView.backgroundColor = [UIColor colorWithRed:0 green:176.0/255 blue:242.0/255 alpha:1.0];
-    
+ 
     UIView *lineView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 2)];
     lineView.center = CGPointMake(stepsView.frame.size.width / 2, stepsView.frame.size.height / 2);
     lineView.backgroundColor = [UIColor whiteColor];
     [stepsView addSubview:lineView];
-    
+ 
     UILabel *stepOneLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 10, 10)];
     stepOneLabel.center = CGPointMake(lineView.center.x / 2, lineView.center.y);
     stepOneLabel.layer.masksToBounds = YES;
@@ -1174,9 +1650,9 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
     stepOneLabel.textAlignment = NSTextAlignmentCenter;
     stepOneLabel.text = @"1";
     [stepsView addSubview:stepOneLabel];
-    
+ 
     UILabel *createLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 50, 10)];
-    
+ 
     UILabel *stepTwoLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 10, 10)];
     stepTwoLabel.center = CGPointMake(lineView.center.x * 1.5, lineView.center.y);
     stepTwoLabel.layer.masksToBounds = YES;
@@ -1187,9 +1663,57 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
     stepTwoLabel.textAlignment = NSTextAlignmentCenter;
     stepTwoLabel.text = @"2";
     [stepsView addSubview:stepTwoLabel];
-    
+ 
     [self addSubview:stepsView];
 }
  */
+
+- (void)didInviteHomiesWithPics:(NSArray *)pics ids:(NSArray *)ids {
+    
+    //ProfilePictureView *ppview = [[ProfilePictureView alloc] initWithFrame:CGRectMake(50 * friendCount, 0, 40, 40) type:type fbid:fbid];
+    //ppview.parseId = object[@"UserID"];
+    //[friendScrollView addSubview:ppview];
+    
+    NSLog(@"^^^^^^^^^^^^^^^^^^");
+    NSLog(@"%@, %@", pics, ids);
+    
+    for (UIView *view in dragView.friendScrollView.subviews) {
+        [view removeFromSuperview];
+    }
+    
+    selectedIds = ids;
+    selectedImages = pics;
+    
+    [subInviteLabel removeFromSuperview];
+    
+    for (int i = 0; i < pics.count; i++) {
+        
+        UIView *view = pics[i];
+        
+        for (UIView *subview in view.subviews) {
+            if (subview.tag == 123) [subview removeFromSuperview];
+        }
+        
+        for (UIGestureRecognizer *gr in view.gestureRecognizers) {
+            [view removeGestureRecognizer:gr];
+        }
+        
+        view.frame = CGRectMake(50 * i, 0, 40, 40);
+        [dragView.friendScrollView addSubview:view];
+        dragView.friendScrollView.contentSize = CGSizeMake((50 * i) + 40 + 5, 50);
+        
+        if (i > 4) {
+            dragView.friendArrow.alpha = 1;
+        }
+        
+    }
+    
+}
+
+- (void)inviteButtonTap {
+ 
+    [self.delegate inviteFromCreateViewTapped];
+    
+}
 
 @end

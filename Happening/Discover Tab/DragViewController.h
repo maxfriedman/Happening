@@ -50,6 +50,7 @@
 - (void)mapViewTap;
 - (void)showModalPopup:(ModalPopup *)popup;
 - (IBAction)createButtonPressed:(id)sender;
+- (void)checkBeforeRefresh;
 
 
 @property (weak) id <DragViewControllerDelegate> delegate;
@@ -76,6 +77,8 @@
 @property (assign) BOOL dropdownExpanded;
 @property (assign) BOOL tutIsShown;
 @property (assign) NSString *friendObjectID;
+
+@property (strong, nonatomic) NSDate *lastRefresh;
 
 
 -(void)testing;

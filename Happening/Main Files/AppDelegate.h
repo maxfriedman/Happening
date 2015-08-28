@@ -35,6 +35,8 @@
 
 @property BOOL wasHandled;
 
+@property BOOL conversationOpen;
+
 @property (strong, nonatomic) RKSwipeBetweenViewControllers *rk;
 @property (strong, nonatomic) MHCustomTabBarController *mh;
 

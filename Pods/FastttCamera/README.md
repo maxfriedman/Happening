@@ -1,16 +1,18 @@
-![FastttCamera Logo](https://raw.githubusercontent.com/IFTTT/FastttCamera/master/Docs/fastttcamera-logo.jpg)
+[![Open Source at IFTTT](http://ifttt.github.io/images/open-source-ifttt.svg)](http://ifttt.github.io)
 
-[![CocoaPods Version](https://img.shields.io/cocoapods/v/FastttCamera.svg)](http://cocoadocs.org/docsets/FastttCamera) [![Build Status](https://travis-ci.org/IFTTT/FastttCamera.svg?branch=master)](https://travis-ci.org/IFTTT/FastttCamera) [![Coverage Status](https://coveralls.io/repos/IFTTT/FastttCamera/badge.svg)](https://coveralls.io/r/IFTTT/FastttCamera)
+![FastttCamera Logo](./Docs/fastttcamera_banner.jpg)
+
+[![Build Status](https://travis-ci.org/IFTTT/FastttCamera.svg?branch=master)](https://travis-ci.org/IFTTT/FastttCamera) [![Coverage Status](https://coveralls.io/repos/IFTTT/FastttCamera/badge.svg)](https://coveralls.io/r/IFTTT/FastttCamera)
 
 `FastttCamera` is a wrapper around `AVFoundation` that allows you to build your own powerful custom camera app without all the headaches of using `AVFoundation` directly.
 
 `FastttCamera` now [supports awesome photo filters](#filters)!
 
-![FastttCamera](https://raw.githubusercontent.com/IFTTT/FastttCamera/master/Docs/fastttcamera-portrait.gif)
+![FastttCamera](./Docs/fastttcamera-portrait.gif)
 
 `FastttCamera` powers the camera in the new [Do Camera](https://ifttt.com/products/do/camera) app for iOS from [IFTTT](https://ifttt.com/wtf).
 
-[![App Store](https://raw.githubusercontent.com/IFTTT/FastttCamera/master/Docs/Download_on_the_App_Store_Badge.png)](https://itunes.apple.com/us/app/do-camera-by-ifttt/id905998167)
+[![App Store](./Docs/Download_on_the_App_Store_Badge.png)](https://itunes.apple.com/us/app/do-camera-by-ifttt/id905998167)
 
 #### Major headaches that `FastttCamera` automatically handles for you:
 

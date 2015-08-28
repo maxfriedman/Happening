@@ -47,7 +47,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>1.0.6</string>
+	<string>1.2.1</string>
 	<key>FacebookAppID</key>
 	<string>670930332992069</string>
 	<key>FacebookDisplayName</key>
@@ -72,10 +72,6 @@
 		<string>/Happening/Extras/Open Sans/OpenSans-Regular.ttf</string>
 		<string>/Happening/Extras/Open Sans/OpenSans-Semibold.ttf</string>
 		<string>/Happening/Extras/Open Sans/OpenSans-SemiboldItalic.ttf</string>
-	</array>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>location</string>
 	</array>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>

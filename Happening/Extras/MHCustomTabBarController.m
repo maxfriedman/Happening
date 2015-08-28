@@ -26,6 +26,7 @@
 #import "GroupsTVC.h"
 #import "DragViewController.h"
 #import "SwipeableCardVC.h"
+#import "AMPopTip.h"
 
 NSString *const MHCustomTabBarControllerViewControllerChangedNotification = @"MHCustomTabBarControllerViewControllerChangedNotification";
 NSString *const MHCustomTabBarControllerViewControllerAlreadyVisibleNotification = @"MHCustomTabBarControllerViewControllerAlreadyVisibleNotification";
@@ -45,9 +46,10 @@ NSString *const MHCustomTabBarControllerViewControllerAlreadyVisibleNotification
     BOOL viewLoaded;
     NSArray *bluePics;
     NSArray *grayPics;
+    AMPopTip *popTip;
 }
 
-@synthesize groupHub, profileHub;
+@synthesize groupHub, profileHub, activityHub;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -83,6 +85,26 @@ NSString *const MHCustomTabBarControllerViewControllerAlreadyVisibleNotification
         [groupHub setCircleColor:[UIColor colorWithRed:0 green:176.0/255 blue:242.0/255 alpha:1.0] labelColor:[UIColor whiteColor]];
         
         [groupHub setCountLabelFont:[UIFont fontWithName:@"OpenSans" size:6.0]];
+        
+    }
+    
+    if (!activityHub) {
+        
+        activityHub = [[RKNotificationHub alloc]initWithView:[self.buttons objectAtIndex:1]]; // sets the count to 0
+        
+        //%%% CIRCLE FRAME
+        //[hub setCircleAtFrame:CGRectMake(-10, -10, 30, 30)]; //frame relative to the view you set it to
+        
+        //%%% MOVE FRAME
+        [activityHub moveCircleByX:-11 Y:8]; // moves the circle 5 pixels left and down from its current position
+        
+        //%%% CIRCLE SIZE
+        [activityHub scaleCircleSizeBy:0.3]; // doubles the size of the circle, keeps the same center
+        
+        [activityHub setCircleColor:[UIColor colorWithRed:0 green:176.0/255 blue:242.0/255 alpha:1.0] labelColor:[UIColor whiteColor]];
+        
+        //[groupHub setCountLabelFont:[UIFont fontWithName:@"OpenSans" size:6.0]];
+        [activityHub hideCount];
         
     }
     
@@ -144,6 +166,10 @@ NSString *const MHCustomTabBarControllerViewControllerAlreadyVisibleNotification
     if (unreadMessageCount > 0) {
         NSLog(@"%lu unread messages", unreadMessageCount);
         
+        if (unreadMessageCount > 100) {
+            unreadMessageCount = 1;
+        }
+        
         [groupHub setCount:unreadMessageCount];
         [groupHub bump];
         
@@ -159,7 +185,7 @@ NSString *const MHCustomTabBarControllerViewControllerAlreadyVisibleNotification
     
     if (shouldHide) {
         self.tabBarContainerView.alpha = 0;
-        self.container.frame = CGRectMake(0, 0, 320, 560);
+        self.container.frame = CGRectMake(0, 0, 320, 568);
     } else {
         self.tabBarContainerView.alpha = 1;
         self.container.frame = CGRectMake(0, 0, 320, 519);
@@ -171,6 +197,8 @@ NSString *const MHCustomTabBarControllerViewControllerAlreadyVisibleNotification
 #pragma mark - Segue
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    
+    NSLog(@"^^");
     
     if (![segue isKindOfClass:[MHTabBarSegue class]]) {
         
@@ -192,6 +220,8 @@ NSString *const MHCustomTabBarControllerViewControllerAlreadyVisibleNotification
     //if view controller isn't already contained in the viewControllers-Dictionary
     if (![self.viewControllersByIdentifier objectForKey:segue.identifier]) {
         [self.viewControllersByIdentifier setObject:segue.destinationViewController forKey:segue.identifier];
+    } else {
+        NSLog(@"Made it");
     }
     
     [self.buttons setValue:@NO forKeyPath:@"selected"];
@@ -229,7 +259,18 @@ NSString *const MHCustomTabBarControllerViewControllerAlreadyVisibleNotification
 - (BOOL)shouldPerformSegueWithIdentifier:(NSString *)identifier sender:(id)sender {
     if ([self.destinationIdentifier isEqual:identifier]) {
         //Dont perform segue, if visible ViewController is already the destination ViewController
+        NSLog(@"View controller exists");
         [[NSNotificationCenter defaultCenter] postNotificationName:MHCustomTabBarControllerViewControllerAlreadyVisibleNotification object:nil];
+        id vc = [self.viewControllersByIdentifier objectForKey:identifier];
+        
+        if ([vc isKindOfClass:[UINavigationController class]]) {
+            UINavigationController *nvc = (UINavigationController *)vc;
+            [nvc popToRootViewControllerAnimated:YES];
+        } else if ([vc isKindOfClass:[UIViewController class]]) {
+            UIViewController *theVC = (UIViewController *)vc;
+            [theVC.navigationController popToRootViewControllerAnimated:YES];
+        }
+        
         return NO;
     }
     
@@ -258,6 +299,36 @@ NSString *const MHCustomTabBarControllerViewControllerAlreadyVisibleNotification
         }
         
     }
+    
+}
+
+- (void)showCallout {
+    
+    popTip = [AMPopTip popTip];
+    
+    popTip.shouldDismissOnTap = YES;
+    //popTip.edgeMargin = 300;
+    popTip.offset = -5;
+    popTip.edgeInsets = UIEdgeInsetsMake(0, 10, 0, 10);
+    popTip.tapHandler = ^{
+        NSLog(@"Tap!");
+    };
+    popTip.dismissHandler = ^{
+        NSLog(@"Dismiss!");
+    };
+    
+    //popTip.popoverColor = [UIColor colorWithRed:.05 green:.29 blue:.49 alpha:1.0];
+    popTip.popoverColor = [UIColor colorWithRed:0.0 green:130.0/255.0 blue:250.0/255.0 alpha:1.0]; //0,184,245
+    
+    UIButton *meButton = self.buttons[3];
+    CGRect rect = CGRectMake(320-80, 568-50, 80, 50);
+    [popTip showText:@"Your events are saved here" direction:AMPopTipDirectionUp maxWidth:200 inView:self.view fromFrame:rect];
+    
+}
+
+- (void)hideCallout {
+    
+    [popTip hide];
     
 }
 

@@ -17,7 +17,7 @@
 
 -(NSArray *)getCityImagesArray {
  
-    return @[[UIImage imageNamed:@"cities icon dc"], [UIImage imageNamed:@"cities icon boston"], [UIImage new], [UIImage new], [UIImage new]];
+    return @[[UIImage new], [UIImage new], [UIImage new], [UIImage new], [UIImage new]]; //@[[UIImage imageNamed:@"cities icon dc"], [UIImage imageNamed:@"cities icon boston"], [UIImage new], [UIImage new], [UIImage new]];
 }
 
 - (CLLocation *)getLocForCity:(NSString *)cityString {

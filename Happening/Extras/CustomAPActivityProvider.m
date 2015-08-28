@@ -31,15 +31,13 @@
     NSString *startTimeString = [formatter stringFromDate:eventObject[@"Date"]];
     NSString *endTimeString = [formatter stringFromDate:eventObject[@"EndTime"]];
     NSString *eventTimeString = [[NSString alloc]init];
-    if (endTimeString) {
-        eventTimeString = [NSString stringWithFormat:@"from %@ to %@",startTimeString, endTimeString];
-    } else {
-        eventTimeString = [NSString stringWithFormat:@"at %@", startTimeString];
-    }
+    
+    eventTimeString = [NSString stringWithFormat:@"at %@", startTimeString];
+    
     
     NSString *shareText = [[NSString alloc]init];
     //if ([description isEqualToString:@""] || description == nil) {
-    shareText = [NSString stringWithFormat:@"Check out this awesome event: %@ at %@ on %@ %@", title, loc, dateString, eventTimeString];
+    shareText = [NSString stringWithFormat:@"Check out this awesome event: %@ at %@ on %@ %@ // ", title, loc, dateString, eventTimeString];
     /*
      } else {
      shareText = [NSString stringWithFormat:@"Check out this awesome event: %@, %@ at %@ on %@ %@", title, description, loc, dateString, eventTimeString];

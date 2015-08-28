@@ -9,11 +9,11 @@ pod 'RKNotificationHub'
 pod 'pop', '~> 1.0'
 pod 'POP+MCAnimate', '~> 2.0'
 pod "FastttCamera"
-pod 'Hoko', '~> 2.0.1'
-pod "Button", "~> 3"
+pod 'Hoko'
+pod "Button"
 pod 'TTTAttributedLabel'
-pod 'LocationKit', '~> 2.0.0'
-pod 'AFOAuth2Manager', '2.0.0'
+pod 'LocationKit'
+pod 'AFOAuth2Manager'
 
 end
 

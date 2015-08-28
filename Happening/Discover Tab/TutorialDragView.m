@@ -31,7 +31,7 @@
 #define MCANIMATE_SHORTHAND
 #import <POP+MCAnimate.h>
 
-@interface TutorialDragView() <UIAlertViewDelegate, UIApplicationDelegate, PermissionsViewDelegate>
+@interface TutorialDragView() <UIAlertViewDelegate, PermissionsViewDelegate>
 
 @property (assign)int actionMargin;
 @property (assign)int swipeDownMargin;
@@ -1115,6 +1115,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                                  NSLog(@" ====== iOS 8 ====== ");
                                  if ([[UIApplication sharedApplication] isRegisteredForRemoteNotifications]) notisEnabled = YES;
                                  if ([CLLocationManager authorizationStatus] == kCLAuthorizationStatusAuthorizedAlways) locEnabled = YES;
+                                 if ([CLLocationManager authorizationStatus] == kCLAuthorizationStatusAuthorizedWhenInUse) locEnabled = YES;
                              }
                              
                              if (!notisEnabled || !locEnabled) {

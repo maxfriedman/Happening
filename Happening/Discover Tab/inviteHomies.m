@@ -336,7 +336,7 @@
             
             NSLog(@"reload data");
             [SVProgressHUD dismiss];
-            NSLog(@"%@", sections);
+            //NSLog(@"%@", sections);
 
             [self.tableView reloadData];
             
@@ -524,13 +524,14 @@
          
          [[cell viewWithTag:234] removeFromSuperview];
          
+         /*
          if ([bestFriendsIds containsObject:idsArray[indexPath.row]]) {
              
              UIImageView *starImageView = [[UIImageView alloc] initWithFrame:CGRectMake(20 + 10, 0 + 5, 10, 10)];
              starImageView.image = [UIImage imageNamed:@"star-blue-bordered"];
              starImageView.tag = 234;
              [cell addSubview:starImageView];
-         }
+         } */
          
          return cell;
      }
@@ -1385,18 +1386,49 @@
                             
                         }];
                         
-                        PFObject *swipesObject = [PFObject objectWithClassName:@"Swipes"];
-                        swipesObject[@"UserID"] = currentUser.objectId;
-                        swipesObject[@"username"] = currentUser.username;
-                        swipesObject[@"EventID"] = event.objectId;
-                        swipesObject[@"swipedRight"] = @YES;
-                        swipesObject[@"swipedLeft"] = @NO;
-                        swipesObject[@"isGoing"] = @(YES);
-                        if ([[PFUser currentUser][@"socialMode"] isEqualToNumber:@YES] && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
-                            swipesObject[@"FBObjectID"] = currentUser[@"FBObjectID"];
-                        }
-                        [swipesObject pinInBackground];
-                        [swipesObject saveEventually];
+                        PFQuery *swipesQuery = [PFQuery queryWithClassName:@"Swipes"];
+                        [swipesQuery whereKey:@"EventID" equalTo:self.event.objectId];
+                        [swipesQuery whereKey:@"UserID" equalTo:currentUser.objectId];
+                        [swipesQuery fromLocalDatastore];
+                        [swipesQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error){
+                            
+                            if (!error) {
+                                
+                                object[@"isGoing"] = @(YES);
+                                [object saveEventually];
+                                
+                            } else {
+                                
+                                PFObject *swipesObject = [PFObject objectWithClassName:@"Swipes"];
+                                swipesObject[@"UserID"] = currentUser.objectId;
+                                swipesObject[@"username"] = currentUser.username;
+                                swipesObject[@"EventID"] = event.objectId;
+                                swipesObject[@"swipedRight"] = @YES;
+                                swipesObject[@"swipedLeft"] = @NO;
+                                swipesObject[@"isGoing"] = @(YES);
+                                if ([[PFUser currentUser][@"socialMode"] isEqualToNumber:@YES] && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
+                                    swipesObject[@"FBObjectID"] = currentUser[@"FBObjectID"];
+                                }
+                                [swipesObject pinInBackground];
+                                [swipesObject saveEventually];
+                                
+                                PFObject *timelineObject = [PFObject objectWithClassName:@"Timeline"];
+                                timelineObject[@"type"] = @"eventInvite";
+                                timelineObject[@"userId"] = currentUser.objectId;
+                                timelineObject[@"eventId"] = event.objectId;
+                                timelineObject[@"createdDate"] = [NSDate date];
+                                timelineObject[@"eventTitle"] = event[@"Title"];
+                                [timelineObject pinInBackground];
+                                [timelineObject saveEventually];
+                                
+                                [currentUser incrementKey:@"score" byAmount:@20];
+                                [currentUser saveEventually];
+                                
+                            }
+                        }];
+                        
+                        [currentUser incrementKey:@"score" byAmount:@5];
+                        [currentUser saveEventually];
                         
                         [self setupConversationWithMessage:[NSString stringWithFormat:@"%@ %@ wants to go to: %@ %@", currentUser[@"firstName"], currentUser[@"lastName"], eventTitle, eventLocation] forGroup:group];
                         
@@ -1696,19 +1728,47 @@
                                     
                                 }];
                                 
-                                PFObject *swipesObject = [PFObject objectWithClassName:@"Swipes"];
-                                swipesObject[@"UserID"] = user.objectId;
-                                swipesObject[@"username"] = currentUser.username;
-                                swipesObject[@"EventID"] = event.objectId;
-                                swipesObject[@"swipedRight"] = @YES;
-                                swipesObject[@"swipedLeft"] = @NO;
-                                swipesObject[@"isGoing"] = @(YES);
-                                if ([[PFUser currentUser][@"socialMode"] isEqualToNumber:@YES] && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
-                                    swipesObject[@"FBObjectID"] = user[@"FBObjectID"];
-                                }
-                                [swipesObject pinInBackground];
-                                [swipesObject saveEventually];
-                                
+                                PFQuery *swipesQuery = [PFQuery queryWithClassName:@"Swipes"];
+                                [swipesQuery whereKey:@"EventID" equalTo:self.event.objectId];
+                                [swipesQuery whereKey:@"UserID" equalTo:currentUser.objectId];
+                                [swipesQuery fromLocalDatastore];
+                                [swipesQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error){
+                                    
+                                    if (!error) {
+
+                                        object[@"isGoing"] = @(YES);
+                                        [object saveEventually];
+                                        
+                                    } else {
+                                        
+                                        PFObject *swipesObject = [PFObject objectWithClassName:@"Swipes"];
+                                        swipesObject[@"UserID"] = currentUser.objectId;
+                                        swipesObject[@"username"] = currentUser.username;
+                                        swipesObject[@"EventID"] = event.objectId;
+                                        swipesObject[@"swipedRight"] = @YES;
+                                        swipesObject[@"swipedLeft"] = @NO;
+                                        swipesObject[@"isGoing"] = @(YES);
+                                        if ([[PFUser currentUser][@"socialMode"] isEqualToNumber:@YES] && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
+                                            swipesObject[@"FBObjectID"] = currentUser[@"FBObjectID"];
+                                        }
+                                        [swipesObject pinInBackground];
+                                        [swipesObject saveEventually];
+                                        
+                                        PFObject *timelineObject = [PFObject objectWithClassName:@"Timeline"];
+                                        timelineObject[@"type"] = @"eventInvite";
+                                        timelineObject[@"userId"] = currentUser.objectId;
+                                        timelineObject[@"eventId"] = event.objectId;
+                                        timelineObject[@"createdDate"] = [NSDate date];
+                                        timelineObject[@"eventTitle"] = event[@"Title"];
+                                        [timelineObject pinInBackground];
+                                        [timelineObject saveEventually];
+                                        
+                                        [currentUser incrementKey:@"score" byAmount:@20];
+                                        [currentUser saveEventually];
+                                        
+                                    }
+                                }];
+                            
                                 [self setupConversationWithMessage:[NSString stringWithFormat:@"%@ %@ wants to go to: %@ %@", currentUser[@"firstName"], currentUser[@"lastName"], eventTitle, eventLocation] forGroup:group];
                                 
                                 saveCount++;
@@ -1867,18 +1927,57 @@
                                     
                                 }];
                                 
-                                PFObject *swipesObject = [PFObject objectWithClassName:@"Swipes"];
-                                swipesObject[@"UserID"] = user.objectId;
-                                swipesObject[@"username"] = currentUser.username;
-                                swipesObject[@"EventID"] = event.objectId;
-                                swipesObject[@"swipedRight"] = @YES;
-                                swipesObject[@"swipedLeft"] = @NO;
-                                swipesObject[@"isGoing"] = @(YES);
-                                if ([[PFUser currentUser][@"socialMode"] isEqualToNumber:@YES] && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
-                                    swipesObject[@"FBObjectID"] = user[@"FBObjectID"];
-                                }
-                                [swipesObject pinInBackground];
-                                [swipesObject saveEventually];
+                                PFQuery *swipesQuery = [PFQuery queryWithClassName:@"Swipes"];
+                                [swipesQuery whereKey:@"EventID" equalTo:self.event.objectId];
+                                [swipesQuery whereKey:@"UserID" equalTo:currentUser.objectId];
+                                [swipesQuery fromLocalDatastore];
+                                [swipesQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error){
+                                    
+                                    if (!error) {
+                                        
+                                        object[@"isGoing"] = @(YES);
+                                        [object saveEventually];
+                                        
+                                    } else {
+                                        
+                                        PFObject *swipesObject = [PFObject objectWithClassName:@"Swipes"];
+                                        swipesObject[@"UserID"] = currentUser.objectId;
+                                        swipesObject[@"username"] = currentUser.username;
+                                        swipesObject[@"EventID"] = event.objectId;
+                                        swipesObject[@"swipedRight"] = @YES;
+                                        swipesObject[@"swipedLeft"] = @NO;
+                                        swipesObject[@"isGoing"] = @(YES);
+                                        if ([[PFUser currentUser][@"socialMode"] isEqualToNumber:@YES] && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
+                                            swipesObject[@"FBObjectID"] = currentUser[@"FBObjectID"];
+                                        }
+                                        [swipesObject pinInBackground];
+                                        [swipesObject saveEventually];
+                                        
+                                        PFObject *timelineObject = [PFObject objectWithClassName:@"Timeline"];
+                                        timelineObject[@"type"] = @"eventInvite";
+                                        timelineObject[@"userId"] = currentUser.objectId;
+                                        timelineObject[@"eventId"] = event.objectId;
+                                        timelineObject[@"createdDate"] = [NSDate date];
+                                        timelineObject[@"eventTitle"] = event[@"Title"];
+                                        [timelineObject pinInBackground];
+                                        [timelineObject saveEventually];
+                                        
+                                        [currentUser incrementKey:@"score" byAmount:@20];
+                                        [currentUser saveEventually];
+                                        
+                                    }
+                                }];
+                                
+                                
+                                PFObject *groupCreateTimelineObject = [PFObject objectWithClassName:@"Timeline"];
+                                groupCreateTimelineObject[@"type"] = @"groupCreate";
+                                groupCreateTimelineObject[@"userId"] = currentUser.objectId;
+                                groupCreateTimelineObject[@"createdDate"] = [NSDate date];
+                                [groupCreateTimelineObject pinInBackground];
+                                [groupCreateTimelineObject saveEventually];
+                                
+                                [currentUser incrementKey:@"score" byAmount:@20];
+                                [currentUser saveEventually];
                                 
                                 [self setupConversationWithMessage:[NSString stringWithFormat:@"%@ %@ wants to go to: %@ %@", currentUser[@"firstName"], currentUser[@"lastName"], eventTitle, eventLocation] forGroup:group];
                                 

@@ -14,6 +14,7 @@
 #import "MFActivityIndicatorView.h"
 #import <MapKit/MapKit.h>
 #import <Button/Button.h>
+#import "ProfilePictureView.h"
 
 @protocol DraggableViewDelegate <NSObject>
 
@@ -32,6 +33,8 @@
 -(void)mapViewTap;
 -(void)ticketsButtonTap:(id)sender;
 -(void)friendProfileTap:(id)sender;
+
+-(void)changeRSVP;
 
 @end
 
@@ -113,6 +116,10 @@
 @property (assign) CGFloat extraDescHeight;
 
 @property (assign) BOOL isSwipeable;
+@property (assign) BOOL isCardExpanded;
+@property (assign) BOOL isExpandedCardView;
+
+@property (assign) int friendsInterestedCount;
 
 @property PFObject *eventObject;
 

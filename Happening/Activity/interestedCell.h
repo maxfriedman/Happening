@@ -18,6 +18,7 @@
 @property (strong, nonatomic) IBOutlet UIImageView *eventImageView;
 
 @property (strong, nonatomic) IBOutlet UIButton *likeButton;
+@property (strong, nonatomic) IBOutlet UILabel *timestampLabel;
 
 @property (strong, nonatomic) PFObject *eventObject;
 

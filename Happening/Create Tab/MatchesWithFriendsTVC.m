@@ -79,7 +79,7 @@
     
     int matchCount = [currentInstallation[@"matchCount"] intValue];
     if (matchCount <= 0) {
-        matchCount = 5;
+        matchCount = 2;
     }
     [friendsPicker selectRow:matchCount-1 inComponent:0 animated:YES];
     [self pickerView:friendsPicker didSelectRow:matchCount-1 inComponent:0];

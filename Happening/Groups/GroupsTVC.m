@@ -21,6 +21,7 @@
 #import "AnonymousUserView.h"
 #import "FXBlurView.h"
 #import "InviteHomiesToGroup.h"
+#import "GroupChatVC.h"
 
 @interface GroupsTVC () <ATLConversationListViewControllerDelegate, ATLConversationListViewControllerDataSource, AnonymousUserViewDelegate, InviteHomiesToGroupDelegate>
 
@@ -60,6 +61,7 @@
     groupDict = [NSMutableDictionary new];
     
     [self setDisplaysAvatarItem:YES];
+    [self setDeletionModes:@[@(LYRDeletionModeAllParticipants)]];
     
     self.tableView.separatorInset = UIEdgeInsetsZero;
     
@@ -128,6 +130,7 @@
     AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
     [appDelegate.mh.groupHub decrementBy:appDelegate.mh.groupHub.count];
     [appDelegate loadGroups];
+    [appDelegate.mh hideTabBar:NO];
     
     [ATLConversationCollectionViewHeader appearance].participantLabelFont = [UIFont fontWithName:@"OpenSans" size:11.0];
     
@@ -173,7 +176,50 @@
 - (void)conversationListViewController:(ATLConversationListViewController *)conversationListViewController didSelectConversation:(LYRConversation *)conversation
 {
     selectedConvo = conversation;
-    [self performSegueWithIdentifier:@"toGroupPage" sender:self];
+    //[self performSegueWithIdentifier:@"toGroupPage" sender:self];
+    
+    AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+    GroupChatVC *controller = [GroupChatVC conversationViewControllerWithLayerClient:appDelegate.layerClient];
+    
+    //controller.userDicts = userDicts;
+    //controller.fbids = fbIds;
+    //controller.groupObject = group;
+    
+    NSString *title = [[selectedConvo metadata] objectForKey:@"title"];
+    if ([title isEqualToString:@"_indy_"]) {
+        //vc.title = [NSString stringWithFormat:@"%@ and %@", [self.dataSource conversationListViewController:self titleForConversation:selectedConvo], currentUser[@"firstName"]];
+        //vc.showDetails = NO;
+    } else {
+        //vc.title = title;
+        //vc.showDetails = YES;
+    }
+    
+    controller.groupObject = [groupDict valueForKey:[selectedConvo.metadata valueForKey:@"groupId"]];
+    
+    if (controller.groupObject.isDataAvailable) {
+        
+        controller.userDicts = controller.groupObject[@"user_dicts"];
+        
+        NSMutableArray *fbids =[NSMutableArray new];
+        for (NSDictionary *dict in controller.userDicts) {
+            [fbids addObject:[dict valueForKey:@"id"]];
+        }
+        
+        controller.fbids = fbids;
+        
+    }
+    
+    //vc.loadTopView = YES;
+    
+    if (!controller.groupObject) {
+        
+        NSLog(@"Group hasn't loaded yet. Load in next VC");
+    }
+    
+    controller.conversation = conversation;
+    
+    [self.navigationController pushViewController:controller animated:YES];
+    
 }
 
 - (void)conversationListViewController:(ATLConversationListViewController *)conversationListViewController didDeleteConversation:(LYRConversation *)conversation deletionMode:(LYRDeletionMode)deletionMode
@@ -279,6 +325,11 @@
     }]; */
 }
 
+-(BOOL)doesString:(NSString *)first contain:(NSString*)other {
+    NSRange range = [first rangeOfString:other];
+    return range.length != 0;
+}
+
 #pragma mark - ATLConversationListViewControllerDataSource Methods
 
 - (NSString *)conversationListViewController:(ATLConversationListViewController *)conversationListViewController titleForConversation:(LYRConversation *)conversation
@@ -293,7 +344,16 @@
     
     NSString *title = [conversation.metadata valueForKey:@"title"];
     if ((title != nil) && ![title isEqualToString:@"_indy_"]){
-        return [conversation.metadata valueForKey:@"title"];
+        
+        //if (title containsString:<#(NSString *)#>)
+        PFObject *group = [groupDict objectForKey:[conversation.metadata valueForKey:@"groupId"]];
+        if (group != nil && [group[@"memberCount"] intValue] == 2 && group[@"isDefaultName"]) {
+            title = [title stringByReplacingOccurrencesOfString:[PFUser currentUser][@"firstName"] withString:@""];
+            title = [title stringByReplacingOccurrencesOfString:@"and" withString:@""];
+            title = [title stringByReplacingOccurrencesOfString:@" " withString:@""];
+        }
+        
+        return title;
     } else {
         NSArray *unresolvedParticipants = [[UserManager sharedManager] unCachedUserIDsFromParticipants:[conversation.participants allObjects]];
         NSArray *resolvedNames = [[UserManager sharedManager] resolvedNamesFromParticipants:[conversation.participants allObjects]];
@@ -464,11 +524,11 @@
     
 }
 
-/*
+
 -(NSString *)conversationListViewController:(ATLConversationListViewController *)conversationListViewController textForButtonWithDeletionMode:(LYRDeletionMode)deletionMode {
     
-    return @"Leave";
-} */
+    return @"Delete Group";
+}
 
 /*
 #pragma mark - Table view data source

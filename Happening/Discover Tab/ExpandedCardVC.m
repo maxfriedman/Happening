@@ -19,6 +19,8 @@
 #import "CustomCalendarActivity.h"
 #import "webViewController.h"
 #import "moreDetailFromCard.h"
+#import "CustomConstants.h"
+#import "ProfilePictureView.h"
 
 #import "ModalPopup.h"
 
@@ -42,20 +44,31 @@
     UIButton *uberButton;
     UIButton *ticketsButton;
     
+    UIButton *yesButton;
+    UIButton *noButton;
+    UIImageView *cornerImageView1;
+    UIImageView *cornerImageView2;
+    UIColor *borderColor;
+    
     EKEvent *calEvent;
     EKEventStore *calEventStore;
     NSString *friendObjectID;
     NSString *urlString;
 }
 
-static const float CARD_HEIGHT = 620; //%%% height of the draggable card
+static const float CARD_HEIGHT = 672; //%%% height of the draggable card
 static const float CARD_WIDTH = 284; //%%% width of the draggable card
 
-@synthesize dragView, scrollView, smileButton, frownButton, bestFriendIds, currentUser, event, mapView;
+@synthesize dragView, scrollView, smileButton, frownButton, bestFriendIds, currentUser, event, mapView, rsvpObject, fbids;
 
 - (void)viewWillAppear:(BOOL)animated {
     
     dragView.panGestureRecognizer.enabled = NO;
+    
+    AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+    [appDelegate.mh hideTabBar:NO];
+    
+    currentUser = [PFUser currentUser];
     
     if (!dragView) {
         
@@ -67,7 +80,6 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             self.navigationItem.leftBarButtonItem = item;
         }
     
-        currentUser = [PFUser currentUser];
         bestFriendIds = currentUser[@"BestFriends"];
         
         smileButton.enabled = NO;
@@ -80,12 +92,334 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         dragView.frame = CGRectMake(18, 18, CARD_WIDTH, CARD_HEIGHT);
         [dragView.cardBackground removeFromSuperview];
         dragView.delegate = self;
+        dragView.isExpandedCardView = YES;
         [self createDraggableView];
         [scrollView addSubview:dragView];
         dragView.panGestureRecognizer.enabled = NO;
         
         scrollView.contentSize = CGSizeMake(320, dragView.frame.size.height + 36);
+        
+        if (self.isFromGroup) {
+            
+            borderColor = [UIColor colorWithRed:0 green:176.0/255 blue:242.0/255 alpha:1.0];
+            
+            UIView *topView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 60)];
+            
+            yesButton = [[UIButton alloc] initWithFrame:CGRectMake(80, 15, 100, 30)];
+            [yesButton setTitle:@"I'm in" forState:UIControlStateNormal];
+            yesButton.titleLabel.font = [UIFont fontWithName:@"OpenSans" size:15.0];
+            yesButton.layer.masksToBounds = YES;
+            yesButton.layer.cornerRadius = 15;
+            yesButton.layer.borderColor = borderColor.CGColor;
+            yesButton.layer.borderWidth = 1.0;
+            yesButton.tag = 0;
+            [yesButton addTarget:self action:@selector(goingButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+            
+            noButton = [[UIButton alloc] initWithFrame:CGRectMake(200, 15, 100, 30)];
+            [noButton setTitle:@"I'm out" forState:UIControlStateNormal];
+            noButton.titleLabel.font = [UIFont fontWithName:@"OpenSans" size:15.0];
+            noButton.layer.masksToBounds = YES;
+            noButton.layer.cornerRadius = 15;
+            noButton.layer.borderColor = borderColor.CGColor;
+            noButton.layer.borderWidth = 1.0;
+            noButton.tag = 0;
+            [noButton addTarget:self action:@selector(NOTgoingButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+            
+            UIView *picViewContainer = [[UIView alloc] initWithFrame:CGRectMake(10, 5, 50, 50)];
+            FBSDKProfilePictureView *ppView = [[FBSDKProfilePictureView alloc] initWithFrame:picViewContainer.bounds];
+            ppView.clipsToBounds = YES;
+            ppView.layer.cornerRadius = picViewContainer.frame.size.height/2;
+            
+            [picViewContainer addSubview:ppView];
+            picViewContainer.tag = 9;
+            
+            cornerImageView1 = [[UIImageView alloc] initWithFrame:CGRectMake(35, 0, 15, 15)];
+            cornerImageView1.image = [UIImage imageNamed:@"question"];
+            cornerImageView1.layer.cornerRadius = 7.5;
+            cornerImageView1.layer.borderColor = [UIColor whiteColor].CGColor;
+            cornerImageView1.layer.borderWidth = 1.0;
+            [picViewContainer addSubview:cornerImageView1];
+            
+            [topView addSubview:yesButton];
+            [topView addSubview:noButton];
+            [topView addSubview:picViewContainer];
+            
+            CGRect scrollViewFrame = scrollView.frame;
+            scrollViewFrame.origin.y += 60;
+            scrollViewFrame.size.height += -60;
+            scrollView.frame = scrollViewFrame;
+            
+            CGRect cardFrame = self.dragView.frame;
+            cardFrame.origin.y += -10;
+            self.dragView.frame = cardFrame;
+            
+            UIScrollView *groupScrollView = [[UIScrollView alloc] initWithFrame:self.dragView.friendScrollView.frame];
+            groupScrollView.scrollEnabled = YES;
+            groupScrollView.showsHorizontalScrollIndicator = NO;
+            [dragView.cardView addSubview:groupScrollView];
+            groupScrollView.tag = 33;
+            
+            FBSDKProfilePictureView *pp = [self ppViewForId:currentUser[@"FBObjectID"]];
+            UIView *ppContainer = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 40, 40)];
+            pp.frame = ppContainer.bounds;
+            
+            [ppContainer addSubview:pp];
+            ppContainer.tag = 9;
+            
+            cornerImageView2 = [[UIImageView alloc] initWithFrame:CGRectMake(25, 0, 15, 15)];
+            cornerImageView2.image = [UIImage imageNamed:@"question"];
+            cornerImageView2.layer.cornerRadius = 7.5;
+            cornerImageView2.layer.borderColor = [UIColor whiteColor].CGColor;
+            cornerImageView2.layer.borderWidth = 1.0;
+            [ppContainer addSubview:cornerImageView2];
+            
+            [groupScrollView addSubview:ppContainer];
+            
+            NSString *goingType = self.rsvpObject[@"GoingType"];
+            if ([goingType isEqualToString:@"yes"]) {
+                
+                cornerImageView1.image = [UIImage imageNamed:@"check75"];
+                cornerImageView2.image = [UIImage imageNamed:@"check75"];
+                
+                [yesButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+                yesButton.backgroundColor = borderColor;
+                yesButton.tag = 1;
+                
+                noButton.backgroundColor = [UIColor whiteColor];
+                [noButton setTitleColor:borderColor forState:UIControlStateNormal];
+                noButton.tag = 0;
+                
+            } else if ([goingType isEqualToString:@"no"]) {
+                
+                cornerImageView1.image = [UIImage imageNamed:@"X"];
+                cornerImageView2.image = [UIImage imageNamed:@"X"];
+                
+                [noButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+                noButton.backgroundColor = borderColor;
+                noButton.tag = 1;
+                
+                yesButton.backgroundColor = [UIColor whiteColor];
+                [yesButton setTitleColor:borderColor forState:UIControlStateNormal];
+                yesButton.tag = 0;
+                
+            } else {
+                
+                cornerImageView1.image = [UIImage imageNamed:@"question"];
+                cornerImageView2.image = [UIImage imageNamed:@"question"];
+                
+                [noButton setTitleColor:borderColor forState:UIControlStateNormal];
+                noButton.backgroundColor = [UIColor whiteColor];
+                noButton.tag = 0;
+                
+                [yesButton setTitleColor:borderColor forState:UIControlStateNormal];
+                yesButton.backgroundColor = [UIColor whiteColor];
+                yesButton.tag = 0;
+            }
+            
+            [self.view addSubview:topView];
+            
+            [self.dragView.friendScrollView removeFromSuperview];
+            [self.dragView.hapLogoButton removeFromSuperview];
+            
+            UIImageView *avatar = [[UIImageView alloc] initWithFrame:self.dragView.hapLogoButton.frame];
+            PFFile *file = self.groupObject[@"avatar"];
+            if (file) {
+                [file getDataInBackgroundWithBlock:^(NSData *data, NSError *error) {
+                    avatar.image = [UIImage imageWithData:data];
+                }];
+            }
+            [self.dragView.cardView addSubview:avatar];
+            avatar.layer.masksToBounds = YES;
+            avatar.backgroundColor = [UIColor whiteColor];
+            avatar.layer.cornerRadius = avatar.frame.size.height/2;
+            
+            PFQuery *groupRSVPQuery = [PFQuery queryWithClassName:@"Group_RSVP"];
+            [groupRSVPQuery whereKey:@"EventID" equalTo:self.event.objectId];
+            [groupRSVPQuery whereKey:@"GroupID" equalTo:self.groupObject.objectId];
+            [groupRSVPQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error){
+                
+                NSMutableArray *yesUsers = [NSMutableArray array];
+                NSMutableArray *noUsers = [NSMutableArray array];
+                NSMutableArray *maybeUsers = [NSMutableArray arrayWithArray:fbids];
+                
+                for (PFObject *ob in objects) {
+                    
+                    NSString *userFBID = ob[@"UserFBID"];
+                    
+                    if ([ob[@"GoingType"] isEqualToString:@"yes"]) {
+                        [yesUsers addObject:userFBID];
+                        [maybeUsers removeObject:userFBID];
+                        
+                    } else if ([ob[@"GoingType"] isEqualToString:@"no"]) {
+                        [noUsers addObject:userFBID];
+                        [maybeUsers removeObject:userFBID];
+                        
+                    } else if ([rsvpObject[@"GoingType"] isEqualToString:@"maybe"]) {
+                        //[maybeUsers addObject:rsvpObject[@"User_Object"]];
+                    }
+                }
+                
+                int userCount = 0;
+                
+                for (int i = 0; i < yesUsers.count; i++) {
+                    
+                    NSString *fbId = yesUsers[i];
+                    
+                    if (![fbId isEqualToString:currentUser[@"FBObjectID"]]) {
+                        
+                        FBSDKProfilePictureView *ppview = [self ppViewForId:fbId];
+                        UIView *picViewContainer = [[UIView alloc] initWithFrame:CGRectMake(50 + 50 * userCount, 0, 40, 40)];
+                        ppview.frame = picViewContainer.bounds;
+                        
+                        [picViewContainer addSubview:ppview];
+                        picViewContainer.tag = 9;
+                        
+                        UIImageView *imv = [[UIImageView alloc] initWithFrame:CGRectMake(25, 0, 15, 15)];
+                        imv.image = [UIImage imageNamed:@"check75"];
+                        imv.layer.cornerRadius = 7.5;
+                        imv.layer.borderColor = [UIColor whiteColor].CGColor;
+                        imv.layer.borderWidth = 1.0;
+                        [picViewContainer addSubview:imv];
+                        
+                        [groupScrollView addSubview:picViewContainer];
+                        
+                        userCount++;
+                        
+                    }
+                    
+                }
+                
+                for (int i = 0; i < maybeUsers.count; i++) {
+                    
+                    NSString *fbId = maybeUsers[i];
+                    
+                    if (![fbId isEqualToString:currentUser[@"FBObjectID"]]) {
+                        
+                        FBSDKProfilePictureView *ppview = [self ppViewForId:fbId];
+                        UIView *picViewContainer = [[UIView alloc] initWithFrame:CGRectMake(50 + 50 * userCount, 0, 40, 40)];
+                        ppview.frame = picViewContainer.bounds;
+                        
+                        [picViewContainer addSubview:ppview];
+                        picViewContainer.tag = 9;
+                        
+                        UIImageView *imv = [[UIImageView alloc] initWithFrame:CGRectMake(25, 0, 15, 15)];
+                        imv.image = [UIImage imageNamed:@"question"];
+                        imv.layer.cornerRadius = 7.5;
+                        imv.layer.borderColor = [UIColor whiteColor].CGColor;
+                        imv.layer.borderWidth = 1.0;
+                        [picViewContainer addSubview:imv];
+                        
+                        [groupScrollView addSubview:picViewContainer];
+                        
+                        userCount++;
+                        
+                    }
+                }
+                
+                for (int i = 0; i < noUsers.count; i++) {
+                    
+                    NSString *fbId = noUsers[i];
+                    
+                    if (![fbId isEqualToString:currentUser[@"FBObjectID"]]) {
+                        
+                        FBSDKProfilePictureView *ppview = [self ppViewForId:fbId];
+                        UIView *picViewContainer = [[UIView alloc] initWithFrame:CGRectMake(50 + 50 * userCount, 0, 40, 40)];
+                        ppview.frame = picViewContainer.bounds;
+                        
+                        [picViewContainer addSubview:ppview];
+                        picViewContainer.tag = 9;
+                        
+                        UIImageView *imv = [[UIImageView alloc] initWithFrame:CGRectMake(25, 0, 15, 15)];
+                        imv.image = [UIImage imageNamed:@"X"];
+                        imv.layer.cornerRadius = 7.5;
+                        imv.layer.borderColor = [UIColor whiteColor].CGColor;
+                        imv.layer.borderWidth = 1.0;
+                        [picViewContainer addSubview:imv];
+                        
+                        [groupScrollView addSubview:picViewContainer];
+                        
+                        userCount++;
+                        
+                    }
+                }
+                
+                groupScrollView.contentSize = CGSizeMake((50 * userCount) + 40 + 5, 50);
+                
+                
+            }];
+            
+        }
     }
+    
+}
+
+- (FBSDKProfilePictureView *)ppViewForId:(NSString *)fbid {
+    
+    FBSDKProfilePictureView *profPic = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(0, 0, 40, 40)];
+    profPic.profileID = fbid;
+    profPic.layer.cornerRadius = 20.0;
+    profPic.layer.masksToBounds = YES;
+    return profPic;
+}
+
+- (void)goingButtonPressed:(id)sender {
+    
+    if (yesButton.tag == 0) {
+        
+        cornerImageView1.image = [UIImage imageNamed:@"check75"];
+        cornerImageView2.image = [UIImage imageNamed:@"check75"];
+        
+        [yesButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        yesButton.backgroundColor = borderColor;
+        yesButton.tag = 1;
+        
+        noButton.backgroundColor = [UIColor whiteColor];
+        [noButton setTitleColor:borderColor forState:UIControlStateNormal];
+        noButton.tag = 0;
+        
+    } else {
+        
+        cornerImageView1.image = [UIImage imageNamed:@"question"];
+        cornerImageView2.image = [UIImage imageNamed:@"question"];
+        
+        yesButton.backgroundColor = [UIColor whiteColor];
+        [yesButton setTitleColor:borderColor forState:UIControlStateNormal];
+        yesButton.tag = 0;
+        
+    }
+    
+    [self reloadRSVPs];
+    
+}
+
+- (void)NOTgoingButtonPressed:(id)sender {
+    
+    if (noButton.tag == 0) {
+        
+        cornerImageView1.image = [UIImage imageNamed:@"X"];
+        cornerImageView2.image = [UIImage imageNamed:@"X"];
+        
+        [noButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        noButton.backgroundColor = borderColor;
+        noButton.tag = 1;
+        
+        yesButton.backgroundColor = [UIColor whiteColor];
+        [yesButton setTitleColor:borderColor forState:UIControlStateNormal];
+        yesButton.tag = 0;
+        
+    } else {
+        
+        cornerImageView1.image = [UIImage imageNamed:@"question"];
+        cornerImageView2.image = [UIImage imageNamed:@"question"];
+        
+        noButton.backgroundColor = [UIColor whiteColor];
+        [noButton setTitleColor:borderColor forState:UIControlStateNormal];
+        noButton.tag = 0;
+        
+    }
+    
+    [self reloadRSVPs];
+    
 }
 
 - (void)viewDidLoad {
@@ -180,7 +514,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         // FORMAT FOR MULTI-DAY EVENT
         NSDate *endDate = event[@"EndTime"];
         
-        if ([eventDate compare:[NSDate date]] == NSOrderedAscending) {
+        if ([eventDate compare:[NSDate date]] == NSOrderedAscending && endDate != nil) {
             
             finalString = [NSString stringWithFormat:@"Happening NOW!"];
             
@@ -204,7 +538,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             NSString *timeString = [formatter stringFromDate:eventDate];
             finalString = [NSString stringWithFormat:@"%@ at %@", dayOfWeekString, timeString];
             
-        } else if (![[eventDate beginningOfDay] isEqualToDate:[endDate beginningOfDay]]) { //MULTI-DAY EVENT
+        } else if (![[eventDate beginningOfDay] isEqualToDate:[endDate beginningOfDay]] && endDate != nil) { //MULTI-DAY EVENT
             
             [formatter setDateFormat:@"MMM d"];
             NSString *dateString = [formatter stringFromDate:eventDate];
@@ -214,6 +548,9 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             NSString *endTimeString = [formatter stringFromDate:endDate];
             
             finalString = [NSString stringWithFormat:@"%@ at %@ to %@ at %@", dateString, timeString, endDateString, endTimeString];
+
+            //funkyDates = YES;
+            //calTimeString = [NSString stringWithFormat:@"%@ - %@", [formatter stringFromDate:eventDate], [formatter stringFromDate:endDate]];
             
         } else { // Past this week- uses abbreviated date format
             
@@ -289,6 +626,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             dragView.avePriceNumLabel.text = @"";
         }
         
+        [self.dragView arrangeCornerViews];
         
         [self addExtrasToCard];
         
@@ -401,6 +739,18 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     
 }
 
+- (void)swipeDownForWhat {
+    
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+    ModalPopup *popup = [storyboard instantiateViewControllerWithIdentifier:@"ModalPopup"];
+    popup.eventObject = dragView.eventObject;
+    popup.eventDateString = dragView.date.text;
+    popup.eventImage = dragView.eventImage.image;
+    popup.type = @"going";
+    [self showModalPopup:popup];
+    
+}
+
 - (void)shareButtonTap:(id)sender {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
     ModalPopup *popup = [storyboard instantiateViewControllerWithIdentifier:@"ModalPopup"];
@@ -429,7 +779,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 }
 
 -(void)inviteButtonTap {
-    [self performSegueWithIdentifier:@"inviteHomies" sender:self];
+    [self performSegueWithIdentifier:@"toInviteHomies" sender:self];
 }
 
 -(void)mapViewTap {
@@ -445,8 +795,9 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 
 -(void)friendProfileTap:(id)sender {
     
-    UIView *view = (UIView *)sender;
-    friendObjectID = view.accessibilityIdentifier;
+    UITapGestureRecognizer *gr = (UITapGestureRecognizer *)sender;
+    ProfilePictureView *ppview = (ProfilePictureView *)gr.view;
+    friendObjectID = ppview.parseId;
     [self performSegueWithIdentifier:@"showFriendProfile" sender:self];
 }
 
@@ -529,6 +880,302 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     
     [self dismissViewControllerAnimated:YES
                              completion:nil];
+}
+
+- (void)reloadRSVPs {
+    
+    NSString *currentFBID = currentUser[@"FBObjectID"];
+    
+    if (self.rsvpObject == nil) {
+        
+        rsvpObject[@"EventID"] = self.event.objectId;
+        rsvpObject[@"GroupID"] = self.groupObject.objectId;
+        rsvpObject[@"Group_Event_ID"] = self.groupEventObject.objectId;
+        rsvpObject[@"UserID"] = currentUser.objectId;
+        rsvpObject[@"UserFBID"] = currentUser[@"FBObjectID"];
+        rsvpObject[@"User_Object"] = currentUser;
+        //rsvpObject[@"GoingType"] = @"yes"; SET BELOW
+        [rsvpObject pinInBackground];
+            
+    }
+        
+    if (yesButton.tag == 1) {
+        rsvpObject[@"GoingType"] = @"yes";
+    } else if (noButton.tag == 1) {
+        rsvpObject[@"GoingType"] = @"no";
+    } else {
+        rsvpObject[@"GoingType"] = @"maybe";
+    }
+    
+    [rsvpObject saveEventually:^(BOOL success, NSError *error){
+        
+        if (!error && (noButton.tag == 1 || yesButton.tag == 1)) {
+            
+            NSString *messageText = @"";
+            if (yesButton.tag == 1) {
+                messageText = [NSString stringWithFormat:@"%@ %@ is going to '%@'", currentUser[@"firstName"], currentUser[@"lastName"], self.event[@"Title"]];
+            } else if (noButton.tag == 1) {
+                messageText = [NSString stringWithFormat:@"%@ %@ is not going to '%@'", currentUser[@"firstName"], currentUser[@"lastName"], self.event[@"Title"]];
+            }
+            
+            NSDictionary *dataDictionary = @{@"message":messageText,
+                                             @"type":@"RSVP",
+                                             @"groupId":self.groupObject.objectId,
+                                             };
+            NSError *JSONSerializerError;
+            NSData *dataDictionaryJSON = [NSJSONSerialization dataWithJSONObject:dataDictionary options:NSJSONWritingPrettyPrinted error:&JSONSerializerError];
+            LYRMessagePart *dataMessagePart = [LYRMessagePart messagePartWithMIMEType:ATLMimeTypeSystemObject data:dataDictionaryJSON];
+            // Create messagepart with info about cell
+            float actualLineSize = [messageText boundingRectWithSize:CGSizeMake(270, CGFLOAT_MAX)
+                                                             options:NSStringDrawingUsesLineFragmentOrigin
+                                                          attributes:@{NSFontAttributeName:[UIFont fontWithName:@"OpenSans" size:10.0]}
+                                                             context:nil].size.height;
+            NSDictionary *cellInfoDictionary = @{@"height": [NSString stringWithFormat:@"%f", actualLineSize]};
+            NSData *cellInfoDictionaryJSON = [NSJSONSerialization dataWithJSONObject:cellInfoDictionary options:NSJSONWritingPrettyPrinted error:&JSONSerializerError];
+            LYRMessagePart *cellInfoMessagePart = [LYRMessagePart messagePartWithMIMEType:ATLMimeTypeSystemCellInfo data:cellInfoDictionaryJSON];
+            // Add message to ordered set.  This ordered set messages will get sent to the participants
+            AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+            LYRMessage *message = [appDelegate.layerClient newMessageWithParts:@[dataMessagePart,cellInfoMessagePart] options:@{LYRMessageOptionsPushNotificationAlertKey: messageText} error:&error];
+            
+            // Sends the specified message
+            BOOL success = [self.convo sendMessage:message error:&error];
+            if (success) {
+                //NSLog(@"Message queued to be sent: %@", message);
+            } else {
+                NSLog(@"Message send failed: %@", error);
+            }
+        }
+        
+    }];
+    
+    //[self.tableView reloadData];
+    //[self loadPics];
+}
+
+- (void)cardSwipedRight:(UIView *)card fromExpandedView:(BOOL)expandedBool isGoing:(BOOL)isGoing {
+    
+    ProfilePictureView *ppview = (ProfilePictureView *)[dragView.friendScrollView viewWithTag:99];
+    if (isGoing)
+        [ppview changeCornerImvToType:@"going"];
+    else
+        [ppview changeCornerImvToType:@"interested"];
+    
+    DraggableView *c = (DraggableView *)card;
+    
+    PFUser *user = [PFUser currentUser];
+    
+    [c.eventObject pinInBackground];
+    [c.eventObject incrementKey:@"swipesRight"];
+    [c.eventObject saveEventually];
+    
+    NSString *tag = [NSString stringWithFormat:@"%@", c.eventObject[@"Hashtag"]];
+    if ([tag isEqualToString:@"Happy Hour"]) {
+        [user incrementKey:@"HappyHour"];
+    } else {
+        [user incrementKey:tag];
+    }
+    
+    //swipeAnalytics(userID,eventID,swiped)
+    
+    //PFObject *analyticsObject = [PFObject objectWithClassName:@"Analytics"];
+    //analyticsObject[@"Age"] = user[@"]
+    
+    PFQuery *swipesQuery = [PFQuery queryWithClassName:@"Swipes"];
+    [swipesQuery whereKey:@"EventID" equalTo:dragView.objectID];
+    [swipesQuery whereKey:@"UserID" equalTo:user.objectId];
+    [swipesQuery fromLocalDatastore];
+    
+    [swipesQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error){
+        
+        if (!error) {
+            
+            NSLog(@"SECOND time Swiping");
+            
+            object[@"swipedAgain"] = @YES;
+            object[@"swipedLeft"] = @NO;
+            object[@"swipedRight"] = @YES;
+            object[@"isGoing"] = @(isGoing);
+            object[@"friendCount"] = @(self.dragView.friendsInterestedCount);
+                
+            [object saveEventually];
+            
+        } else {
+            
+            NSLog(@"FIRST time Swiping");
+            
+            [user incrementKey:@"eventCount" byAmount:@1];
+            [user saveEventually];
+            
+            PFObject *swipesObject = [PFObject objectWithClassName:@"Swipes"];
+            swipesObject[@"UserID"] = user.objectId;
+            if (![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
+                swipesObject[@"username"] = user.username;
+            }
+            swipesObject[@"EventID"] = c.objectID;
+            swipesObject[@"swipedRight"] = @YES;
+            swipesObject[@"swipedLeft"] = @NO;
+            swipesObject[@"isGoing"] = @(isGoing);
+            swipesObject[@"friendCount"] = @(self.dragView.friendsInterestedCount);
+            [swipesObject pinInBackground];
+            
+            if ([[event[@"Date"] beginningOfDay] compare:[NSDate date]] == NSOrderedSame) {
+                swipesObject[@"swipedAgain"] = @YES;
+            }
+            
+            if ([[PFUser currentUser][@"socialMode"] isEqualToNumber:@YES] && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
+                swipesObject[@"FBObjectID"] = user[@"FBObjectID"];
+            }
+            
+            [swipesObject pinInBackground];
+            [swipesObject saveEventually];
+            
+            
+            if (![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
+                
+                NSString *locString = [dragView.location.text stringByReplacingOccurrencesOfString:@"at " withString:@""];
+                NSString *name = [NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]];
+                
+                [PFCloud callFunctionInBackground:@"swipeRight"
+                                   withParameters:@{@"user":user.objectId, @"event":dragView.objectID, @"fbID":user[@"FBObjectID"], @"fbToken":[FBSDKAccessToken currentAccessToken].tokenString, @"title":dragView.title.text, @"loc":locString, @"isGoing":@(isGoing), @"name":name, @"eventDate":dragView.eventObject[@"Date"]}
+                                            block:^(NSString *result, NSError *error) {
+                                                if (!error) {
+                                                    
+                                                    NSLog(@"%@", result);
+                                                }
+                                            }];
+            }
+            
+            [PFCloud callFunctionInBackground:@"swipeAnalytics"
+                               withParameters:@{@"userID":user.objectId, @"eventID":dragView.objectID, @"swiped":@"right"}
+                                        block:^(NSString *result, NSError *error) {
+                                            if (!error) {
+                                                
+                                                //NSLog(@"%@", result);
+                                            }
+                                        }];
+            
+            PFObject *timelineObject = [PFObject objectWithClassName:@"Timeline"];
+            
+            if (isGoing) timelineObject[@"type"] = @"going";
+            else timelineObject[@"type"] = @"swipeRight";
+            
+            timelineObject[@"userId"] = user.objectId;
+            timelineObject[@"eventId"] = dragView.objectID;
+            timelineObject[@"createdDate"] = [NSDate date];
+            timelineObject[@"eventTitle"] = dragView.title.text;
+            [timelineObject pinInBackground];
+            [timelineObject saveEventually];
+            
+            if (isGoing) [user incrementKey:@"score" byAmount:@3];
+            else [user incrementKey:@"score" byAmount:@1];
+            
+            [user saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+                if (!error) {
+                    // The currentUser saved successfully.
+                } else {
+                    // There was an error saving the currentUser.
+                    NSString *errorString = [error userInfo][@"error"];
+                    NSLog(@"Parse error: %@", errorString);
+                }
+            }];
+            
+        }
+        
+        [self.delegate didChangeRSVP];
+        
+    }];
+    
+    if (isGoing) {
+        [self swipeDownForWhat];
+    }
+    
+    
+    if ([[PFUser currentUser][@"hasSwipedRight"] isEqualToNumber:@NO] ) {
+        NSLog(@"First swipe right");
+        
+        AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+        RKSwipeBetweenViewControllers *rk = appDelegate.rk;
+        [rk showCallout];
+        
+        [PFUser currentUser][@"hasSwipedRight"] = @YES;
+        [user saveEventually];
+    }
+
+}
+
+- (void)cardSwipedLeft:(UIView *)card fromExpandedView:(BOOL)expandedBool {
+    
+    ProfilePictureView *ppview = (ProfilePictureView *)[dragView.friendScrollView viewWithTag:99];
+    [ppview changeCornerImvToType:@"notInterested"];
+    
+    DraggableView *c = (DraggableView *)card;
+    
+    [c.eventObject unpinInBackground];
+    [c.eventObject incrementKey:@"swipesLeft"];
+    [c.eventObject saveEventually];
+    
+    PFUser *user = [PFUser currentUser];
+    
+    [PFCloud callFunctionInBackground:@"swipeAnalytics"
+                       withParameters:@{@"userID":user.objectId, @"eventID":dragView.objectID, @"swiped":@"left"}
+                                block:^(NSString *result, NSError *error) {
+                                    if (!error) {
+                                        // result is @"Hello world!"
+                                        //NSLog(@"%@", result);
+                                    }
+                                }];
+    
+    PFQuery *swipesQuery = [PFQuery queryWithClassName:@"Swipes"];
+    [swipesQuery whereKey:@"EventID" equalTo:dragView.objectID];
+    [swipesQuery whereKey:@"UserID" equalTo:user.objectId];
+    
+    PFObject *swipesObject = [PFObject objectWithClassName:@"Swipes"];
+    
+    [swipesQuery countObjectsInBackgroundWithBlock:^(int count, NSError *error) {
+        
+        if (count > 0) {
+            
+            NSLog(@"SECOND time Swiping");
+            
+            [swipesQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error){
+                
+                object[@"swipedAgain"] = @YES;
+                object[@"swipedRight"] = @NO;
+                object[@"swipedLeft"] = @YES;
+                    
+                [object saveInBackground];
+                
+            }];
+            
+            
+        } else {
+            
+            NSLog(@"FIRST time Swiping");
+            
+            swipesObject[@"UserID"] = user.objectId;
+            if (![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
+                swipesObject[@"username"] = user.username;
+            }
+            swipesObject[@"EventID"] = c.objectID;
+            swipesObject[@"swipedRight"] = @NO;
+            swipesObject[@"swipedLeft"] = @YES;
+            
+            //never show again if Swiped left
+            swipesObject[@"swipedAgain"] = @YES;
+            
+            
+            if ([[PFUser currentUser][@"socialMode"] isEqualToNumber:@YES] && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
+                swipesObject[@"FBObjectID"] = user[@"FBObjectID"];
+            }
+            
+            [swipesObject saveInBackground];
+            
+        }
+        
+        [self.delegate didChangeRSVP];
+        
+    }];
+    
 }
 
 #pragma mark - Navigation

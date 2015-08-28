@@ -13,13 +13,13 @@
 #import "HOKError.h"
 #import "HOKRoute.h"
 #import "HOKLogger.h"
+#import "HOKRouting.h"
 #import "HOKHandling.h"
 #import "Hoko+Private.h"
 #import "HOKNetworkOperation.h"
 #import "HOKNetworkOperationQueue.h"
 #import "HOKDeeplinking+Private.h"
 #import "HOKDeeplink+Private.h"
-#import "HOKRouting.h"
 
 @interface HOKRouting ()
 
@@ -49,7 +49,7 @@
 - (void)mapRoute:(NSString *)route
         toTarget:(void (^)(HOKDeeplink *deeplink))target
 {
-    if([self routeExists:route])
+    if ([self routeExists:route])
         HOKErrorLog([HOKError duplicateRouteError:route]);
     else if ([HOKApp app].hasURLSchemes)
         [self addNewRoute:[HOKRoute routeWithRoute:[HOKURL sanitizeURLString:route] target:target]];
@@ -57,11 +57,38 @@
         HOKErrorLog([HOKError noURLSchemesError]);
 }
 
+- (NSArray *)routes
+{
+    return _routes;
+}
+
 #pragma mark - Open URL
+- (BOOL)openURL:(NSURL *)url metadata:(NSDictionary *)metadata
+{
+    return [self openURL:url sourceApplication:nil annotation:nil metadata:metadata];
+}
+
 - (BOOL)openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation
 {
+    return [self openURL:url sourceApplication:sourceApplication annotation:annotation metadata:nil];
+}
+
+- (BOOL)openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation metadata:(NSDictionary *)metadata
+{
     HOKRoute *route;
-    HOKDeeplink *deeplink = [self deeplinkForURL:url sourceApplication:sourceApplication annotation:annotation route:&route];
+    HOKDeeplink *deeplink = [self deeplinkForURL:url sourceApplication:sourceApplication annotation:annotation metadata:metadata route:&route];
+    if (deeplink.needsMetadata) {
+        [deeplink requestMetadataWithToken:self.token completion:^{
+            [self openDeeplink:deeplink route:route];
+        }];
+        return route != nil;
+    } else {
+        return [self openDeeplink:deeplink route:route];
+    }
+}
+
+- (BOOL)openDeeplink:(HOKDeeplink *)deeplink route:(HOKRoute *)route
+{
     [deeplink postWithToken:self.token];
     [[Hoko deeplinking].handling handle:deeplink];
     if (route) {
@@ -75,20 +102,25 @@
 
 - (HOKDeeplink *)deeplinkForURL:(NSURL *)url
 {
-    return [self deeplinkForURL:url sourceApplication:nil annotation:nil route:nil];
+    return [self deeplinkForURL:url sourceApplication:nil annotation:nil metadata:nil route:nil];
 }
 
-- (HOKDeeplink *)deeplinkForURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation route:(HOKRoute **)route
+- (HOKDeeplink *)deeplinkForURL:(NSURL *)url
+              sourceApplication:(NSString *)sourceApplication
+                     annotation:(id)annotation
+                       metadata:(NSDictionary *)metadata
+                          route:(HOKRoute **)route
 {
-    HOKURL *hokURL = [[HOKURL alloc]initWithURL:url];
+    HOKURL *hokURL = [[HOKURL alloc] initWithURL:url];
     NSDictionary *routeParameters;
     // Search for a match with any given route
     for (HOKRoute *hokRoute in self.routes) {
-        if([hokURL matchesWithRoute:hokRoute routeParameters:&routeParameters]) {
+        if ([hokURL matchesWithRoute:hokRoute routeParameters:&routeParameters]) {
             HOKDeeplink *deeplink = [HOKDeeplink deeplinkWithURLScheme:hokURL.scheme
                                                                  route:hokRoute.route
                                                        routeParameters:routeParameters
                                                        queryParameters:hokURL.queryParameters
+                                                              metadata:metadata
                                                      sourceApplication:sourceApplication
                                                            deeplinkURL:url.absoluteString];
             if (route) {
@@ -103,6 +135,7 @@
                                                          route:nil
                                                routeParameters:nil
                                                queryParameters:hokURL.queryParameters
+                                                      metadata:metadata
                                              sourceApplication:sourceApplication
                                                    deeplinkURL:url.absoluteString];
     if (self.defaultRoute) {
@@ -115,7 +148,7 @@
 - (BOOL)canOpenURL:(NSURL *)url
 {
     // If a default route exists it can always open the URL
-    if(self.defaultRoute) {
+    if (self.defaultRoute) {
         return YES;
     }
     
@@ -124,7 +157,7 @@
     
     // Search for a match with any given route
     for (HOKRoute *route in self.routes) {
-        if([hokURL matchesWithRoute:route routeParameters:nil]) {
+        if ([hokURL matchesWithRoute:route routeParameters:nil]) {
             return YES;
         }
     }
@@ -141,7 +174,7 @@
         return;
     }
     
-    self.routes = [self.routes arrayByAddingObject:route];
+    self.routes = [HOKRouting sortedRoutes:[self.routes arrayByAddingObject:route]];
     
     // POST routes to the backend only in debug mode
     if (self.debugMode)
@@ -152,12 +185,44 @@
 - (BOOL)routeExists:(NSString *)route
 {
     for (HOKRoute *routeObj in self.routes) {
-        if([routeObj.route isEqualToString:[HOKURL sanitizeURLString:route]])
+        if ([routeObj.route isEqualToString:[HOKURL sanitizeURLString:route]])
             return YES;
     }
     
     return NO;
 }
 
+#pragma mark - Sorting
++ (NSArray *)sortedRoutes:(NSArray *)routes
+{
+    return [routes sortedArrayUsingComparator:^NSComparisonResult(HOKRoute *route1, HOKRoute *route2) {
+        // lesser components have higher priority
+        if (route1.components.count != route2.components.count) {
+            return route1.components.count < route2.components.count ? NSOrderedAscending : NSOrderedDescending;
+        }
+        
+        for (NSInteger index = 0; index < route1.components.count; index ++) {
+            NSString *component1 = [route1.components objectAtIndex:index];
+            NSString *component2 = [route2.components objectAtIndex:index];
+            
+            BOOL component1IsParameter = [component1 hasPrefix:@":"];
+            BOOL component2IsParameter = [component2 hasPrefix:@":"];
+            
+            if (component1IsParameter && component2IsParameter) {
+                continue;
+            }
+            
+            if (component1IsParameter) {
+                return NSOrderedDescending;
+            }
+            if (component2IsParameter) {
+                return NSOrderedAscending;
+            }
+         
+        }
+        return [route1.route compare:route2.route];
+        
+    }];
+}
 
 @end

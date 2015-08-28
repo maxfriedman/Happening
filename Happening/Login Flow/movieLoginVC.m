@@ -93,7 +93,13 @@
 
         PFUser *user = [PFUser currentUser];
         user[@"fbToken"] = [FBSDKAccessToken currentAccessToken].tokenString;
-        if ([PFUser currentUser][@"score"] == nil) [PFUser currentUser][@"score"] = @10;
+        if (user[@"matchCount"] == nil) { user[@"matchCount"] = @2;
+            [PFInstallation currentInstallation][@"matchCount"] = @2;
+            [[PFInstallation currentInstallation] saveEventually];
+        }
+        if (user[@"score"] == nil) user[@"score"] = @10;
+        if (user[@"eventCount"] == nil || [user[@"eventCount"] intValue] == 0) [self checkAndUpdateCounts];
+        [self checkAndUpdateCounts];
         [user saveEventually];
         [self loadFriends];
 
@@ -420,6 +426,44 @@
 }
 */
 
+- (void)checkAndUpdateCounts {
+    
+    PFUser *currentUser = [PFUser currentUser];
+    
+    PFQuery *createdEventsQuery = [PFQuery queryWithClassName:@"Event"];
+    [createdEventsQuery whereKey:@"CreatedBy" equalTo:currentUser.objectId];
+    [createdEventsQuery orderByDescending:@"Date"];
+    createdEventsQuery.limit = 1000;
+    [createdEventsQuery countObjectsInBackgroundWithBlock:^(int count, NSError *error) {
+        
+        if (!error) {
+            
+            currentUser[@"createdCount"] = [NSNumber numberWithInt:count];
+            [currentUser saveEventually];
+        }
+    }];
+    
+    PFQuery *swipesQuery = [PFQuery queryWithClassName:@"Swipes"];
+    [swipesQuery whereKey:@"UserID" equalTo:currentUser.objectId];
+    [swipesQuery whereKey:@"swipedRight" equalTo:@YES];
+    swipesQuery.limit = 1000;
+    
+    PFQuery *swipedRightEventQuery = [PFQuery queryWithClassName:@"Event"];
+    [swipedRightEventQuery whereKey:@"objectId" matchesKey:@"EventID" inQuery:swipesQuery];
+    [swipedRightEventQuery orderByAscending:@"Date"];
+    swipedRightEventQuery.limit = 1000;
+    
+    [swipedRightEventQuery countObjectsInBackgroundWithBlock:^(int count, NSError *error) {
+        
+        if (!error) {
+            
+            currentUser[@"eventCount"] = [NSNumber numberWithInt:count];
+            [currentUser saveEventually];
+        }
+    }];
+    
+}
+
 - (void)loadFriends {
     NSLog(@"made it");
     PFUser *currentUser = [PFUser currentUser];
@@ -439,12 +483,13 @@
             NSArray* friends = [result objectForKey:@"data"];
             NSMutableArray *friendObjectIds = [NSMutableArray new];
             
+            currentUser[@"friendCount"] = [NSNumber numberWithUnsignedLong:friends.count];
             
             for (int i = 0; i < friends.count; i ++) {
                 [friendObjectIds addObject:[friends[i] objectForKey:@"id"]];
             }
             
-            
+            /*
             NSArray *friendsArray = currentUser[@"friends"];
             NSMutableArray *currentFriendIds = [NSMutableArray array];
             for (NSDictionary *dict in friendsArray) {
@@ -456,19 +501,19 @@
             for (NSString *fbid in friendObjectIds){
                 if (![currentFriendIds containsObject:fbid])
                     [friendIdsToQueryFor addObject:fbid];
-            }
+            } */
             
-            if (friendIdsToQueryFor.count > 0) {
+            //if (friendIdsToQueryFor.count > 0) {
                 
                 //NSLog(@"query for: %@", friendIdsToQueryFor);
                 
                 PFQuery *query = [PFUser query];
-                [query whereKey:@"FBObjectID" containedIn:friendIdsToQueryFor];
+                [query whereKey:@"FBObjectID" containedIn:friendObjectIds];
                 query.limit = 1000;
                 
                 [query findObjectsInBackgroundWithBlock:^(NSArray *users, NSError *error) {
                     
-                    NSMutableArray *array = currentUser[@"friends"];
+                    NSMutableArray *array = [NSMutableArray array]; //currentUser[@"friends"];
                     if (array == nil) {
                         array = [NSMutableArray array];
                     }
@@ -489,7 +534,7 @@
                     }];
                     
                 }];
-            }
+            //}
         }];
         
         //});

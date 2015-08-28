@@ -6,6 +6,8 @@
 //  Copyright (c) 2015 Hoko, S.A. All rights reserved.
 //
 
+#import "HOKDeeplinking.h"
+
 #import "HOKDeeplink.h"
 
 extern NSString *const HOKDeeplinkSmartlinkIdentifierKey;
@@ -15,19 +17,24 @@ extern NSString *const HOKDeeplinkSmartlinkIdentifierKey;
 + (HOKDeeplink *)deeplinkWithURLScheme:(NSString *)urlScheme
                                 route:(NSString *)route
                       routeParameters:(NSDictionary *)routeParameters
-                      queryParameters:(NSDictionary *)queryParameters
+                       queryParameters:(NSDictionary *)queryParameters
+                              metadata:(NSDictionary *)metadata
                     sourceApplication:(NSString *)sourceApplication
                           deeplinkURL:(NSString *)deeplinkURL;
 
+- (void)setMetadata:(NSDictionary *)metadata;
 - (void)postWithToken:(NSString *)token;
+- (void)requestMetadataWithToken:(NSString *)token completion:(void(^)(void))completion;
 
 @property (nonatomic, strong, readonly) NSString *urlScheme;
 @property (nonatomic, strong, readonly) NSString *sourceApplication;
 @property (nonatomic, strong, readonly) NSDictionary *generateSmartlinkJSON;
 
 @property (nonatomic, strong, readonly) NSString *smartlinkClickIdentifier;
+@property (nonatomic, strong, readonly) NSString *smartlinkIdentifier;
 
 @property (nonatomic, readonly) BOOL isSmartlink;
 @property (nonatomic, readonly) BOOL hasURLs;
+@property (nonatomic, readonly) BOOL needsMetadata;
 
 @end

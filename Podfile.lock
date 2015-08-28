@@ -1,36 +1,22 @@
 PODS:
-  - AFNetworking (2.5.4):
-    - AFNetworking/NSURLConnection (= 2.5.4)
-    - AFNetworking/NSURLSession (= 2.5.4)
-    - AFNetworking/Reachability (= 2.5.4)
-    - AFNetworking/Security (= 2.5.4)
-    - AFNetworking/Serialization (= 2.5.4)
-    - AFNetworking/UIKit (= 2.5.4)
-  - AFNetworking/NSURLConnection (2.5.4):
+  - AFNetworking/NSURLConnection (2.6.0):
     - AFNetworking/Reachability
     - AFNetworking/Security
     - AFNetworking/Serialization
-  - AFNetworking/NSURLSession (2.5.4):
-    - AFNetworking/Reachability
-    - AFNetworking/Security
-    - AFNetworking/Serialization
-  - AFNetworking/Reachability (2.5.4)
-  - AFNetworking/Security (2.5.4)
-  - AFNetworking/Serialization (2.5.4)
-  - AFNetworking/UIKit (2.5.4):
-    - AFNetworking/NSURLConnection
-    - AFNetworking/NSURLSession
-  - AFOAuth2Manager (2.0.0):
-    - AFNetworking (~> 2.2)
+  - AFNetworking/Reachability (2.6.0)
+  - AFNetworking/Security (2.6.0)
+  - AFNetworking/Serialization (2.6.0)
+  - AFOAuth2Manager (2.2.0):
+    - AFNetworking/NSURLConnection (~> 2.2)
   - Atlas (1.0.10):
     - LayerKit (>= 0.14.2)
-  - Button (3.4.0)
-  - FastttCamera (0.3.1):
-    - FastttCamera/Default (= 0.3.1)
-  - FastttCamera/Default (0.3.1)
-  - Hoko (2.0.2)
+  - Button (3.5.0)
+  - FastttCamera (0.3.2):
+    - FastttCamera/Default (= 0.3.2)
+  - FastttCamera/Default (0.3.2)
+  - Hoko (2.1.1)
   - LayerKit (0.15.0)
-  - LocationKit (2.0.8)
+  - LocationKit (2.2.2)
   - pop (1.0.7)
   - POP+MCAnimate (2.0.1):
     - pop (~> 1.0)
@@ -58,27 +44,27 @@ PODS:
   - TTTAttributedLabel (1.13.4)
 
 DEPENDENCIES:
-  - AFOAuth2Manager (= 2.0.0)
+  - AFOAuth2Manager
   - Atlas
-  - Button (~> 3)
+  - Button
   - FastttCamera
-  - Hoko (~> 2.0.1)
+  - Hoko
   - LayerKit
-  - LocationKit (~> 2.0.0)
+  - LocationKit
   - pop (~> 1.0)
   - POP+MCAnimate (~> 2.0)
   - RKNotificationHub
   - TTTAttributedLabel
 
 SPEC CHECKSUMS:
-  AFNetworking: 05edc0ac4c4c8cf57bcf4b84be5b0744b6d8e71e
-  AFOAuth2Manager: 247d23d9d7a7a4297a00346c6ff07d130d8433c0
+  AFNetworking: 79f7eb1a0fcfa7beb409332b2ca49afe9ce53b05
+  AFOAuth2Manager: 952eb62e8fd8022971e64c6e8fe28b9e999224af
   Atlas: ea8e1559810405c4eaa45eef80b813a12235527c
-  Button: bbbf8d4851ddfa16354afe9e6dbef0499309e192
-  FastttCamera: dfcec6e490be93130123309fdecc7cf444081470
-  Hoko: 58ee691440205d5af9f6661a56de5f284939e0b7
+  Button: 1481c44c7ad0bcff1fcc4ddd5612703b40a9a9c5
+  FastttCamera: 4e758cc2bf5564effc654346cac320c09a550164
+  Hoko: 4247653c45e359428a38c484c963caf89f2e84d7
   LayerKit: ac8c5c227a06e2ea5e042303b80e931a8ffe3568
-  LocationKit: d8e02bf450002b37e7bf9c1e24444c854e0f2ef5
+  LocationKit: c0835f0b97d81307d8c2e5eef960d9227f78163b
   pop: 628ffc631644601567ee8bfaaaea493ebd7d0923
   POP+MCAnimate: a99e209148c602512de487f1160a44bf78572024
   RKNotificationHub: d80905a948c79c11673345f807133a0bfd17e320

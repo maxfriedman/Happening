@@ -33,7 +33,7 @@
     if([CLLocationManager locationServicesEnabled]){
         
         AppDelegate *appDelegate=(AppDelegate *)[UIApplication sharedApplication].delegate;
-        [appDelegate.locationManager requestAlwaysAuthorization];
+        [appDelegate.locationManager requestWhenInUseAuthorization];
         _mapView.showsUserLocation = YES;
         [self.mapView setShowsUserLocation:YES];
         [self.mapView setUserInteractionEnabled:YES];

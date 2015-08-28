@@ -116,24 +116,24 @@
     [weekendButton addTarget:self action:@selector(timeButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
     
     
-    categoryArray = [[NSArray alloc] initWithObjects:@"Most popular", @"Best deals", @"Bars & Clubs", @"Food & Drink", @"Sports & Fitness", @"Concerts & Shows", /*@"Free in the city",*/ @"Charity & Causes", @"Shopping", /*@"Film & Media",*/ @"Meetups", nil];
+    categoryArray = [[NSArray alloc] initWithObjects:@"Most popular", @"Best deals", @"Sports", @"Bars & Clubs",/* @"Food & Drink",*/  @"Concerts & Shows",/* @"Charity & Causes", @"Shopping", @"Meetups",*/ nil];
     
     defaultsArray = [[NSArray alloc] initWithObjects:@"Nightlife", @"Entertainment", @"Music", @"Dining", @"Happy Hour", @"Sports", @"Shopping", @"Fundraiser", @"Meetup", @"Freebies", @"Other", nil];
     
     
     UIImage *popularImage = [UIImage imageNamed:@"popular"];
     UIImage *dealsImage = [UIImage imageNamed:@"deals"];
-    UIImage *barsAndClubsImage = [UIImage imageNamed:@"club"];
-    UIImage *foodAndDrinkImage = [UIImage imageNamed:@"dining"];
     UIImage *sportsImage = [UIImage imageNamed:@"sports"];
+    UIImage *barsAndClubsImage = [UIImage imageNamed:@"club"];
+    //UIImage *foodAndDrinkImage = [UIImage imageNamed:@"dining"];
     UIImage *concertsAndShowsImage = [UIImage imageNamed:@"entertain"];
     //UIImage *freeImage = [UIImage imageNamed:@"fundraiser"];
-    UIImage *charityImage = [UIImage imageNamed:@"fundraiser"];
-    UIImage *shoppingImage = [UIImage imageNamed:@"shopping"];
+    //UIImage *charityImage = [UIImage imageNamed:@"fundraiser"];
+    //UIImage *shoppingImage = [UIImage imageNamed:@"shopping"];
     //UIImage *filmAndMediaImage = [UIImage imageNamed:@"interested_face"];
-    UIImage *meetupsImage = [UIImage imageNamed:@"meetup"];
+    //UIImage *meetupsImage = [UIImage imageNamed:@"meetup"];
     
-    imageArray = [[NSArray alloc] initWithObjects:popularImage, dealsImage, barsAndClubsImage, foodAndDrinkImage, sportsImage, concertsAndShowsImage, /*freeImage,*/ charityImage, shoppingImage, /*filmAndMediaImage,*/ meetupsImage, nil];
+    imageArray = [[NSArray alloc] initWithObjects:popularImage, dealsImage, sportsImage, barsAndClubsImage, /*foodAndDrinkImage,*/ concertsAndShowsImage, /*freeImage, charityImage, shoppingImage, filmAndMediaImage, meetupsImage,*/ nil];
     
     /*
     for (UIImage *im in imageArray) {
@@ -257,6 +257,8 @@
     cell.textLabel.text = categoryArray[indexPath.row];
     cell.imageView.image = imageArray[indexPath.row];
     
+    if ([defaults integerForKey:@"categoryIndex"] > categoryArray.count) { [defaults setObject:0 forKey:@"categoryIndex"]; [defaults synchronize]; }
+    
     if (indexPath.row == [defaults integerForKey:@"categoryIndex"] )
     {
         cell.accessoryType = UITableViewCellAccessoryCheckmark;
@@ -265,7 +267,7 @@
     else
     {
         cell.accessoryType = UITableViewCellAccessoryNone;
-        cell.textLabel.font = [UIFont fontWithName:@"OpenSans-Light" size:16.0];
+        cell.textLabel.font = [UIFont fontWithName:@"OpenSans" size:15.0];
     }
     
     return cell;
@@ -345,33 +347,39 @@
         case 1: // Best deals
             NSLog(@"Selected Best Deals");
             currentUser[@"categoryName"] = @"Best Deals";
-            currentUser[@"categories"] = [NSArray arrayWithObjects:@"Freebies", @"Happy Hour", nil];
+            //currentUser[@"categories"] = [NSArray arrayWithObjects:@"Freebies", @"Happy Hour", nil];
+            currentUser[@"categories"] = defaultsArray;
+
+            break;
+            
+        case 2: // Sports
+            NSLog(@"Selected Sports");
+            currentUser[@"categoryName"] = @"Sports";
+            currentUser[@"categories"] = [NSArray arrayWithObjects:@"Sports", nil];
             
             break;
-        case 2: // Bars & Clubs
+            
+        case 3: // Bars & Clubs
             NSLog(@"Selected Bars & Clubs");
             currentUser[@"categoryName"] = @"Bars & Clubs";
             currentUser[@"categories"] = [NSArray arrayWithObjects:@"Happy Hour", @"Nightlife", nil];
             
             break;
+            /*
         case 3: // Food & Drink
             NSLog(@"Selected Food & Drink");
             currentUser[@"categoryName"] = @"Food & Drink";
             currentUser[@"categories"] = [NSArray arrayWithObjects:@"Dining", @"Happy Hour", nil];
             
-            break;
-        case 4: // Sports
-            NSLog(@"Selected Sports & Fitness");
-            currentUser[@"categoryName"] = @"Sports & Fitness";
-            currentUser[@"categories"] = [NSArray arrayWithObjects:@"Sports", nil];
-            
-            break;
-        case 5: // Concerts & Shows
+            break; */
+        
+        case 4: // Concerts & Shows
             NSLog(@"Selected Concerts & Shows");
             currentUser[@"categoryName"] = @"Concerts & Shows";
             currentUser[@"categories"] = [NSArray arrayWithObjects:@"Entertainment", @"Music", nil];
             
             break;
+            
             /*
         case 6: // Free in the City
             NSLog(@"Selected Free in the City");
@@ -380,7 +388,7 @@
             [defaults setBool:YES forKey:@"freebies"];
             
             break;
-             */
+             */ /*
         case 6: // Charity & Causes
             NSLog(@"Selected Charity & Causes");
             currentUser[@"categoryName"] = @"Charity & Causes";
@@ -401,13 +409,13 @@
             [defaults setBool:YES forKey:@"entertainment"];
             
             break;
-             */
+             
         case 8: // Professional
             NSLog(@"Selected Meetups");
             currentUser[@"categoryName"] = @"Meetups";
             currentUser[@"categories"] = [NSArray arrayWithObjects:@"Meetup", nil];
             
-            break;
+            break; */
             
         default:
             break;
@@ -418,7 +426,7 @@
         NSIndexPath *ip = [NSIndexPath indexPathForRow:i inSection:0];
         UITableViewCell *cell = [tableView cellForRowAtIndexPath:ip];
         cell.accessoryType = UITableViewCellAccessoryNone;
-        cell.textLabel.font = [UIFont fontWithName:@"OpenSans-Light" size:16.0];
+        cell.textLabel.font = [UIFont fontWithName:@"OpenSans" size:15.0];
     }
     
     UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];

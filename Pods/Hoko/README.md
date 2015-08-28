@@ -16,7 +16,7 @@ your.app.scheme://<mapped_route>/<route_param>?<query_params>
 
 # Quick Start - HOKO framework for iOS
 
-This document is a quick start introduction to the HOKO framework for iOS. You can read the full documentation at [http://hokolinks.com/documentation#ios](http://support.hokolinks.com/ios/ios-setup/).
+This document is a quick start introduction to the HOKO framework for iOS (only <u>iOS 5 and higher</u>). You can read the full documentation at [http://hokolinks.com/documentation#ios](http://support.hokolinks.com/ios/ios-setup/).
 
 To integrate HOKO in your app, simply follow the 3 simple steps below after adding it to your project.
 
@@ -28,7 +28,7 @@ To integrate HOKO in your app, simply follow the 3 simple steps below after addi
 2. Open your Xcode project folder and create a file called `Podfile` with the following content:
 
     ```ruby
-    pod 'Hoko', '~> 2.0.1'
+    pod 'Hoko', '~> 2.1'
     ```
 
 3. Run `pod install` and wait for CocoaPod to install HOKO SDK. From this moment on, instead of using `.xcodeproj` file, you should start using `.xcworkspace`.

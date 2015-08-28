@@ -12,6 +12,7 @@
 @protocol ShareableCardViewDelegate <NSObject>
 
 - (void)cardImageGenerated:(UIImage *)image;
+- (void)setupSuperviewForImageCapture;
 
 @end
 
@@ -23,5 +24,6 @@
 @property (nonatomic, strong) UIImage *cachedImage;
 
 - (void)zoomCard;
+- (void)addExtras;
 
 @end

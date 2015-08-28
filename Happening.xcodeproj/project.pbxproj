@@ -74,6 +74,7 @@
 		50478F181A44DE6900161D01 /* TabBarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50478F131A44DE6900161D01 /* TabBarViewController.m */; };
 		50478F251A45049300161D01 /* MyEventTableCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50478F241A45049300161D01 /* MyEventTableCell.m */; };
 		5048F82A1B66A9C8004D05AD /* LocationConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 5048F8291B66A9C8004D05AD /* LocationConstants.m */; };
+		504CC0D41B8CEFC100763CAA /* InviteFromCreateView.m in Sources */ = {isa = PBXBuildFile; fileRef = 504CC0D31B8CEFC100763CAA /* InviteFromCreateView.m */; };
 		50512F051AB389B600118FD9 /* UIButton+Extensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 50512F041AB389B600118FD9 /* UIButton+Extensions.m */; };
 		50512F111ABB51DB00118FD9 /* ProfileSettingsTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 50512F101ABB51DB00118FD9 /* ProfileSettingsTVC.m */; };
 		50512F171ABB6E9100118FD9 /* NotificationsTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 50512F161ABB6E9100118FD9 /* NotificationsTVC.m */; };
@@ -119,6 +120,9 @@
 		5072D8931B49D6EB00518278 /* FBSDKShareKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5072D88C1B49D6EB00518278 /* FBSDKShareKit.framework */; };
 		507677D31A88761100B9F21D /* ProfileTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 507677D21A88761100B9F21D /* ProfileTVC.m */; };
 		5076B5C51A58A0E300B05ABB /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5076B5C41A58A0E300B05ABB /* libsqlite3.dylib */; };
+		5080A6961B74FCFC009CD7FB /* NSData+Base64.m in Sources */ = {isa = PBXBuildFile; fileRef = 5080A6951B74FCFC009CD7FB /* NSData+Base64.m */; };
+		5080A69C1B767100009CD7FB /* DMTableSwiperView.m in Sources */ = {isa = PBXBuildFile; fileRef = 5080A69B1B767100009CD7FB /* DMTableSwiperView.m */; };
+		5080A69F1B79582A009CD7FB /* ProfilePictureView.m in Sources */ = {isa = PBXBuildFile; fileRef = 5080A69E1B79582A009CD7FB /* ProfilePictureView.m */; };
 		508240CD1B2DF433006CBCE8 /* PFObject+ATLAvatarItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 508240CC1B2DF433006CBCE8 /* PFObject+ATLAvatarItem.m */; };
 		508240D01B2E09FB006CBCE8 /* groupManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 508240CF1B2E09FB006CBCE8 /* groupManager.m */; };
 		508240D61B2F09C1006CBCE8 /* GroupDetailsTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 508240D51B2F09C1006CBCE8 /* GroupDetailsTVC.m */; };
@@ -312,6 +316,8 @@
 		50478F241A45049300161D01 /* MyEventTableCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MyEventTableCell.m; path = "Happening/Create Tab/MyEventTableCell.m"; sourceTree = SOURCE_ROOT; };
 		5048F8281B66A9C8004D05AD /* LocationConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LocationConstants.h; path = "Happening/Discover Tab/Settings/LocationConstants.h"; sourceTree = SOURCE_ROOT; };
 		5048F8291B66A9C8004D05AD /* LocationConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LocationConstants.m; path = "Happening/Discover Tab/Settings/LocationConstants.m"; sourceTree = SOURCE_ROOT; };
+		504CC0D21B8CEFC100763CAA /* InviteFromCreateView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = InviteFromCreateView.h; path = "Happening/Discover Tab/InviteFromCreateView.h"; sourceTree = SOURCE_ROOT; };
+		504CC0D31B8CEFC100763CAA /* InviteFromCreateView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = InviteFromCreateView.m; path = "Happening/Discover Tab/InviteFromCreateView.m"; sourceTree = SOURCE_ROOT; };
 		50512F031AB389B600118FD9 /* UIButton+Extensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIButton+Extensions.h"; path = "Happening/Extras/UIButton+Extensions.h"; sourceTree = SOURCE_ROOT; };
 		50512F041AB389B600118FD9 /* UIButton+Extensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIButton+Extensions.m"; path = "Happening/Extras/UIButton+Extensions.m"; sourceTree = SOURCE_ROOT; };
 		50512F0F1ABB51DB00118FD9 /* ProfileSettingsTVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ProfileSettingsTVC.h; path = "Happening/Create Tab/ProfileSettingsTVC.h"; sourceTree = SOURCE_ROOT; };
@@ -362,6 +368,12 @@
 		507677D11A88761100B9F21D /* ProfileTVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ProfileTVC.h; path = "Happening/Create Tab/ProfileTVC.h"; sourceTree = SOURCE_ROOT; };
 		507677D21A88761100B9F21D /* ProfileTVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ProfileTVC.m; path = "Happening/Create Tab/ProfileTVC.m"; sourceTree = SOURCE_ROOT; };
 		5076B5C41A58A0E300B05ABB /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = usr/lib/libsqlite3.dylib; sourceTree = SDKROOT; };
+		5080A6941B74FCFB009CD7FB /* NSData+Base64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSData+Base64.h"; path = "Happening/Extras/NSData+Base64.h"; sourceTree = SOURCE_ROOT; };
+		5080A6951B74FCFC009CD7FB /* NSData+Base64.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSData+Base64.m"; path = "Happening/Extras/NSData+Base64.m"; sourceTree = SOURCE_ROOT; };
+		5080A69A1B767100009CD7FB /* DMTableSwiperView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DMTableSwiperView.h; path = "Happening/Create Tab/DMTableSwiperView.h"; sourceTree = SOURCE_ROOT; };
+		5080A69B1B767100009CD7FB /* DMTableSwiperView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DMTableSwiperView.m; path = "Happening/Create Tab/DMTableSwiperView.m"; sourceTree = SOURCE_ROOT; };
+		5080A69D1B79582A009CD7FB /* ProfilePictureView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ProfilePictureView.h; path = Happening/Extras/ProfilePictureView.h; sourceTree = SOURCE_ROOT; };
+		5080A69E1B79582A009CD7FB /* ProfilePictureView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ProfilePictureView.m; path = Happening/Extras/ProfilePictureView.m; sourceTree = SOURCE_ROOT; };
 		508240CB1B2DF433006CBCE8 /* PFObject+ATLAvatarItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "PFObject+ATLAvatarItem.h"; path = "Happening/Groups/PFObject+ATLAvatarItem.h"; sourceTree = SOURCE_ROOT; };
 		508240CC1B2DF433006CBCE8 /* PFObject+ATLAvatarItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "PFObject+ATLAvatarItem.m"; path = "Happening/Groups/PFObject+ATLAvatarItem.m"; sourceTree = SOURCE_ROOT; };
 		508240CE1B2E09FB006CBCE8 /* groupManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = groupManager.h; path = Happening/Groups/groupManager.h; sourceTree = SOURCE_ROOT; };
@@ -742,7 +754,6 @@
 		5041A1101A44ACF500C151B7 /* Create Tab */ = {
 			isa = PBXGroup;
 			children = (
-				5022ABEE1B6A92DC00B3B8DC /* Create a Happening */,
 				50512F091ABB45B100118FD9 /* Settings */,
 				50512F0A1ABB45B700118FD9 /* Profile */,
 				50512F0B1ABB45E600118FD9 /* Create Event */,
@@ -793,6 +804,8 @@
 				502A55811B5F0D44006B44AB /* PermissionsView.m */,
 				5022ABEB1B6A768C00B3B8DC /* ModalPopup.h */,
 				5022ABEC1B6A768C00B3B8DC /* ModalPopup.m */,
+				5080A69D1B79582A009CD7FB /* ProfilePictureView.h */,
+				5080A69E1B79582A009CD7FB /* ProfilePictureView.m */,
 			);
 			name = Extras;
 			sourceTree = "<group>";
@@ -865,6 +878,8 @@
 				50A677751A59B67C00E1E12A /* RKDropdownAlert.m */,
 				506DFD811A6113CF00715079 /* FXBlurView.h */,
 				506DFD821A6113CF00715079 /* FXBlurView.m */,
+				5080A6941B74FCFB009CD7FB /* NSData+Base64.h */,
+				5080A6951B74FCFC009CD7FB /* NSData+Base64.m */,
 			);
 			name = General;
 			sourceTree = "<group>";
@@ -891,6 +906,8 @@
 				507677D21A88761100B9F21D /* ProfileTVC.m */,
 				50ACF6821B6C0D1F00DAB2A6 /* TimelineCell.h */,
 				50ACF6831B6C0D1F00DAB2A6 /* TimelineCell.m */,
+				5080A69A1B767100009CD7FB /* DMTableSwiperView.h */,
+				5080A69B1B767100009CD7FB /* DMTableSwiperView.m */,
 			);
 			name = Profile;
 			sourceTree = "<group>";
@@ -934,6 +951,7 @@
 		50512F0E1ABB466700118FD9 /* Unused */ = {
 			isa = PBXGroup;
 			children = (
+				5022ABEE1B6A92DC00B3B8DC /* Create a Happening */,
 				50478ECE1A44DD2400161D01 /* MyEventsTVC.h */,
 				50478ECF1A44DD2400161D01 /* MyEventsTVC.m */,
 			);
@@ -996,6 +1014,8 @@
 				50ACF6861B6E942300DAB2A6 /* CreateHappeningView.m */,
 				50172F561B6F3C4C0083D5BE /* ShareableCardView.h */,
 				50172F571B6F3C4C0083D5BE /* ShareableCardView.m */,
+				504CC0D21B8CEFC100763CAA /* InviteFromCreateView.h */,
+				504CC0D31B8CEFC100763CAA /* InviteFromCreateView.m */,
 			);
 			name = Draggables;
 			sourceTree = "<group>";
@@ -1156,7 +1176,7 @@
 						DevelopmentTeam = 9536BXJVRW;
 						SystemCapabilities = {
 							com.apple.BackgroundModes = {
-								enabled = 1;
+								enabled = 0;
 							};
 							com.apple.InAppPurchase = {
 								enabled = 0;
@@ -1310,6 +1330,7 @@
 				5099CEC51B4EB81C0064DF85 /* CustomAPActivityProvider.m in Sources */,
 				5022ABED1B6A768C00B3B8DC /* ModalPopup.m in Sources */,
 				50478F001A44DE0500161D01 /* AttendEvent.m in Sources */,
+				5080A6961B74FCFC009CD7FB /* NSData+Base64.m in Sources */,
 				5031EBEC1A939489007E3523 /* webViewController.m in Sources */,
 				5011C5261ACAB6A500BAAF74 /* QuestionMarkPage.m in Sources */,
 				50B17CED1B60894600AF880B /* LoginButton.m in Sources */,
@@ -1324,8 +1345,10 @@
 				5022ABF11B6A931200B3B8DC /* CreateHappeningVC.m in Sources */,
 				5099CEB91B4B8BA20064DF85 /* ConversationCell.m in Sources */,
 				5072D8611B4612FC00518278 /* SwipeableCardVC.m in Sources */,
+				5080A69F1B79582A009CD7FB /* ProfilePictureView.m in Sources */,
 				502A55821B5F0D45006B44AB /* PermissionsView.m in Sources */,
 				50BF2CE31A75531B00160B5E /* movieLoginVC.m in Sources */,
+				5080A69C1B767100009CD7FB /* DMTableSwiperView.m in Sources */,
 				505529E31B30EDEE007A2F00 /* CustomConstants.m in Sources */,
 				50478EE81A44DD6C00161D01 /* DraggableView.m in Sources */,
 				50478EAE1A44DB8D00161D01 /* SplashScreens.m in Sources */,
@@ -1361,6 +1384,7 @@
 				502CA2B31B3B4F6B00576E82 /* GroupAddFriendsTVC.m in Sources */,
 				50CA89EE1B2A1FFA000AC48D /* MHTabBarSegue.m in Sources */,
 				50478ED81A44DD2400161D01 /* showMyEventVC.m in Sources */,
+				504CC0D41B8CEFC100763CAA /* InviteFromCreateView.m in Sources */,
 				50BF2CE61A758D8300160B5E /* RKSwipeBetweenViewControllers.m in Sources */,
 				50B707201B17D2D90080657E /* inviteHomiesCell.m in Sources */,
 				50478EBC1A44DBCC00161D01 /* FirstTimeScreen.m in Sources */,
@@ -1518,8 +1542,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_ENTITLEMENTS = Happening/Happening.entitlements;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "iPhone Distribution";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Happening/Frameworks/FacebookSDK",

@@ -13,5 +13,6 @@
 
 @property (strong, nonatomic) IBOutlet UILabel *messageLabel;
 @property (strong, nonatomic) PFObject *activityObject;
+@property (strong, nonatomic) IBOutlet UILabel *timestampLabel;
 
 @end

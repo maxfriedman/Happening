@@ -6,52 +6,34 @@
 // project.
 
 
-// AFNetworking
-#define COCOAPODS_POD_AVAILABLE_AFNetworking
-#define COCOAPODS_VERSION_MAJOR_AFNetworking 2
-#define COCOAPODS_VERSION_MINOR_AFNetworking 5
-#define COCOAPODS_VERSION_PATCH_AFNetworking 4
-
 // AFNetworking/NSURLConnection
 #define COCOAPODS_POD_AVAILABLE_AFNetworking_NSURLConnection
 #define COCOAPODS_VERSION_MAJOR_AFNetworking_NSURLConnection 2
-#define COCOAPODS_VERSION_MINOR_AFNetworking_NSURLConnection 5
-#define COCOAPODS_VERSION_PATCH_AFNetworking_NSURLConnection 4
-
-// AFNetworking/NSURLSession
-#define COCOAPODS_POD_AVAILABLE_AFNetworking_NSURLSession
-#define COCOAPODS_VERSION_MAJOR_AFNetworking_NSURLSession 2
-#define COCOAPODS_VERSION_MINOR_AFNetworking_NSURLSession 5
-#define COCOAPODS_VERSION_PATCH_AFNetworking_NSURLSession 4
+#define COCOAPODS_VERSION_MINOR_AFNetworking_NSURLConnection 6
+#define COCOAPODS_VERSION_PATCH_AFNetworking_NSURLConnection 0
 
 // AFNetworking/Reachability
 #define COCOAPODS_POD_AVAILABLE_AFNetworking_Reachability
 #define COCOAPODS_VERSION_MAJOR_AFNetworking_Reachability 2
-#define COCOAPODS_VERSION_MINOR_AFNetworking_Reachability 5
-#define COCOAPODS_VERSION_PATCH_AFNetworking_Reachability 4
+#define COCOAPODS_VERSION_MINOR_AFNetworking_Reachability 6
+#define COCOAPODS_VERSION_PATCH_AFNetworking_Reachability 0
 
 // AFNetworking/Security
 #define COCOAPODS_POD_AVAILABLE_AFNetworking_Security
 #define COCOAPODS_VERSION_MAJOR_AFNetworking_Security 2
-#define COCOAPODS_VERSION_MINOR_AFNetworking_Security 5
-#define COCOAPODS_VERSION_PATCH_AFNetworking_Security 4
+#define COCOAPODS_VERSION_MINOR_AFNetworking_Security 6
+#define COCOAPODS_VERSION_PATCH_AFNetworking_Security 0
 
 // AFNetworking/Serialization
 #define COCOAPODS_POD_AVAILABLE_AFNetworking_Serialization
 #define COCOAPODS_VERSION_MAJOR_AFNetworking_Serialization 2
-#define COCOAPODS_VERSION_MINOR_AFNetworking_Serialization 5
-#define COCOAPODS_VERSION_PATCH_AFNetworking_Serialization 4
-
-// AFNetworking/UIKit
-#define COCOAPODS_POD_AVAILABLE_AFNetworking_UIKit
-#define COCOAPODS_VERSION_MAJOR_AFNetworking_UIKit 2
-#define COCOAPODS_VERSION_MINOR_AFNetworking_UIKit 5
-#define COCOAPODS_VERSION_PATCH_AFNetworking_UIKit 4
+#define COCOAPODS_VERSION_MINOR_AFNetworking_Serialization 6
+#define COCOAPODS_VERSION_PATCH_AFNetworking_Serialization 0
 
 // AFOAuth2Manager
 #define COCOAPODS_POD_AVAILABLE_AFOAuth2Manager
 #define COCOAPODS_VERSION_MAJOR_AFOAuth2Manager 2
-#define COCOAPODS_VERSION_MINOR_AFOAuth2Manager 0
+#define COCOAPODS_VERSION_MINOR_AFOAuth2Manager 2
 #define COCOAPODS_VERSION_PATCH_AFOAuth2Manager 0
 
 // Atlas
@@ -63,26 +45,26 @@
 // Button
 #define COCOAPODS_POD_AVAILABLE_Button
 #define COCOAPODS_VERSION_MAJOR_Button 3
-#define COCOAPODS_VERSION_MINOR_Button 4
+#define COCOAPODS_VERSION_MINOR_Button 5
 #define COCOAPODS_VERSION_PATCH_Button 0
 
 // FastttCamera
 #define COCOAPODS_POD_AVAILABLE_FastttCamera
 #define COCOAPODS_VERSION_MAJOR_FastttCamera 0
 #define COCOAPODS_VERSION_MINOR_FastttCamera 3
-#define COCOAPODS_VERSION_PATCH_FastttCamera 1
+#define COCOAPODS_VERSION_PATCH_FastttCamera 2
 
 // FastttCamera/Default
 #define COCOAPODS_POD_AVAILABLE_FastttCamera_Default
 #define COCOAPODS_VERSION_MAJOR_FastttCamera_Default 0
 #define COCOAPODS_VERSION_MINOR_FastttCamera_Default 3
-#define COCOAPODS_VERSION_PATCH_FastttCamera_Default 1
+#define COCOAPODS_VERSION_PATCH_FastttCamera_Default 2
 
 // Hoko
 #define COCOAPODS_POD_AVAILABLE_Hoko
 #define COCOAPODS_VERSION_MAJOR_Hoko 2
-#define COCOAPODS_VERSION_MINOR_Hoko 0
-#define COCOAPODS_VERSION_PATCH_Hoko 2
+#define COCOAPODS_VERSION_MINOR_Hoko 1
+#define COCOAPODS_VERSION_PATCH_Hoko 1
 
 // LayerKit
 #define COCOAPODS_POD_AVAILABLE_LayerKit
@@ -93,8 +75,8 @@
 // LocationKit
 #define COCOAPODS_POD_AVAILABLE_LocationKit
 #define COCOAPODS_VERSION_MAJOR_LocationKit 2
-#define COCOAPODS_VERSION_MINOR_LocationKit 0
-#define COCOAPODS_VERSION_PATCH_LocationKit 8
+#define COCOAPODS_VERSION_MINOR_LocationKit 2
+#define COCOAPODS_VERSION_PATCH_LocationKit 2
 
 // POP+MCAnimate
 #define COCOAPODS_POD_AVAILABLE_POP_MCAnimate

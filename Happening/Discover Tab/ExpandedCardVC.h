@@ -14,13 +14,29 @@
 #import <EventKitUI/EventKitUI.h>
 #import <EventKit/EventKit.h>
 #import "AttendEvent.h"
+#import <LayerKit/LayerKit.h>
+
+@protocol ExpandedCardVCDelegate <NSObject>
+
+- (void)didChangeRSVP;
+
+@end
 
 @interface ExpandedCardVC : UIViewController <UIScrollViewDelegate, MKMapViewDelegate, MKAnnotation, EKEventEditViewDelegate>
 
-@property NSString *eventID;
-@property NSString *distanceString;
-@property UIImage *image;
-@property PFObject *event;
+@property (weak) id <ExpandedCardVCDelegate> delegate;
+
+@property (nonatomic, strong) NSString *eventID;
+@property (nonatomic, strong) NSString *distanceString;
+@property (nonatomic, strong) UIImage *image;
+@property (nonatomic, strong) PFObject *event;
+
+@property BOOL isFromGroup;
+@property (nonatomic, strong) PFObject *rsvpObject;
+@property (nonatomic, strong) PFObject *groupObject;
+@property (nonatomic, strong) PFObject *groupEventObject;
+@property (nonatomic, strong) LYRConversation *convo;
+@property (nonatomic, strong) NSArray *fbids;
 
 @property BOOL presentedAsModal;
 

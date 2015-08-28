@@ -13,5 +13,7 @@
 - (id)initWithText:(NSString *)text type:(NSString *)type;
 
 @property (nonatomic, strong) NSString *bubbleType;
+@property (nonatomic, strong) UILabel *textLabel;
+
 
 @end

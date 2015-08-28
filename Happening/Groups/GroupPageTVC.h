@@ -13,6 +13,7 @@
 
 @interface GroupPageTVC : UIViewController <CLLocationManagerDelegate>
 
+@property (strong, nonatomic) IBOutlet UIView *noEventsView;
 @property (strong, nonatomic) IBOutlet UIButton *chatBubble;
 @property (assign) NSString *groupId;
 @property (assign) NSString *groupName;
@@ -22,10 +23,13 @@
 @property (assign) BOOL showDetails;
 @property (assign) BOOL groupDidLoad;
 
+@property (assign) BOOL isModal;
+
 @property (assign) BOOL loadTopView;
 
 @property (nonatomic, strong) NSArray *userDicts;
 
 @property (strong, nonatomic) IBOutlet UIView *containerView;
+@property (strong, nonatomic) IBOutlet UIButton *viewPastEventsButton;
 
 @end

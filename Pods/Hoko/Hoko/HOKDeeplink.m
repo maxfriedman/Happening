@@ -10,14 +10,20 @@
 
 #import "HOKURL.h"
 #import "HOKUtils.h"
+#import "HOKError.h"
+#import "HOKLogger.h"
 #import "HOKDevice.h"
 #import "HOKRouting.h"
+#import "HOKNetworking.h"
 #import "HOKDeeplink+Private.h"
 #import "HOKNetworkOperationQueue.h"
 
 NSString *const HOKDeeplinkSmartlinkClickIdentifierKey = @"_hk_cid";
+NSString *const HOKDeeplinkSmartlinkIdentifierKey = @"_hk_sid";
+NSString *const HOKDeeplinkMetadataKey = @"_hk_md";
 
 NSString *const HOKDeeplinkOpenPath = @"smartlinks/open";
+NSString *const HOKDeeplinkMetadataPath = @"smartlinks/metadata";
 
 @interface HOKDeeplink ()
 
@@ -27,20 +33,52 @@ NSString *const HOKDeeplinkOpenPath = @"smartlinks/open";
 @property (nonatomic, strong, readonly) NSString *sourceApplication;
 @property (nonatomic, strong) NSMutableDictionary *urls;
 
-
 @end
 
 @implementation HOKDeeplink
 
-#pragma mark - Public Static Initializer
+#pragma mark - Public Static Initializers
+
++ (HOKDeeplink *)deeplink
+{
+    return [self deeplinkWithRoute:nil];
+}
+
++ (HOKDeeplink *)deeplinkWithRoute:(NSString *)route
+{
+    return [self deeplinkWithRoute:route
+                   routeParameters:nil];
+}
+
++ (HOKDeeplink *)deeplinkWithRoute:(NSString *)route
+                   routeParameters:(NSDictionary *)routeParameters
+{
+    return [self deeplinkWithRoute:route
+                   routeParameters:routeParameters
+                   queryParameters:nil];
+}
+
+
++ (HOKDeeplink *)deeplinkWithRoute:(NSString *)route
+                   routeParameters:(NSDictionary *)routeParameters
+                   queryParameters:(NSDictionary *)queryParameters
+{
+    return [self deeplinkWithRoute:route
+                   routeParameters:routeParameters
+                   queryParameters:queryParameters
+                          metadata:nil];
+}
+
 + (HOKDeeplink *)deeplinkWithRoute:(NSString *)route
                   routeParameters:(NSDictionary *)routeParameters
                   queryParameters:(NSDictionary *)queryParameters
+                          metadata:(NSDictionary *)metadata
 {
-    return [HOKDeeplink deeplinkWithURLScheme:nil
+    return [self deeplinkWithURLScheme:nil
                                        route:route
                              routeParameters:routeParameters
-                             queryParameters:queryParameters
+                       queryParameters:queryParameters
+                              metadata:metadata
                            sourceApplication:nil
                                  deeplinkURL:nil];
 }
@@ -50,6 +88,7 @@ NSString *const HOKDeeplinkOpenPath = @"smartlinks/open";
                                 route:(NSString *)route
                       routeParameters:(NSDictionary *)routeParameters
                       queryParameters:(NSDictionary *)queryParameters
+                              metadata:(NSDictionary *)metadata
                     sourceApplication:(NSString *)sourceApplication
                           deeplinkURL:(NSString *)deeplinkURL
 {
@@ -57,31 +96,26 @@ NSString *const HOKDeeplinkOpenPath = @"smartlinks/open";
                                                            route:route
                                                  routeParameters:routeParameters
                                                  queryParameters:queryParameters
+                                                          metadata:metadata
                                                sourceApplication:sourceApplication
                                                      deeplinkURL:deeplinkURL];
+    if ([HOKDeeplink matchRoute:deeplink.route withRouteParameters:deeplink.routeParameters] || (route == nil && routeParameters == nil && queryParameters == nil && metadata == nil))
+        return deeplink;
     
-    if(![HOKDeeplink matchRoute:deeplink.route withRouteParameters:deeplink.routeParameters])
-        return nil;
-    
-    return deeplink;
+    return nil;
 }
 
 #pragma mark - Private Initializer
-- (instancetype)initWithRoute:(NSString *)route
-              routeParameters:(NSDictionary *)routeParameters
-              queryParameters:(NSDictionary *)queryParameters
+- (instancetype)init
 {
-    return [self initWithURLScheme:nil
-                             route:route
-                   routeParameters:routeParameters
-                   queryParameters:queryParameters
-                 sourceApplication:nil
-                       deeplinkURL:nil];
+    return [self initWithURLScheme:nil route:nil routeParameters:nil queryParameters:nil metadata:nil sourceApplication:nil deeplinkURL:nil];
 }
+
 - (instancetype)initWithURLScheme:(NSString *)urlScheme
                             route:(NSString *)route
                   routeParameters:(NSDictionary *)routeParameters
                   queryParameters:(NSDictionary *)queryParameters
+                         metadata:(NSDictionary *)metadata
                 sourceApplication:(NSString *)sourceApplication
                       deeplinkURL:(NSString *)deeplinkURL
 {
@@ -91,6 +125,11 @@ NSString *const HOKDeeplinkOpenPath = @"smartlinks/open";
         _route = route;
         _routeParameters = routeParameters;
         _queryParameters = queryParameters;
+        if ([HOKDeeplink validateMetadataDictionary:metadata]){
+            _metadata = metadata;
+        } else {
+            HOKErrorLog([HOKError invalidJSONMetadata]);
+        }
         _sourceApplication = sourceApplication;
         _urls = [@{} mutableCopy];
         _deeplinkURL = deeplinkURL;
@@ -130,12 +169,12 @@ NSString *const HOKDeeplinkOpenPath = @"smartlinks/open";
 - (NSString *)stringForPlatform:(HOKDeeplinkPlatform)platform
 {
     switch (platform) {
-        case HOKDeeplinkPlatformiPhone:
+        case HOKDeeplinkPlatformIPhone:
             return @"iphone";
-        case HOKDeeplinkPlatformiPad:
+        case HOKDeeplinkPlatformIPad:
             return @"ipad";
-        case HOKDeeplinkPlatformiOSUniversal:
-            return @"ios";
+        case HOKDeeplinkPlatformIOSUniversal:
+            return @"universal";
         case HOKDeeplinkPlatformAndroid:
             return @"android";
         case HOKDeeplinkPlatformWeb:
@@ -150,15 +189,35 @@ NSString *const HOKDeeplinkOpenPath = @"smartlinks/open";
     return self.urls.count > 0;
 }
 
+- (void)setMetadata:(NSDictionary *)metadata
+{
+    if ([HOKDeeplink validateMetadataDictionary:metadata]){
+        _metadata = metadata;
+    } else {
+        HOKErrorLog([HOKError invalidJSONMetadata]);
+    }
+}
+
 #pragma mark - Campaign Identifiers
-- (NSString *)smartlinkOpenIdentifier
+- (NSString *)smartlinkClickIdentifier
 {
     return [self.queryParameters objectForKey:HOKDeeplinkSmartlinkClickIdentifierKey];
 }
 
+- (NSString *)smartlinkIdentifier
+{
+    return [self.queryParameters objectForKey:HOKDeeplinkSmartlinkIdentifierKey];
+}
+
+
 - (BOOL)isSmartlink
 {
-    return self.smartlinkOpenIdentifier != nil;
+    return self.smartlinkClickIdentifier || self.smartlinkIdentifier;
+}
+
+- (BOOL)needsMetadata
+{
+    return [self.queryParameters objectForKey:HOKDeeplinkMetadataKey] && !self.metadata;
 }
 
 #pragma mark - Networking
@@ -174,21 +233,37 @@ NSString *const HOKDeeplinkOpenPath = @"smartlinks/open";
     }
 }
 
+- (void)requestMetadataWithToken:(NSString *)token completion:(void(^)(void))completion
+{
+    if (self.needsMetadata) {
+        [HOKNetworking requestToPath:[HOKNetworkOperation urlFromPath:HOKDeeplinkMetadataPath] parameters:[self metadataJSON] token:token successBlock:^(id json) {
+            _metadata = json;
+            completion();
+        } failedBlock:^(NSError *error) {
+            HOKErrorLog(error);
+            completion();
+        }];
+    }
+}
+
 #pragma mark - Serialization
 - (NSDictionary *)json
 {
     return @{@"route": [HOKUtils jsonValue:self.route],
              @"routeParameters": [HOKUtils jsonValue:self.routeParameters],
-             @"queryParameters": [HOKUtils jsonValue:self.queryParameters]};
+             @"queryParameters": [HOKUtils jsonValue:self.queryParameters],
+             @"metadata": [HOKUtils jsonValue:self.metadata]};
 }
 
 - (NSDictionary *)generateSmartlinkJSON
 {
     if (!self.hasURLs) {
-        return @{@"uri": [HOKUtils jsonValue:self.url]};
+        return @{@"uri": [HOKUtils jsonValue:self.url],
+                 @"metadata": [HOKUtils jsonValue:self.metadata]};
     } else {
         return @{@"uri": [HOKUtils jsonValue:self.url],
-                 @"routes": self.urls};
+                 @"routes": self.urls,
+                 @"metadata": [HOKUtils jsonValue:self.metadata]};
     }
     
 }
@@ -196,13 +271,23 @@ NSString *const HOKDeeplinkOpenPath = @"smartlinks/open";
 
 - (NSDictionary *)smartlinkJSON
 {
-    return @{@"deeplink": [HOKUtils jsonValue:self.deeplinkURL]};
+    return @{@"deeplink": [HOKUtils jsonValue:self.deeplinkURL],
+             @"referrer": [HOKUtils jsonValue:self.sourceApplication],
+             @"uid": [HOKUtils jsonValue:[HOKDevice device].uid]};
+}
+
+- (NSDictionary *)metadataJSON {
+  if (self.smartlinkClickIdentifier) {
+    return @{HOKDeeplinkSmartlinkClickIdentifierKey: self.smartlinkClickIdentifier};
+  } else {
+    return @{HOKDeeplinkSmartlinkIdentifierKey: self.smartlinkIdentifier};
+  }
 }
 
 #pragma mark - Description
 - (NSString *)description
 {
-    return [NSString stringWithFormat:@"<HOKDeeplink> URLScheme='%@' route='%@' routeParameters='%@' queryParameters='%@' sourceApplication='%@'",self.urlScheme, self.route, self.routeParameters, self.queryParameters, self.sourceApplication];
+    return [NSString stringWithFormat:@"<HOKDeeplink> URLScheme='%@' route='%@' routeParameters='%@' queryParameters='%@' metadata='%@' sourceApplication='%@'",self.urlScheme, self.route, self.routeParameters, self.queryParameters, self.metadata, self.sourceApplication];
 }
 
 #pragma mark - Helper
@@ -221,6 +306,36 @@ NSString *const HOKDeeplinkOpenPath = @"smartlinks/open";
         }
     }
     return YES;
+}
+
++ (BOOL)validateMetadataDictionary:(NSDictionary *)metadataDictionary
+{
+    if (metadataDictionary && ![metadataDictionary isKindOfClass:[NSDictionary class]]) {
+        return NO;
+    }
+    
+    for (id object in [metadataDictionary allValues]) {
+        if (![self validateMetadataObject:object]) {
+            return NO;
+        }
+    }
+    return YES;
+}
+
++ (BOOL)validateMetadataObject:(id)object
+{
+    if ([object isKindOfClass:[NSDictionary class]]) {
+        return [self validateMetadataDictionary:object];
+    } else if ([object isKindOfClass:[NSArray class]]) {
+        for (id arrayObject in object) {
+            if (![self validateMetadataObject:arrayObject]) {
+                return NO;
+            }
+        }
+        return YES;
+    } else {
+        return [object isKindOfClass:[NSNumber class]] || [object isKindOfClass:[NSString class]] || [object isKindOfClass:[NSNull class]];
+    }
 }
 
 @end

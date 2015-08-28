@@ -31,11 +31,12 @@
 #import "ChecklistModalVC.h"
 #import "UIImage+ImageEffects.h"
 #import "CreateHappeningView.h"
+#import "InviteFromCreateView.h"
 
 #define MCANIMATE_SHORTHAND
 #import <POP+MCAnimate.h>
 
-@interface DragViewController () <ChoosingLocationDelegate, dropdownSettingsViewDelegate, inviteHomiesDelegate , ModalPopupDelegate>
+@interface DragViewController () <ChoosingLocationDelegate, dropdownSettingsViewDelegate, inviteHomiesDelegate , ModalPopupDelegate, CreateHappeningViewDelegate>
 
 @property (strong, nonatomic) DraggableViewBackground *draggableBackground;
 @property (strong, nonatomic) CreateHappeningView *createHappeningView;
@@ -74,13 +75,26 @@
     RKSwipeBetweenViewControllers *rk;
 }
 
-@synthesize shareButton, draggableBackground, createHappeningView, xButton, checkButton, delegate, scrollView, mySensitiveRect, cardView, settingsView, dropdownExpanded, tutIsShown, backgroundImageView;
+@synthesize shareButton, draggableBackground, createHappeningView, xButton, checkButton, delegate, scrollView, mySensitiveRect, cardView, settingsView, dropdownExpanded, tutIsShown, backgroundImageView, lastRefresh;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+    /*
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle: @"TESTING" message: @"123" delegate: nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+    [alert show];
 
+    [PFCloud callFunctionInBackground:@"modifyUser"
+                       withParameters:@{}
+                                block:^(NSString *result, NSError *error) {
+                                    if (!error) {
+                                        NSLog(@"## %@", result);
+                                    }
+                                }];
+    */
+     
     [[NSNotificationCenter defaultCenter]addObserver:self
-                                            selector:@selector(refreshData)
+                                            selector:@selector(checkBeforeRefresh)
                                                 name:UIApplicationDidBecomeActiveNotification
                                               object:nil];
     
@@ -238,6 +252,9 @@
             tutorialScreens = [[TutorialDragView alloc] initWithFrame:CGRectMake(18, 18 + 8 + 45, 284, 350)];
             tutorialScreens.myViewController = self;
             [scrollView addSubview:tutorialScreens];
+            
+            self.filterButton.enabled = NO;
+            self.createButton.enabled = NO;
     
             /*
             UITapGestureRecognizer *singleFingerTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tutorialCardTapped:)];
@@ -253,12 +270,19 @@
 
     }
     else if ([defaults boolForKey:@"refreshData"]) {
-                
+        
+        self.filterButton.enabled = YES;
         tutIsShown = NO;
         [self refreshData];
         
     } else if (self.isCardExpanded) {
         draggableBackground.dragView.panGestureRecognizer.enabled = NO;
+    }
+    
+    if ([PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
+        self.createButton.enabled = NO;
+    } else {
+        self.createButton.enabled = YES;
     }
 }
 
@@ -272,6 +296,17 @@
 }
  */
 
+- (void)checkBeforeRefresh {
+    
+    NSLog(@"$$ %f", [[NSDate date] timeIntervalSinceDate:lastRefresh]);
+    
+    // Refresh if > 5 mins since last refresh
+    if ([[NSDate date] timeIntervalSinceDate:lastRefresh] > 5*60) {
+        [self refreshData];
+    }
+    
+}
+
 -(void)refreshData {
     
     // Double-check :)
@@ -284,7 +319,7 @@
     
    // NSLog(@"===> %d, %lu", [[PFUser currentUser][@"hasLaunched"] isEqualToNumber:@NO]/*,rk.currentPageIndex */);
     
-    if ([[PFUser currentUser][@"hasLaunched"] boolValue] == YES /* && rk.currentPageIndex == 1 /* && isReachable */) {
+    if ([[PFUser currentUser][@"hasLaunched"] boolValue] == YES && !self.isCreatingHappening && appDelegate.mh.selectedIndex == 0 /* && isReachable */) {
         
         if (self.dropdownExpanded) {
             [self dropdownPressed];
@@ -294,13 +329,12 @@
         checkButton.center = CGPointMake(1300, checkButton.center.y);
     
         NSLog(@"Refreshing data...");
-        
-        [SVProgressHUD setViewForExtension:self.view];
-        [SVProgressHUD setOffsetFromCenter:UIOffsetMake(0, -66)];
 
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             // time-consuming task
             dispatch_async(dispatch_get_main_queue(), ^{
+                [SVProgressHUD setViewForExtension:self.view];
+                [SVProgressHUD setOffsetFromCenter:UIOffsetMake(0, -66)];
                 [SVProgressHUD showWithMaskType:SVProgressHUDMaskTypeGradient];
                 [SVProgressHUD setFont:[UIFont fontWithName:@"OpenSans" size:15.0]];
                 [SVProgressHUD setStatus:@"Loading Happenings"];
@@ -374,7 +408,9 @@
         [defaults synchronize];
     
         delegate = draggableBackground;
-    
+        
+        lastRefresh = [NSDate date];
+        
         self.mySensitiveRect = CGRectMake(0, 0, 0, 0);
         //UITapGestureRecognizer *gr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleGesture:)];
         //[scrollView addGestureRecognizer:gr];
@@ -511,17 +547,25 @@
     //[draggableBackground cardSwipedLeft:draggableBackground.dragView];
     
     [self performSelector:@selector(turnOnButtonInteraction) withObject:nil afterDelay:0.4];
-
+    
 }
 
 - (void)swipeDown:(UIView *)card {
     
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+    ModalPopup *popup = [storyboard instantiateViewControllerWithIdentifier:@"ModalPopup"];
+    popup.eventObject = draggableBackground.dragView.eventObject;
+    popup.eventDateString = draggableBackground.dragView.date.text;
+    popup.eventImage = draggableBackground.dragView.eventImage.image;
+    popup.type = @"going";
+    [self showModalPopup:popup];
+    /*
     DraggableView *c = (DraggableView *)card;
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
     ChecklistModalVC *controller = [storyboard instantiateViewControllerWithIdentifier:@"checklist"];
     controller.event = c.eventObject;
     [self mh_presentSemiModalViewController:controller animated:YES];
-    
+    */
 }
 
 - (void)turnOnButtonInteraction {
@@ -533,7 +577,6 @@
 - (void)expandCurrentView {
     
     //scrollView.delaysContentTouches = NO;
-
     
     if (self.isCardExpanded == NO && draggableBackground.isLoaded) {
         
@@ -572,6 +615,8 @@
 
             xButton.center = CGPointMake(-1000, xButton.center.y);
             checkButton.center = CGPointMake(1300, checkButton.center.y);
+            
+            draggableBackground.dragView.subtitle.alpha = 1;
             
             /*
             if (extraDescHeight > 85) {
@@ -629,7 +674,7 @@
             xButton.center = CGPointMake(21.75, xButton.center.y);
             checkButton.center = CGPointMake(302.25, checkButton.center.y);
             
-            draggableBackground.dragView.moreButton.alpha = 0;
+            //draggableBackground.dragView.moreButton.alpha = 0;
 
         } completion:^(BOOL finished) {
             
@@ -668,6 +713,8 @@
         
         NSLog(@"Creating Happening!");
         
+        [SVProgressHUD dismiss];
+        
         [UIView beginAnimations:nil context:nil];
         [UIView setAnimationDuration:0.8];
         [UIView setAnimationDelegate:self];
@@ -686,6 +733,7 @@
         createHappeningView = [[CreateHappeningView alloc]initWithFrame:self.view.bounds];
         [createHappeningView addDragView];
         createHappeningView.vc = self;
+        createHappeningView.delegate = self;
         [self.view addSubview:createHappeningView];
         
         [UIView animateWithDuration:0.4 animations:^{
@@ -716,8 +764,6 @@
         [UIView setAnimationTransition:UIViewAnimationTransitionFlipFromLeft forView:self.view cache:YES];
         [UIView commitAnimations];
         
-        [self refreshData];
-        
         [self.scrollView addSubview:draggableBackground];
         [[self.view viewWithTag:32] insertSubview:backgroundImageView belowSubview:scrollView];
         [createHappeningView removeFromSuperview];
@@ -738,7 +784,9 @@
     
      // invert the front view state
     self.isCreatingHappening =! self.isCreatingHappening;
-    
+    if (!self.isCreatingHappening)
+        [self refreshData];
+
     
 }
 
@@ -749,6 +797,11 @@
     self.createButton.userInteractionEnabled = YES;
     [createHappeningView performSelector:@selector(animatingDidStop)];
     
+}
+
+- (void)inviteFromCreateViewTapped {
+    
+    [self performSegueWithIdentifier:@"toCreateInvite" sender:self];
 }
 
 - (void)addSubviewsToCard:(DraggableView *)card {
@@ -1228,6 +1281,9 @@
     [[PFUser currentUser] saveEventually];
     
     settingsView.userInteractionEnabled = YES;
+    self.filterButton.enabled = YES;
+    if (![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]])
+        self.createButton.enabled = YES;
     
     if (!var) {
         dropdownExpanded = YES;
@@ -1597,7 +1653,14 @@
         vc.titleText = draggableBackground.dragView.title.text;
         vc.subtitleText = draggableBackground.dragView.subtitle.text;
         vc.locationText = draggableBackground.dragView.location.text;
-    } 
+        
+    } else if ([segue.identifier isEqualToString:@"toCreateInvite"]) {
+        
+        InviteFromCreateView *vc = (InviteFromCreateView *)[[segue destinationViewController] topViewController];
+        vc.delegate = createHappeningView;
+        //vc.convo = self.convo;
+        //vc.group = self.group;
+    }
     
     /*
     if ([segue.identifier isEqualToString: @"toSettings"]) {

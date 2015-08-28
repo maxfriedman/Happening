@@ -9,6 +9,7 @@
 #import "SettingsChoosingLoc.h"
 #import "RKDropdownAlert.h"
 #import "LocationConstants.h"
+#import <MessageUI/MessageUI.h>
 
 #define SYSTEM_VERSION_EQUAL_TO(v)                  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedSame)
 #define SYSTEM_VERSION_GREATER_THAN(v)              ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedDescending)
@@ -16,7 +17,7 @@
 #define SYSTEM_VERSION_LESS_THAN(v)                 ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedAscending)
 #define SYSTEM_VERSION_LESS_THAN_OR_EQUAL_TO(v)     ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedDescending)
 
-@interface SettingsChoosingLoc () <UISearchDisplayDelegate, UISearchBarDelegate, /*UISearchResultsUpdating,*/ UISearchControllerDelegate, CLLocationManagerDelegate>
+@interface SettingsChoosingLoc () <UISearchDisplayDelegate, UISearchBarDelegate, /*UISearchResultsUpdating,*/ UISearchControllerDelegate, CLLocationManagerDelegate, MFMailComposeViewControllerDelegate>
 
 @end
 
@@ -176,15 +177,16 @@
         }*/
         
         cell.textLabel.text = cityNames[indexPath.row];
-        cell.imageView.image = cityImages[indexPath.row];
+        //cell.imageView.image = cityImages[indexPath.row];
 
+        /*
         CGSize itemSize = CGSizeMake(40, 40);
         UIGraphicsBeginImageContextWithOptions(itemSize, NO, UIScreen.mainScreen.scale);
         CGRect imageRect = CGRectMake(0.0, 0.0, itemSize.width, itemSize.height);
         [cell.imageView.image drawInRect:imageRect];
         cell.imageView.image = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
-        
+        */
         
         return cell;
     }
@@ -212,6 +214,7 @@
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"request"];
     if (cell == nil) {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:@"request"];
+        
     }
     
     
@@ -322,7 +325,7 @@
         if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0")) {
             
             NSLog(@" ====== iOS 8 ====== ");
-            [locManager requestAlwaysAuthorization];
+            [locManager requestWhenInUseAuthorization];
         }
         
         locManager.desiredAccuracy=kCLLocationAccuracyBest;
@@ -434,6 +437,52 @@
         [RKDropdownAlert title:@"Hey there" message:@"Please choose a location before continuing" backgroundColor:[UIColor redColor] textColor:[UIColor whiteColor]];
     }
     
+}
+
+- (IBAction)requestCityPressed:(id)sender {
+    
+    // Email Subject
+    NSString *emailTitle = [NSString stringWithFormat:@"New city request from user: %@", user.objectId];
+    // Email Content
+    NSString *messageBody = @"Thanks for trying out Happening! We're working hard to support more cities in the coming months. Where should we go next?! (you can type below this message)";
+    // To address
+    NSArray *toRecipents = [NSArray arrayWithObject:@"hello@happening.city"];
+    
+    MFMailComposeViewController *mc = [[MFMailComposeViewController alloc] init];
+    mc.mailComposeDelegate = self;
+    [mc setSubject:emailTitle];
+    [mc setMessageBody:messageBody isHTML:NO];
+    [mc setToRecipients:toRecipents];
+    
+    // Present mail view controller on screen
+    [self presentViewController:mc animated:YES completion:nil];
+}
+
+- (void) mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError *)error
+{
+    switch (result)
+    {
+        case MFMailComposeResultCancelled:
+            NSLog(@"Mail cancelled");
+            break;
+        case MFMailComposeResultSaved:
+            NSLog(@"Mail saved");
+            break;
+        case MFMailComposeResultSent:
+            NSLog(@"Mail sent");
+            
+           [RKDropdownAlert title:@"You rock!" message:@"Thanks for your request. We'll get back to you soon!" backgroundColor:[UIColor colorWithRed:28.0/255 green:73.0/255 blue:134.0/255 alpha:1.0] textColor:[UIColor whiteColor]];
+            
+            break;
+        case MFMailComposeResultFailed:
+            NSLog(@"Mail sent failure: %@", [error localizedDescription]);
+            break;
+        default:
+            break;
+    }
+    
+    // Close the Mail Interface
+    [self dismissViewControllerAnimated:YES completion:NULL];
 }
 
 @end

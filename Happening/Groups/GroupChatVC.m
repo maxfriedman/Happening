@@ -11,8 +11,12 @@
 #import "UserManager.h"
 #import "InviteCollectionViewCell.h"
 #import "SystemCollectionViewCell.h"
+#import "ExpandedCardVC.h"
+#import <CoreText/CoreText.h>
+#import "GroupPageTVC.h"
+#import "GroupDetailsTVC.h"
 
-@interface GroupChatVC () <ATLConversationViewControllerDataSource, ATLConversationViewControllerDelegate, LYRQueryControllerDelegate>
+@interface GroupChatVC () <ATLConversationViewControllerDataSource, ATLConversationViewControllerDelegate, LYRQueryControllerDelegate, GroupDetailsTVCDelegate>
 
 @property (nonatomic) NSDateFormatter *dateFormatter;
 
@@ -20,6 +24,7 @@
 
 @implementation GroupChatVC {
     AppDelegate *appDelegate;
+    UIButton *middleButton;
 }
 
 @synthesize userDicts;
@@ -31,6 +36,8 @@
     self.delegate = self;
     //self.addressBarController.delegate = self;
     
+    self.layerClient.autodownloadMIMETypes = nil;
+    
     // Setup the dateformatter used by the dataSource.
     self.dateFormatter = [[NSDateFormatter alloc] init];
     self.dateFormatter.dateStyle = NSDateFormatterShortStyle;
@@ -38,7 +45,9 @@
     
     appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
     self.layerClient = appDelegate.layerClient;
+    appDelegate.conversationOpen = YES;
 
+    /*
     if (userDicts.count == 2 && [self.groupObject[@"isDefaultImage"] boolValue] == YES) {
         
         //self.title = self.groupObject[@"name"];
@@ -67,28 +76,90 @@
     } else {
     
         UIView *navigationView = [[UIView alloc]initWithFrame:CGRectMake(0,0,self.view.frame.size.width,self.navigationController.navigationBar.frame.size.height)];
-        UIButton *middleButton = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 35, 35)];
+        //UIButton *middleButton = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 35, 35)];
+        UIButton *middleButton = [[UIButton alloc]initWithFrame:CGRectMake(50, 0, 220, 35)];
         middleButton.center = navigationView.center;
         middleButton.layer.cornerRadius = 17.5;
         middleButton.layer.masksToBounds = YES;
-        
+     
         PFFile *file = self.groupObject[@"avatar"];
         [file getDataInBackgroundWithBlock:^(NSData *data, NSError *error) {
             [middleButton setImage:[UIImage imageWithData:data] forState:UIControlStateNormal];
         }];
         
+        [middleButton setTitle:self.groupObject[@"name"] forState:UIControlStateNormal];
+        [middleButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        middleButton.titleLabel.font = [UIFont fontWithName:@"OpenSans" size:16.0];
+        
         middleButton.backgroundColor = [UIColor clearColor]; //[UIColor colorWithRed:41.0/255 green:181.0/255 blue:1.0 alpha:1.0];;
         //[middleButton addTarget:self action:@selector(refreshData) forControlEvents:UIControlEventTouchUpInside];
         [navigationView addSubview:middleButton];
         self.navigationItem.titleView = navigationView;
+    }*/
+    
+    UIView *navigationView = [[UIView alloc]initWithFrame:CGRectMake(0,0,self.view.frame.size.width,self.navigationController.navigationBar.frame.size.height)];
+    //UIButton *middleButton = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 35, 35)];
+    
+    middleButton = [[UIButton alloc]initWithFrame:CGRectMake(50, 0, 220, 35)];
+    middleButton.center = navigationView.center;
+    //middleButton.layer.cornerRadius = 17.5;
+    //middleButton.layer.masksToBounds = YES;
+    /*
+     PFFile *file = self.groupObject[@"avatar"];
+     [file getDataInBackgroundWithBlock:^(NSData *data, NSError *error) {
+     [middleButton setImage:[UIImage imageWithData:data] forState:UIControlStateNormal];
+     }];*/
+    
+    [middleButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [middleButton setTitleColor:[UIColor groupTableViewBackgroundColor] forState:UIControlStateHighlighted];
+    middleButton.titleLabel.font = [UIFont fontWithName:@"OpenSans-Semibold" size:17.0];
+    
+    middleButton.backgroundColor = [UIColor clearColor]; //[UIColor colorWithRed:41.0/255 green:181.0/255 blue:1.0 alpha:1.0];;
+    //[middleButton addTarget:self action:@selector(refreshData) forControlEvents:UIControlEventTouchUpInside];
+    [navigationView addSubview:middleButton];
+    self.navigationItem.titleView = navigationView;
+    
+    NSString *name = self.groupObject[@"name"];
+    
+    if (userDicts.count == 2 && [self.groupObject[@"isDefaultName"] boolValue] == YES) {
+        
+        name = [name stringByReplacingOccurrencesOfString:[PFUser currentUser][@"firstName"] withString:@""];
+        name = [name stringByReplacingOccurrencesOfString:@"and" withString:@""];
+        name = [name stringByReplacingOccurrencesOfString:@" " withString:@""];
+        [middleButton setTitle:name forState:UIControlStateNormal];
+    
+    } else {
+        
+        [middleButton setTitle:name forState:UIControlStateNormal];
+        //[middleButton setTitle:self.groupObject[@"name"] forState:UIControlStateNormal];
+
     }
     
+    NSDictionary* attributes = @{
+                                 NSUnderlineStyleAttributeName: [NSNumber numberWithInt:NSUnderlineStyleSingle],
+                                 NSForegroundColorAttributeName: [UIColor whiteColor]
+                                 };
+    NSMutableAttributedString *attString = [[NSMutableAttributedString alloc] initWithString:name attributes:attributes];
+    //[middleButton setAttributedTitle:attString forState:UIControlStateNormal];
     
     
+    UIBarButtonItem *bb = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"hamburger"] style:UIBarButtonItemStylePlain target:self action:@selector(rightButtonPressed)];
+    self.navigationItem.rightBarButtonItem = bb;
+    
+    navigationView.userInteractionEnabled = YES;
+    
+    [middleButton addTarget:self action:@selector(toGroupDetails) forControlEvents:UIControlEventTouchUpInside];
     
     // Register custom cell class for star cell
     [self registerClass:[InviteCollectionViewCell class] forMessageCellWithReuseIdentifier:ATLMIMETypeCustomObjectReuseIdentifier];
     [self registerClass:[SystemCollectionViewCell class] forMessageCellWithReuseIdentifier:ATLMIMETypeSystemObjectReuseIdentifier];
+    
+    if (self.isModal) {
+        
+        UIBarButtonItem *x = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"letter x"] style:UIBarButtonItemStylePlain target:self action:@selector(leftButtonPressed)];
+        self.navigationItem.leftBarButtonItem = x;
+        
+    }
     
     /*
     PFQuery *noti = [PFQuery queryWithClassName:@"Notifications"];
@@ -122,6 +193,93 @@
     
         
     [self configureUI];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    
+    appDelegate.conversationOpen = NO;
+}
+
+- (void)leftButtonPressed {
+    
+    [self dismissViewControllerAnimated:YES completion:^{
+        [appDelegate.mh hideTabBar:NO];
+        appDelegate.conversationOpen = NO;
+    }];
+}
+
+- (void) toGroupDetails {
+    
+    NSLog(@"Middle button tapped!");
+    
+    UIStoryboard *storyboard =[UIStoryboard storyboardWithName:@"Main" bundle:nil];
+    GroupDetailsTVC *vc = [storyboard instantiateViewControllerWithIdentifier:@"groupDetails"];
+    vc.groupNameString = self.groupObject[@"name"];
+    vc.group = self.groupObject;
+
+    NSMutableArray *names = [NSMutableArray new];
+    NSMutableArray *ids = [NSMutableArray new];
+    NSMutableArray *parseIds = [NSMutableArray new];
+    
+    for (NSDictionary *dict in userDicts) {
+        
+        [names addObject:[dict valueForKey:@"name"]];
+        [ids addObject:[dict valueForKey:@"id"]];
+        [parseIds addObject:[dict valueForKey:@"parseId"]];
+        
+    }
+    vc.fbIds = ids;
+    vc.names = names;
+    vc.parseIds = parseIds;
+    vc.convo = self.conversation;
+    vc.delegate = self;
+    
+    [self.navigationController pushViewController:vc animated:YES];
+    
+}
+
+- (void) groupChanged {
+    
+    NSString *name = self.groupObject[@"name"];
+    [middleButton setTitle:name forState:UIControlStateNormal];
+
+    
+}
+
+- (void)rightButtonPressed {
+    
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+    GroupPageTVC *vc = [storyboard instantiateViewControllerWithIdentifier:@"GroupPage"];
+    
+    vc.conversation = self.conversation;
+    NSString *title = [[self.conversation metadata] objectForKey:@"title"];
+    if ([title isEqualToString:@"_indy_"]) {
+        vc.title = self.groupObject[@"name"];
+        vc.showDetails = NO;
+    } else {
+        vc.title = title;
+        vc.showDetails = YES;
+    }
+    
+    vc.group = self.groupObject;
+    
+    if (vc.group.isDataAvailable) {
+        
+        vc.userDicts = vc.group[@"user_dicts"];
+        
+    }
+    
+    vc.loadTopView = YES;
+    
+    if (!vc.group) {
+        
+        NSLog(@"Group hasn't loaded yet. Load in next VC");
+    }
+    
+    if (self.isModal) vc.isModal = YES;
+    
+    [self.navigationController pushViewController:vc animated:YES];
+
 }
 
 -(void)viewWillAppear:(BOOL)animated {
@@ -169,6 +327,45 @@
 - (void)conversationViewController:(ATLConversationViewController *)viewController didSelectMessage:(LYRMessage *)message
 {
     NSLog(@"Message selected");
+    LYRMessagePart *part = message.parts[0];
+    
+    if([part.MIMEType isEqual: ATLMimeTypeCustomObject])
+    {
+        NSArray *ips = [self.collectionView indexPathsForSelectedItems];
+        NSLog(@"%@", ips);
+        
+        NSIndexPath *ip = ips[0];
+        InviteCollectionViewCell *cell = (InviteCollectionViewCell *)[self.collectionView cellForItemAtIndexPath:ip];
+
+        CGPoint buttonPosition = [cell convertPoint:CGPointZero toView:self.collectionView];
+        NSLog(@"%f, %f", buttonPosition.x, buttonPosition.y);
+        
+        NSLog(@"segue: %@", cell.segueType);
+        
+        if ([cell.segueType isEqualToString:@"event"]) {
+            
+        } else {
+            
+        }
+        
+        UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+        ExpandedCardVC *vc = [storyboard instantiateViewControllerWithIdentifier:@"expandedCard"];
+        vc.event = cell.event;
+        vc.eventID = cell.event.objectId;
+        //vc.distanceString = cell.distanceLabel.text;
+        vc.image = cell.eventImageView.image;
+        vc.isFromGroup = YES;
+        vc.rsvpObject = cell.rsvpObject;
+        vc.groupObject = self.groupObject;
+        vc.convo = self.conversation;
+        vc.groupEventObject = cell.groupEvent;
+        vc.fbids = self.fbids;
+        [self.navigationController pushViewController:vc animated:YES];
+        //[self.navigationController performSegueWithIdentifier:@"toEvent" sender:self];
+        //NSIndexPath *indexPath = [self.tableView indexPathForRowAtPoint:buttonPosition];
+
+    } else if ([part.MIMEType isEqual: ATLMimeTypeSystemObject]) { }
+
 }
 
 #pragma mark - ATLConversationViewControllerDataSource methods
@@ -318,9 +515,8 @@
         
         NSLog(@"%f", heightFloat);
         
-        return heightFloat;
+        return heightFloat + 8;
         
-        return 40 + actualLineSize;
     }
         
         
@@ -384,15 +580,29 @@
         NSLog(@"Message send failed: %@", error);
     }
 }
+*/
 
-/*
 #pragma mark - Navigation
 
 // In a storyboard-based application, you will often want to do a little preparation before navigation
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     // Get the new view controller using [segue destinationViewController].
     // Pass the selected object to the new view controller.
+    
+    if ([segue.identifier isEqualToString:@"event"]) {
+        
+        NSArray *ips = [self.collectionView indexPathsForSelectedItems];
+        NSIndexPath *ip = ips[0];
+        InviteCollectionViewCell *cell = (InviteCollectionViewCell *)[self.collectionView cellForItemAtIndexPath:ip];
+        
+        ExpandedCardVC *vc = (ExpandedCardVC *)[segue destinationViewController];
+        vc.event = cell.event;
+        vc.eventID = cell.event.objectId;
+        //vc.distanceString = cell.distanceLabel.text;
+        vc.image = cell.eventImageView.image;
+        
+    }
 }
-*/
+
 
 @end

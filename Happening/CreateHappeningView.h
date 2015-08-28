@@ -9,8 +9,17 @@
 #import <UIKit/UIKit.h>
 #import <FastttCamera.h>
 #import "DragViewController.h"
+#import "InviteFromCreateView.h"
 
-@interface CreateHappeningView : UIView
+@protocol CreateHappeningViewDelegate <NSObject>
+
+- (void)inviteFromCreateViewTapped;
+
+@end
+
+@interface CreateHappeningView : UIView <InviteFromCreateViewDelegate>
+
+@property (weak) id <CreateHappeningViewDelegate> delegate;
 
 @property (nonatomic, strong) DragViewController *vc;
 

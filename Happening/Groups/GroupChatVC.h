@@ -15,7 +15,10 @@
 @property (assign) NSString *groupEventId;
 @property PFObject *groupEventObject;
 @property PFObject *groupObject;
+@property (nonatomic, strong) NSArray *fbids;
 
 @property NSArray *userDicts;
+
+@property BOOL isModal;
 
 @end

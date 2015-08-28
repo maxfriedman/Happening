@@ -97,7 +97,7 @@
      
      self.layer.masksToBounds = YES;
      */
-    FBSDKProfilePictureView *profPic = [[FBSDKProfilePictureView alloc] initWithFrame:self.myProfPicView.bounds];
+    FBSDKProfilePictureView *profPic = [[FBSDKProfilePictureView alloc] initWithFrame:myProfPicView.bounds];
     [myProfPicView addSubview:profPic];
     
     profPic.layer.cornerRadius = 20.0;

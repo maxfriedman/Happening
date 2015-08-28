@@ -16,6 +16,7 @@
 @property (strong, nonatomic) IBOutlet UILabel *eventLocationLabel;
 @property (strong, nonatomic) IBOutlet UILabel *eventDateLabel;
 @property (strong, nonatomic) IBOutlet UIImageView *eventImageView;
+@property (strong, nonatomic) IBOutlet UILabel *timestampLabel;
 
 @property (strong, nonatomic) PFObject *eventObject;
 

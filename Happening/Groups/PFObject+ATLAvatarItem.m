@@ -12,10 +12,16 @@
 
 - (NSString *)participantIdentifier
 {
-    if ([self isPersonalGroup]) {
+    if ([self[@"memberCount"] intValue] == 2) {
         
         NSDictionary *dict = [self getOtherUserDict];
-        return [dict valueForKey:@"name"];
+        
+        NSString *name = [dict valueForKey:@"name"];
+        name = [name stringByReplacingOccurrencesOfString:[PFUser currentUser][@"firstName"] withString:@""];
+        name = [name stringByReplacingOccurrencesOfString:@"and" withString:@""];
+        name = [name stringByReplacingOccurrencesOfString:@" " withString:@""];
+        
+        return name;
 
     }
 

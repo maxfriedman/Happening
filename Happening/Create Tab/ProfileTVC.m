@@ -18,7 +18,10 @@
 #import "ExpandedCardVC.h"
 #import "UIButton+Extensions.h"
 #import "FXBlurView.h"
+#import "UIImage+ImageEffects.h"
 #import "TimelineCell.h"
+#import "inviteHomiesCell.h"
+#import "ExternalProfileTVC.h"
 
 #define SYSTEM_VERSION_EQUAL_TO(v)                  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedSame)
 #define SYSTEM_VERSION_GREATER_THAN(v)              ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedDescending)
@@ -26,15 +29,34 @@
 #define SYSTEM_VERSION_LESS_THAN(v)                 ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedAscending)
 #define SYSTEM_VERSION_LESS_THAN_OR_EQUAL_TO(v)     ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedDescending)
 
-@interface ProfileTVC () <EventTVCDelegate, UITableViewDataSource, UITableViewDelegate>
+@interface ProfileTVC () <EventTVCDelegate, ExpandedCardVCDelegate, UITableViewDataSource, UITableViewDelegate>
 
 @property (strong, nonatomic) NSMutableDictionary *sections;
 @property (strong, nonatomic) NSArray *sortedDays;
 @property (strong, nonatomic) NSDateFormatter *sectionDateFormatter;
 @property (strong, nonatomic) NSDateFormatter *cellDateFormatter;
+@property (strong, nonatomic) NSArray *eventsArray;
+
+@property (strong, nonatomic) NSMutableDictionary *createdSections;
+@property (strong, nonatomic) NSArray *createdSortedDays;
+@property (strong, nonatomic) NSArray *createdEventsArray;
+
+@property (strong, nonatomic) NSMutableDictionary *friendSections;
+@property (strong, nonatomic) NSArray *sortedFriends;
+@property (strong, nonatomic) NSArray *sortedFriendsLetters;
+
+@property (strong, nonatomic) NSMutableArray *sortedTimelineIds;
+@property (strong, nonatomic) NSMutableDictionary *timelineDict;
+@property (strong, nonatomic) NSMutableDictionary *friendEventDict;
+
+@property (strong, nonatomic) NSMutableArray *pastEventsArray;
+
 @property (strong, nonatomic) IBOutlet UIButton *settingsButton;
 @property (strong, nonatomic) IBOutlet UISegmentedControl *segControl;
 @property (strong, nonatomic) FBSDKProfilePictureView *profPicView;
+
+@property (strong, nonatomic) IBOutletCollection(UIButton) NSArray *tabButtons;
+@property (strong, nonatomic) IBOutletCollection(UILabel) NSArray *tabLabels;
 
 - (NSDate *)dateAtBeginningOfDayForDate:(NSDate *)inputDate;
 
@@ -49,30 +71,30 @@
     CAGradientLayer *maskLayer;
     
     BOOL showUpcomingEvents;
+    BOOL pastEventsLoaded;
     FXBlurView *blurView;
     int tableVersion;
     BOOL showTimeline;
     BOOL isAnimatingScoreButton;
     
+    BOOL clearTable;
+    
     UILabel *scoreLabel;
-    
-    NSMutableArray *sortedTimelineIds;
-    NSMutableDictionary *timelineDict;
-    NSMutableDictionary *friendEventDict;
-    
     UILabel *navBarLabel;
+    UILabel *hapsLabel;
+    UIButton *leaderboardButton;
     
     UIButton *xButton;
     
-    int totalEventCount;
-    
     BOOL tableViewIsUp;
+    
+    NSString *selectedFriendId;
 
 }
 
 //@synthesize locManager, refreshControl;
 @synthesize sections, sortedDays, locManager;
-@synthesize nameLabel, detailLabel, profilePicImageView, settingsButton, containerView, profPicView, scoreButton;
+@synthesize nameLabel, detailLabel, profilePicImageView, settingsButton, containerView, profPicView, scoreButton, eventsArray, createdEventsArray, createdSections, createdSortedDays, pastEventsArray, timelineDict, friendEventDict, sortedTimelineIds;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -102,10 +124,10 @@
         
     }
     
-    self.tableView.delaysContentTouches = NO;
-    self.tableView.canCancelContentTouches = YES;
+    //self.tableView.delegate = self;
+    //self.tableView.dataSource = self;
     
-    profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(0, -64, 320, 320)];
+    profPicView = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(0, -32, 320, 320)];
     
     if (![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
         profPicView.profileID = currentUser[@"FBObjectID"];
@@ -149,10 +171,6 @@
 
     //[ bringSubviewToFront:nameLabel];
     //[self.view bringSubviewToFront:detailLabel];
-
-    
-    noEventsView = [[UIView alloc] initWithFrame: CGRectMake(0, 430, self.view.frame.size.width, 200)];
-    [self.view addSubview:noEventsView];
     
     /*
     if ([[NSUserDefaults standardUserDefaults] boolForKey:@"hasCreatedEvent"] == NO) {
@@ -196,15 +214,38 @@
     blurView.tintColor = [UIColor clearColor];
     [profPicView addSubview:blurView];
     
-    scoreLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 30, 100, 100)];
+    scoreLabel = [[UILabel alloc] initWithFrame:CGRectMake(10, 45, 150, 60)];
     scoreLabel.font = [UIFont fontWithName:@"OpenSans-Light" size:50.0];
-    scoreLabel.textAlignment = NSTextAlignmentCenter;
+    scoreLabel.textAlignment = NSTextAlignmentLeft;
     scoreLabel.textColor = [UIColor whiteColor];
     scoreLabel.text = [currentUser[@"score"] stringValue];
     scoreLabel.alpha = 0;
+    [scoreLabel sizeToFit];
     [containerView addSubview:scoreLabel];
     
-    tableVersion = 1;
+    hapsLabel = [[UILabel alloc] initWithFrame:CGRectMake(scoreLabel.frame.size.width + 5, 30, 70, 60)];
+    hapsLabel.font = [UIFont fontWithName:@"OpenSans-Light" size:20.0];
+    hapsLabel.textAlignment = NSTextAlignmentLeft;
+    hapsLabel.textColor = [UIColor whiteColor];
+    hapsLabel.text = @"haps";
+    hapsLabel.alpha = 1;
+    [scoreLabel addSubview:hapsLabel];
+    [hapsLabel sizeToFit];
+    hapsLabel.frame = CGRectMake(hapsLabel.frame.origin.x, scoreLabel.frame.size.height - hapsLabel.frame.size.height - 10, hapsLabel.frame.size.width, hapsLabel.frame.size.height);
+    
+    leaderboardButton = [[UIButton alloc] initWithFrame:CGRectMake(215, 10, 90, 30)];
+    [leaderboardButton setTitle:@"Leaderboard" forState:UIControlStateNormal];
+    [leaderboardButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    leaderboardButton.titleLabel.font = [UIFont fontWithName:@"OpenSans" size:13.0];
+    leaderboardButton.layer.masksToBounds = YES;
+    leaderboardButton.layer.cornerRadius = 4.0;
+    leaderboardButton.layer.borderWidth = 1.0;
+    leaderboardButton.layer.borderColor = [UIColor whiteColor].CGColor;
+    //leaderboardButton.center = CGPointMake(260, scoreLabel.center.y);
+    leaderboardButton.alpha = 0.0;
+    [leaderboardButton addTarget:self action:@selector(showLeaderboard) forControlEvents:UIControlEventTouchUpInside];
+    [self.scrollView addSubview:leaderboardButton];
+    
     
     timelineDict = [NSMutableDictionary dictionary];
     sortedTimelineIds = [NSMutableArray array];
@@ -230,9 +271,7 @@
     
     tableViewIsUp = NO;
     
-    
     showUpcomingEvents = YES;
-    totalEventCount = 0;
     
     self.sectionDateFormatter = [[NSDateFormatter alloc] init];
     [self.sectionDateFormatter setDateFormat:@"EEEE, MMMM d"];
@@ -240,8 +279,19 @@
     self.cellDateFormatter = [[NSDateFormatter alloc] init];
     [self.cellDateFormatter setDateStyle:NSDateFormatterNoStyle];
     [self.cellDateFormatter setTimeStyle:NSDateFormatterShortStyle];
-    self.sections = [NSMutableDictionary dictionary];
     
+    pastEventsArray = [NSMutableArray new];
+    pastEventsLoaded = NO;
+    
+    //self.scrollView.canCancelContentTouches = YES;
+    //self.scrollView.delaysContentTouches = NO;
+    
+}
+
+- (void)showLeaderboard {
+    
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Coming soon!" message:@"For now, you can keep earning points by swiping, sharing, creating, and inviting your friends to events on Happening." delegate:nil cancelButtonTitle:@"Sounds awesome" otherButtonTitles:nil, nil];
+    [alert show];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -254,31 +304,71 @@
     [[UIApplication sharedApplication] setStatusBarHidden:YES];
     [self.navigationController setNavigationBarHidden:YES animated:NO];
     
+    AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+    [appDelegate.mh hideCallout];
+    
+    currentUser = [PFUser currentUser];
+    
+    if (currentUser[@"score"] != nil) {
+        [scoreButton setTitle:[NSString stringWithFormat:@"%@", [currentUser[@"score"] stringValue]] forState:UIControlStateNormal];
+        scoreLabel.text = [NSString stringWithFormat:@"%@", [currentUser[@"score"] stringValue]];
+    } else {
+        [scoreButton setTitle:[NSString stringWithFormat:@"0"] forState:UIControlStateNormal];
+        scoreLabel.text = [NSString stringWithFormat:@"0"];
+    }
+    
+    UIButton *createdButton = self.tabButtons[0];
+    if (currentUser[@"createdCount"] != nil) {
+        [createdButton setTitle:[NSString stringWithFormat:@"%@", [currentUser[@"createdCount"] stringValue]] forState:UIControlStateNormal];
+    } else {
+        currentUser[@"createdCount"] = @0;
+        [createdButton setTitle:[NSString stringWithFormat:@"0"] forState:UIControlStateNormal];
+    }
+    
+    UIButton *eventsButton = self.tabButtons[1];
+    if (currentUser[@"eventCount"] != nil) {
+        [eventsButton setTitle:[NSString stringWithFormat:@"%@", [currentUser[@"eventCount"] stringValue]] forState:UIControlStateNormal];
+    } else {
+        currentUser[@"eventCount"] = @0;
+        [eventsButton setTitle:[NSString stringWithFormat:@"0"] forState:UIControlStateNormal];
+    }
+    
+    UIButton *friendsButton = self.tabButtons[2];
+    if (currentUser[@"friendCount"] != nil) {
+        [friendsButton setTitle:[NSString stringWithFormat:@"%@", [currentUser[@"friendCount"] stringValue]] forState:UIControlStateNormal];
+    } else {
+        currentUser[@"friendCount"] = @0;
+        [friendsButton setTitle:[NSString stringWithFormat:@"0"] forState:UIControlStateNormal];
+    }
+    
     if (!showTimeline) {
         
-        [self loadData];
-        /*
-        if (tableViewIsUp) {
-            
-            CGRect tableFrame = self.tableView.frame;
-            tableFrame.origin.y = 41 + 44 + 10;
-            self.tableView.frame = tableFrame;
-            
-            CGRect segContainerFrame = self.segContainerView.frame;
-            segContainerFrame.origin.y = 44 + 10;
-            self.segContainerView.frame = segContainerFrame;
-            
-        } else {
-            
-            self.segContainerView.frame = CGRectMake(0, 212, 320, 55);
-            self.tableView.frame = CGRectMake(0, 253, 320, 420);
-        }*/
+        switch (tableVersion) {
+            case 1: { // created by me
+                
+                [self loadCreatedEvents];
+                break;
+            }
+            case 2: { // my events
+                
+                [self loadData];
+                break;
+            }
+            case 3: { // friends
+                
+                [self loadFriends];
+                break;
+            }
+                
+            default: {
+                
+                [self loadData];
+                break;
+            }
+        }
         
     } else {
-        /*
-        self.tableView.frame = CGRectMake(0, 253-124-41+30, 320, self.tableView.frame.size.height - 22);
-        self.segContainerView.frame = CGRectMake(0, 212, 320, 55);
-        */
+        
     }
     
 }
@@ -289,6 +379,10 @@
 }
 
 - (void)loadData {
+    
+    NSLog(@"load...");
+    
+    tableVersion = 2;
     
     currentUser = [PFUser currentUser];
     
@@ -305,20 +399,34 @@
     [eventQuery orderByAscending:@"Date"];
     eventQuery.limit = 1000;
     
-    eventsArray = [NSArray new];
+    BOOL firstTime = NO;
     
-    totalEventCount = 0;
+    if (!eventsArray)
+        eventsArray = [NSArray new];
+    
+    if (!sections) {
+        self.sections = [NSMutableDictionary dictionary];
+        firstTime = YES;
+    } else {
+        [self.tableView reloadData];
+        /*
+        NSRange range = NSMakeRange(0, 0);
+        NSIndexSet *section = [NSIndexSet indexSetWithIndexesInRange:range];
+        [self.tableView reloadSections:section withRowAnimation:UITableViewRowAnimationNone];
+         */
+    }
     
     [eventQuery findObjectsInBackgroundWithBlock:^(NSArray *events, NSError *error) {
         
         if (!error) {
             
             eventsArray = events;
-            totalEventCount ++;
             
             BOOL didChange = NO;
         
             for (PFObject *event in events) {
+                
+                NSLog(@"%@", event.objectId);
                 
                 // Reduce event start date to date components (year, month, day)
                 NSDate *dateRepresentingThisDay = [self dateAtBeginningOfDayForDate:event[@"Date"]];
@@ -346,16 +454,18 @@
             // Create a sorted list of days
             NSArray *unsortedDays = [self.sections allKeys];
             self.sortedDays = [unsortedDays sortedArrayUsingSelector:@selector(compare:)];
-            
+            if (sortedDays == nil) sortedDays = [NSArray array];
             
             [noEventsView removeFromSuperview];
             
             
-            if (didChange) {
+            if (events.count == 0) {
+                [self loadPastEvents];
+            } else if (didChange || firstTime) {
+                [self.tableView reloadData];
                 [self loadSwipes];
             }
             
-            [self.tableView reloadData];
             /*if (tableViewIsUp) {
                 self.segContainerView.frame = CGRectMake(0, 212, 320, 55);
                 self.tableView.frame = CGRectMake(0, 253, 320, 420);
@@ -370,7 +480,7 @@
         } else {
             
             NSLog(@"%@", error);
-            [self noEvents];
+            [self loadPastEvents];
         }
     }];
     
@@ -383,10 +493,17 @@
     for (NSDictionary *dict in friends) {
         [friendIds addObject:[dict objectForKey:@"parseId"]];
     }
+    [friendIds addObject:currentUser.objectId];
     
     NSMutableArray *eventIds = [NSMutableArray array];
-    for (PFObject *event in eventsArray) {
-        [eventIds addObject:event.objectId];
+    if (tableVersion == 1) {
+        for (PFObject *event in createdEventsArray) {
+            [eventIds addObject:event.objectId];
+        }
+    } else {
+        for (PFObject *event in eventsArray) {
+            [eventIds addObject:event.objectId];
+        }
     }
     
     PFQuery *swipesQuery = [PFQuery queryWithClassName:@"Swipes"];
@@ -401,38 +518,68 @@
             //NSMutableArray *eventIds = [NSMutableArray array];
             //NSMutableDictionary *friendIdsForEventDict = [NSMutableDictionary dictionary];
             
-            friendEventDict = [NSMutableDictionary dictionary];
+            NSMutableArray *orderedObjects = [NSMutableArray arrayWithArray:swipes];
             
-            for (PFObject *swipe in swipes) {
+            if (!friendEventDict)
+                friendEventDict = [NSMutableDictionary dictionary];
+            
+            for (int i = 0; i < orderedObjects.count; i++) {
                 
-                NSLog(@"%@", swipe[@"username"]);
-                NSLog(@"%@", swipe[@"EventID"]);
+                PFObject *object = orderedObjects[i];
                 
-                NSMutableDictionary *dict = [friendEventDict objectForKey:swipe[@"EventID"]];
-                if (dict == nil) {
-                    dict = [NSMutableDictionary dictionary];
-                    [friendEventDict setObject:dict forKey:swipe[@"EventID"]];
-                    [dict setObject:[NSMutableArray arrayWithObject:swipe[@"FBObjectID"]] forKey:@"fbids"];
+                if ([object[@"FBObjectID"] isEqualToString:currentUser[@"FBObjectID"]]) {
                     
-                    FBSDKProfilePictureView *ppview = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(30 + 50 * 0, 93, 40, 40)];
-                    ppview.profileID = swipe[@"FBObjectID"];
-                    ppview.clipsToBounds = YES;
-                    ppview.layer.cornerRadius = 40/2;
+                    [orderedObjects removeObject:object];
+                    [orderedObjects insertObject:object atIndex:0];
+                    
+                    NSMutableDictionary *dict = [friendEventDict objectForKey:object[@"EventID"]];
+                    dict = [NSMutableDictionary dictionary];
+                    [friendEventDict setObject:dict forKey:object[@"EventID"]];
+                    [dict setObject:[NSMutableArray arrayWithObject:object[@"FBObjectID"]] forKey:@"fbids"];
+                    
+                    NSString *type;
+                    if ([object[@"isGoing"] boolValue] == YES) {
+                        type = @"going";
+                    } else {
+                        type = @"interested";
+                    }
+                    
+                    ProfilePictureView *ppview = [[ProfilePictureView alloc] initWithFrame:CGRectMake(30 + 50 * 0, 93, 40, 40) type:type fbid:object[@"FBObjectID"]];
+                    ppview.layer.borderColor = [UIColor whiteColor].CGColor;
                     ppview.tag = 9;
                     
                     [dict setObject:[NSMutableArray arrayWithObject:ppview] forKey:@"profilePictures"];
                     
-                } else {
+                } else if ([object[@"isGoing"] boolValue] == YES) {
+                    
+                    [orderedObjects removeObject:object];
+                    [orderedObjects insertObject:object atIndex:0];
+                }
+            }
+            
+            for (int i = 0; i < orderedObjects.count; i++) {
+                
+                PFObject *swipe = orderedObjects[i];
+                
+                NSMutableDictionary *dict = [friendEventDict objectForKey:swipe[@"EventID"]];
+                
+                if (![swipe[@"FBObjectID"] isEqualToString:currentUser[@"FBObjectID"]] && swipe[@"FBObjectID"] != nil) {
+                    
+                    NSString *type;
+                    if ([swipe[@"isGoing"] boolValue] == YES) {
+                        type = @"going";
+                    } else {
+                        type = @"interested";
+                    }
                     
                     NSMutableArray *array = [dict objectForKey:@"fbids"];
                     [array addObject:swipe[@"FBObjectID"]];
                     
                     NSMutableArray *picArray = [dict objectForKey:@"profilePictures"];
-                    if (picArray.count < 5) {
-                        FBSDKProfilePictureView *ppview = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(30 + 50 * picArray.count, 93, 40, 40)];
-                        ppview.profileID = swipe[@"FBObjectID"];
-                        ppview.clipsToBounds = YES;
-                        ppview.layer.cornerRadius = 40/2;
+                    if (picArray.count <= 5) {
+                        
+                        ProfilePictureView *ppview = [[ProfilePictureView alloc] initWithFrame:CGRectMake(30 + 50 * picArray.count, 93, 40, 40) type:type fbid:swipe[@"FBObjectID"]];
+                        ppview.layer.borderColor = [UIColor whiteColor].CGColor;
                         ppview.tag = 9;
                         [picArray addObject:ppview];
                     }
@@ -461,19 +608,7 @@
                 }
             } */
             
-            NSLog(@"%@",friendEventDict);
-            
             [self.tableView reloadData];
-            /*if (tableViewIsUp) {
-                self.segContainerView.frame = CGRectMake(0, 212, 320, 55);
-                self.tableView.frame = CGRectMake(0, 253, 320, 420);
-                navBarLabel.alpha = 0;
-                blurView.alpha = 0;
-                nameLabel.alpha = 1;
-                detailLabel.alpha = 1;
-                tableViewIsUp = NO;
-            }*/
-
         
         }
     }];
@@ -529,15 +664,44 @@
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     
+    if (clearTable) return 0;
+    
     if (showTimeline) return 1;
     
-    return self.sections.count;
+    if (tableVersion == 1) return self.createdSections.count;
+    
+    if (tableVersion == 2) {
+        
+        if ((!pastEventsLoaded || pastEventsArray.count == 0) && self.sections.count != 0) {
+            return self.sections.count;
+        } else {
+            NSLog(@"%lu", self.sections.count + 1);
+            return self.sections.count + 1;
+        }
+        
+    }
+    
+    if (tableVersion == 3) return self.friendSections.count;
+    
+    return 0;
 }
+
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
     
+    if (tableVersion == 2 && pastEventsLoaded && (section > self.sections.count-1 || self.sections.count == 0)) {
+        return @"Past Events";
+    }
+    
+    if (tableVersion == 3) {
+        NSString *letterRepresentingTheseFriends = [self.sortedFriendsLetters objectAtIndex:section];
+        return [letterRepresentingTheseFriends capitalizedString];
+    }
+    
     NSDate *eventDate = [[NSDate alloc]init];
-    eventDate = [self.sortedDays objectAtIndex:section];
+    if (sortedDays.count != 0) {
+        eventDate = [self.sortedDays objectAtIndex:section];
+    }
     
     if ((section == 0 || section == 1) && ([[eventDate beginningOfDay] isEqualToDate:[[NSDate date] beginningOfDay]])) {
         
@@ -562,101 +726,83 @@
 }
 
 - (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
-
+    
     if (!showTimeline) {
     
         UITableViewHeaderFooterView *view = [[UITableViewHeaderFooterView alloc] init];
+        return view;
+        
+    } else if (tableVersion == 3) {
+        
+        UIView *view = [[UIView alloc] initWithFrame:CGRectMake(0, 0, tableView.frame.size.width, 18)];
+        UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(10, 5, tableView.frame.size.width, 18)];
+        [label setFont:[UIFont fontWithName:@"OpenSans-Bold" size:12.0]];
+        label.textColor = [UIColor colorWithRed:0.0/255 green:176.0/255 blue:242.0/255 alpha:1.0];
+        [view addSubview:label];
+        [view setBackgroundColor:[UIColor whiteColor]]; //your background color...
+        NSString *string = [self.sortedFriendsLetters objectAtIndex:section];
+        [label setText:string];
+        
         return view;
     }
 
     return nil;
 }
 
-- (void)tableView:(UITableView *)tableView willDisplayHeaderView:(UIView *)view forSection:(NSInteger)section
-{
-    // Background color
-    //view.tintColor = [UIColor blackColor]
-    if (!showTimeline) {
-        
-        // Text Color
-        UITableViewHeaderFooterView *header = (UITableViewHeaderFooterView *)view;
-        [header.textLabel setTextColor:[UIColor darkTextColor]];
-        [header.textLabel setFont:[UIFont fontWithName:@"OpenSans-Semibold" size:14]];
-        
-        // For some reason the the sub label was being added to every header---> this removes it.
-        for (UIView *view in header.contentView.subviews) {
-            
-            if (view.tag == 99)
-                [view removeFromSuperview];
-        }
-        
-        if ([header.textLabel.text isEqualToString:@"TODAY"]) {
-            
-            UILabel *subDateLabel = [[UILabel alloc] initWithFrame:CGRectMake(67, 16, 100, 20)];
-            subDateLabel.textColor = [UIColor darkTextColor];
-            subDateLabel.font = [UIFont fontWithName:@"OpenSans" size:9];
-            subDateLabel.tag = 99;
-            
-            NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-            [formatter setDateStyle:NSDateFormatterShortStyle];
-            NSString *dateString = [formatter stringFromDate:[NSDate date]];
-            subDateLabel.text = dateString;
-            
-            [header.contentView addSubview:subDateLabel];
-        
-        } else if ([header.textLabel.text isEqualToString:@"TOMORROW"] && section == 0) {
-            
-            UILabel *subDateLabel = [[UILabel alloc] initWithFrame:CGRectMake(107, 16, 100, 20)];
-            subDateLabel.textColor = [UIColor darkTextColor];
-            subDateLabel.font = [UIFont fontWithName:@"OpenSans" size:9];
-            subDateLabel.tag = 99;
-            
-            NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-            [formatter setDateStyle:NSDateFormatterShortStyle];
-            NSString *dateString = [formatter stringFromDate:[NSDate dateWithTimeIntervalSinceNow:(86400)]];
-            subDateLabel.text = dateString;
-            
-            [header.contentView addSubview:subDateLabel];
-            
-        } else if ([header.textLabel.text isEqualToString:@"TOMORROW"] && section == 1) {
-            
-            UILabel *subDateLabel = [[UILabel alloc] initWithFrame:CGRectMake(107, 0, 100, 17)];
-            subDateLabel.textColor = [UIColor darkTextColor];
-            subDateLabel.font = [UIFont fontWithName:@"OpenSans" size:9];
-            subDateLabel.tag = 99;
-            
-            NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-            [formatter setDateStyle:NSDateFormatterShortStyle];
-            NSString *dateString = [formatter stringFromDate:[NSDate dateWithTimeIntervalSinceNow:(86400)]];
-            subDateLabel.text = dateString;
-            
-            [header.contentView addSubview:subDateLabel];
-        }
-        
-    }
-    
-    // Another way to set the background color
-    // Note: does not preserve gradient effect of original header
-    // header.contentView.backgroundColor = [UIColor blackColor];
-}
-
-
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    
+    if (clearTable) return 0;
     
     if (showTimeline) {
         return sortedTimelineIds.count;
     }
-    NSDate *dateRepresentingThisDay = [self.sortedDays objectAtIndex:section];
-    NSArray *eventsOnThisDay = [self.sections objectForKey:dateRepresentingThisDay];
     
-    /*
-    if (totalEventCount < 4 && section + 1 == sections.count) {
+    if (tableVersion == 3) {
+        NSString *letterRepresentingTheseFriends = [self.sortedFriendsLetters objectAtIndex:section];
+        NSDictionary *friendsForThisLetter = [self.friendSections objectForKey:letterRepresentingTheseFriends];
+        NSArray *namesArray = [friendsForThisLetter objectForKey:@"Names"];
+        return namesArray.count;
+    }
+    
+    NSDate *dateRepresentingThisDay;
+    NSArray *eventsOnThisDay;
+    
+    if (tableVersion == 1) {
         
-        int extraFakeEvents = 4 - totalEventCount + (int)eventsOnThisDay.count;
-        NSLog(@"Adding %d events, %d are real", extraFakeEvents, (int)eventsOnThisDay.count);
-        return extraFakeEvents;
-    } */
+        dateRepresentingThisDay = [self.createdSortedDays objectAtIndex:section];
+        eventsOnThisDay = [self.createdSections objectForKey:dateRepresentingThisDay];
+        
+    } else if (tableVersion == 2) {
+        
+        if (eventsArray.count == 0) return 0;
+        
+        if (pastEventsLoaded && (section > self.sections.count - 1 || self.sections.count == 0)) {
+            
+            return pastEventsArray.count;
+            
+        }
+        
+        if (!pastEventsLoaded && sortedDays.count == 0) {
+            
+            return 1;
+            
+        } else {
+            
+            dateRepresentingThisDay = [self.sortedDays objectAtIndex:section];
+            eventsOnThisDay = [self.sections objectForKey:dateRepresentingThisDay];
+        }
+        
+        if (!pastEventsLoaded && section == self.sections.count - 1) {
+            
+            return eventsOnThisDay.count + 1;
+            
+        } else {
+            
+            return [eventsOnThisDay count];
+        }
+    
+    }
     
     return [eventsOnThisDay count];
     
@@ -664,6 +810,27 @@
 
 // %%%%%% Runs through this code every time I scroll in Table
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    [noEventsView removeFromSuperview];
+    
+    NSInteger sectionsAmount = [tableView numberOfSections];
+    NSInteger rowsAmount = [tableView numberOfRowsInSection:[indexPath section]];
+    if (tableVersion == 2 && !pastEventsLoaded && !showTimeline && [indexPath section] == sectionsAmount - 1 && [indexPath row] == rowsAmount - 1) {
+        // This is the last cell in the table
+        NSLog(@"Last Cell");
+        
+        UITableViewCell *cell = (UITableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"loadPast" forIndexPath:indexPath];
+        if (cell == nil) {
+            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"loadPast"];
+        }
+        
+        cell.contentView.alpha = 1.0;
+        if (eventsArray.count == 0)
+            cell.alpha = 0;
+        
+        return cell;
+        
+    }
     
     if (showTimeline) {
         
@@ -676,170 +843,243 @@
         
         return cell;
         
-    } else {
+    } else if (tableVersion != 3) {
     
         AttendTableCell *cell = (AttendTableCell *)[tableView dequeueReusableCellWithIdentifier:@"tag" forIndexPath:indexPath];
         
-        NSDate *dateRepresentingThisDay = [self.sortedDays objectAtIndex:indexPath.section];
-        NSArray *eventsOnThisDay = [self.sections objectForKey:dateRepresentingThisDay];
+        NSDate *dateRepresentingThisDay;
+        NSArray *eventsOnThisDay;
         
-        if (indexPath.row < eventsOnThisDay.count) {
+        PFObject *Event;
+        id imageOnThisDay;
+        BOOL isPastEvent = NO;
         
-            cell.contentView.alpha = 1.0;
+        if (tableVersion == 1) {
             
-            PFObject *Event = eventsOnThisDay[indexPath.row];
+            dateRepresentingThisDay = [self.createdSortedDays objectAtIndex:indexPath.section];
+            eventsOnThisDay = [self.createdSections objectForKey:dateRepresentingThisDay];
+            Event = eventsOnThisDay[indexPath.row];
             
-            cell.eventObject = Event;
+        } else if (tableVersion == 2) {
             
-            [cell.titleLabel setText:[NSString stringWithFormat:@"%@",Event[@"Title"]]];
-            
-            if (Event[@"Description"])
-                [cell.subtitle setText:[NSString stringWithFormat:@"%@",Event[@"Description"]]];
-            else
-                [cell.subtitle setText:[NSString stringWithFormat:@""]];
-            
-            if (Event[@"Location"])
-                [cell.locLabel setText:[NSString stringWithFormat:@"at %@",Event[@"Location"]]];
-            else
-                [cell.locLabel setText:[NSString stringWithFormat:@""]];
-            
-            cell.eventID = Event.objectId;
-            
-            // Time formatting
-            NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-            [formatter setDateFormat:@"h:mm a"];
-            
-            NSDate *startDate = Event[@"Date"];
-            NSDate *endDate = Event[@"EndTime"];
-            
-            if ([startDate timeIntervalSinceDate:endDate] > 60*60*4 || endDate == nil) {
-              
-                NSString *startTimeString = [formatter stringFromDate:startDate];
-                NSString *eventTimeString = [[NSString alloc]init];
-                eventTimeString = [NSString stringWithFormat:@"%@", startTimeString];
-                //eventTimeString = [eventTimeString stringByReplacingOccurrencesOfString:@":00" withString:@""];
+            if (!pastEventsLoaded || (pastEventsLoaded && (indexPath.section <= self.sections.count - 1 && self.sections.count != 0))) {
                 
-                [cell.timeLabel setText:[NSString stringWithFormat:@"%@",eventTimeString]];
-                
-            } else if ([startDate compare:[NSDate date]] == NSOrderedAscending) {
-                
-                [cell.timeLabel setText: [NSString stringWithFormat:@"Happening NOW!"]];
+                NSDate *dateRepresentingThisDay = [self.sortedDays objectAtIndex:indexPath.section];
+                NSMutableArray *eventsOnThisDay = [self.sections objectForKey:dateRepresentingThisDay];
+                Event = eventsOnThisDay[indexPath.row];
                 
             } else {
                 
-                NSString *startTimeString = [formatter stringFromDate:startDate];
-                NSString *endTimeString = [formatter stringFromDate:endDate];
-                NSString *eventTimeString = [[NSString alloc]init];
-                eventTimeString = [NSString stringWithFormat:@"%@", startTimeString];
-                if (endTimeString) {
-                    eventTimeString = [NSString stringWithFormat:@"%@ to %@", eventTimeString, endTimeString];
-                }
-                eventTimeString = [eventTimeString stringByReplacingOccurrencesOfString:@":00" withString:@""];
-                
-                [cell.timeLabel setText:[NSString stringWithFormat:@"%@",eventTimeString]];
-            }
-            
-            cell.eventImageView.image = [UIImage imageNamed:Event[@"Hashtag"]];
-            
-            if (Event[@"Image"] != nil) {
-                // Image formatting
-                PFFile *imageFile = Event[@"Image"];
-                [imageFile getDataInBackgroundWithBlock:^(NSData *imageData, NSError *error) {
-                    if (!error) {
-                        
-                        cell.blurView.tintColor = [UIColor blackColor];
-                        
-                        //cell.blurView.alpha = 0;
-                        cell.eventImageView.image = [UIImage imageWithData:imageData];
-                        
-                        CAGradientLayer *l = [CAGradientLayer layer];
-                        l.frame = cell.eventImageView.bounds;
-                        l.colors = [NSArray arrayWithObjects:(id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:0.0] CGColor], (id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:1] CGColor], nil];
-                        
-                        l.startPoint = CGPointMake(0.0, 1.00f);
-                        l.endPoint = CGPointMake(0.0f, 0.6f);
-
+                if (pastEventsArray.count > 0) {
+                    if (pastEventsArray[indexPath.row] != nil) {
+                        Event = pastEventsArray[indexPath.row];
+                        isPastEvent = YES;
+                    } else {
+                        return [[UITableViewCell alloc] init];
                     }
-                }];
-                
-            } else {
-                
-                // default image
-            }
-            
-            PFGeoPoint *loc = Event[@"GeoLoc"];
-            
-            if (loc.latitude == 0) {
-                cell.distance.text = @"";
-            } else {
-                PFGeoPoint *userLoc = currentUser[@"userLoc"];
-                NSNumber *meters = [NSNumber numberWithDouble:([loc distanceInMilesTo:userLoc])];
-                
-                if (meters.floatValue >= 100.0) {
-                    
-                    NSString *distance = [NSString stringWithFormat:(@"100+ mi")];
-                    cell.distance.text = distance;
-                    
-                } else if (meters.floatValue >= 10.0) {
-                    
-                    NSString *distance = [NSString stringWithFormat:(@"%.f mi"), meters.floatValue];
-                    cell.distance.text = distance;
-                    
                 } else {
-                    
-                    NSString *distance = [NSString stringWithFormat:(@"%.1f mi"), meters.floatValue];
-                    cell.distance.text = distance;
-                }
-                
-            }
-            
-            [cell.distance sizeToFit];
-            
-            [[cell viewWithTag:77] removeFromSuperview];
-            
-            UIImageView *locIMV = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"locationPinThickOutline"]];
-            locIMV.frame = CGRectMake(290 - cell.distance.frame.size.width - 11 - 5, 38, 10.4, 13);
-            locIMV.tag = 77;
-            [cell.contentView addSubview:locIMV];
-            
-            cell.interestedLabel.text = [NSString stringWithFormat:@"%@ interested", Event[@"swipesRight"]];
-            
-            
-            for (UIView *view in cell.subviews) {
-                if (view.tag == 9) [view removeFromSuperview];
-            }
-            
-            cell.subtitle.alpha = 1;
-            cell.interestedLabel.alpha = 1;
-            [cell viewWithTag:11].alpha = 1;
-            
-            NSDictionary *dict = [friendEventDict objectForKey:Event.objectId];
-            NSArray *picArray = [dict objectForKey:@"profilePictures"];
-            if (picArray.count > 0) {
-                
-                cell.subtitle.alpha = 0;
-                cell.interestedLabel.alpha = 0;
-                [cell viewWithTag:11].alpha = 0;
-                
-                for (FBSDKProfilePictureView *ppView in picArray) {
-                    
-                    [ppView removeFromSuperview];
-                    [cell addSubview:ppView];
+                    return [[UITableViewCell alloc] init];
                 }
             }
+            
+        }
         
+        cell.eventObject = Event;
+        cell.eventID = Event.objectId;
+        
+        cell.eventObject = Event;
+        
+        [cell.titleLabel setText:[NSString stringWithFormat:@"%@",Event[@"Title"]]];
+        
+        if (Event[@"Description"])
+            [cell.subtitle setText:[NSString stringWithFormat:@"%@",Event[@"Description"]]];
+        else
+            [cell.subtitle setText:[NSString stringWithFormat:@""]];
+        
+        if (Event[@"Location"])
+            [cell.locLabel setText:[NSString stringWithFormat:@"at %@",Event[@"Location"]]];
+        else
+            [cell.locLabel setText:[NSString stringWithFormat:@""]];
+        
+        
+        // Time formatting
+        NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+        [formatter setDateFormat:@"h:mm a"];
+        
+        NSDate *startDate = Event[@"Date"];
+        NSDate *endDate = Event[@"EndTime"];
+        
+        if (isPastEvent) {
+            
+            [formatter setDateFormat:@"EEE, MMM d"];
+            NSString *dateString = [formatter stringFromDate:startDate];
+            [formatter setDateFormat:@"h:mma"];
+            NSString *timeString = [formatter stringFromDate:startDate];
+            cell.timeLabel.text = [NSString stringWithFormat:@"%@ at %@", dateString, timeString];
+            
+        } else if ([startDate timeIntervalSinceDate:endDate] > 60*60*4 || endDate == nil) {
+            
+            NSString *startTimeString = [formatter stringFromDate:startDate];
+            NSString *eventTimeString = [[NSString alloc]init];
+            eventTimeString = [NSString stringWithFormat:@"%@", startTimeString];
+            //eventTimeString = [eventTimeString stringByReplacingOccurrencesOfString:@":00" withString:@""];
+            
+            [cell.timeLabel setText:[NSString stringWithFormat:@"%@",eventTimeString]];
+            
+        } else if ([startDate compare:[NSDate date]] == NSOrderedAscending && endDate != nil) {
+            
+            [cell.timeLabel setText: [NSString stringWithFormat:@"Happening NOW!"]];
+            
         } else {
             
-            for (UIView *view in cell.subviews){
-                if (view.tag == 9) [view removeFromSuperview];
+            NSString *startTimeString = [formatter stringFromDate:startDate];
+            NSString *endTimeString = [formatter stringFromDate:endDate];
+            NSString *eventTimeString = [[NSString alloc]init];
+            eventTimeString = [NSString stringWithFormat:@"%@", startTimeString];
+            if (endTimeString) {
+                eventTimeString = [NSString stringWithFormat:@"%@ to %@", eventTimeString, endTimeString];
+            }
+            eventTimeString = [eventTimeString stringByReplacingOccurrencesOfString:@":00" withString:@""];
+            
+            [cell.timeLabel setText:[NSString stringWithFormat:@"%@",eventTimeString]];
+        }
+
+        
+        cell.eventImageView.image = [UIImage imageNamed:Event[@"Hashtag"]];
+        
+        if (Event[@"Image"] != nil) {
+            // Image formatting
+            PFFile *imageFile = Event[@"Image"];
+            [imageFile getDataInBackgroundWithBlock:^(NSData *imageData, NSError *error) {
+                if (!error) {
+                    
+                    cell.blurView.tintColor = [UIColor blackColor];
+                    cell.blurView.alpha = 0;
+                    //cell.blurView.alpha = 0;
+                    cell.eventImageView.image = [UIImage imageWithData:imageData];
+                    
+                    CAGradientLayer *l = [CAGradientLayer layer];
+                    l.frame = cell.eventImageView.bounds;
+                    l.colors = [NSArray arrayWithObjects:(id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:0.0] CGColor], (id)[[UIColor colorWithRed:0 green:0 blue:0 alpha:1] CGColor], nil];
+                    
+                    l.startPoint = CGPointMake(0.0, 1.00f);
+                    l.endPoint = CGPointMake(0.0f, 0.6f);
+                    
+                    
+                    
+                    //cell.eventImageView.image = [cell.eventImageView.image applyLightEffect];
+                }
+            }];
+            
+        } else {
+            
+            // default image
+        }
+        
+        PFGeoPoint *loc = Event[@"GeoLoc"];
+        
+        if (loc.latitude == 0) {
+            cell.distance.text = @"";
+        } else {
+            PFGeoPoint *userLoc = currentUser[@"userLoc"];
+            NSNumber *meters = [NSNumber numberWithDouble:([loc distanceInMilesTo:userLoc])];
+            
+            if (meters.floatValue >= 100.0) {
+                
+                NSString *distance = [NSString stringWithFormat:(@"100+ mi")];
+                cell.distance.text = distance;
+                
+            } else if (meters.floatValue >= 10.0) {
+                
+                NSString *distance = [NSString stringWithFormat:(@"%.f mi"), meters.floatValue];
+                cell.distance.text = distance;
+                
+            } else {
+                
+                NSString *distance = [NSString stringWithFormat:(@"%.1f mi"), meters.floatValue];
+                cell.distance.text = distance;
             }
             
-            NSLog(@"FAKE CELL");
-            cell.contentView.alpha = 0;
+        }
+        
+        [cell.distance sizeToFit];
+        
+        [[cell viewWithTag:77] removeFromSuperview];
+        
+        UIImageView *locIMV = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"locationPinThickOutline"]];
+        locIMV.frame = CGRectMake(290 - cell.distance.frame.size.width - 11 - 5, 38, 10.4, 13);
+        locIMV.tag = 77;
+        [cell.contentView addSubview:locIMV];
+        
+        cell.interestedLabel.text = [NSString stringWithFormat:@"%@ interested", Event[@"swipesRight"]];
+        
+        
+        for (UIView *view in cell.subviews) {
+            if (view.tag == 9) [view removeFromSuperview];
+        }
+        
+        cell.subtitle.alpha = 1;
+        cell.interestedLabel.alpha = 1;
+        [cell viewWithTag:11].alpha = 1;
+        
+        NSDictionary *dict = [friendEventDict objectForKey:Event.objectId];
+        NSArray *picArray = [dict objectForKey:@"profilePictures"];
+        if (picArray.count > 0) {
+            
+            cell.subtitle.alpha = 0;
+            cell.interestedLabel.alpha = 0;
+            [cell viewWithTag:11].alpha = 0;
+            
+            for (ProfilePictureView *ppView in picArray) {
+                
+                [ppView removeFromSuperview];
+                [cell addSubview:ppView];
+            }
         }
         
         return cell;
     
+    } else if (tableVersion == 3) {
+        
+        inviteHomiesCell *cell = [tableView dequeueReusableCellWithIdentifier:@"homies" forIndexPath:indexPath];
+        cell.indexPath = indexPath;
+        //UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(friendProfileTap:)];
+        
+        //[cell addGestureRecognizer:tap];
+        
+        NSString *letterRepresentingTheseFriends = [self.sortedFriendsLetters objectAtIndex:indexPath.section];
+        NSDictionary *friendsForThisLetter = [self.friendSections objectForKey:letterRepresentingTheseFriends];
+        NSArray *namesArray = [friendsForThisLetter objectForKey:@"Names"];
+        NSArray *parseIds = [friendsForThisLetter objectForKey:@"parseIds"];
+        NSArray *imagesArray = [friendsForThisLetter objectForKey:@"Images"];
+        
+        cell.nameLabel.text = namesArray[indexPath.row];
+        
+        for (UIView *view in cell.subviews) {
+            if (view.tag == 66) {
+                [view removeFromSuperview];
+            }
+        }
+        
+        NSLog(@"%@", imagesArray[indexPath.row]);
+        
+        [cell addSubview:imagesArray[indexPath.row]];
+        
+        [[cell viewWithTag:234] removeFromSuperview];
+        
+        cell.parseId = parseIds[indexPath.row];
+        
+        /*
+         if ([bestFriendsIds containsObject:idsArray[indexPath.row]]) {
+         
+         UIImageView *starImageView = [[UIImageView alloc] initWithFrame:CGRectMake(20 + 10, 0 + 5, 10, 10)];
+         starImageView.image = [UIImage imageNamed:@"star-blue-bordered"];
+         starImageView.tag = 234;
+         [cell addSubview:starImageView];
+         } */
+        
+        return cell;
+        
     }
     
     return nil;
@@ -848,13 +1088,30 @@
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     
     if (showTimeline) return 46;
+    if (tableVersion == 3) return 55;
     
+    if (!pastEventsLoaded && tableVersion == 2 && sortedDays.count == 0) {
+        return 70;
+    }
+
+    if (!pastEventsLoaded && tableVersion == 2) {
+        NSInteger sectionsAmount = self.sections.count;
+        NSDate *dateRepresentingThisDay = [self.sortedDays objectAtIndex:indexPath.section];
+        NSArray *eventsOnThisDay = [self.sections objectForKey:dateRepresentingThisDay];
+        NSInteger rowsAmount = eventsOnThisDay.count;
+        if ([indexPath section] == sectionsAmount - 1 && [indexPath row] == rowsAmount) {
+            
+            return 70;
+        }
+    }
+
     return 150;
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
-    
-    if (showTimeline) return 0;
+
+    if (showTimeline || eventsArray.count == 0) return 0;
+    if (!pastEventsLoaded && tableVersion == 2 && sortedDays.count == 0) return 0;
     
     return 22;
 }
@@ -877,66 +1134,55 @@
     [self loadData];
 }
 
-- (void)noEvents {
+- (void)friendProfileTap:(inviteHomiesCell *)cell {
     
-    noEventsView = [[UIView alloc] initWithFrame: CGRectMake(0, 300, self.view.frame.size.width, 519-66-202)];
-    //noEventsView.backgroundColor = [UIColor redColor];
-
-    [self.tableView addSubview:noEventsView];
-    
-    /*
-    UILabel *topTextLabel = [[UILabel alloc] init];
-    topTextLabel.text = @"Uh oh!";
-    topTextLabel.font = [UIFont fontWithName:@"OpenSans" size:18.0];
-    topTextLabel.textColor = [UIColor colorWithRed:153.0/255 green:154.0/255 blue:155.0/255 alpha:1.0];
-    [topTextLabel sizeToFit];
-    topTextLabel.center = CGPointMake(self.view.center.x, 75);
-    [noEventsView addSubview:topTextLabel];
-    */
-    
-    UILabel *bottomTextLabel = [[UILabel alloc] init];
-    bottomTextLabel.text = @"You haven't saved any events.";
-    bottomTextLabel.font = [UIFont fontWithName:@"OpenSans" size:18.0];
-    bottomTextLabel.textColor = [UIColor colorWithRed:153.0/255 green:154.0/255 blue:155.0/255 alpha:1.0];
-    [bottomTextLabel sizeToFit];
-    bottomTextLabel.center = CGPointMake(self.view.center.x, 30);
-    [noEventsView addSubview:bottomTextLabel];
-    
-    
-    UIButton *createEventButton = [[UIButton alloc] initWithFrame:CGRectMake(95.2, 130, 129.6, 40)];
-    [createEventButton setImage:[UIImage imageNamed:@"discoverButton"] forState:UIControlStateNormal];
-    [createEventButton setImage:[UIImage imageNamed:@"discover pressed"] forState:UIControlStateHighlighted];
-    [createEventButton addTarget:self action:@selector(discoverButtonTapped) forControlEvents:UIControlEventTouchUpInside];
-    //[noEventsView addSubview:createEventButton];
-    
-    
-    UIImageView *imv = [[UIImageView alloc] initWithFrame:CGRectMake(135, 70, 150, 150)];
-    imv.center = CGPointMake(self.view.center.x, noEventsView.frame.size.height / 2 + 8);
-    imv.image = [UIImage imageNamed:@"right swipe"];
-    [noEventsView addSubview:imv];
-    
-    UILabel *lastLabel = [[UILabel alloc] init];
-    lastLabel.text = @"Swipe right to save an event";
-    lastLabel.font = [UIFont fontWithName:@"OpenSans-Light" size:14.0];
-    lastLabel.textColor = [UIColor colorWithRed:153.0/255 green:154.0/255 blue:155.0/255 alpha:1.0];
-    [lastLabel sizeToFit];
-    lastLabel.center = CGPointMake(self.view.center.x, noEventsView.frame.size.height - 20);
-    [noEventsView addSubview:lastLabel];
+    NSLog(@"REMEMBER FSINVS:KJNV:SJN");
+    [self performSegueWithIdentifier:@"toProf" sender:self];
     
 }
 
-- (IBAction)segControl:(UISegmentedControl *)sender {
+- (void)noEvents {
     
-    if (sender.selectedSegmentIndex == 0) { // Upcoming events
+    NSLog(@"No events");
+    //[self.tableView reloadData];
+    
+    if (!noEventsView) {
+    
+        //noEventsView = [[UIView alloc] initWithFrame: CGRectMake(0, 430, self.view.frame.size.width, 200)];
+        noEventsView = [[UIView alloc] initWithFrame: CGRectMake(0, 0, self.view.frame.size.width, 519-66-202)];
         
-        [self loadData];
+        UILabel *bottomTextLabel = [[UILabel alloc] init];
+        bottomTextLabel.text = @"You haven't saved any events.";
+        bottomTextLabel.font = [UIFont fontWithName:@"OpenSans" size:18.0];
+        bottomTextLabel.textColor = [UIColor colorWithRed:153.0/255 green:154.0/255 blue:155.0/255 alpha:1.0];
+        [bottomTextLabel sizeToFit];
+        bottomTextLabel.center = CGPointMake(self.view.center.x, 30);
+        [noEventsView addSubview:bottomTextLabel];
         
-    } else { // Past Events
         
-        //[self loadPastEvents];
+        UIButton *createEventButton = [[UIButton alloc] initWithFrame:CGRectMake(95.2, 130, 129.6, 40)];
+        [createEventButton setImage:[UIImage imageNamed:@"discoverButton"] forState:UIControlStateNormal];
+        [createEventButton setImage:[UIImage imageNamed:@"discover pressed"] forState:UIControlStateHighlighted];
+        [createEventButton addTarget:self action:@selector(discoverButtonTapped) forControlEvents:UIControlEventTouchUpInside];
+        //[noEventsView addSubview:createEventButton];
+        
+        
+        UIImageView *imv = [[UIImageView alloc] initWithFrame:CGRectMake(135, 70, 150, 150)];
+        imv.center = CGPointMake(self.view.center.x, noEventsView.frame.size.height / 2 + 8);
+        imv.image = [UIImage imageNamed:@"right swipe"];
+        [noEventsView addSubview:imv];
+        
+        UILabel *lastLabel = [[UILabel alloc] init];
+        lastLabel.text = @"Swipe right to save an event";
+        lastLabel.font = [UIFont fontWithName:@"OpenSans-Light" size:14.0];
+        lastLabel.textColor = [UIColor colorWithRed:153.0/255 green:154.0/255 blue:155.0/255 alpha:1.0];
+        [lastLabel sizeToFit];
+        lastLabel.center = CGPointMake(self.view.center.x, noEventsView.frame.size.height - 20);
+        [noEventsView addSubview:lastLabel];
         
     }
     
+    [self.tableView addSubview:noEventsView];
 }
 
 - (NSDate *)dateAtBeginningOfDayForDate:(NSDate *)inputDate
@@ -995,53 +1241,15 @@
 
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     
-    if (!showTimeline) {
+    NSInteger sectionsAmount = [tableView numberOfSections];
+    NSInteger rowsAmount = [tableView numberOfRowsInSection:[indexPath section]];
+    if (tableVersion == 2 && !pastEventsLoaded && !showTimeline && [indexPath section] == sectionsAmount - 1 && [indexPath row] == rowsAmount - 1) {
+        
+        [self loadPastEvents];
+        
+    } else if (!showTimeline && tableVersion != 3) {
+        
         [self performSegueWithIdentifier:@"toExpandedView" sender:self];
-    }
-}
-
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-    
-    if ([segue.identifier isEqualToString:@"showMyEvent"]) {
-        NSIndexPath *selectedIndexPath = [self.tableView indexPathForSelectedRow];
-        AttendTableCell *cell = (AttendTableCell *)[self.tableView cellForRowAtIndexPath:selectedIndexPath];
-        
-        UINavigationController *navController = [segue destinationViewController];
-        showMyEventVC *vc = (showMyEventVC *)([navController topViewController]);
-        vc.eventID = cell.eventID;
-        
-        vc.profileVC = self;
-        
-    } else if ([segue.identifier isEqualToString:@"createNewEvent"]) {
-        
-        UINavigationController *navController = [segue destinationViewController];
-        EventTVC *vc = (EventTVC *)([navController topViewController]);
-        vc.delegate = self;
-        
-        vc.profileVC = self;
-    
-    } else if ([segue.identifier isEqualToString:@"toProfileSettings"]) {
-        
-        UINavigationController *navController = [segue destinationViewController];
-        ProfileSettingsTVC *vc = (ProfileSettingsTVC *)([navController topViewController]);
-        
-        vc.profileVC = self;
-        
-    } else if ([segue.identifier isEqualToString:@"toExpandedView"]) {
-        
-        NSIndexPath *selectedIndexPath = [self.tableView indexPathForSelectedRow];
-        AttendTableCell *cell = (AttendTableCell *)[self.tableView cellForRowAtIndexPath:selectedIndexPath];
-        
-        ExpandedCardVC *vc = (ExpandedCardVC *)[segue destinationViewController];
-        vc.event = cell.eventObject;
-        vc.image = cell.eventImageView.image;
-        vc.eventID = cell.eventID;
-        vc.distanceString = cell.distance.text;
-        
-        [vc.navigationController setNavigationBarHidden:NO animated:YES];
-        
     }
     
 }
@@ -1052,6 +1260,7 @@
     [timelineQuery whereKey:@"userId" equalTo:currentUser.objectId];
     [timelineQuery addAscendingOrder:@"createdDate"];
     [timelineQuery fromLocalDatastore];
+    timelineQuery.limit = 1000;
     [timelineQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         
         if (!error) {
@@ -1060,11 +1269,15 @@
                 
                 if ([timelineDict objectForKey:object.objectId] == nil) { // object doesn't exist
                 
-                    [object pinInBackground];
-                    [sortedTimelineIds insertObject:object.objectId atIndex:0];
-                    NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-                    [timelineDict setObject:dict forKey:object.objectId];
-                    [dict setObject:object forKey:@"object"];
+                    if (object.objectId != nil) {
+                        [object pinInBackground];
+                        [sortedTimelineIds insertObject:object.objectId atIndex:0];
+                        NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+                        [timelineDict setObject:dict forKey:object.objectId];
+                        [dict setObject:object forKey:@"object"];
+                    } else {
+                        [object unpinInBackground];
+                    }
                     
                 }
             }
@@ -1090,6 +1303,7 @@
     if (sender.tag == 1) {
         
         sender.alpha = 0;
+        settingsButton.alpha = 0;
         xButton.alpha = 1.0;
         [scoreButton setTitle:[NSString stringWithFormat:@"%@", [currentUser[@"score"] stringValue]] forState:UIControlStateNormal];
         scoreLabel.text = [NSString stringWithFormat:@"%@", [currentUser[@"score"] stringValue]];
@@ -1099,6 +1313,7 @@
         
         sender.alpha = 0;
         scoreButton.alpha = 1.0;
+        settingsButton.alpha = 1.0;
         [scoreButton setTitle:[NSString stringWithFormat:@"%@", [currentUser[@"score"] stringValue]] forState:UIControlStateNormal];
         scoreLabel.text = [NSString stringWithFormat:@"%@", [currentUser[@"score"] stringValue]];
         showTimeline = NO;
@@ -1111,9 +1326,13 @@
 
 - (void)switchTableViewToScore:(BOOL)toScore {
     
-    //if (self.tableView.contentOffset.y == 0) {
+    clearTable = YES;
+    [self.tableView reloadData];
+    clearTable = NO;
     
     isAnimatingScoreButton = YES;
+    self.scoreButton.enabled = NO;
+    xButton.enabled = NO;
     
     if (toScore) {
         
@@ -1146,19 +1365,22 @@
                 
                 self.profPicView.frame = CGRectMake(0, -64, 320, 320);
                 scoreLabel.alpha = 1.0;
+                leaderboardButton.alpha = 1.0;
                 blurView.alpha = 1.0;
                 self.tableView.contentOffset = CGPointMake(0, 0);
-                self.tableView.frame = CGRectMake(0, 18, 320, self.tableView.frame.size.height - 18);
+                self.tableView.frame = CGRectMake(0, 18+41, 320, self.tableView.frame.size.height - 18);
                 navBarLabel.alpha = 1.0;
                 //blurView.frame = CGRectMake(0, 0, 320, 320);
                 //maskLayer.frame = CGRectMake(0, 0, 320, 320);
-                self.segContainerView.frame = CGRectMake(0, 212, 320, self.segContainerView.frame.size.height);
+                self.segContainerView.frame = CGRectMake(0, 154, 320, self.segContainerView.frame.size.height);
                 
             } completion:^(BOOL finished){
                 
                 blurView.dynamic = NO;
                 isAnimatingScoreButton = NO;
                 blurView.dynamic = YES;
+                self.scoreButton.enabled = YES;
+                xButton.enabled = YES;
 
             }];
             
@@ -1166,13 +1388,31 @@
         
     } else {
         
-        [self loadData];
+        switch (tableVersion) {
+            case 1: { // created by me
+                [self loadCreatedEvents];
+                break;
+            }
+            case 2: { // my events
+                [self loadData];
+                break;
+            }
+            case 3: { // friends
+                [self loadFriends];
+                break;
+            }
+            default: {
+                [self loadData];
+                break;
+            }
+        }
         
         [UIView animateWithDuration:0.25 delay:0 options:UIViewAnimationOptionBeginFromCurrentState animations:^(void){
             
             self.tableView.contentOffset = CGPointMake(0, -200);
             self.tableView.frame = CGRectMake(0, self.tableView.frame.origin.y + 300, 320, self.tableView.frame.size.height);
             scoreLabel.alpha = 0;
+            leaderboardButton.alpha = 0.0;
             navBarLabel.alpha = 0;
             
         } completion:^(BOOL finished){
@@ -1184,12 +1424,14 @@
                 detailLabel.alpha = 1;
                 blurView.alpha = 0;
                 self.tableView.contentOffset = CGPointMake(0, 0);
-                self.tableView.frame = CGRectMake(0, 157, 320, self.tableView.frame.size.height + 18);
+                self.tableView.frame = CGRectMake(0, 157+41, 320, self.tableView.frame.size.height + 18);
                 
             } completion:^(BOOL finished){
                 
                 isAnimatingScoreButton = NO;
                 blurView.dynamic = YES;
+                self.scoreButton.enabled = YES;
+                xButton.enabled = YES;
             }];
             
         }];
@@ -1201,25 +1443,34 @@
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
     
     CGFloat y = -scrollView.contentOffset.y;
+    //NSLog(@"%f", y);
     
-    NSLog(@"%f", y);
+    if (tableVersion == 2 && ([scrollView contentOffset].y + scrollView.frame.size.height - 60) >= [scrollView contentSize].height){
+        
+        // Get new record from here
+        if (!pastEventsLoaded) {
+            NSLog(@"&& MADE IT");
+            [self loadPastEvents];
+            
+        }
+        
+    }
     
     if (!isAnimatingScoreButton && !showTimeline) {
     
         if (y >= 0) { // $$$$$$$$$ Scrolling down $$$$$$$$$$
             
-            if (totalEventCount > 333) {
-                
-                self.tableView.transform = CGAffineTransformMakeTranslation(0, -scrollView.contentOffset.y);
-                self.segContainerView.transform = CGAffineTransformMakeTranslation(0, -scrollView.contentOffset.y);
+            /* self.tableView.transform = CGAffineTransformMakeTranslation(0, -scrollView.contentOffset.y);
+            self.segContainerView.transform = CGAffineTransformMakeTranslation(0, -scrollView.contentOffset.y); */
             
-            } else if (tableViewIsUp && y > 20) {
+            if (tableViewIsUp && y > 20) {
                 
+                tableViewIsUp = NO;
                 
                 [UIView animateWithDuration:0.4 animations:^{
                     
-                    self.segContainerView.frame = CGRectMake(0, 212, 320, self.segContainerView.frame.size.height);
-                    self.tableView.frame = CGRectMake(0, 157, 320, 420);
+                    self.segContainerView.frame = CGRectMake(0, 154, 320, self.segContainerView.frame.size.height);
+                    self.tableView.frame = CGRectMake(0, 157+41, 320, 420);
                     
                     blurView.alpha = 0.0;
                     nameLabel.alpha = 1.0;
@@ -1227,8 +1478,6 @@
                     navBarLabel.alpha = 0.0;
 
                 } completion:^(BOOL finished) {
-
-                    tableViewIsUp = NO;
                     
                 }];
                     
@@ -1254,130 +1503,73 @@
             // Set the scale to the imageView
             self.profPicView.transform = CGAffineTransformMakeScale(scale, scale);
             
-            
-            if (y == 0 && totalEventCount > 333) { // %%%%% y = 0 %%%%%
-                
-                self.nameLabel.alpha = 1.0;
-                self.detailLabel.alpha = 1.0;
-                profPicView.alpha = 1.0;
-                blurView.alpha = 0;
-                for (UIView *view in scrollView.subviews) {
-                    view.alpha = 1.0;
-                }
-                
-                [UIView animateWithDuration:0.1 animations:^{
-                    self.segContainerView.frame = CGRectMake(0, 212, 320, self.segContainerView.frame.size.height);
-                    self.tableView.frame = CGRectMake(0, 157, 320, 420);
-                }];
-                
-            }
-            
-            
         } else if (y < 0) {  // $$$$$$$$$$$ Scrolling up $$$$$$$$$$$
             
+            /*
             if (self.tableView.frame.origin.y >= 253) {
                 self.tableView.transform = CGAffineTransformMakeTranslation(0, -y);
                 self.segContainerView.transform = CGAffineTransformMakeTranslation(0, -y);
-            }
+            }*/
             
-            if (totalEventCount > 333) {
-                
-                float scale = 1.0f - 5.0f * (fabs(-scrollView.contentOffset.y)  / scrollView.frame.size.height);
-                
-                //Cap the scaling between zero and 1
-                scale = (1 - MAX(0.0f, scale));
-                
-                blurView.alpha = scale * 2;
-                nameLabel.alpha = 1 - scale * 3;
-                detailLabel.alpha = 1 - scale * 3;
-                
-                if (y < -50) {
-                    
-                    float scale2 = (fabs(y + 50) / scrollView.frame.size.height) * 14;
-                    NSLog(@"== %f", scale2);
-                    navBarLabel.alpha = scale2;
-                    
-                } else {
-                    
-                    navBarLabel.alpha = 0;
-                }
-                
-                
-                if (y >= (-209 + 41 + 10) / 2 && totalEventCount > 3) { // -79
-                
-                    self.tableView.transform = CGAffineTransformMakeTranslation(0, -scrollView.contentOffset.y * 2);
-                    self.segContainerView.transform = CGAffineTransformMakeTranslation(0, -scrollView.contentOffset.y * 2);
-                
-                } else {
-                
-                    [UIView animateWithDuration:0.1 animations:^{
-                        CGRect tableFrame = self.tableView.frame;
-                        tableFrame.origin.y = 41;
-                        self.tableView.frame = tableFrame;
-                        
-                        CGRect segContainerFrame = self.segContainerView.frame;
-                        segContainerFrame.origin.y = 10;
-                        self.segContainerView.frame = segContainerFrame;
-                    }];
-                }
-
-            
+            /*
+            float scale = 1.0f - 5.0f * (fabs(-scrollView.contentOffset.y)  / scrollView.frame.size.height);
+            scale = (1 - MAX(0.0f, scale));
+            blurView.alpha = scale * 2;
+            nameLabel.alpha = 1 - scale * 3;
+            detailLabel.alpha = 1 - scale * 3;
+            if (y < -50) {
+                float scale2 = (fabs(y + 50) / scrollView.frame.size.height) * 14;
+                navBarLabel.alpha = scale2;
             } else {
-            
-                [UIView animateWithDuration:0.4 animations:^{ // %%%%%%%%%%% AUTO SCROLL %%%%%%%%%%%
-                    
+                navBarLabel.alpha = 0;
+            } */
+                
+             /*
+            if (y >= (-209 + 41 + 10) / 2 && 222 > 3) { // -79
+                self.tableView.transform = CGAffineTransformMakeTranslation(0, -scrollView.contentOffset.y * 2);
+                self.segContainerView.transform = CGAffineTransformMakeTranslation(0, -scrollView.contentOffset.y * 2);
+            } else {
+                [UIView animateWithDuration:0.1 animations:^{
                     CGRect tableFrame = self.tableView.frame;
-                    tableFrame.origin.y = 10;
+                    tableFrame.origin.y = 0;
                     self.tableView.frame = tableFrame;
                     
                     CGRect segContainerFrame = self.segContainerView.frame;
-                    segContainerFrame.origin.y = 10 + 44;
+                    segContainerFrame.origin.y = 0;
                     self.segContainerView.frame = segContainerFrame;
-                    
-                    blurView.alpha = 1.0;
-                    nameLabel.alpha = 0.0;
-                    detailLabel.alpha = 0.0;
-                    navBarLabel.alpha = 1.0;
-
-                } completion:^(BOOL finished) {
-                    
-                    tableViewIsUp = YES;
-                    
                 }];
+            }*/
+
+            tableViewIsUp = YES;
+            
+            [UIView animateWithDuration:0.4 animations:^{ // %%%%%%%%%%% AUTO SCROLL %%%%%%%%%%%
                 
-            }
+                CGRect tableFrame = self.tableView.frame;
+                tableFrame.origin.y = 0+41; //10;
+                self.tableView.frame = tableFrame;
+                
+                CGRect segContainerFrame = self.segContainerView.frame;
+                segContainerFrame.origin.y = 0; //10 + 44;
+                self.segContainerView.frame = segContainerFrame;
+                
+                blurView.alpha = 1.0;
+                nameLabel.alpha = 0.0;
+                detailLabel.alpha = 0.0;
+                navBarLabel.alpha = 1.0;
+
+            } completion:^(BOOL finished) {
+                
+            }];
+                
             
-        } else {
-            
-            CGRect tableFrame = self.tableView.frame;
-            tableFrame.origin.y = 253;
-            self.tableView.frame = tableFrame;
-            
-            CGRect segContainerFrame = self.segContainerView.frame;
-            segContainerFrame.origin.y = 212;
-            self.segContainerView.frame = segContainerFrame;
-            
-            CGRect ppFrame = self.profPicView.frame;
-            ppFrame.origin.y = -64;
-            self.profPicView.frame = ppFrame;
-            
-            self.nameLabel.alpha = 1.0;
-            self.detailLabel.alpha = 1.0;
-            profPicView.alpha = 1.0;
-            for (UIView *view in scrollView.subviews) {
-                view.alpha = 1.0;
-            }
         }
         
         
         //score button
     } else if (isAnimatingScoreButton) {
         
-        
         if (y > 0) {
 
-
-            
         } else if (y < 0) {
             
             //profPicView.frame = CGRectMake(0, -64, 320, 320);
@@ -1395,7 +1587,377 @@
         }
     
     }
+}
+
+- (void)loadPastEvents {
     
+    pastEventsLoaded = YES;
+    
+    PFQuery *swipesQuery = [PFQuery queryWithClassName:@"Swipes"];
+    [swipesQuery whereKey:@"UserID" equalTo:currentUser.objectId];
+    [swipesQuery whereKey:@"swipedRight" equalTo:@YES];
+    //[swipesQuery fromLocalDatastore];
+    swipesQuery.limit = 1000;
+    
+    PFQuery *pastEventQuery = [PFQuery queryWithClassName:@"Event"];
+    [pastEventQuery whereKey:@"objectId" matchesKey:@"EventID" inQuery:swipesQuery];
+    [pastEventQuery whereKey:@"Date" lessThan:[[NSDate date] beginningOfDay]];
+    [pastEventQuery addDescendingOrder:@"Date"];
+    
+    [pastEventQuery findObjectsInBackgroundWithBlock:^(NSArray *events, NSError *error){
+        
+        if (!error) {
+            
+            eventsArray = [eventsArray arrayByAddingObjectsFromArray:events];
+            
+            for (int i = 0; i < events.count; i++) {
+                
+                PFObject *event = events[i];
+                
+                /*
+                NSMutableDictionary *dict = [self.sections objectForKey:event.objectId];
+                if ([dict objectForKey:@"Image"] == nil) {
+                    if (event[@"Image"] != nil) [dict setObject:event[@"Image"] forKey:@"Image"];
+                    else [dict setObject:[UIImage imageNamed:event[@"Hashtag"]] forKey:@"Image"];
+                } */
+                
+                [pastEventsArray addObject:event];
+                
+            }
+            
+            pastEventsLoaded = YES;
+            
+            if (eventsArray.count == 0) {
+                
+                [self noEvents];
+                
+            } else {
+                
+                NSLog(@"reloading data...");
+                [self.tableView reloadData];
+                [self loadSwipes];
+            }
+            
+            //[self.tableView beginUpdates];
+            //[self.tableView insertRowsAtIndexPaths:[NSArray arrayWithArray:indexPaths] withRowAnimation:UITableViewRowAnimationNone];
+            //[self.tableView reloadRowsAtIndexPaths:indexPaths withRowAnimation:UITableViewRowAnimationNone];
+            
+            //[self.tableView endUpdates];
+        }
+    }];
+    
+}
+
+- (void)loadCreatedEvents {
+    
+    tableVersion = 1;
+    
+    currentUser = [PFUser currentUser];
+    
+    PFQuery *eventQuery = [PFQuery queryWithClassName:@"Event"];
+    //[eventQuery fromLocalDatastore];
+    [eventQuery whereKey:@"CreatedBy" equalTo:currentUser.objectId];
+    [eventQuery orderByDescending:@"Date"];
+    eventQuery.limit = 1000;
+    
+    if (!createdEventsArray)
+        createdEventsArray = [NSArray new];
+    
+    BOOL firstTime = NO;
+    
+    if (!self.createdSections) {
+        self.createdSections = [NSMutableDictionary dictionary];
+        firstTime = YES;
+    } else {
+        [self.tableView reloadData];
+    }
+    
+    [eventQuery findObjectsInBackgroundWithBlock:^(NSArray *events, NSError *error) {
+        
+        if (!error) {
+            
+            createdEventsArray = events;
+            
+            BOOL didChange = NO;
+            
+            for (PFObject *event in events) {
+                
+                // Reduce event start date to date components (year, month, day)
+                NSDate *dateRepresentingThisDay = [self dateAtBeginningOfDayForDate:event[@"Date"]];
+                if ([dateRepresentingThisDay compare:[NSDate date]] == NSOrderedAscending) {
+                    dateRepresentingThisDay = [self dateAtBeginningOfDayForDate:[NSDate date]];
+                }
+                
+                // If we don't yet have an array to hold the events for this day, create one
+                NSMutableArray *eventsOnThisDay = [self.createdSections objectForKey:dateRepresentingThisDay];
+                if (eventsOnThisDay == nil) {
+                    eventsOnThisDay = [NSMutableArray array];
+                    
+                    // Use the reduced date as dictionary key to later retrieve the event list this day
+                    [self.createdSections setObject:eventsOnThisDay forKey:dateRepresentingThisDay];
+                }
+                
+                // Add the event to the list for this day
+                if (![eventsOnThisDay containsObject:event]) {
+                    didChange = YES;
+                    [eventsOnThisDay addObject:event];
+                }
+                
+            }
+            
+            // Create a sorted list of days
+            NSArray *unsortedDays = [self.createdSections allKeys];
+            self.createdSortedDays = [unsortedDays sortedArrayUsingSelector:@selector(compare:)];
+            
+            
+            [noEventsView removeFromSuperview];
+            
+            
+            if (didChange || firstTime) {
+                [self.tableView reloadData];
+                [self loadSwipes];
+            }
+            
+        } else {
+            
+            NSLog(@"error: %@", error);
+            [self loadPastEvents];
+        }
+    }];
+
+    
+}
+
+
+- (void)loadFriends {
+    
+    tableVersion = 3;
+    
+    self.friendSections = [[NSMutableDictionary alloc] init];
+    self.sortedFriends = [NSArray array];
+    self.sortedFriendsLetters = [NSArray array];
+
+    //indexTitles = [[NSArray alloc] init];
+    //indexTitles = @[@"\u263A", @"√", @"A", @"B", @"C", @"D", @"E", @"F", @"G", @"H", @"I", @"J", @"K", @"L", @"M", @"N", @"O", @"P", @"Q", @"R", @"S", @"T", @"U", @"V", @"W", @"X", @"Y", @"Z"];
+
+    
+    NSArray *friends = [PFUser currentUser][@"friends"];
+    
+    NSMutableArray *names = [[NSMutableArray alloc] init];
+    NSMutableArray *friendObjectIDs = [[NSMutableArray alloc] init];
+    NSMutableArray *parseIds = [[NSMutableArray alloc] init];
+    
+    for (NSDictionary *dict in friends) {
+        [friendObjectIDs addObject:[dict objectForKey:@"id"]];
+        [names addObject:[dict objectForKey:@"name"]];
+        [parseIds addObject:[dict objectForKey:@"parseId"]];
+    }
+    
+    NSMutableArray *p = [NSMutableArray arrayWithCapacity:names.count];
+    for (NSUInteger i = 0 ; i != names.count ; i++) {
+        [p addObject:[NSNumber numberWithInteger:i]];
+    }
+    [p sortWithOptions:0 usingComparator:^NSComparisonResult(id obj1, id obj2) {
+        // Modify this to use [first objectAtIndex:[obj1 intValue]].name property
+        NSString *lhs = [names objectAtIndex:[obj1 intValue]];
+        // Same goes for the next line: use the name
+        NSString *rhs = [names objectAtIndex:[obj2 intValue]];
+        return [lhs compare:rhs];
+    }];
+    NSMutableArray *sortedFirst = [NSMutableArray arrayWithCapacity:names.count];
+    NSMutableArray *sortedSecond = [NSMutableArray arrayWithCapacity:friendObjectIDs.count];
+    NSMutableArray *sortedThird = [NSMutableArray arrayWithCapacity:parseIds.count];
+    [p enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        NSUInteger pos = [obj intValue];
+        [sortedFirst addObject:[names objectAtIndex:pos]];
+        [sortedSecond addObject:[friendObjectIDs objectAtIndex:pos]];
+        [sortedThird addObject:[parseIds objectAtIndex:pos]];
+    }];
+    
+    names = sortedFirst;
+    friendObjectIDs = sortedSecond;
+    parseIds = sortedThird;
+    
+    NSLog(@"friend ids: %@", friendObjectIDs);
+    
+    self.sortedFriends = [names sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
+    
+    for (int i = 0; i < names.count; i++) {
+        
+        NSString *letter = [[names objectAtIndex: i] substringToIndex:1];
+        NSMutableDictionary *letterDict = [self.friendSections objectForKey:letter];
+        if (letterDict == nil) {
+            letterDict = [NSMutableDictionary dictionary];
+        }
+        
+        [self.friendSections setObject:letterDict forKey:letter];
+        
+        
+        NSMutableArray *namesArray = [letterDict objectForKey:@"Names"];
+        if (namesArray == nil) {
+            namesArray = [NSMutableArray array];
+        }
+        
+        [letterDict setObject:namesArray forKey:@"Names"];
+        [namesArray addObject:names[i]];
+        
+        
+        NSMutableArray *idsArray = [letterDict objectForKey:@"IDs"];
+        if (idsArray == nil) {
+            idsArray = [NSMutableArray array];
+        }
+        [letterDict setObject:idsArray forKey:@"IDs"];
+        [idsArray addObject:friendObjectIDs[i]];
+        
+        NSMutableArray *parseIdsArray = [letterDict objectForKey:@"parseIds"];
+        if (parseIdsArray == nil) {
+            parseIdsArray = [NSMutableArray array];
+        }
+        [letterDict setObject:parseIdsArray forKey:@"parseIds"];
+        [parseIdsArray addObject:parseIds[i]];
+        
+        
+        NSMutableArray *imagesArray = [letterDict objectForKey:@"Images"];
+        if (imagesArray == nil) {
+            imagesArray = [NSMutableArray array];
+        }
+        [letterDict setObject:imagesArray forKey:@"Images"];
+        FBSDKProfilePictureView *pp = [[FBSDKProfilePictureView alloc] initWithFrame:CGRectMake(10, 7.5, 40, 40)];
+        pp.layer.cornerRadius = 20;
+        pp.layer.masksToBounds = YES;
+        pp.profileID = friendObjectIDs[i];
+        pp.tag = 66;
+        [imagesArray addObject:pp];
+        
+        
+        NSMutableArray *tappedArray = [letterDict objectForKey:@"Tapped"];
+        if (tappedArray == nil) {
+            tappedArray = [NSMutableArray array];
+        }
+        
+        [letterDict setObject:tappedArray forKey:@"Tapped"];
+        NSNumber *no = [NSNumber numberWithInt:0];
+        [tappedArray addObject:no];
+        
+    }
+    
+    NSArray *unsortedFriendsLetters = [self.friendSections allKeys];
+    self.sortedFriendsLetters = [unsortedFriendsLetters sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
+    
+    [self.tableView reloadData];
+    
+}
+
+- (IBAction)tabButtonTapped:(UIButton *)sender {
+    
+    if (sender.tag != tableVersion) {
+    
+        [sender setTitleColor:[UIColor colorWithRed:30.0/255 green:30.0/255 blue:30.0/2555 alpha:1.0] forState:UIControlStateNormal];
+        UILabel *tappedLabel = self.tabLabels[sender.tag - 1];
+        tappedLabel.textColor = [UIColor colorWithRed:30.0/255 green:30.0/255 blue:30.0/2555 alpha:1.0];
+        
+        for (int i = 0; i < self.tabButtons.count; i++) {
+            
+            UIButton *button = self.tabButtons[i];
+            if (button.tag != sender.tag) {
+                
+                [button setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
+                UILabel *label = self.tabLabels[button.tag - 1];
+                label.textColor = [UIColor lightGrayColor];
+            }
+
+        }
+        
+        switch (sender.tag) {
+            case 1: { // created by me
+                
+                NSLog(@"Load Created Events");
+                [self loadCreatedEvents];
+                
+                break;
+            }
+            case 2: { // my events
+                
+                NSLog(@"Load Saved Events");
+                [self loadData];
+                
+                break;
+            }
+            case 3: { // friends
+                
+                NSLog(@"Load Friends");
+                [self loadFriends];
+                
+                break;
+            }
+                
+            default:
+                break;
+        }
+    
+    }
+    
+}
+
+- (void)didChangeRSVP {
+    
+    NSLog(@"rsvps changed");
+    eventsArray = [NSArray new];
+    self.sections = [NSMutableDictionary dictionary];
+    [self loadData];
+}
+
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+    
+    if ([segue.identifier isEqualToString:@"showMyEvent"]) {
+        NSIndexPath *selectedIndexPath = [self.tableView indexPathForSelectedRow];
+        AttendTableCell *cell = (AttendTableCell *)[self.tableView cellForRowAtIndexPath:selectedIndexPath];
+        
+        UINavigationController *navController = [segue destinationViewController];
+        showMyEventVC *vc = (showMyEventVC *)([navController topViewController]);
+        vc.eventID = cell.eventID;
+        
+        vc.profileVC = self;
+        
+    } else if ([segue.identifier isEqualToString:@"createNewEvent"]) {
+        
+        UINavigationController *navController = [segue destinationViewController];
+        EventTVC *vc = (EventTVC *)([navController topViewController]);
+        vc.delegate = self;
+        
+        vc.profileVC = self;
+        
+    } else if ([segue.identifier isEqualToString:@"toProfileSettings"]) {
+        
+        UINavigationController *navController = [segue destinationViewController];
+        ProfileSettingsTVC *vc = (ProfileSettingsTVC *)([navController topViewController]);
+        
+        vc.profileVC = self;
+        
+    } else if ([segue.identifier isEqualToString:@"toExpandedView"]) {
+        
+        NSIndexPath *selectedIndexPath = [self.tableView indexPathForSelectedRow];
+        AttendTableCell *cell = (AttendTableCell *)[self.tableView cellForRowAtIndexPath:selectedIndexPath];
+        
+        ExpandedCardVC *vc = (ExpandedCardVC *)[segue destinationViewController];
+        vc.delegate = self;
+        vc.event = cell.eventObject;
+        vc.image = cell.eventImageView.image;
+        vc.eventID = cell.eventID;
+        vc.distanceString = cell.distance.text;
+        
+        [vc.navigationController setNavigationBarHidden:NO animated:YES];
+        
+    } else if ([segue.identifier isEqualToString:@"toProf"]) {
+        
+        NSIndexPath *ip = [self.tableView indexPathForSelectedRow];
+        inviteHomiesCell *cell = (inviteHomiesCell *)[self.tableView cellForRowAtIndexPath:ip];
+        ExternalProfileTVC *vc = (ExternalProfileTVC *)[segue destinationViewController];
+        vc.userID = cell.parseId;
+        NSLog(@"++++ %@", cell.parseId);
+    }
     
 }
 

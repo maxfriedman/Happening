@@ -189,9 +189,22 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         PFQuery *weightedQuery = [PFQuery queryWithClassName:@"Event"];
         [weightedQuery whereKey:@"globalWeight" greaterThan:@0];
         [weightedQuery whereKey:@"Date" greaterThan:[NSDate dateWithTimeIntervalSinceNow:-60*60*4]];
+        [weightedQuery whereKey:@"private" notEqualTo:@YES];
         
+        if (![PFAnonymousUtils isLinkedWithUser:user]) {
+        
+            PFQuery *weightedQuery2 = [PFQuery queryWithClassName:@"Event"];
+            [weightedQuery2 whereKey:@"globalWeight" greaterThan:@0];
+            [weightedQuery2 whereKey:@"Date" greaterThan:[NSDate dateWithTimeIntervalSinceNow:-60*60*4]];
+            [weightedQuery2 whereKey:@"private" equalTo:@YES];
+            [weightedQuery2 whereKey:@"invitedIds" containsAllObjectsInArray:@[[PFUser currentUser][@"FBObjectID"]]];
+            
+            finalQuery = [PFQuery orQueryWithSubqueries:@[eventQuery, weightedQuery, weightedQuery2]];
 
-        finalQuery = [PFQuery orQueryWithSubqueries:@[eventQuery, weightedQuery]];
+        } else {
+            
+            finalQuery = [PFQuery orQueryWithSubqueries:@[eventQuery, weightedQuery]];
+        }
         
         PFGeoPoint *userLoc = user[@"userLoc"];
         NSInteger radius = [user[@"radius"] integerValue];
@@ -215,9 +228,9 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             mySwipesQuery.limit = 1000;
             [mySwipesQuery whereKey:@"UserID" equalTo:user.objectId];
             [mySwipesQuery whereKey:@"swipedAgain" equalTo:@YES];
+            //[mySwipesQuery whereKey:@"swipedLeft" equalTo:@YES];
             [mySwipesQuery whereKey:@"createdAt" greaterThan:[NSDate dateWithTimeIntervalSinceNow:-(60*60*24*28)]];
-            //[mySwipesQuery whereKey:@"UserID" notContainedIn:idsArray];
-            
+
             [finalQuery whereKey:@"objectId" doesNotMatchKey:@"EventID" inQuery:mySwipesQuery];
             //eventQuery = [PFQuery orQueryWithSubqueries:@[eventQuery, yesQuery]];
             
@@ -291,6 +304,13 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         // %%%%%%%%% THE MAGIC FORMULA %%%%%%%%%%%%%%% \\
         
         [finalQuery orderByDescending:@"globalWeight"];
+        
+        if ([user[@"categoryName"] isEqualToString:@"Best Deals"]) {
+            NSLog(@"$#");
+            [finalQuery whereKey:@"lowest_price" greaterThan:@0];
+            [finalQuery addAscendingOrder:@"lowest_price"];
+        }
+        
         [finalQuery addDescendingOrder:@"weight"];
         [finalQuery addDescendingOrder:@"swipesRight"];
         [finalQuery addAscendingOrder:@"Date"];
@@ -335,7 +355,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                 // FORMAT FOR MULTI-DAY EVENT
                 NSDate *endDate = eventObject[@"EndTime"];
                 
-                if ([eventDate compare:[NSDate date]] == NSOrderedAscending) {
+                if ([eventDate compare:[NSDate date]] == NSOrderedAscending && endDate != nil) {
                   
                     finalString = [NSString stringWithFormat:@"Happening NOW!"];
                     [calDayOfWeekArray addObject:@"Happening now!"];
@@ -560,29 +580,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     else
         draggableView.subtitle.text = @"";
     
-    PFQuery *query = [PFQuery queryWithClassName:@"Event"];
-    [query fromLocalDatastore];
-    [query getObjectInBackgroundWithId:event.objectId block:^(PFObject *object, NSError *error){
-        
-        if (!error && [object.objectId isEqualToString:event.objectId] && [[event[@"Date"] beginningOfDay] isEqualToDate:[[NSDate date] beginningOfDay]]) {
-            
-            CategoryBubbleView *stillInterestedView = [[CategoryBubbleView alloc] initWithText:@"Still Interested?" type:@"repeat"];
-            [draggableView.cardView addSubview:stillInterestedView];
-            [draggableView arrangeCornerViews];
-        
-        } else {
-            
-        }
-        
-    }];
-    
-    if (event[@"Hashtag"]) {
-        draggableView.hashtag.text = [NSString stringWithFormat:@"%@", event[@"Hashtag"]];
-        CategoryBubbleView *catView  = [[CategoryBubbleView alloc] initWithText:event[@"Hashtag"] type:@"normal"];
-        [draggableView.cardView addSubview:catView];
-    } else {
-        draggableView.hashtag.text = @"";
-    }
+    [draggableView arrangeCornerViews];
     
     NSString *createdByString = event[@"CreatedByName"];
     if (createdByString == nil || [createdByString isEqualToString:@""])
@@ -989,6 +987,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 // This should be customized with your own action
 -(void)cardSwipedRight:(UIView *)card fromExpandedView:(BOOL)expandedBool isGoing:(BOOL)isGoing
 {
+    
     Rdio *rdio = [AppDelegate sharedRdio];
     [rdio.player stop];
     
@@ -1021,34 +1020,6 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         }
     }];
     
-    PFObject *timelineObject = [PFObject objectWithClassName:@"Timeline"];
-    
-    if (isGoing) timelineObject[@"type"] = @"going";
-    else timelineObject[@"type"] = @"swipeRight";
-    
-    timelineObject[@"userId"] = user.objectId;
-    timelineObject[@"eventId"] = dragView.objectID;
-    timelineObject[@"createdDate"] = [NSDate date];
-    timelineObject[@"eventTitle"] = dragView.title.text;
-    [timelineObject pinInBackground];
-    [timelineObject saveEventually];
-        
-    
-    if (![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
-
-        NSString *locString = [dragView.location.text stringByReplacingOccurrencesOfString:@"at " withString:@""];
-        NSString *name = [NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]];
-        
-        [PFCloud callFunctionInBackground:@"swipeRight"
-                           withParameters:@{@"user":user.objectId, @"event":dragView.objectID, @"fbID":user[@"FBObjectID"], @"fbToken":[FBSDKAccessToken currentAccessToken].tokenString, @"title":dragView.title.text, @"loc":locString, @"isGoing":@(isGoing), @"name":name, @"eventDate":dragView.eventObject[@"Date"]}
-                                    block:^(NSString *result, NSError *error) {
-                                        if (!error) {
-
-                                            //NSLog(@"%@", result);
-                                        }
-                                    }];
-    }
-    
     [PFCloud callFunctionInBackground:@"swipeAnalytics"
                        withParameters:@{@"userID":user.objectId, @"eventID":dragView.objectID, @"swiped":@"right"}
                                 block:^(NSString *result, NSError *error) {
@@ -1075,9 +1046,10 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             NSLog(@"SECOND time Swiping");
         
             object[@"swipedAgain"] = @YES;
-            object[@"swipedAgain"] = @NO;
+            object[@"swipedLeft"] = @NO;
             object[@"swipedRight"] = @YES;
             object[@"isGoing"] = @(isGoing);
+            object[@"friendCount"] = @(self.dragView.friendsInterestedCount);
             
             if (loadedCards.count == 0) {
                 
@@ -1104,6 +1076,36 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             
             NSLog(@"FIRST time Swiping");
             
+            if (![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
+                
+                NSString *locString = [dragView.location.text stringByReplacingOccurrencesOfString:@"at " withString:@""];
+                NSString *name = [NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]];
+                
+                [PFCloud callFunctionInBackground:@"swipeRight"
+                                   withParameters:@{@"user":user.objectId, @"event":dragView.objectID, @"fbID":user[@"FBObjectID"], @"fbToken":[FBSDKAccessToken currentAccessToken].tokenString, @"title":dragView.title.text, @"loc":locString, @"isGoing":@(isGoing), @"name":name, @"eventDate":dragView.eventObject[@"Date"]}
+                                            block:^(NSString *result, NSError *error) {
+                                                if (!error) {
+                                                    
+                                                    NSLog(@"%@", result);
+                                                }
+                                            }];
+            }
+            
+            PFObject *timelineObject = [PFObject objectWithClassName:@"Timeline"];
+            
+            if (isGoing) timelineObject[@"type"] = @"going";
+            else timelineObject[@"type"] = @"swipeRight";
+            
+            timelineObject[@"userId"] = user.objectId;
+            timelineObject[@"eventId"] = dragView.objectID;
+            timelineObject[@"createdDate"] = [NSDate date];
+            timelineObject[@"eventTitle"] = dragView.title.text;
+            [timelineObject pinInBackground];
+            [timelineObject saveEventually];
+            
+            [user incrementKey:@"eventCount" byAmount:@1];
+            [user saveEventually];
+            
             PFObject *swipesObject = [PFObject objectWithClassName:@"Swipes"];
             swipesObject[@"UserID"] = user.objectId;
             if (![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
@@ -1113,6 +1115,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             swipesObject[@"swipedRight"] = @YES;
             swipesObject[@"swipedLeft"] = @NO;
             swipesObject[@"isGoing"] = @(isGoing);
+            swipesObject[@"friendCount"] = @(self.dragView.friendsInterestedCount);
             [swipesObject pinInBackground];
             
             if (shouldLimit) {
@@ -1149,14 +1152,12 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     if (isGoing) {
         [self swipeDownForWhat:c];
     }
-
     
     if ([[PFUser currentUser][@"hasSwipedRight"] isEqualToNumber:@NO] ) {
         NSLog(@"First swipe right");
         
         AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
-        RKSwipeBetweenViewControllers *rk = appDelegate.rk;
-        [rk showCallout];
+        [appDelegate.mh showCallout];
         
         [PFUser currentUser][@"hasSwipedRight"] = @YES;
         [user saveEventually];
@@ -1170,14 +1171,14 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         [self insertSubview:[loadedCards objectAtIndex:(MAX_BUFFER_SIZE-1)] belowSubview:[loadedCards objectAtIndex:(MAX_BUFFER_SIZE-2)]];
     }
     
-    dragView = [loadedCards firstObject]; // Make dragView the current card
-    [dragView.cardBackground removeFromSuperview];
-    
     if (expandedBool == YES) {
         self.myViewController.userSwipedFromExpandedView = YES;
         [self.myViewController expandCurrentView];
     } else
         self.myViewController.userSwipedFromExpandedView = NO;
+    
+    dragView = [loadedCards firstObject]; // Make dragView the current card
+    [dragView.cardBackground removeFromSuperview];
     
     //[self.myViewController updateMainTixButton];
     
@@ -1218,6 +1219,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     DraggableView *c = (DraggableView *)card;
     PFUser *currentUser = [PFUser currentUser];
     
+    /*
     PFObject *checklist = [PFObject objectWithClassName:@"Checklist"];
     checklist[@"userId"] = currentUser.objectId;
     checklist[@"eventId"] = c.objectID;
@@ -1225,6 +1227,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     checklist[@"cal"] = @NO;
     checklist[@"invite"] = @NO;
     checklist[@"share"] = @NO;
+    */
     
     [self.myViewController swipeDown:c];
 
@@ -1417,9 +1420,10 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
 
 -(void)friendProfileTap:(id)sender {
     
-    UIView *view = (UIView *)sender;
+    UITapGestureRecognizer *gr = (UITapGestureRecognizer *)sender;
+    ProfilePictureView *ppview = (ProfilePictureView *)gr.view;
     //self.myViewController.friendObjectID = view.accessibilityIdentifier;
-    [self.myViewController showFriendProfile:view.accessibilityIdentifier];
+    [self.myViewController showFriendProfile:ppview.parseId];
     
 }
 

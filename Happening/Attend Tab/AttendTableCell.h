@@ -24,6 +24,7 @@
 @property (strong, nonatomic) PFObject *eventObject;
 
 @property (strong, nonatomic) IBOutlet FXBlurView *blurView;
+@property (strong, nonatomic) IBOutlet UIView *lineView;
 
 
 - (void)setupCell;

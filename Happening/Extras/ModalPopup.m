@@ -33,6 +33,8 @@
     } else if ([self.type isEqualToString:@"share"]) {
         [self shareEventFromCard];
         showCalendar = YES; // ??
+    } else if ([self.type isEqualToString:@"going"]) {
+        [self userSwipedDown];
     }
     
 }
@@ -55,6 +57,15 @@
     
     topLabel.text = @"You rock.";
     subHeaderLabel.text = @"Rally friends to come to your event!";
+    messageLabel.text = @"";
+    [self addShareableCard];
+    
+}
+
+- (void)userSwipedDown {
+    
+    topLabel.text = @"You're going!";
+    subHeaderLabel.text = @"Tell your friends:";
     messageLabel.text = @"";
     [self addShareableCard];
     
@@ -83,8 +94,11 @@
     
     shareableCard = [[ShareableCardView alloc] initWithFrame:CGRectMake(self.subContainerView.center.x - (150 / 2), 5, 150, 150)];
     shareableCard.shareDelegate = self;
+    shareableCard.eventObject = self.eventObject;
     shareableCard.title.text = eventObject[@"Title"];
     shareableCard.date.text = eventDateString;
+    
+    [shareableCard addExtras];
     
     if (eventImage == nil) {
         shareableCard.eventImage.image = [UIImage imageNamed:eventObject[@"Hashtag"]];
@@ -101,6 +115,16 @@
     }
     
     [subContainerView addSubview:shareableCard];
+    
+}
+
+- (void)setupSuperviewForImageCapture {
+    
+    UIView *view = [[UIView alloc] initWithFrame:CGRectMake(shareableCard.frame.origin.x - 5, shareableCard.frame.origin.y - 5, shareableCard.frame.size.width + 10, shareableCard.frame.size.height + 10)];
+    view.backgroundColor = [UIColor whiteColor];
+    shareableCard.frame = CGRectMake(5, 5, shareableCard.frame.size.width, shareableCard.frame.size.height);
+    [subContainerView addSubview:view];
+    [view addSubview:shareableCard];
     
 }
 
@@ -127,7 +151,7 @@
                                            routeParameters:@{@"EventID": self.eventObject.objectId}
                                            queryParameters:@{@"referrer": [PFUser currentUser].objectId}];
     /*  metadata:@{@"coupon": @"20"}]; */
-    [[Hoko deeplinking] generateSmartlinkForDeeplink:deeplink success:^(NSString *smartlink) {
+    [[Hoko deeplinking] generateSmartlinkForDeeplink:deeplink  success:^(NSString *smartlink) {
         NSURL *myWebsite = [NSURL URLWithString:smartlink];
         [self shareEventWithURL:myWebsite image:image];
         [SVProgressHUD dismiss];

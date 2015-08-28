@@ -228,7 +228,7 @@
         [manager startUpdatingLocation];
     } else {
         NSLog(@" ====== iOS 8 ====== ");
-        [manager requestAlwaysAuthorization];
+        [manager requestWhenInUseAuthorization];
     }
     
 }
@@ -241,6 +241,7 @@
     } else {
         NSLog(@" ====== iOS 8 ====== ");
         if (status == kCLAuthorizationStatusAuthorizedAlways) locEnabled = YES;
+        if (status == kCLAuthorizationStatusAuthorizedWhenInUse) locEnabled = YES;
     }
     
     [self updateLoc];
@@ -253,7 +254,7 @@
         
         NSLog(@"Initializing Location Kit...");
         AppDelegate *ad = (AppDelegate *)[UIApplication sharedApplication].delegate;
-        [[LocationKit sharedInstance] startWithApiToken:@"48ced72017ecb03b" andDelegate:ad];
+        //[[LocationKit sharedInstance] startWithApiToken:@"48ced72017ecb03b" delegate:ad];
         
         locSubLabel.enabled = NO;
         

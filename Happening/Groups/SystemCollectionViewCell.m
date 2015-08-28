@@ -23,6 +23,9 @@
     self = [super initWithFrame:frame];
     if(self)
     {
+        
+        NSLog(@"%f - %f", frame.size.height, frame.size.width);
+        
         //UIView *backgroundView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, frame.size.height)];
         //backgroundView.backgroundColor = [UIColor groupTableViewBackgroundColor];
         //[self addSubview:backgroundView];
@@ -124,21 +127,6 @@
 
 // How do I implement an avatar identical to those normally presented OR show nothing at all?
 - (void)shouldDisplayAvatarItem:(BOOL)shouldDisplayAvatarItem{
-    
-    LYRMessagePart *part = self.message.parts[0];
-    
-    // if message contains custom mime type then get the text from the MessagePart JSON
-    if([part.MIMEType isEqual: ATLMimeTypeSystemObject])
-    {
-        NSData *data = part.data;
-        NSError* error;
-        NSDictionary* json = [NSJSONSerialization JSONObjectWithData:data
-                                                             options:kNilOptions
-                                                               error:&error];
-        //self.title.text = [json objectForKey:@"message"];
-        
-        //return YES;
-    }
     
 }
 

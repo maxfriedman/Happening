@@ -35,6 +35,8 @@
 @property (strong, nonatomic) NSString *groupEventId;
 @property PFObject *groupEventObject;
 @property PFObject *eventObject;
+@property PFObject *rsvpObject;
+
 
 
 @end

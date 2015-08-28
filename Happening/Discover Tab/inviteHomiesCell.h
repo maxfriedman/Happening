@@ -20,4 +20,7 @@
 @property (strong, nonatomic) IBOutlet UIView *checkView;
 @property (strong, nonatomic) IBOutlet UIImageView *checkImageView;
 
+@property (strong, nonatomic) NSString *fbId;
+@property (strong, nonatomic) NSString *parseId;
+
 @end

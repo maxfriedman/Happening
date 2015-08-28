@@ -15,6 +15,7 @@
 #import <FastttCamera.h>
 #import "UIButton+Extensions.h"
 #import "SVProgressHUD.h"
+#import "ExternalProfileTVC.h"
 
 @import MobileCoreServices;
 
@@ -39,6 +40,8 @@
     UITextField *textField;
     
     BOOL isDefault;
+    
+    int selectedIndex;
 }
 
 @synthesize group, groupImageView, groupNameLabel, parseIds, fbIds, names, flashButton, switchCameraButton, editItem;
@@ -78,7 +81,7 @@
         [borderView addSubview:changeButton];
 
         if (self.names.count > 2) {
-            groupImageView.image = [UIImage imageNamed:@"userImage"];
+            //groupImageView.image = [UIImage imageNamed:@"userImage"];
         }
         
     } else {
@@ -182,6 +185,7 @@
         
         NSLog(@"name changed!");
         group[@"name"] = textField.text;
+        group[@"isDefaultName"] = @NO;
         [group saveEventually];
         
         [self sendMessage:[NSString stringWithFormat:@"%@ %@ renamed the group to \"%@\".", [PFUser currentUser][@"firstName"], [PFUser currentUser][@"lastName"], textField.text] type:@"settings"];
@@ -252,7 +256,10 @@
         nameLabel.text = names[indexPath.row];
         
         [[cell viewWithTag:9] removeFromSuperview];
-        [cell addSubview:[picsArray objectAtIndex:indexPath.row]];
+        [cell.contentView addSubview:[picsArray objectAtIndex:indexPath.row]];
+        
+        if ([fbIds[indexPath.row] isEqualToString:[PFUser currentUser][@"FBObjectID"]])
+            [[cell viewWithTag:6] removeFromSuperview];
         
         return cell;
         
@@ -287,6 +294,18 @@
     }
     
 }
+- (IBAction)infoButtonPressed:(id)sender {
+    
+    CGPoint buttonPosition = [sender convertPoint:CGPointZero toView:self.tableView];
+    NSIndexPath *indexPath = [self.tableView indexPathForRowAtPoint:buttonPosition];
+
+    selectedIndex = (int)indexPath.row;
+    
+    UIActionSheet *sheet = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:@"Remove From Group" otherButtonTitles:@"View Profile", nil];
+    sheet.tag = 5;
+    [sheet showInView:self.view];
+    
+}
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
     
@@ -299,42 +318,46 @@
         NSLog(@"Leave group - Peace!");
         
         PFUser *currentUser = [PFUser currentUser];
-        /*
-        [self.convo removeParticipants:[NSSet setWithObject:currentUser.objectId] error:nil];
         
-        //NSMutableArray *users = group[@"user_objects"];
+        NSMutableArray *userDicts = group[@"user_dicts"];
         
-        for (int i = 0; i < users.count; i++) {
+        if (userDicts.count == 2) {
             
-            PFUser *user = users[i];
-            
-            if ([user.objectId isEqualToString:currentUser.objectId]) {
-                NSLog(@"Made it!");
-                [users removeObjectAtIndex:i];
-                break;
+            [self.convo delete:LYRDeletionModeAllParticipants error:nil];
+            [group deleteEventually];
+        
+        } else {
+        
+            for (int i = 0; i < userDicts.count; i++) {
+                
+                NSDictionary *userDict = userDicts[i];
+                
+                if ([[userDict objectForKey:@"parseId"] isEqualToString:currentUser.objectId]) {
+                    NSLog(@"Made it!");
+                    [userDicts removeObjectAtIndex:i];
+                    break;
+                }
             }
-        }
-        
-        NSLog(@"users = %@", users);
-        
-        group[@"user_objects"] = [NSArray arrayWithArray:users];
-        [group incrementKey:@"memberCount" byAmount:@(-1)];
-        [group saveInBackground];
-        
-        
-        PFQuery *groupUserQuery = [PFQuery queryWithClassName:@"Group_User"];
-        [groupUserQuery whereKey:@"user_id" equalTo:currentUser.objectId];
-        [groupUserQuery whereKey:@"group_id" equalTo:group.objectId];
-        
-        [groupUserQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
-           
-            [object deleteInBackground];
             
-        }]; */
-        
-        [self sendMessage:[NSString stringWithFormat:@"%@ %@ has left the group.", currentUser[@"firstName"], currentUser[@"lastName"]] type:@"leave"];
-        
-        [self.navigationController popToRootViewControllerAnimated:YES];
+            group[@"user_objects"] = [NSArray arrayWithArray:userDicts];
+            [group incrementKey:@"memberCount" byAmount:@(-1)];
+            [group saveInBackground];
+            
+            
+            PFQuery *groupUserQuery = [PFQuery queryWithClassName:@"Group_User"];
+            [groupUserQuery whereKey:@"user_id" equalTo:currentUser.objectId];
+            [groupUserQuery whereKey:@"group_id" equalTo:group.objectId];
+            
+            [groupUserQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
+               
+                [object deleteInBackground];
+                
+            }];
+            
+            [self sendMessage:[NSString stringWithFormat:@"%@ %@ has left the group.", currentUser[@"firstName"], currentUser[@"lastName"]] type:@"leave"];
+            
+            [self.navigationController popToRootViewControllerAnimated:YES];
+        }
         
     }
     
@@ -375,6 +398,12 @@
     BOOL success = [self.convo sendMessage:message error:&error];
     if (success) {
         NSLog(@"Message queued to be sent: %@", message);
+        
+        if ([type isEqualToString:@"leave"])
+            [self.convo removeParticipants:[NSSet setWithObject:[PFUser currentUser].objectId] error:nil];
+        else if ([type isEqualToString:@"remove"])
+            [self.convo removeParticipants:[NSSet setWithObject:parseIds[selectedIndex]] error:nil];
+        
     } else {
         NSLog(@"Message send failed: %@", error);
     }
@@ -395,88 +424,165 @@
     
     NSLog(@"index: %lu", buttonIndex);
     
-    
-    switch (buttonIndex) {
-        case 0: { // Take Photo
-            
-            _fastCamera = [FastttCamera new];
-            self.fastCamera.delegate = self;
-            
-            [self.fastCamera removeFromParentViewController];
-            [self fastttAddChildViewController:self.fastCamera];
-            self.fastCamera.view.frame = groupImageView.frame;
-            
-            self.fastCamera.view.layer.masksToBounds = YES;
-            self.fastCamera.view.layer.cornerRadius = self.fastCamera.view.frame.size.width / 2;
-            
-            takePictureButton = [[UIButton alloc] initWithFrame:CGRectMake(groupImageView.frame.origin.x + groupImageView.frame.size.width + 15, groupImageView.center.y + 10, 80, 30)];
-            [takePictureButton setTitleColor:[UIColor colorWithRed:0.0 green:176.0/255 blue:242.0/255 alpha:1.0] forState:UIControlStateNormal];
-            takePictureButton.titleLabel.font = [UIFont fontWithName:@"OpenSans" size:15.0];
-            takePictureButton.layer.cornerRadius = 4.0;
-            takePictureButton.layer.masksToBounds = YES;
-            takePictureButton.layer.borderWidth = 1.0;
-            takePictureButton.layer.borderColor = [UIColor colorWithRed:0.0 green:176.0/255 blue:242.0/255 alpha:1.0].CGColor;
-            [self.view addSubview:takePictureButton];
-            [takePictureButton addTarget:self action:@selector(snapDopePic) forControlEvents:UIControlEventTouchUpInside];
-            
-            takePictureButton.alpha = 1;
-            [takePictureButton setTitle:@"Snap pic" forState:UIControlStateNormal];
-            
-            flashButton = [[UIButton alloc] initWithFrame:CGRectMake(takePictureButton.frame.origin.x + 10, takePictureButton.frame.origin.y + 30 + 8, 15, 21.6)];
-            [flashButton setHitTestEdgeInsets:UIEdgeInsetsMake(-5, -5, -5, -5)];
-            [self.view addSubview:flashButton];
-            [flashButton addTarget:self action:@selector(flashButtonPressed) forControlEvents:UIControlEventTouchUpInside];
-            
-            [flashButton setImage:[UIImage imageNamed:@"flash_transp"] forState:UIControlStateNormal];
-            flashButton.alpha = 1;
-            flashButton.enabled = YES;
-            
-            switchCameraButton = [[UIButton alloc] initWithFrame:CGRectMake(takePictureButton.frame.origin.x + takePictureButton.frame.size.width - 20 - 10, takePictureButton.frame.origin.y + 30 + 9, 20, 20)];
-            [switchCameraButton setHitTestEdgeInsets:UIEdgeInsetsMake(-5, -5, -5, -5)];
-            [switchCameraButton addTarget:self action:@selector(switchCameraButtonPressed) forControlEvents:UIControlEventTouchUpInside];
-            [self.view addSubview:switchCameraButton];
-            
-            [switchCameraButton setImage:[UIImage imageNamed:@"flip"] forState:UIControlStateNormal];
-            switchCameraButton.enabled = YES;
-            switchCameraButton.alpha = 1;
-            
-            /*
-            if (!chooseImageButton) {
-                chooseImageButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 200, 40)];
-                chooseImageButton.center = CGPointMake(160, 480);
-                [chooseImageButton setTitle:@"Choose Image" forState:UIControlStateNormal];
-                chooseImageButton.titleLabel.font = [UIFont fontWithName:@"OpenSans" size:11.0];
-                [chooseImageButton setTitleColor:[UIColor colorWithRed:0.0 green:80.0/255 blue:230.0/255 alpha:1.0] forState:UIControlStateNormal];
-                [self.view addSubview:chooseImageButton];
-                [chooseImageButton addTarget:self action:@selector(chooseImage) forControlEvents:UIControlEventTouchUpInside];
+    if (actionSheet.tag == 5) {
+        
+        switch (buttonIndex) {
+            case 0: {
+                
+                PFUser *currentUser = [PFUser currentUser];
+                NSMutableArray *userDicts = group[@"user_dicts"];
+                
+                if (userDicts.count == 2) {
+                    
+                    [self.convo delete:LYRDeletionModeAllParticipants error:nil];
+                    [group deleteEventually];
+                    [self.navigationController popToRootViewControllerAnimated:YES];
+                    
+                } else {
+                    
+                    for (int i = 0; i < userDicts.count; i++) {
+                        
+                        NSDictionary *userDict = userDicts[i];
+                        
+                        if ([[userDict objectForKey:@"id"] isEqualToString:fbIds[selectedIndex]]) {
+                            [userDicts removeObjectAtIndex:i];
+                            break;
+                        }
+                    }
+                    
+                    group[@"user_objects"] = [NSArray arrayWithArray:userDicts];
+                    [group incrementKey:@"memberCount" byAmount:@(-1)];
+                    [group saveInBackground];
+                    
+                    
+                    PFQuery *groupUserQuery = [PFQuery queryWithClassName:@"Group_User"];
+                    [groupUserQuery whereKey:@"user_id" equalTo:currentUser.objectId];
+                    [groupUserQuery whereKey:@"group_id" equalTo:group.objectId];
+                    
+                    [groupUserQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
+                        
+                        [object deleteInBackground];
+                        
+                    }];
+
+                    NSLog(@"Remove From Group");
+                    [self sendMessage:[NSString stringWithFormat:@"%@ %@ removed %@ from the group.", currentUser[@"firstName"], currentUser[@"lastName"], names[selectedIndex]] type:@"remove"];
+                
+                    NSMutableArray *mutableNames = [NSMutableArray arrayWithArray:names];
+                    [mutableNames removeObjectAtIndex:selectedIndex];
+                    names = [NSArray arrayWithArray:mutableNames];
+                    
+                    NSMutableArray *mutableIds = [NSMutableArray arrayWithArray:fbIds];
+                    [mutableIds removeObjectAtIndex:selectedIndex];
+                    fbIds = [NSArray arrayWithArray:mutableIds];
+                    
+                    NSMutableArray *mutableParseIds = [NSMutableArray arrayWithArray:parseIds];
+                    [mutableParseIds removeObjectAtIndex:selectedIndex];
+                    parseIds = [NSArray arrayWithArray:mutableParseIds];
+                    
+                    [picsArray removeObjectAtIndex:selectedIndex];
+                    
+                    
+                    [self.tableView deleteRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:selectedIndex inSection:1]] withRowAnimation:UITableViewRowAnimationAutomatic];
+                
+                }
+                
+                break;
             }
-            chooseImageButton.alpha = 1;*/
-            
-            break;
+            case 1: {
+                
+                NSLog(@"View Profile");
+                [self performSegueWithIdentifier:@"toProf" sender:self];
+                
+                break;
+            }
+            default:
+                break;
         }
-        case 1: { // Choose Photo
-            
-            [self chooseImage];
-            
-            break;
-        }
-            
-        case 2: { // Default
-            
-            changeButton.alpha = 0;
-            
-            groupImage = [UIImage imageNamed:@"userImage"];
-            groupImageView.image = [UIImage imageNamed:@"userImage"];
-            [changeButton removeFromSuperview];
-            [self saveImage:groupImage isDefault:YES];
-            //[textField becomeFirstResponder];
-            
-        }
-            
-        default:
-            break;
-    }
+        
+    } else {
     
+        switch (buttonIndex) {
+            case 0: { // Take Photo
+                
+                _fastCamera = [FastttCamera new];
+                self.fastCamera.delegate = self;
+                
+                [self.fastCamera removeFromParentViewController];
+                [self fastttAddChildViewController:self.fastCamera];
+                self.fastCamera.view.frame = groupImageView.frame;
+                
+                self.fastCamera.view.layer.masksToBounds = YES;
+                self.fastCamera.view.layer.cornerRadius = self.fastCamera.view.frame.size.width / 2;
+                
+                takePictureButton = [[UIButton alloc] initWithFrame:CGRectMake(groupImageView.frame.origin.x + groupImageView.frame.size.width + 15, groupImageView.center.y + 10, 80, 30)];
+                [takePictureButton setTitleColor:[UIColor colorWithRed:0.0 green:176.0/255 blue:242.0/255 alpha:1.0] forState:UIControlStateNormal];
+                takePictureButton.titleLabel.font = [UIFont fontWithName:@"OpenSans" size:15.0];
+                takePictureButton.layer.cornerRadius = 4.0;
+                takePictureButton.layer.masksToBounds = YES;
+                takePictureButton.layer.borderWidth = 1.0;
+                takePictureButton.layer.borderColor = [UIColor colorWithRed:0.0 green:176.0/255 blue:242.0/255 alpha:1.0].CGColor;
+                [self.view addSubview:takePictureButton];
+                [takePictureButton addTarget:self action:@selector(snapDopePic) forControlEvents:UIControlEventTouchUpInside];
+                
+                takePictureButton.alpha = 1;
+                [takePictureButton setTitle:@"Snap pic" forState:UIControlStateNormal];
+                
+                flashButton = [[UIButton alloc] initWithFrame:CGRectMake(takePictureButton.frame.origin.x + 10, takePictureButton.frame.origin.y + 30 + 8, 15, 21.6)];
+                [flashButton setHitTestEdgeInsets:UIEdgeInsetsMake(-5, -5, -5, -5)];
+                [self.view addSubview:flashButton];
+                [flashButton addTarget:self action:@selector(flashButtonPressed) forControlEvents:UIControlEventTouchUpInside];
+                
+                [flashButton setImage:[UIImage imageNamed:@"flash_transp"] forState:UIControlStateNormal];
+                flashButton.alpha = 1;
+                flashButton.enabled = YES;
+                
+                switchCameraButton = [[UIButton alloc] initWithFrame:CGRectMake(takePictureButton.frame.origin.x + takePictureButton.frame.size.width - 20 - 10, takePictureButton.frame.origin.y + 30 + 9, 20, 20)];
+                [switchCameraButton setHitTestEdgeInsets:UIEdgeInsetsMake(-5, -5, -5, -5)];
+                [switchCameraButton addTarget:self action:@selector(switchCameraButtonPressed) forControlEvents:UIControlEventTouchUpInside];
+                [self.view addSubview:switchCameraButton];
+                
+                [switchCameraButton setImage:[UIImage imageNamed:@"flip"] forState:UIControlStateNormal];
+                switchCameraButton.enabled = YES;
+                switchCameraButton.alpha = 1;
+                
+                /*
+                if (!chooseImageButton) {
+                    chooseImageButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 200, 40)];
+                    chooseImageButton.center = CGPointMake(160, 480);
+                    [chooseImageButton setTitle:@"Choose Image" forState:UIControlStateNormal];
+                    chooseImageButton.titleLabel.font = [UIFont fontWithName:@"OpenSans" size:11.0];
+                    [chooseImageButton setTitleColor:[UIColor colorWithRed:0.0 green:80.0/255 blue:230.0/255 alpha:1.0] forState:UIControlStateNormal];
+                    [self.view addSubview:chooseImageButton];
+                    [chooseImageButton addTarget:self action:@selector(chooseImage) forControlEvents:UIControlEventTouchUpInside];
+                }
+                chooseImageButton.alpha = 1;*/
+                
+                break;
+            }
+            case 1: { // Choose Photo
+                
+                [self chooseImage];
+                
+                break;
+            }
+                
+            case 2: { // Default
+                
+                changeButton.alpha = 0;
+                
+                groupImage = [UIImage imageNamed:@"userImage"];
+                groupImageView.image = [UIImage imageNamed:@"userImage"];
+                [changeButton removeFromSuperview];
+                [self saveImage:groupImage isDefault:YES];
+                //[textField becomeFirstResponder];
+                
+            }
+                
+            default:
+                break;
+        }
+    }
 }
 
 - (void)saveImage:(UIImage *)image isDefault:(BOOL)isDefault {
@@ -840,6 +946,12 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
         vc.convo = self.convo;
         vc.group = self.group;
         vc.delegate = self;
+    
+    } else if ([segue.identifier isEqualToString:@"toProf"]) {
+        
+        ExternalProfileTVC *vc = (ExternalProfileTVC *)[segue destinationViewController];
+        vc.userID = parseIds[selectedIndex];
+        
     }
     
 }

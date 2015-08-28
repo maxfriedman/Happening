@@ -286,9 +286,13 @@
     
     BOOL isGroupMember = [fbIds containsObject:idsArray[indexPath.row]];
     
+    cell.accessoryType = UITableViewCellAccessoryNone;
+    cell.userInteractionEnabled = YES;
+    cell.checkView.alpha = 1.0;
+    
     if (isGroupMember) {
         
-        [cell.checkView removeFromSuperview];
+        cell.checkView.alpha = 0;
         cell.userInteractionEnabled = NO;
         cell.accessoryType = UITableViewCellAccessoryCheckmark;
         
@@ -328,7 +332,7 @@
         UIImageView *starImageView = [[UIImageView alloc] initWithFrame:CGRectMake(20 + 10, 0 + 5, 10, 10)];
         starImageView.image = [UIImage imageNamed:@"star-blue-bordered"];
         starImageView.tag = 234;
-        [cell addSubview:starImageView];
+        //[cell addSubview:starImageView];
     }
     
     return cell;

@@ -331,7 +331,7 @@
         UIImageView *starImageView = [[UIImageView alloc] initWithFrame:CGRectMake(20 + 10, 0 + 5, 10, 10)];
         starImageView.image = [UIImage imageNamed:@"star-blue-bordered"];
         starImageView.tag = 234;
-        [cell addSubview:starImageView];
+        //[cell addSubview:starImageView];
     }
     
     return cell;
@@ -1246,6 +1246,17 @@
                                  notification[@"Message"] = pushMessage;
                                  [notification saveInBackground];
                                  */ //save push notif to parse
+                                
+                                PFObject *timelineObject = [PFObject objectWithClassName:@"Timeline"];
+                                
+                                timelineObject[@"type"] = @"groupCreate";
+                                timelineObject[@"userId"] = user.objectId;
+                                timelineObject[@"createdDate"] = [NSDate date];
+                                [timelineObject pinInBackground];
+                                [timelineObject saveEventually];
+                                
+                                [currentUser incrementKey:@"score" byAmount:@15];
+                                [currentUser saveEventually];
                                 
                                 [self setupConversationWithMessage:[NSString stringWithFormat:@"%@ %@ created a personal group with %@ %@.", currentUser[@"firstName"], currentUser[@"lastName"], user[@"firstName"], user[@"lastName"]] forGroup:group];
                                 

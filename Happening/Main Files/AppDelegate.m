@@ -23,6 +23,8 @@
 #import "SwipeableCardVC.h"
 #import <Bolts/Bolts.h>
 #import <Rdio/Rdio.h>
+#import "NSData+Base64.h"
+#import "GroupChatVC.h"
 
 #define SYSTEM_VERSION_EQUAL_TO(v)                  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedSame)
 #define SYSTEM_VERSION_GREATER_THAN(v)              ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedDescending)
@@ -30,19 +32,66 @@
 #define SYSTEM_VERSION_LESS_THAN(v)                 ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedAscending)
 #define SYSTEM_VERSION_LESS_THAN_OR_EQUAL_TO(v)     ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedDescending)
 
-@interface AppDelegate ()
+@interface AppDelegate () <NSURLConnectionDataDelegate, RKDropdownAlertDelegate>
 
 @end
 
 static Rdio * _rdioInstance;
 
-@implementation AppDelegate
+@implementation AppDelegate {
+    
+    PFObject *groupFromPush;
+    LYRConversation *convoFromPush;
+}
 
 @synthesize locationManager = _locationManager, item, userLocation, locSubtitle, rk;
 
 + (Rdio *)sharedRdio
 {
     if (_rdioInstance == nil) {
+        
+        
+        NSString *post = [NSString stringWithFormat:@"Username=%@&Password=%@",@"nwb2guio6nh6dnc4nko7qdyfye",@"LtKsfB3aZQhrOyk6rpthCg"];
+        NSData *postData = [post dataUsingEncoding:NSASCIIStringEncoding allowLossyConversion:YES];
+        NSString *postLength = [NSString stringWithFormat:@"%lu",(unsigned long)[postData length]];
+        NSMutableURLRequest *request = [[NSMutableURLRequest alloc] init];
+        [request setURL:[NSURL URLWithString:@"http://www.services.rdio.com/oauth2/token/"]];
+        [request setHTTPMethod:@"POST"];
+        //[request setValue:postLength forHTTPHeaderField:@"Content-Length"];
+        //[request setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
+        //[request setHTTPBody:postData];
+        
+        NSString *authStr = [NSString stringWithFormat:@"%@:%@", @"nwb2guio6nh6dnc4nko7qdyfye", @"LtKsfB3aZQhrOyk6rpthCg"];
+        NSData *authData = [authStr dataUsingEncoding:NSASCIIStringEncoding];
+        NSString *authValue = [NSString stringWithFormat:@"Basic %@", [authData base64EncodingWithLineLength:80]];
+        [request setValue:authValue forHTTPHeaderField:@"Authorization"];
+        
+        [NSURLConnection sendAsynchronousRequest:request queue:[[NSOperationQueue alloc] init] completionHandler:^(NSURLResponse *response, NSData *data, NSError *error){
+            if (data){
+                //do something with data
+                NSLog(@"data: %@", data);
+            }
+            else if (error)
+                NSLog(@"error: %@",error);
+        }];
+        
+        
+        /*
+        NSURLConnection *conn = [[NSURLConnection alloc]
+                                        initWithRequest:request
+                                        delegate:self startImmediately:NO];
+        
+        [conn scheduleInRunLoop:[NSRunLoop mainRunLoop]
+                              forMode:NSDefaultRunLoopMode];
+        [conn start];
+        
+        if(conn) {
+            NSLog(@"Connection Successful");
+        } else {
+            NSLog(@"Connection could not be made");
+        }*/
+        
+        
         _rdioInstance = [[Rdio alloc] initWithClientId:@"nwb2guio6nh6dnc4nko7qdyfye"
                                              andSecret:@"LtKsfB3aZQhrOyk6rpthCg"
                                               delegate:nil];
@@ -51,9 +100,28 @@ static Rdio * _rdioInstance;
     return _rdioInstance;
 }
 
+// This method is used to receive the data which we get using post method.
+- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData*)data {
+    NSLog(@"data: %@", data);
+}
+
+// This method receives the error report in case of connection is not made to server.
+- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error {
+    NSLog(@"error:%@", error);
+
+}
+
+/*
+// This method is used to process the data after connection has made successfully.
+- (void)connectionDidFinishLoading:(NSURLConnection *)connection {
+    NSLog(@"connection: %@", connection);
+}*/
+
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
     
+    NSLog(@"Loading Happening!");
+          
     NSError *error;
     BOOL success = [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryAmbient error:&error];
     if (!success) {
@@ -96,32 +164,40 @@ static Rdio * _rdioInstance;
     }
     
     
-    NSURL *appID = [NSURL URLWithString:@"layer:///apps/staging/337f6c52-0eb7-11e5-b8c8-aa9e2d006589"];
+    NSURL *appID = [NSURL URLWithString:@"layer:///apps/production/337f70da-0eb7-11e5-9a48-aa9e2d006589"];
     self.layerClient = [LYRClient clientWithAppID:appID];
+    self.layerClient.autodownloadMIMETypes = nil;
     
-    [Hoko setupWithToken:@"b649dec47382a7b855b46077d2cfbb6968e7e81b"];
+    //[Hoko setVerbose:YES];
+    [Hoko setupWithToken:@"b649dec47382a7b855b46077d2cfbb6968e7e81b" customDomains:@[@"hap.ng"]];
     
     BOOL locEnabled = NO;
     if (SYSTEM_VERSION_LESS_THAN(@"8.0")) {
         NSLog(@" ====== iOS 7 ====== ");
-        if ([CLLocationManager authorizationStatus] == kCLAuthorizationStatusAuthorized) locEnabled = YES;
+        if ([CLLocationManager authorizationStatus] == kCLAuthorizationStatusAuthorized) {
+            locEnabled = YES;
+        }
     } else {
         NSLog(@" ====== iOS 8 ====== ");
         if ([CLLocationManager authorizationStatus] == kCLAuthorizationStatusAuthorizedAlways || [CLLocationManager authorizationStatus] == kCLAuthorizationStatusAuthorizedWhenInUse) locEnabled = YES;
     }
     
     if (locEnabled) {
-        NSLog(@"Initializing Location Kit...");
-        [[LocationKit sharedInstance] startWithApiToken:@"48ced72017ecb03b" andDelegate:self];
+        //NSLog(@"Initializing Location Kit...");
+        //[[LocationKit sharedInstance] startWithApiToken:@"48ced72017ecb03b" delegate:self];
+        [PFUser currentUser][@"locStatus"] = @"yes";
+    } else if ([CLLocationManager authorizationStatus] == kCLAuthorizationStatusDenied) {
+        [PFUser currentUser][@"locStatus"] = @"no";
     }
     
-    _rdioInstance = [AppDelegate sharedRdio]; //initialize
+    //_rdioInstance = [AppDelegate sharedRdio]; //initialize
+    /*
     [_rdioInstance preparePlayerWithDelegate:nil];
     [_rdioInstance callAPIMethod:@"access_token" withParameters:@{@"access_token":@"mF_9.B5f-4.1JqM"} success:^(NSDictionary *result) {
         NSLog(@"lala %@", result);
     } failure:^(NSError *error) {
         NSLog(@"lala %@", error);
-    }];
+    }];*/
     
     //[rdio preparePlayerWithDelegate:nil];
     //[rdio.player performSelector:@selector(play:) withObject:@"t1" afterDelay:2.0];
@@ -205,7 +281,7 @@ static Rdio * _rdioInstance;
     if ([currentUser[@"hasLoggedIn"] boolValue] == YES && currentUser.isAuthenticated)
     {
         // app already launched
-        // [defaults setBool:YES forKey:@"refreshData"];
+        currentUser[@"time"] = @"today";
         
         if (!self.layerClient.isConnected) {
             // LayerKit is connected, no need to call connectWithCompletion:
@@ -234,7 +310,19 @@ static Rdio * _rdioInstance;
         
         // This is the first launch ever
     }
-
+    
+    NSLog(@"@#$ %@", launchOptions);
+    
+    NSLog(@"^&* %@", launchOptions[UIApplicationLaunchOptionsURLKey]);
+    
+    /*
+    if (launchOptions[UIApplicationLaunchOptionsURLKey] == nil) {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle: @"Announcement" message: @"NIL" delegate: nil cancelButtonTitle:@"OK" otherButtonTitles:nil]; [alert show];
+    } else {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle: @"Announcement" message: launchOptions[UIApplicationLaunchOptionsURLKey] delegate: nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+        [alert show];
+    }*/
+    
     //self.mh.eventIdForSegue = eventID;
     //[self.mh performSegueWithIdentifier:@"toSwipeVC" sender:self.mh];
     
@@ -246,16 +334,51 @@ static Rdio * _rdioInstance;
     self.window.rootViewController = vc;
     //vc.eventIdFromNotification = @"wKhr50fk50";
     
+    
+    NSURL *hokoLink = launchOptions[UIApplicationLaunchOptionsURLKey];
+    
+    
+    
+    if (hokoLink != nil && [self doesString:hokoLink.absoluteString contain:@"happening://events/"]) {
+        
+        UINavigationController *nvc = [storyboard instantiateViewControllerWithIdentifier:@"SwipeVCNav"];
+        SwipeableCardVC *vc = (SwipeableCardVC *)[nvc topViewController];
+        
+        NSString *urlString = hokoLink.absoluteString;
+        NSString *eventId = [urlString stringByReplacingOccurrencesOfString:@"happening://events/" withString:@""];
+        if ([self doesString:eventId contain:@"?"]) {
+            NSString *substring = nil;
+            NSRange newlineRange = [eventId rangeOfString:@"?"];
+            if(newlineRange.location != NSNotFound) {
+                substring = [eventId substringFromIndex:newlineRange.location];
+            }
+            eventId = [eventId stringByReplacingOccurrencesOfString:substring withString:@""];
+        }
+            
+        vc.eventID = eventId;
+        [HOKNavigation presentViewController:nvc animated:YES];
+    }
+    
     [[Hoko deeplinking] mapRoute:@"events/:EventID"
                         toTarget:^(HOKDeeplink *deeplink) {
                             // Do something when deeplink is opened
                             
+                            NSLog(@"HOKO LINK");
                             NSLog(@"%@", deeplink);
+                            
+                            //UIAlertView *alert = [[UIAlertView alloc] initWithTitle: @"Announcement" message: @"Route was triggered" delegate: nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+                            //[alert show];
+                            
                             UINavigationController *nvc = [storyboard instantiateViewControllerWithIdentifier:@"SwipeVCNav"];
                             SwipeableCardVC *vc = (SwipeableCardVC *)[nvc topViewController];
                             vc.eventID = deeplink.routeParameters[@"EventID"];
                             [HOKNavigation presentViewController:nvc animated:YES];
                         }];
+    
+    [[Hoko deeplinking] addHandlerBlock:^(HOKDeeplink *deeplink) {
+        NSLog(@"Handler is working %@", deeplink);
+    }];
+    
     
     // Extract the notification data
     NSDictionary *notificationPayload = launchOptions[UIApplicationLaunchOptionsRemoteNotificationKey];
@@ -265,10 +388,55 @@ static Rdio * _rdioInstance;
         
         if ([notificationPayload objectForKey:@"eventID"] != nil) {
             
+            NSLog(@"&& %@", notificationPayload);
+            
             NSString *eventID = [notificationPayload objectForKey:@"eventID"];
             vc.eventIdFromNotification = eventID;
             
+        } else if ([notificationPayload objectForKey:@"layer"] != nil) { // layer notification
+            
+            NSDictionary *dict = [notificationPayload objectForKey:@"layer"];
+            
+            LYRQuery *query = [LYRQuery queryWithQueryableClass:[LYRConversation class]];
+            query.predicate = [LYRPredicate predicateWithProperty:@"identifier" predicateOperator:LYRPredicateOperatorIsEqualTo value:[dict objectForKey:@"conversation_identifier"]];
+            LYRConversation *conversation = [[self.layerClient executeQuery:query error:nil] firstObject];
+            
+            PFQuery *groupQuery = [PFQuery queryWithClassName:@"Group"];
+            [groupQuery fromLocalDatastore];
+            [groupQuery getObjectInBackgroundWithId: [conversation.metadata objectForKey:@"groupId"] block:^(PFObject *group1, NSError *error) {
+                
+                NSDictionary *pushDict = [notificationPayload objectForKey:@"aps"];
+                
+                if (!error && group1 && [pushDict objectForKey:@"alert"] != nil && ![[pushDict objectForKey:@"alert"] isEqualToString:@""]) {
+                    groupFromPush = group1;
+                    convoFromPush = conversation;
+                    [self.mh.groupHub increment];
+                    [self showChatVC];
+                    
+                } else {
+                    
+                    PFQuery *groupQuery = [PFQuery queryWithClassName:@"Group"];
+                    [groupQuery getObjectInBackgroundWithId: [conversation.metadata objectForKey:@"groupId"] block:^(PFObject *group2, NSError *error) {
+                        
+                        [group2 pinInBackground];
+                        NSDictionary *pushDict = [notificationPayload objectForKey:@"aps"];
+                        
+                        if (!error && group2 && [pushDict objectForKey:@"alert"] != nil && ![[pushDict objectForKey:@"alert"] isEqualToString:@""]) {
+                            groupFromPush = group1;
+                            convoFromPush = conversation;
+                            [self.mh.groupHub increment];
+                            [self showChatVC];
+                        }
+                        
+                    }];
+                    
+                    
+                }
+                
+            }];
+            
         }
+
         
     }
     
@@ -281,7 +449,16 @@ static Rdio * _rdioInstance;
                                     didFinishLaunchingWithOptions:launchOptions];
 }
 
+-(BOOL)doesString:(NSString *)first contain:(NSString*)other {
+    NSRange range = [first rangeOfString:other];
+    return range.length != 0;
+}
+
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
+    
+    NSLog(@"$$$$ %@", url);
+    //[[Hoko deeplinking] openURL:url sourceApplication:sourceApplication annotation:annotation];
+    
     return [[FBSDKApplicationDelegate sharedInstance] application:application
                                                           openURL:url
                                                 sourceApplication:sourceApplication
@@ -298,6 +475,18 @@ static Rdio * _rdioInstance;
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
     
     [[PFUser currentUser] saveEventually];
+    
+    PFQuery *activityQuery = [PFQuery queryWithClassName:@"Activity"];
+    [activityQuery fromLocalDatastore];
+    [activityQuery findObjectsInBackgroundWithBlock:^(NSArray *activities, NSError *error) {
+        
+        if (!error) {
+            
+            [PFObject unpinAllInBackground:activities];
+        }
+        
+    }];
+    
 }
 
 - (void)applicationWillEnterForeground:(UIApplication *)application {
@@ -318,57 +507,55 @@ static Rdio * _rdioInstance;
     
         //dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
         
-            PFInstallation *currentInstallation = [PFInstallation currentInstallation];
-            if (currentInstallation.badge != 0) {
-                currentInstallation.badge = 0;
-                [currentInstallation saveEventually];
+        PFInstallation *currentInstallation = [PFInstallation currentInstallation];
+        if (currentInstallation.badge != 0) {
+            currentInstallation.badge = 0;
+            [currentInstallation saveEventually];
+        }
+    
+        [self loadEvents];
+        
+        [self loadGroups];
+        
+        [self checkForActivityObjects];
+        
+        if (self.mh.groupHub != nil) {
+            
+            // Fetches the count of all unread messages for the authenticated user
+            LYRQuery *query = [LYRQuery queryWithQueryableClass:[LYRMessage class]];
+            
+            // Messages must be unread
+            LYRPredicate *unreadPredicate =[LYRPredicate predicateWithProperty:@"isUnread" predicateOperator:LYRPredicateOperatorIsEqualTo value:@(YES)];
+            
+            // Messages must not be sent by the authenticated user
+            LYRPredicate *userPredicate = [LYRPredicate predicateWithProperty:@"sender.userID" predicateOperator:LYRPredicateOperatorIsNotEqualTo value:self.layerClient.authenticatedUserID];
+            
+            query.predicate = [LYRCompoundPredicate compoundPredicateWithType:LYRCompoundPredicateTypeAnd subpredicates:@[unreadPredicate, userPredicate]];
+            query.resultType = LYRQueryResultTypeCount;
+            NSError *error = nil;
+            NSUInteger unreadMessageCount = [self.layerClient countForQuery:query error:&error];
+            
+            if (unreadMessageCount > 0) {
+                NSLog(@"%lu unread messages", unreadMessageCount);
+                
+                if (unreadMessageCount > 100) {
+                    unreadMessageCount = 1;
+                }
+                
+                [self.mh.groupHub setCount:unreadMessageCount];
+                [self.mh.groupHub bump];
+            
             }
+        }
         
-            [self loadEvents];
+        [[PFUser currentUser] fetchInBackgroundWithBlock:^(PFObject *object, NSError *error) {
             
-            [self loadGroups];
+            if (!error){
+                [object pinInBackground];
+                //[self performSelector:@selector(loadFriends) withObject:nil afterDelay:5.0];
+            }
+        }];
         
-        
-            [[PFUser currentUser] fetchInBackgroundWithBlock:^(PFObject *object, NSError *error) {
-                
-                if (!error){
-                    [object pinInBackground];
-                    //[self performSelector:@selector(loadFriends) withObject:nil afterDelay:5.0];
-                }
-            }];
-        
-            /*
-            PFQuery *localUserQuery = [PFUser query];
-            [localUserQuery fromLocalDatastore];
-            [localUserQuery findObjectsInBackgroundWithBlock:^(NSArray *users1, NSError *error){
-                
-                for (PFUser *user in users1) {
-                    NSLog(@"%@", user.objectId);
-                }
-                
-                [PFObject fetchAllInBackground:users1 block:^(NSArray *users2, NSError *error) {
-                    
-                    if (!error) {
-                        
-                        [PFObject pinAllInBackground:users2 block:^(BOOL success, NSError *error){
-                            
-                            if (success) {
-                                NSLog(@"successfully updated and pinned %lu users", users2.count);
-                            } else {
-                                NSLog(@"failed to update and pin users with error: %@", error);
-                                
-                            }
-                            
-                        }];
-                    } else {
-                        NSLog(@"No objects to update or ERROR");
-                    }
-                    
-                }];
-                
-            }]; */
-            
-        //});
     }
     
 }
@@ -376,9 +563,11 @@ static Rdio * _rdioInstance;
 
 -(void)loadEvents {
     
+    NSLog(@"Loading events...");
+    
     PFQuery *eventQuery = [PFQuery queryWithClassName:@"Event"];
     [eventQuery fromLocalDatastore];
-    [eventQuery whereKey:@"Date" lessThan:[NSDate dateWithTimeInterval:-604800 sinceDate:[NSDate date]]];
+    [eventQuery whereKey:@"Date" lessThan:[NSDate dateWithTimeInterval:-60*60*24 sinceDate:[NSDate date]]];
     [eventQuery findObjectsInBackgroundWithBlock:^(NSArray *events1, NSError *error){
         [PFObject unpinAllInBackground:events1 withName:@"Event" block:^(BOOL success, NSError *error){
             if (success) {
@@ -388,7 +577,7 @@ static Rdio * _rdioInstance;
                 [localEventQuery fromLocalDatastore];
                 
                 [localEventQuery findObjectsInBackgroundWithBlock:^(NSArray *events2, NSError *error){
-                    
+
                     if (events2.count > 0 && !error) {
 
                         [PFObject fetchAllInBackground:events2 block:^(NSArray *events3, NSError *error) {
@@ -405,6 +594,7 @@ static Rdio * _rdioInstance;
                                     }
                                     
                                 }];
+                                
                             } else {
                                 
                                 NSLog(@"No objects to update or ERROR: %@", error);
@@ -435,7 +625,8 @@ static Rdio * _rdioInstance;
         
         for (LYRConversation *convo in conversations) {
             
-            [array addObject: [convo.metadata valueForKey:@"groupId"]];
+            if ([convo.metadata valueForKey:@"groupId"] != nil)
+                [array addObject: [convo.metadata valueForKey:@"groupId"]];
         }
         
     } else {
@@ -449,21 +640,13 @@ static Rdio * _rdioInstance;
         
         PFQuery *localQuery = [PFQuery queryWithClassName:@"Group"];
         [localQuery fromLocalDatastore];
-        [localQuery includeKey:@"user_objects"];
         [localQuery findObjectsInBackgroundWithBlock:^(NSArray *groups1, NSError *error) {
             
             PFQuery *query = [PFQuery queryWithClassName:@"Group"];
             [query whereKey:@"objectId" containedIn:array];
-            [query includeKey:@"user_objects"];
             [query findObjectsInBackgroundWithBlock:^(NSArray *groups2, NSError *error) {
                 
                 if (!error) {
-                    
-                    //NSLog(@"%@", groups1);
-                    
-                   // NSLog(@"&&&&&&&&&&&&&&&&&&&&&&&");
-                    
-                    //NSLog(@"%@", groups2);
                     
                     [PFObject unpinAllInBackground:groups1];
                     
@@ -501,7 +684,7 @@ static Rdio * _rdioInstance;
                     PFQuery *groupEventQuery = [PFQuery queryWithClassName:@"Group_Event"];
                     //[groupEventQuery fromLocalDatastore];
                     [groupEventQuery whereKey:@"GroupID" containedIn:groupIds];
-                    [groupEventQuery includeKey:@"eventObject"];
+                    //[groupEventQuery includeKey:@"eventObject"];
                     [groupEventQuery findObjectsInBackgroundWithBlock:^(NSArray *groupEvents, NSError *error){
                     
                         if (!error) {
@@ -509,15 +692,66 @@ static Rdio * _rdioInstance;
                             [PFObject pinAllInBackground:groupEvents block:^(BOOL success, NSError *error){
                                 
                                 if (success) {
-                                    NSLog(@"successfully updated and pinned %lu group events", groups2.count);
+                                    NSLog(@"successfully updated and pinned %lu group events", groupEvents.count);
                                 } else {
                                     NSLog(@"failed to update and pin group events with error: %@", error);
                                     
                                 }
                             
-                            
                             }];
                             
+                            NSMutableArray *eventIds = [NSMutableArray array];
+                            for (PFObject *groupEvent in groupEvents) {
+                                [eventIds addObject:groupEvent[@"EventID"]];
+                            }
+                            
+                            PFQuery *localEventQuery = [PFQuery queryWithClassName:@"Event"];
+                            [localEventQuery fromLocalDatastore];
+                            localEventQuery.limit = 1000;
+                            [localEventQuery whereKey:@"objectId" containedIn:eventIds];
+                            [localEventQuery selectKeys:@[@"objectId"]];
+                            [localEventQuery findObjectsInBackgroundWithBlock:^(NSArray *events, NSError *error) {
+                                
+                                if (!error) {
+                                    
+                                    for (PFObject *event in events) {
+                                        
+                                        [eventIds removeObject:event.objectId];
+                                    }
+                                    
+                                    if (eventIds.count > 0) {
+                                        
+                                        PFQuery *eventQuery = [[PFQuery alloc] initWithClassName:@"Event"];
+                                        [eventQuery whereKey:@"objectId" containedIn:eventIds];
+                                        [eventQuery findObjectsInBackgroundWithBlock:^(NSArray *events, NSError *error) {
+                                        
+                                            if (!error) {
+                                                 [PFObject pinAllInBackground:events block:^(BOOL success, NSError *error){
+                                                     if (success) {
+                                                        NSLog(@"successfully updated and pinned %lu events", events.count);
+                                                     } else {
+                                                         NSLog(@"failed to update and pin group events with error: %@", error);
+                                                     }
+                                                 }];
+                                            }
+                                        }];
+                                    }
+                                }
+                            }];
+
+                            /*
+                            PFObject *ob = [eventsArray lastObject];
+                            NSLog(@"1. %@", ob);
+
+                            [ob pinWithName:@"test"];
+                            
+                            PFQuery *q = [PFQuery queryWithClassName:@"Event"];
+                            [q fromPinWithName:@"test"];
+                            PFObject *test = [q getFirstObject];
+                            
+                            NSLog(@"2. %@", test);
+                            */
+
                         } else {
                             
                             NSLog(@"failed to update and pin group events with error: %@", error);
@@ -554,6 +788,79 @@ static Rdio * _rdioInstance;
 
 }
 
+- (void)checkForActivityObjects {
+    
+    NSArray *friends = [[PFUser currentUser] objectForKey:@"friends"];
+    NSMutableArray *friendIds = [NSMutableArray new];
+    for (NSDictionary *dict in friends) {
+        [friendIds addObject:[dict valueForKey:@"id"]];
+    }
+
+    PFQuery *finalQuery = [PFQuery queryWithClassName:@"Activity"];
+    
+    PFQuery *interestedQuery = [PFQuery queryWithClassName:@"Activity"];
+    [interestedQuery whereKey:@"type" containedIn:@[@"interested", @"going", @"create"]];
+    [interestedQuery whereKey:@"userFBId" containedIn:friendIds];
+    
+    PFQuery *reminderQuery = [PFQuery queryWithClassName:@"Activity"];
+    [reminderQuery whereKey:@"type" equalTo:@"reminder"];
+    [reminderQuery whereKey:@"userParseId" equalTo:[PFUser currentUser].objectId];
+    
+    PFQuery *friendJoinedQuery = [PFQuery queryWithClassName:@"Activity"];
+    [friendJoinedQuery whereKey:@"type" equalTo:@"friendJoined"];
+    [friendJoinedQuery whereKey:@"userFBId" containedIn:friendIds];
+    
+    finalQuery = [PFQuery orQueryWithSubqueries:[NSArray arrayWithObjects:interestedQuery, reminderQuery, friendJoinedQuery, nil]];
+    [finalQuery orderByDescending:@"createdAt"];
+    
+    [finalQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
+       
+        if (!error) {
+            
+            NSLog(@"%@", object);
+            
+            PFQuery *query = [PFQuery queryWithClassName:@"Activity"];
+            //[query fromPinWithName:@"friends"];
+            [query fromLocalDatastore];
+            [query getObjectInBackgroundWithId:object.objectId block:^(PFObject *ob, NSError *error) {
+                
+                if (!ob || error) {
+                
+                    NSLog(@"New activities");
+                    [self.mh.activityHub increment];
+                    [self.mh.activityHub bump];
+                    
+                } else {
+                    
+                    NSLog(@"No new activities");
+
+                }
+                
+            }];
+            
+            /*
+            PFQuery *meQuery = [PFQuery queryWithClassName:@"Activity"];
+            [meQuery orderByDescending:@"createdDate"]; // required bc of limit, need most recent results. Enumerate array backwards.
+    
+            PFQuery *reminderQuery = [PFQuery queryWithClassName:@"Activity"];
+            [reminderQuery whereKey:@"type" equalTo:@"reminder"];
+            [reminderQuery whereKey:@"userParseId" equalTo:[PFUser currentUser].objectId];
+            
+            PFQuery *friendJoinedQuery = [PFQuery queryWithClassName:@"Activity"];
+            [friendJoinedQuery whereKey:@"type" equalTo:@"friendJoined"];
+            [friendJoinedQuery whereKey:@"userFBId" containedIn:friendIds];
+            
+            meQuery = [PFQuery orQueryWithSubqueries:[NSArray arrayWithObjects:reminderQuery, friendJoinedQuery, nil]];
+            */
+            
+        }
+        
+    }];
+        
+
+    
+}
+
 - (void)applicationWillTerminate:(UIApplication *)application {
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
 }
@@ -581,7 +888,9 @@ static Rdio * _rdioInstance;
             [currentInstallation setDeviceTokenFromData:deviceToken];
             currentInstallation.channels = @[@"global", @"reminders", @"matches", @"friendJoined", @"popularEvents", @"allGroups", @"bestFriends"];
             currentInstallation[@"userID"] = [PFUser currentUser].objectId;
-            currentInstallation[@"matchCount"] = @3;
+            currentInstallation[@"matchCount"] = @2;
+            [PFUser currentUser][@"matchCount"] = @2;
+            [[PFUser currentUser] saveEventually];
             [currentInstallation saveEventually];
             
         } else {
@@ -614,6 +923,74 @@ static Rdio * _rdioInstance;
      object:nil];
 }
 
+-(BOOL)dropdownAlertWasDismissed {
+    
+    return true;
+}
+
+- (BOOL)dropdownAlertWasTapped:(RKDropdownAlert *)alert {
+    
+    if (!self.conversationOpen) {
+        
+        [self showChatVC];
+    
+    }
+    
+    return true;
+}
+
+- (void)showChatVC {
+    
+    self.conversationOpen = YES;
+    [self.mh.groupHub decrement];
+    
+    GroupChatVC *controller = [GroupChatVC conversationViewControllerWithLayerClient:self.layerClient];
+    
+    NSString *title = [[convoFromPush metadata] objectForKey:@"title"];
+    if ([title isEqualToString:@"_indy_"]) {
+        //vc.title = [NSString stringWithFormat:@"%@ and %@", [self.dataSource conversationListViewController:self titleForConversation:selectedConvo], currentUser[@"firstName"]];
+        //vc.showDetails = NO;
+    } else {
+        //vc.title = title;
+        //vc.showDetails = YES;
+    }
+    
+    controller.groupObject = groupFromPush;
+    
+    if (controller.groupObject.isDataAvailable) {
+        
+        controller.userDicts = controller.groupObject[@"user_dicts"];
+        
+        NSMutableArray *fbids =[NSMutableArray new];
+        for (NSDictionary *dict in controller.userDicts) {
+            [fbids addObject:[dict valueForKey:@"id"]];
+        }
+        
+        controller.fbids = fbids;
+        
+    }
+    
+    //vc.loadTopView = YES;
+    
+    if (!controller.groupObject) {
+        
+        NSLog(@"Group hasn't loaded yet. Load in next VC");
+    }
+    
+    controller.conversation = convoFromPush;
+    
+    controller.isModal = YES;
+    
+    UINavigationController *nvc = [[UINavigationController alloc] initWithRootViewController:controller];
+    nvc.navigationBar.tintColor = [UIColor whiteColor];
+    nvc.navigationBar.translucent = NO;
+    nvc.navigationBar.barStyle = UIBarStyleBlack;
+    nvc.navigationBar.barTintColor = [UIColor clearColor]; //%%% bartint
+    [nvc.navigationBar setBackgroundImage:[UIImage imageNamed:@"navBar"] forBarMetrics:UIBarMetricsDefault];
+    
+    [HOKNavigation presentViewController:nvc animated:YES];
+    
+}
 
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo {
 
@@ -627,7 +1004,7 @@ static Rdio * _rdioInstance;
     if (state == UIApplicationStateActive)
     {
         
-        if ([userInfo objectForKey:@"layer"] != nil) { // layer notification
+        if ([userInfo objectForKey:@"layer"] != nil && !self.conversationOpen) { // layer notification
             
             NSDictionary *dict = [userInfo objectForKey:@"layer"];
     
@@ -636,12 +1013,35 @@ static Rdio * _rdioInstance;
             LYRConversation *conversation = [[self.layerClient executeQuery:query error:nil] firstObject];
             
             PFQuery *groupQuery = [PFQuery queryWithClassName:@"Group"];
-            [groupQuery getObjectInBackgroundWithId: [conversation.metadata objectForKey:@"groupId"] block:^(PFObject *group, NSError *error) {
+            [groupQuery fromLocalDatastore];
+            [groupQuery getObjectInBackgroundWithId: [conversation.metadata objectForKey:@"groupId"] block:^(PFObject *group1, NSError *error) {
                
                 NSDictionary *pushDict = [userInfo objectForKey:@"aps"];
                 
-                if (!error && ![[pushDict objectForKey:@"alert"] isEqualToString:@""]) {
-                    [RKDropdownAlert title:group[@"name"] message:[pushDict objectForKey:@"alert"] backgroundColor:[UIColor colorWithRed:28.0/255 green:73.0/255 blue:134.0/255 alpha:1.0] textColor:[UIColor whiteColor]];
+                if (!error && group1 && [pushDict objectForKey:@"alert"] != nil && ![[pushDict objectForKey:@"alert"] isEqualToString:@""]) {
+                    groupFromPush = group1;
+                    convoFromPush = conversation;
+                    [RKDropdownAlert title:group1[@"name"] message:[pushDict objectForKey:@"alert"] backgroundColor:[UIColor colorWithRed:28.0/255 green:73.0/255 blue:134.0/255 alpha:1.0] textColor:[UIColor whiteColor] delegate:self];
+                    [self.mh.groupHub increment];
+                
+                } else {
+                    
+                    PFQuery *groupQuery = [PFQuery queryWithClassName:@"Group"];
+                    [groupQuery getObjectInBackgroundWithId: [conversation.metadata objectForKey:@"groupId"] block:^(PFObject *group2, NSError *error) {
+                        
+                        [group2 pinInBackground];
+                        NSDictionary *pushDict = [userInfo objectForKey:@"aps"];
+                        
+                        if (!error && group2 && [pushDict objectForKey:@"alert"] != nil && ![[pushDict objectForKey:@"alert"] isEqualToString:@""]) {
+                            groupFromPush = group2;
+                            convoFromPush = conversation;
+                            [RKDropdownAlert title:group2[@"name"] message:[pushDict objectForKey:@"alert"] backgroundColor:[UIColor colorWithRed:28.0/255 green:73.0/255 blue:134.0/255 alpha:1.0] textColor:[UIColor whiteColor] delegate:self];
+                            [self.mh.groupHub increment];
+                        }
+                        
+                    }];
+
+                    
                 }
                 
             }];
@@ -653,7 +1053,50 @@ static Rdio * _rdioInstance;
     else {
         // Push Notification received in the background
         
-        if ([userInfo objectForKey:@"eventID"] != nil) {
+        if ([userInfo objectForKey:@"layer"] != nil && !self.conversationOpen) { // layer notification
+            NSDictionary *dict = [userInfo objectForKey:@"layer"];
+            
+            LYRQuery *query = [LYRQuery queryWithQueryableClass:[LYRConversation class]];
+            query.predicate = [LYRPredicate predicateWithProperty:@"identifier" predicateOperator:LYRPredicateOperatorIsEqualTo value:[dict objectForKey:@"conversation_identifier"]];
+            LYRConversation *conversation = [[self.layerClient executeQuery:query error:nil] firstObject];
+            
+            PFQuery *groupQuery = [PFQuery queryWithClassName:@"Group"];
+            [groupQuery fromLocalDatastore];
+            [groupQuery getObjectInBackgroundWithId: [conversation.metadata objectForKey:@"groupId"] block:^(PFObject *group1, NSError *error) {
+                
+                NSDictionary *pushDict = [userInfo objectForKey:@"aps"];
+                
+                if (!error && group1 && ![[pushDict objectForKey:@"alert"] isEqualToString:@""]) {
+                    groupFromPush = group1;
+                    convoFromPush = conversation;
+                    [self.mh.groupHub increment];
+                    [self showChatVC];
+                    
+                } else {
+                    
+                    PFQuery *groupQuery = [PFQuery queryWithClassName:@"Group"];
+                    [groupQuery getObjectInBackgroundWithId: [conversation.metadata objectForKey:@"groupId"] block:^(PFObject *group2, NSError *error) {
+                        
+                        [group2 pinInBackground];
+                        NSDictionary *pushDict = [userInfo objectForKey:@"aps"];
+                        
+                        if (!error && group2 && ![[pushDict objectForKey:@"alert"] isEqualToString:@""]) {
+                            groupFromPush = group1;
+                            convoFromPush = conversation;
+                            [self.mh.groupHub increment];
+                            [self showChatVC];
+                        }
+                        
+                    }];
+                    
+                    
+                }
+                
+            }];
+            
+        }
+        
+        else if ([userInfo objectForKey:@"eventID"] != nil) {
         
             NSString *eventID = [userInfo objectForKey:@"eventID"];
             //vc.eventIdFromNotification = eventID;
