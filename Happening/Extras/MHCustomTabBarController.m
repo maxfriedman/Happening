@@ -1,3 +1,4 @@
+
 /*
  * Copyright (c) 2015 Martin Hartl
  *
@@ -27,6 +28,7 @@
 #import "DragViewController.h"
 #import "SwipeableCardVC.h"
 #import "AMPopTip.h"
+#import "ActivityTVC.h"
 
 NSString *const MHCustomTabBarControllerViewControllerChangedNotification = @"MHCustomTabBarControllerViewControllerChangedNotification";
 NSString *const MHCustomTabBarControllerViewControllerAlreadyVisibleNotification = @"MHCustomTabBarControllerViewControllerAlreadyVisibleNotification";
@@ -35,7 +37,6 @@ NSString *const MHCustomTabBarControllerViewControllerAlreadyVisibleNotification
 
 @property (nonatomic, strong) NSMutableDictionary *viewControllersByIdentifier;
 @property (strong, nonatomic) NSString *destinationIdentifier;
-@property (nonatomic) IBOutletCollection(UIButton) NSArray *buttons;
 @property (nonatomic) IBOutletCollection(UIImageView) NSArray *imageViews;
 @property (strong, nonatomic) IBOutlet UIView *tabBarContainerView;
 
@@ -248,9 +249,12 @@ NSString *const MHCustomTabBarControllerViewControllerAlreadyVisibleNotification
         }
     } else if ([segue.identifier isEqualToString:@"viewController1"]) {
         
-        if ([[[segue destinationViewController] topViewController] isKindOfClass:[GroupsTVC class]]) {
+        if ([[[segue destinationViewController] topViewController] isKindOfClass:[DragViewController class]]) {
             DragViewController *vc = (DragViewController *)[[segue destinationViewController] topViewController];
-            
+            if (self.shouldCreateHappening == YES) {
+                vc.directToCreateHappening = YES;
+                //self.shouldCreateHappening = NO;
+            }
         }
         
     }
@@ -264,8 +268,18 @@ NSString *const MHCustomTabBarControllerViewControllerAlreadyVisibleNotification
         id vc = [self.viewControllersByIdentifier objectForKey:identifier];
         
         if ([vc isKindOfClass:[UINavigationController class]]) {
+            
             UINavigationController *nvc = (UINavigationController *)vc;
-            [nvc popToRootViewControllerAnimated:YES];
+            if ([[nvc topViewController] isKindOfClass:[ActivityTVC class]]) {
+                ActivityTVC *activityVC = (ActivityTVC *)[vc topViewController];
+                [activityVC toTop];
+            } else if ([[nvc topViewController] isKindOfClass:[DragViewController class]]) {
+                DragViewController *dvc = (DragViewController *)[vc topViewController];
+                [dvc refreshData];
+            } else {
+                [nvc popToRootViewControllerAnimated:YES];
+            }
+            
         } else if ([vc isKindOfClass:[UIViewController class]]) {
             UIViewController *theVC = (UIViewController *)vc;
             [theVC.navigationController popToRootViewControllerAnimated:YES];
@@ -330,6 +344,13 @@ NSString *const MHCustomTabBarControllerViewControllerAlreadyVisibleNotification
     
     [popTip hide];
     
+}
+
+- (void)createButtonPressed {
+    
+    self.shouldCreateHappening = YES;
+    UIButton *button = self.buttons[0];
+    [button sendActionsForControlEvents: UIControlEventTouchUpInside];
 }
 
 #pragma mark - Memory Warning

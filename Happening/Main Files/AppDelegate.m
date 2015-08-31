@@ -216,7 +216,7 @@ static Rdio * _rdioInstance;
     [[BTNDropinButton appearance] setContentInsets:UIEdgeInsetsMake(0, 6, 0.0, 0)];
     [[BTNDropinButton appearance] setIconSize:20.0];
     [[BTNDropinButton appearance] setIconLabelSpacing:8.0];
-    [[BTNDropinButton appearance] setFont:[UIFont fontWithName:@"OpenSans" size:14.0]];
+    [[BTNDropinButton appearance] setFont:[UIFont fontWithName:@"OpenSans-Semibold" size:14.0]];
     [[BTNDropinButton appearance] setTextColor:[UIColor darkTextColor]];
     
     [[BTNDropinButton appearance] setBackgroundColor:[UIColor groupTableViewBackgroundColor]];
@@ -476,6 +476,7 @@ static Rdio * _rdioInstance;
     
     [[PFUser currentUser] saveEventually];
     
+    /*
     PFQuery *activityQuery = [PFQuery queryWithClassName:@"Activity"];
     [activityQuery fromLocalDatastore];
     [activityQuery findObjectsInBackgroundWithBlock:^(NSArray *activities, NSError *error) {
@@ -485,7 +486,7 @@ static Rdio * _rdioInstance;
             [PFObject unpinAllInBackground:activities];
         }
         
-    }];
+    }];*/
     
 }
 
@@ -569,15 +570,18 @@ static Rdio * _rdioInstance;
     [eventQuery fromLocalDatastore];
     [eventQuery whereKey:@"Date" lessThan:[NSDate dateWithTimeInterval:-60*60*24 sinceDate:[NSDate date]]];
     [eventQuery findObjectsInBackgroundWithBlock:^(NSArray *events1, NSError *error){
-        [PFObject unpinAllInBackground:events1 withName:@"Event" block:^(BOOL success, NSError *error){
+        [PFObject unpinAllInBackground:events1 block:^(BOOL success, NSError *error){
             if (success) {
                 NSLog(@"successfully unpinned %lu events", events1.count);
                 
                 PFQuery *localEventQuery = [PFQuery queryWithClassName:@"Event"];
+                //[localEventQuery whereKey:@"Date" greaterThan:[NSDate dateWithTimeInterval:-60*60*24 sinceDate:[NSDate date]]];
                 [localEventQuery fromLocalDatastore];
                 
                 [localEventQuery findObjectsInBackgroundWithBlock:^(NSArray *events2, NSError *error){
 
+                    NSLog(@"Fetched %lu events", events2.count);
+                    
                     if (events2.count > 0 && !error) {
 
                         [PFObject fetchAllInBackground:events2 block:^(NSArray *events3, NSError *error) {

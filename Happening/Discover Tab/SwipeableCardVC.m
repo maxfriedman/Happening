@@ -214,7 +214,9 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         
         if ([eventDate compare:[NSDate date]] == NSOrderedAscending) {
             
-            finalString = [NSString stringWithFormat:@"Happening NOW!"];
+            [formatter setDateFormat:@"h:mma"];
+            NSString *startTimeString = [formatter stringFromDate:eventDate];
+            finalString = [NSString stringWithFormat:@"Happening NOW! Started at %@", startTimeString];
             
         } else if ([[eventDate beginningOfDay] isEqualToDate:[[NSDate date]beginningOfDay]]) {  // TODAY
             
@@ -622,7 +624,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     PFUser *user = [PFUser currentUser];
     
     [PFCloud callFunctionInBackground:@"swipeAnalytics"
-                       withParameters:@{@"userID":user.objectId, @"eventID":dragView.objectID, @"swiped":@"left"}
+                       withParameters:@{@"userID":user.objectId, @"eventID":c.objectID, @"swiped":@"left"}
                                 block:^(NSString *result, NSError *error) {
                                     if (!error) {
                                         // result is @"Hello world!"
@@ -631,7 +633,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                                 }];
     
     PFQuery *swipesQuery = [PFQuery queryWithClassName:@"Swipes"];
-    [swipesQuery whereKey:@"EventID" equalTo:dragView.objectID];
+    [swipesQuery whereKey:@"EventID" equalTo:c.objectID];
     [swipesQuery whereKey:@"UserID" equalTo:user.objectId];
     
     PFObject *swipesObject = [PFObject objectWithClassName:@"Swipes"];
@@ -647,8 +649,29 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                 object[@"swipedAgain"] = @YES;
                 object[@"swipedRight"] = @NO;
                 object[@"swipedLeft"] = @YES;
+                
+                PFQuery *timelineQuery = [PFQuery queryWithClassName:@"Timeline"];
+                [timelineQuery fromLocalDatastore];
+                [timelineQuery whereKey:@"userId" equalTo:user.objectId];
+                [timelineQuery whereKey:@"eventId" equalTo:c.objectID];
+                [timelineQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
                     
+                    [PFObject unpinAllInBackground:@[object]];
+                    [object deleteEventually];
+                }];
+                
+                PFQuery *activityQuery = [PFQuery queryWithClassName:@"Timeline"];
+                [activityQuery fromLocalDatastore];
+                [activityQuery whereKey:@"userParseId" equalTo:user.objectId];
+                [activityQuery whereKey:@"eventId" equalTo:c.objectID];
+                [activityQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
+                    
+                    [PFObject unpinAllInBackground:@[object]];
+                    [object deleteEventually];
+                }];
+                
                 [object saveInBackground];
+                [object unpinInBackground];
                 
             }];
             
@@ -715,35 +738,8 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         }
     }];
     
-    PFObject *timelineObject = [PFObject objectWithClassName:@"Timeline"];
-    
-    if (isGoing) timelineObject[@"type"] = @"going";
-    else timelineObject[@"type"] = @"swipeRight";
-    
-    timelineObject[@"userId"] = user.objectId;
-    timelineObject[@"eventId"] = dragView.objectID;
-    timelineObject[@"createdDate"] = [NSDate date];
-    timelineObject[@"eventTitle"] = dragView.title.text;
-    [timelineObject pinInBackground];
-    [timelineObject saveEventually];
-    
-    if (![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
-        
-        NSString *locString = [dragView.location.text stringByReplacingOccurrencesOfString:@"at " withString:@""];
-        NSString *name = [NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]];
-        
-        [PFCloud callFunctionInBackground:@"swipeRight"
-                           withParameters:@{@"user":user.objectId, @"event":dragView.objectID, @"fbID":user[@"FBObjectID"], @"fbToken":[FBSDKAccessToken currentAccessToken].tokenString, @"title":dragView.title.text, @"loc":locString, @"isGoing":@(isGoing), @"name":name, @"eventDate":dragView.eventObject[@"Date"]}
-                                    block:^(NSString *result, NSError *error) {
-                                        if (!error) {
-                                            
-                                            NSLog(@"%@", result);
-                                        }
-                                    }];
-    }
-    
     [PFCloud callFunctionInBackground:@"swipeAnalytics"
-                       withParameters:@{@"userID":user.objectId, @"eventID":dragView.objectID, @"swiped":@"right"}
+                       withParameters:@{@"userID":user.objectId, @"eventID":c.objectID, @"swiped":@"right"}
                                 block:^(NSString *result, NSError *error) {
                                     if (!error) {
                                         // result is @"Hello world!"
@@ -757,7 +753,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
     //analyticsObject[@"Age"] = user[@"]
     
     PFQuery *swipesQuery = [PFQuery queryWithClassName:@"Swipes"];
-    [swipesQuery whereKey:@"EventID" equalTo:dragView.objectID];
+    [swipesQuery whereKey:@"EventID" equalTo:c.objectID];
     [swipesQuery whereKey:@"UserID" equalTo:user.objectId];
     [swipesQuery fromLocalDatastore];
     
@@ -771,7 +767,34 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             object[@"swipedLeft"] = @NO;
             object[@"swipedRight"] = @YES;
             object[@"isGoing"] = @(isGoing);
-            object[@"friendCount"] = @(self.dragView.friendsInterestedCount);
+            object[@"friendCount"] = @(c.friendsInterestedCount);
+            
+            PFQuery *timelineQuery = [PFQuery queryWithClassName:@"Timeline"];
+            [timelineQuery fromLocalDatastore];
+            [timelineQuery whereKey:@"userId" equalTo:user.objectId];
+            [timelineQuery whereKey:@"eventId" equalTo:c.objectID];
+            [timelineQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
+                
+                if (isGoing) object[@"type"] = @"going";
+                else object[@"type"] = @"swipeRight";
+                [object saveEventually];
+                
+            }];
+            
+            PFQuery *activityQuery = [PFQuery queryWithClassName:@"Timeline"];
+            [activityQuery fromLocalDatastore];
+            [activityQuery whereKey:@"userParseId" equalTo:user.objectId];
+            [activityQuery whereKey:@"eventId" equalTo:c.objectID];
+            [activityQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
+                
+                if (!error) {
+                    if (isGoing) object[@"type"] = @"going";
+                    else object[@"type"] = @"swipeRight";
+                    [object saveEventually];
+                }
+                
+            }];
+
             
             [object saveEventually];
             
@@ -791,7 +814,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             swipesObject[@"swipedRight"] = @YES;
             swipesObject[@"swipedLeft"] = @NO;
             swipesObject[@"isGoing"] = @(isGoing);
-            swipesObject[@"friendCount"] = @(self.dragView.friendsInterestedCount);
+            swipesObject[@"friendCount"] = @(c.friendsInterestedCount);
             [swipesObject pinInBackground];
             
             swipesObject[@"swipedAgain"] = @NO;
@@ -800,8 +823,37 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                 swipesObject[@"FBObjectID"] = user[@"FBObjectID"];
             }
             
+            PFObject *timelineObject = [PFObject objectWithClassName:@"Timeline"];
+            
+            if (isGoing) timelineObject[@"type"] = @"going";
+            else timelineObject[@"type"] = @"swipeRight";
+            
+            timelineObject[@"userId"] = user.objectId;
+            timelineObject[@"eventId"] = c.objectID;
+            timelineObject[@"createdDate"] = [NSDate date];
+            timelineObject[@"eventTitle"] = c.title.text;
+            [timelineObject pinInBackground];
+            [timelineObject saveEventually];
+            
             [swipesObject pinInBackground];
-            [swipesObject saveEventually];
+            [swipesObject saveEventually:^(BOOL success, NSError *error){
+                
+                if (success && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
+                    
+                    NSString *locString = [c.location.text stringByReplacingOccurrencesOfString:@"at " withString:@""];
+                    NSString *name = [NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]];
+                    
+                    [PFCloud callFunctionInBackground:@"swipeRight"
+                                       withParameters:@{@"user":user.objectId, @"event":c.objectID, @"fbID":user[@"FBObjectID"], @"fbToken":[FBSDKAccessToken currentAccessToken].tokenString, @"title":c.title.text, @"loc":locString, @"isGoing":@(isGoing), @"name":name, @"eventDate":c.eventObject[@"Date"]}
+                                                block:^(NSString *result, NSError *error) {
+                                                    if (!error) {
+                                                        
+                                                        NSLog(@"%@", result);
+                                                    }
+                                                }];
+                }
+                
+            }];
         }
         
     }];

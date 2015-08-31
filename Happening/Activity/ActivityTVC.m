@@ -1092,7 +1092,7 @@
         
         if ([activityDict objectForKey:@"profPicView"] == nil) {
 
-            ProfilePictureView *ppview = [[ProfilePictureView alloc] initWithFrame:CGRectMake(7, 7, 36, 36) type:@"interested" fbid:object[@"userFBId"]];
+            ProfilePictureView *ppview = [[ProfilePictureView alloc] initWithFrame:CGRectMake(7, 7, 36, 36) type:@"none" fbid:object[@"userFBId"]];
             ppview.parseId = object[@"userParseId"];
             UITapGestureRecognizer *gr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(profileTapped:)];
             [ppview addGestureRecognizer:gr];

@@ -76,6 +76,8 @@
 @property (assign) BOOL userSwipedFromExpandedView;
 @property (assign) BOOL dropdownExpanded;
 @property (assign) BOOL tutIsShown;
+@property BOOL directToCreateHappening;
+
 @property (assign) NSString *friendObjectID;
 
 @property (strong, nonatomic) NSDate *lastRefresh;

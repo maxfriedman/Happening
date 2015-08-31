@@ -18,5 +18,6 @@
 @property (strong, nonatomic) IBOutlet UIView *containerView;
 @property (strong, nonatomic) IBOutlet UITableView *tableView;
 
+-(void)toTop;
 
 @end

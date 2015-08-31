@@ -277,13 +277,30 @@
         
     } else if (self.isCardExpanded) {
         draggableBackground.dragView.panGestureRecognizer.enabled = NO;
+    
+    } else if (!draggableBackground) {
+        
+        self.filterButton.enabled = YES;
+        tutIsShown = NO;
+        [self refreshData];
     }
+    
+    AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
     
     if ([PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
         self.createButton.enabled = NO;
     } else {
         self.createButton.enabled = YES;
+        
+        //if (self.directToCreateHappening == YES && self.isCreatingHappening == NO) {
+        if (appDelegate.mh.shouldCreateHappening == YES && self.isCreatingHappening == NO) {
+
+            [self createButtonPressed:self.createButton];
+            appDelegate.mh.shouldCreateHappening = NO;
+        }
+        
     }
+    
 }
 
 /*
@@ -674,6 +691,8 @@
             xButton.center = CGPointMake(21.75, xButton.center.y);
             checkButton.center = CGPointMake(302.25, checkButton.center.y);
             
+            draggableBackground.dragView.subtitle.alpha = 0;
+            
             //draggableBackground.dragView.moreButton.alpha = 0;
 
         } completion:^(BOOL finished) {
@@ -682,7 +701,6 @@
             //[[draggableBackground.dragView.cardView viewWithTag:1] removeFromSuperview];
             //[[draggableBackground.dragView.cardView viewWithTag:2] removeFromSuperview];
             
-            draggableBackground.dragView.subtitle.alpha = 0;
             //draggableBackground.dragView.cardView.layer.masksToBounds = NO;
             
             draggableBackground.dragView.eventImage.autoresizingMask =
@@ -1262,6 +1280,12 @@
                     //NSLog(@"CPI +++ %lu", rk.currentPageIndex);
 
                     [self refreshData];
+                    
+                    AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+                    
+                    if (![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
+                        [appDelegate checkForActivityObjects];
+                    }
                 }
             
             } completion:^(BOOL finished) {

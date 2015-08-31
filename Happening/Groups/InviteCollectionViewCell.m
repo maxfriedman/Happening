@@ -390,6 +390,7 @@
                     [activityView stopAnimating];
                 }];
             } else {
+                eventImageView.image = [UIImage imageNamed:event[@"Hashtag"]];
                 [activityView stopAnimating];
             }
             
@@ -416,6 +417,7 @@
                             [activityView stopAnimating];
                         }];
                     } else {
+                        eventImageView.image = [UIImage imageNamed:event[@"Hashtag"]];
                         [activityView stopAnimating];
                     }
                     
@@ -511,12 +513,16 @@
         [noButton setTitleColor:borderColor forState:UIControlStateNormal];
         noButton.tag = 0;
         
+        [self going];
+        
     } else {
         
         yesButton.backgroundColor = [UIColor whiteColor];
         cornerImageView.image = [UIImage imageNamed:@"question"];
         [yesButton setTitleColor:borderColor forState:UIControlStateNormal];
         yesButton.tag = 0;
+        
+        [self dunno];
         
     }
     
@@ -537,12 +543,16 @@
         [yesButton setTitleColor:borderColor forState:UIControlStateNormal];
         yesButton.tag = 0;
         
+        [self notGoing];
+        
     } else {
         
         noButton.backgroundColor = [UIColor whiteColor];
         cornerImageView.image = [UIImage imageNamed:@"question"];
         [noButton setTitleColor:borderColor forState:UIControlStateNormal];
         noButton.tag = 0;
+        
+        [self dunno];
         
     }
     
@@ -568,7 +578,7 @@
         
         PFObject *rsvpObject = [PFObject objectWithClassName:@"Group_RSVP"];
         
-        if (!error) {
+        if (!error && object) {
             
             rsvpObject = object;
             
@@ -819,6 +829,209 @@
     }
     
 }
+
+- (void)going {
+    
+    [self.event incrementKey:@"swipesRight" byAmount:@1];
+    
+    [PFCloud callFunctionInBackground:@"swipeAnalytics"
+                       withParameters:@{@"userID":currentUser.objectId, @"eventID":event.objectId, @"swiped":@"right"}
+                                block:^(NSString *result, NSError *error) {
+                                    if (!error) {
+                                        
+                                        //NSLog(@"%@", result);
+                                    }
+                                }];
+
+    
+    PFQuery *swipesQuery = [PFQuery queryWithClassName:@"Swipes"];
+    [swipesQuery whereKey:@"EventID" equalTo:event.objectId];
+    [swipesQuery whereKey:@"UserID" equalTo:[PFUser currentUser].objectId];
+    [swipesQuery fromLocalDatastore];
+    
+    [swipesQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error){
+        
+        if (!error) {
+            
+            NSLog(@"SECOND time Swiping");
+            
+            object[@"swipedAgain"] = @YES;
+            object[@"swipedLeft"] = @NO;
+            object[@"swipedRight"] = @YES;
+            object[@"isGoing"] = @YES;
+            [object saveEventually];
+            
+            PFQuery *timelineQuery = [PFQuery queryWithClassName:@"Timeline"];
+            [timelineQuery fromLocalDatastore];
+            [timelineQuery whereKey:@"userId" equalTo:currentUser.objectId];
+            [timelineQuery whereKey:@"eventId" equalTo:self.event.objectId];
+            [timelineQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
+                
+                object[@"type"] = @"going";
+                [object saveEventually];
+                
+            }];
+            
+            PFQuery *activityQuery = [PFQuery queryWithClassName:@"Timeline"];
+            [activityQuery fromLocalDatastore];
+            [activityQuery whereKey:@"userParseId" equalTo:currentUser.objectId];
+            [activityQuery whereKey:@"eventId" equalTo:self.event.objectId];
+            [activityQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
+                
+                if (!error) {
+                    object[@"type"] = @"going";
+                    [object saveEventually];
+                }
+                
+            }];
+            
+        } else {
+            
+            NSLog(@"FIRST time Swiping");
+            
+            PFObject *timelineObject = [PFObject objectWithClassName:@"Timeline"];
+            timelineObject[@"type"] = @"going";
+            timelineObject[@"userId"] = [PFUser currentUser].objectId;
+            timelineObject[@"eventId"] = event.objectId;
+            timelineObject[@"createdDate"] = [NSDate date];
+            timelineObject[@"eventTitle"] = event[@"Title"];
+            [timelineObject pinInBackground];
+            [timelineObject saveEventually];
+            
+            [currentUser incrementKey:@"eventCount" byAmount:@1];
+            [currentUser saveEventually];
+            
+            PFObject *swipesObject = [PFObject objectWithClassName:@"Swipes"];
+            swipesObject[@"UserID"] = currentUser.objectId;
+            if (![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
+                swipesObject[@"username"] = currentUser.username;
+            }
+            swipesObject[@"EventID"] = self.event.objectId;
+            swipesObject[@"swipedRight"] = @YES;
+            swipesObject[@"swipedLeft"] = @NO;
+            swipesObject[@"isGoing"] = @YES;
+            swipesObject[@"friendCount"] = 0;
+            [swipesObject pinInBackground];
+            
+            if ([[PFUser currentUser][@"socialMode"] isEqualToNumber:@YES] && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
+                swipesObject[@"FBObjectID"] = currentUser[@"FBObjectID"];
+            }
+            
+            [swipesObject saveEventually:^(BOOL succeeded, NSError *error) {
+                
+                if (succeeded) {
+                    
+                    if (![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
+                        
+                        NSString *locString = [self.location.text stringByReplacingOccurrencesOfString:@"at " withString:@""];
+                        NSString *name = [NSString stringWithFormat:@"%@ %@", currentUser[@"firstName"], currentUser[@"lastName"]];
+                        
+                        [PFCloud callFunctionInBackground:@"swipeRight"
+                                           withParameters:@{@"user":currentUser.objectId, @"event":self.event.objectId, @"fbID":currentUser[@"FBObjectID"], @"fbToken":[FBSDKAccessToken currentAccessToken].tokenString, @"title":self.title.text, @"loc":locString, @"isGoing":@YES, @"name":name, @"eventDate":self.event[@"Date"]}
+                                                    block:^(NSString *result, NSError *error) {
+                                                        if (!error) {
+                                                            
+                                                            NSLog(@"%@", result);
+                                                        }
+                                                    }];
+                    }
+                }
+            }];
+        }
+    }];
+    
+}
+
+- (void)notGoing {
+    
+    PFUser *user = [PFUser currentUser];
+    
+    [PFCloud callFunctionInBackground:@"swipeAnalytics"
+                       withParameters:@{@"userID":user.objectId, @"eventID":self.event.objectId, @"swiped":@"left"}
+                                block:^(NSString *result, NSError *error) {
+                                    if (!error) {
+                                        // result is @"Hello world!"
+                                        //NSLog(@"%@", result);
+                                    }
+                                }];
+    
+    PFQuery *swipesQuery = [PFQuery queryWithClassName:@"Swipes"];
+    [swipesQuery whereKey:@"EventID" equalTo:event.objectId];
+    [swipesQuery whereKey:@"UserID" equalTo:user.objectId];
+    
+    PFObject *swipesObject = [PFObject objectWithClassName:@"Swipes"];
+    
+    [swipesQuery countObjectsInBackgroundWithBlock:^(int count, NSError *error) {
+        
+        if (count > 0) {
+            
+            NSLog(@"SECOND time Swiping");
+            
+            [swipesQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error){
+                
+                object[@"swipedAgain"] = @YES;
+                object[@"swipedRight"] = @NO;
+                object[@"swipedLeft"] = @YES;
+                
+                PFQuery *timelineQuery = [PFQuery queryWithClassName:@"Timeline"];
+                [timelineQuery fromLocalDatastore];
+                [timelineQuery whereKey:@"userId" equalTo:user.objectId];
+                [timelineQuery whereKey:@"eventId" equalTo:event.objectId];
+                [timelineQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
+                    
+                    [PFObject unpinAllInBackground:@[object]];
+                    [object deleteEventually];
+                }];
+                
+                PFQuery *activityQuery = [PFQuery queryWithClassName:@"Timeline"];
+                [activityQuery fromLocalDatastore];
+                [activityQuery whereKey:@"userParseId" equalTo:user.objectId];
+                [activityQuery whereKey:@"eventId" equalTo:event.objectId];
+                [activityQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
+                    
+                    [PFObject unpinAllInBackground:@[object]];
+                    [object deleteEventually];
+                }];
+                
+                [object saveInBackground];
+                [object unpinInBackground];
+                
+            }];
+            
+            
+        } else {
+            
+            NSLog(@"FIRST time Swiping");
+            
+            swipesObject[@"UserID"] = user.objectId;
+            if (![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
+                swipesObject[@"username"] = user.username;
+            }
+            swipesObject[@"EventID"] = event.objectId;
+            swipesObject[@"swipedRight"] = @NO;
+            swipesObject[@"swipedLeft"] = @YES;
+            
+            //never show again if Swiped left
+            swipesObject[@"swipedAgain"] = @YES;
+            
+            
+            if ([[PFUser currentUser][@"socialMode"] isEqualToNumber:@YES] && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
+                swipesObject[@"FBObjectID"] = user[@"FBObjectID"];
+            }
+            
+            [swipesObject saveInBackground];
+            
+        }
+    }];
+    
+}
+
+- (void)dunno {
+    
+    
+    
+}
+
 
 
 @end

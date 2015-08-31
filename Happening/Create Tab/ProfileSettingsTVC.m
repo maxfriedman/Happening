@@ -294,7 +294,7 @@
 {
     
     NSString *shareText = [[NSString alloc]init];
-    shareText = [NSString stringWithFormat:@"Check out this new app called Happening. It's the easiest way to find cool events to go to with friends."];
+    shareText = [NSString stringWithFormat:@"Check out this new app called Happening. It's the easiest way to find cool events to go to with friends!"];
     
     if ( [activityType isEqualToString:UIActivityTypePostToTwitter] ) {
         return shareText;

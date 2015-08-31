@@ -4139,7 +4139,7 @@ By signing in you agree to our </string>
                         <viewControllerLayoutGuide type="bottom" id="TMW-ox-Qto"/>
                     </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="bLe-YF-rqc">
-                        <rect key="frame" x="0.0" y="64" width="320" height="568"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="504"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="K9M-g5-d2U">
@@ -4291,7 +4291,7 @@ By signing in you agree to our </string>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <label opaque="NO" userInteractionEnabled="NO" tag="3" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Time" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bu5-Fh-vZm">
-                                                            <rect key="frame" x="30" y="33" width="174" height="21"/>
+                                                            <rect key="frame" x="30" y="33" width="210" height="21"/>
                                                             <fontDescription key="fontDescription" name="OpenSans-Semibold" family="Open Sans" pointSize="11"/>
                                                             <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                             <nil key="highlightedColor"/>
@@ -4925,7 +4925,7 @@ By signing in you agree to our </string>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <label opaque="NO" userInteractionEnabled="NO" tag="3" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Time" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="l3Q-cW-GBf">
-                                                            <rect key="frame" x="30" y="33" width="174" height="21"/>
+                                                            <rect key="frame" x="30" y="33" width="210" height="21"/>
                                                             <fontDescription key="fontDescription" name="OpenSans-Semibold" family="Open Sans" pointSize="11"/>
                                                             <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                             <nil key="highlightedColor"/>
@@ -5254,7 +5254,7 @@ By signing in you agree to our </string>
                                                     <size key="shadowOffset" width="-1" height="-1"/>
                                                 </label>
                                                 <label opaque="NO" userInteractionEnabled="NO" tag="3" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Time" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KAb-Nk-gcw">
-                                                    <rect key="frame" x="30" y="33" width="174" height="21"/>
+                                                    <rect key="frame" x="30" y="33" width="210" height="21"/>
                                                     <fontDescription key="fontDescription" name="OpenSans-Semibold" family="Open Sans" pointSize="11"/>
                                                     <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                     <nil key="highlightedColor"/>
@@ -5862,7 +5862,7 @@ By signing in you agree to our </string>
                         <viewControllerLayoutGuide type="bottom" id="sTU-IR-jJF"/>
                     </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="EKJ-Sb-CJX">
-                        <rect key="frame" x="0.0" y="64" width="320" height="568"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="504"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
@@ -7481,8 +7481,8 @@ By signing in you agree to our </string>
         <segue reference="cjw-Xv-3IZ"/>
         <segue reference="CBJ-jo-VT2"/>
         <segue reference="lRk-4C-UL1"/>
-        <segue reference="xl3-bb-XTn"/>
-        <segue reference="31x-dq-N8h"/>
+        <segue reference="9RL-pu-q9f"/>
+        <segue reference="BCo-nf-KY4"/>
         <segue reference="yr5-Tu-v5G"/>
     </inferredMetricsTieBreakers>
 </document>

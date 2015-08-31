@@ -829,8 +829,16 @@
         
     } else if ([startDate compare:[NSDate date]] == NSOrderedAscending) {
         
-        [cell.timeLabel setText: [NSString stringWithFormat:@"Happening NOW!"]];
+        NSString *startTimeString = [formatter stringFromDate:startDate];
+        startTimeString = [NSString stringWithFormat:@"%@", startTimeString];
+        startTimeString = [startTimeString stringByReplacingOccurrencesOfString:@":00" withString:@""];
         
+        if ([[NSDate date] compare:endDate] == NSOrderedAscending) {
+            [cell.timeLabel setText: [NSString stringWithFormat:@"Happening NOW! Started at %@", startTimeString]];
+        } else {
+            [cell.timeLabel setText: [NSString stringWithFormat:@"Event has ended"]];
+        }
+    
     } else {
         
         NSString *startTimeString = [formatter stringFromDate:startDate];

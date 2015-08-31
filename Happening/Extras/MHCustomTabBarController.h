@@ -33,6 +33,8 @@ extern NSString *const MHCustomTabBarControllerViewControllerAlreadyVisibleNotif
 @property (strong, nonatomic) UIViewController *oldViewController;
 @property (weak, nonatomic) IBOutlet UIView *container;
 
+@property (nonatomic) IBOutletCollection(UIButton) NSArray *buttons;
+
 @property (assign, nonatomic) NSInteger selectedIndex;
 
 @property (strong, nonatomic) RKNotificationHub *groupHub;
@@ -41,8 +43,12 @@ extern NSString *const MHCustomTabBarControllerViewControllerAlreadyVisibleNotif
 
 @property (strong, nonatomic) NSString *eventIdForSegue;
 
+@property (assign) BOOL shouldCreateHappening;
+
+
 - (void)hideTabBar:(BOOL)shouldHide;
 - (void)showCallout;
 - (void)hideCallout;
+- (void)createButtonPressed;
 
 @end

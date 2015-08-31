@@ -22,6 +22,8 @@
 #import "TimelineCell.h"
 #import "inviteHomiesCell.h"
 #import "ExternalProfileTVC.h"
+#import "CustomAPActivityProvider.h"
+#import "RKDropdownAlert.h"
 
 #define SYSTEM_VERSION_EQUAL_TO(v)                  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedSame)
 #define SYSTEM_VERSION_GREATER_THAN(v)              ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedDescending)
@@ -66,6 +68,8 @@
     
     PFUser *currentUser;
     UIView *noEventsView;
+    UIButton *createButton;
+    UIButton *noFriendsButton;
     NSArray *eventsArray;
     
     CAGradientLayer *maskLayer;
@@ -752,6 +756,9 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     
+    if (tableVersion != 1 || showTimeline) [createButton removeFromSuperview];
+    if (tableVersion != 3 || showTimeline) [noFriendsButton removeFromSuperview];
+    
     if (clearTable) return 0;
     
     if (showTimeline) {
@@ -928,7 +935,15 @@
             
         } else if ([startDate compare:[NSDate date]] == NSOrderedAscending && endDate != nil) {
             
-            [cell.timeLabel setText: [NSString stringWithFormat:@"Happening NOW!"]];
+            NSString *startTimeString = [formatter stringFromDate:startDate];
+            startTimeString = [NSString stringWithFormat:@"%@", startTimeString];
+            startTimeString = [startTimeString stringByReplacingOccurrencesOfString:@":00" withString:@""];
+            
+            if ([[NSDate date] compare:endDate] == NSOrderedAscending) {
+                [cell.timeLabel setText: [NSString stringWithFormat:@"Happening NOW! Started at %@", startTimeString]];
+            } else {
+                [cell.timeLabel setText: [NSString stringWithFormat:@"Event has ended"]];
+            }
             
         } else {
             
@@ -1608,11 +1623,10 @@
         
         if (!error) {
             
-            eventsArray = [eventsArray arrayByAddingObjectsFromArray:events];
-            
             for (int i = 0; i < events.count; i++) {
                 
                 PFObject *event = events[i];
+                eventsArray = [eventsArray arrayByAddingObjectsFromArray:events];
                 
                 /*
                 NSMutableDictionary *dict = [self.sections objectForKey:event.objectId];
@@ -1621,7 +1635,9 @@
                     else [dict setObject:[UIImage imageNamed:event[@"Hashtag"]] forKey:@"Image"];
                 } */
                 
-                [pastEventsArray addObject:event];
+                if (![pastEventsArray containsObject:event]) {
+                    [pastEventsArray addObject:event];
+                }
                 
             }
             
@@ -1664,6 +1680,10 @@
         createdEventsArray = [NSArray new];
     
     BOOL firstTime = NO;
+    
+    clearTable = YES;
+    [self.tableView reloadData];
+    clearTable = NO;
     
     if (!self.createdSections) {
         self.createdSections = [NSMutableDictionary dictionary];
@@ -1713,18 +1733,43 @@
             [noEventsView removeFromSuperview];
             
             
-            if (didChange || firstTime) {
+            if (createdEventsArray.count == 0) {
+                
+                if (!createButton) {
+                
+                    createButton = [[UIButton alloc] initWithFrame:CGRectMake(60, 100, 200, 50)];
+                    [createButton setTitle:@"CREATE A HAPPENING" forState:UIControlStateNormal];
+                    [createButton setTitleColor:[UIColor colorWithRed:0 green:176.0/255 blue:242.0/255 alpha:1.0] forState:UIControlStateNormal];
+                    createButton.titleLabel.font = [UIFont fontWithName:@"OpenSans" size:17.0];
+                    createButton.layer.cornerRadius = 5.0;
+                    createButton.clipsToBounds = YES;
+                    createButton.layer.borderColor = [UIColor colorWithRed:0 green:176.0/255 blue:242.0/255 alpha:1.0].CGColor;
+                    createButton.layer.borderWidth = 2.0;
+                    [createButton addTarget:self action:@selector(toCreateHappening) forControlEvents:UIControlEventTouchUpInside];
+                }
+                [self.tableView addSubview:createButton];
+                
+            } else {
+                
                 [self.tableView reloadData];
                 [self loadSwipes];
             }
             
+            
+            
         } else {
             
             NSLog(@"error: %@", error);
-            [self loadPastEvents];
         }
     }];
 
+    
+}
+
+- (void)toCreateHappening {
+    
+    AppDelegate *ad = (AppDelegate *)[UIApplication sharedApplication].delegate;
+    [ad.mh createButtonPressed];
     
 }
 
@@ -1845,6 +1890,78 @@
     self.sortedFriendsLetters = [unsortedFriendsLetters sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
     
     [self.tableView reloadData];
+    
+    if (friends.count == 0) {
+        
+        if (!noFriendsButton) {
+            
+            noFriendsButton = [[UIButton alloc] initWithFrame:CGRectMake(60, 100, 180, 50)];
+            [noFriendsButton setTitle:@"INVITE FRIENDS" forState:UIControlStateNormal];
+            [noFriendsButton setTitleColor:[UIColor colorWithRed:0 green:176.0/255 blue:242.0/255 alpha:1.0] forState:UIControlStateNormal];
+            noFriendsButton.titleLabel.font = [UIFont fontWithName:@"OpenSans" size:17.0];
+            noFriendsButton.layer.cornerRadius = 5.0;
+            noFriendsButton.clipsToBounds = YES;
+            noFriendsButton.layer.borderColor = [UIColor colorWithRed:0 green:176.0/255 blue:242.0/255 alpha:1.0].CGColor;
+            noFriendsButton.layer.borderWidth = 2.0;
+            [noFriendsButton addTarget:self action:@selector(inviteFriends) forControlEvents:UIControlEventTouchUpInside];
+        }
+        [self.tableView addSubview:noFriendsButton];
+    }
+    
+}
+
+- (void)inviteFriends {
+    
+    UIActivityItemProvider *ActivityProvider = [[UIActivityItemProvider alloc] init];
+    
+    NSURL *myWebsite = [NSURL URLWithString:@"http://hap.ng/app"];
+    NSString *shareText = [NSString stringWithFormat:@"Check out this new app called Happening. It's a really easy way to find cool events to go to with friends! "];
+    
+    NSArray *itemsToShare = @[shareText, myWebsite];
+    
+    UIActivityViewController *activityVC = [[UIActivityViewController alloc]initWithActivityItems:itemsToShare applicationActivities:nil];
+    
+    activityVC.excludedActivityTypes = @[UIActivityTypeAirDrop,
+                                         UIActivityTypePrint,
+                                         UIActivityTypeAssignToContact,
+                                         UIActivityTypeSaveToCameraRoll,
+                                         UIActivityTypeAddToReadingList,
+                                         UIActivityTypePostToFlickr,
+                                         UIActivityTypePostToVimeo,
+                                         UIActivityTypePostToWeibo,
+                                         UIActivityTypeCopyToPasteboard,
+                                         ];
+    
+    
+    [self presentViewController:activityVC animated:YES completion:nil];
+    
+    [activityVC setCompletionHandler:^(NSString *act, BOOL done)
+     {
+         NSString *ServiceMsg = @"Done!";
+         BOOL calendarAction = NO;
+         
+         if ( [act isEqualToString:UIActivityTypeMail] ) {
+             ServiceMsg = @"Mail sent!";
+         }
+         else if ( [act isEqualToString:UIActivityTypePostToTwitter] ) {
+             ServiceMsg = @"Your tweet has been posted!";
+         }
+         else if ( [act isEqualToString:UIActivityTypePostToFacebook] ){
+             ServiceMsg = @"Your Facebook status has been updated!";
+         }
+         else if ( [act isEqualToString:UIActivityTypeMessage] ) {
+             ServiceMsg = @"Message sent!";
+         } else {
+             calendarAction = YES;
+         }
+         if ( done && (calendarAction == NO) )
+         {
+             
+             // Custom action for other activity types...
+             [RKDropdownAlert title:ServiceMsg backgroundColor:[UIColor colorWithRed:.05 green:.29 blue:.49 alpha:1.0] textColor:[UIColor whiteColor]];
+             
+         }
+     }];
     
 }
 

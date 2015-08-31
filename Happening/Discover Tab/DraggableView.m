@@ -139,7 +139,7 @@
         subtitle.numberOfLines = 0;
         [subtitle setLineBreakMode:NSLineBreakByTruncatingTail];
         subtitle.userInteractionEnabled = YES;
-        //subtitle.alpha = 0;
+        subtitle.alpha = 0;
         [cardView addSubview:subtitle];
 
         
@@ -519,9 +519,20 @@
     locationText = [locationText stringByReplacingOccurrencesOfString:@"at " withString:@""];
     
     BTNVenue *venue = [BTNVenue venueWithId:@"abc123" venueName:locationText latitude:geoPoint.latitude longitude:geoPoint.longitude];
+    /*
+    NSDictionary *context = @{
+                              BTNContextEndLocationKey:venue.location,
+                              //BTNContextReminderUseDebugIntervalKey: @YES
+                              };
+    [uberBTN prepareForDisplayWithContext:context completion:^(BOOL isDisplayable) {
+        if (isDisplayable) {
+            [cardView addSubview:uberBTN];
+        }
+    }];*/
     
     NSDate *eventDate = self.eventObject[@"Date"];
     
+    /*
     if ([eventDate compare:[NSDate dateWithTimeIntervalSinceNow:-3600]] == NSOrderedDescending) { // more than 1 hr before, show reminder
         
         [uberBTN setFrame:CGRectMake(0, 530 + extraDescHeight, 217, 30)];
@@ -538,9 +549,9 @@
             }
         }];
         
-    } else {
+    } else { */
         
-        [uberBTN setFrame:CGRectMake(0, 530 + extraDescHeight, 175, 30)];
+        [uberBTN setFrame:CGRectMake(0, 530 + extraDescHeight, 185, 30)];
         uberBTN.center = CGPointMake(142, uberBTN.center.y);
         
         [uberBTN prepareForDisplayWithVenue:venue completion:^(BOOL isDisplayable) {
@@ -548,7 +559,7 @@
                 [cardView addSubview:uberBTN];
             }
         }];
-    }
+    //}
     
     ticketsButton = [[UIButton alloc] initWithFrame:CGRectMake((284-230)/2, 360.5 + extraDescHeight - 62, 230, 28)];
 
@@ -557,6 +568,7 @@
     ticketsButton.tag = 1;
     UIColor *hapBlue = [UIColor colorWithRed:0.0 green:185.0/255 blue:245.0/255 alpha:1.0];
     [ticketsButton setTitle:@"GET TICKETS (MAY BE SOLD OUT)" forState:UIControlStateNormal];
+ 
     //[ticketsButton setTitleColor:hapBlue forState:UIControlStateNormal];
     //[ticketsButton setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];
     [ticketsButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
@@ -578,6 +590,7 @@
     [cardView addSubview:ticketsButton];
     
     NSString *ticketLink = self.eventObject[@"TicketLink"];
+    NSString *url = self.eventObject[@"URL"];
     int height = 0;
     
     if (ticketLink != nil && (![ticketLink isEqualToString:@""] || ![ticketLink isEqualToString:@"$0"])) {
@@ -697,7 +710,12 @@
             
         }
         
+    } else if (url != nil && (![url isEqualToString:@""] || ![url isEqualToString:@"$0"])) {
+        
+        [ticketsButton setTitle:@"MORE INFO ON WEBSITE" forState:UIControlStateNormal];
+        
     } else { //no tix
+
         
         UILabel *noTixLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 360.5 + extraDescHeight - 62, 250, 25)];
         noTixLabel.textAlignment = NSTextAlignmentCenter;

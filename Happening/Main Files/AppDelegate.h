@@ -45,6 +45,7 @@
 - (void)authenticateLayerWithUserID:(NSString *)userID completion:(void (^)(BOOL success, NSError * error))completion;
 - (void)loadGroups;
 - (void)loadEvents;
+- (void)checkForActivityObjects;
 
 + (Rdio *)sharedRdio;
 

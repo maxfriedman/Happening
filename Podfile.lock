@@ -16,7 +16,7 @@ PODS:
   - FastttCamera/Default (0.3.2)
   - Hoko (2.1.1)
   - LayerKit (0.15.0)
-  - LocationKit (2.2.2)
+  - LocationKit (2.2.3)
   - pop (1.0.7)
   - POP+MCAnimate (2.0.1):
     - pop (~> 1.0)
@@ -64,7 +64,7 @@ SPEC CHECKSUMS:
   FastttCamera: 4e758cc2bf5564effc654346cac320c09a550164
   Hoko: 4247653c45e359428a38c484c963caf89f2e84d7
   LayerKit: ac8c5c227a06e2ea5e042303b80e931a8ffe3568
-  LocationKit: c0835f0b97d81307d8c2e5eef960d9227f78163b
+  LocationKit: 7da4883157698c8c02dc3b26c4334b011cc7f1e5
   pop: 628ffc631644601567ee8bfaaaea493ebd7d0923
   POP+MCAnimate: a99e209148c602512de487f1160a44bf78572024
   RKNotificationHub: d80905a948c79c11673345f807133a0bfd17e320

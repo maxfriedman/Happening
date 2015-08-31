@@ -108,88 +108,6 @@
             NSLog(@"fb login cancelled");
             [self.delegate buttonPressEnd];
             
-        } else if (self.userExists == YES) {
-         
-            [[[FBSDKGraphRequest alloc] initWithGraphPath:@"me" parameters:nil]
-             startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
-                 
-                 if (!error) {
-                     
-                     NSLog(@"fetched user:%@", result);
-                     
-                     NSDictionary *user = result;
-                     
-                     if ([user objectForKey:@"email"] != nil) {
-                         
-                         currentUser.username = [user objectForKey:@"id"];
-                         currentUser.email = [user objectForKey:@"email"];
-                         
-                     } else {
-                         NSLog(@"User disabled email permissions");
-                         currentUser.username = [user objectForKey:@"link"];
-                     }
-                     currentUser.password = @"password";
-                     
-                     
-                     currentUser[@"FBObjectID"] = [user objectForKey:@"id"];
-                     currentUser[@"link"] = [user objectForKey:@"link"];
-                     
-                     
-                     if ([user objectForKey:@"first_name"] != nil)
-                         currentUser[@"firstName"] = [user objectForKey:@"first_name"];
-                     
-                     if ([user objectForKey:@"last_name"] != nil)
-                         currentUser[@"lastName"] = [user objectForKey:@"last_name"];
-                     
-                     if ([user objectForKey:@"gender"] != nil)
-                         currentUser[@"gender"] = [user objectForKey:@"gender"];
-                     
-                     /*
-                      if ([grantedPermissions containsObject:@"bio"])
-                      parseUser[@"bio"] = [user objectForKey:@"bio"];
-                      */
-                     
-                     if ([user objectForKey:@"birthday"] != nil)
-                         currentUser[@"birthday"] = [user objectForKey:@"birthday"];
-                     
-                     if ([user objectForKey:@"location"] != nil) {
-                         NSDictionary *locationDict = [user objectForKey:@"location"];
-                         
-                         if ([locationDict objectForKey:@"name"] != nil)
-                             currentUser[@"fbLocationName"] = [locationDict objectForKey:@"name"];
-                         currentUser[@"city"] = [locationDict objectForKey:@"name"];
-                         
-                     }
-                     
-                     // Defaults
-                     currentUser[@"fbToken"] = [FBSDKAccessToken currentAccessToken].tokenString;
-                     //parseUser[@"userLoc"] = [PFGeoPoint geoPointWithLatitude:38.907192 longitude:-77.036871];
-            
-                    if (currentUser) {
-                        
-                        [PFUser logInWithUsernameInBackground:currentUser.username password:currentUser.password block:^(PFUser *user, NSError *error) {
-                            
-                            if (user) {
-                                // Do stuff after successful login.
-                                [self setDefaultsForUser:user];
-                                
-                            } else {
-                                // The login failed. Check error to see why.
-                                [self.delegate buttonPressEnd];
-                                [self.delegate loginUnsuccessful];
-                                NSLog(@"%@", error);
-                            }
-                        }];
-                    }
-                     
-                 } else {
-                     [self.delegate buttonPressEnd];
-                     [self.delegate loginUnsuccessful];
-                     NSLog(@"%@", error);
-                 }
-                 
-             }];
-            
         } else {
         
             [[[FBSDKGraphRequest alloc] initWithGraphPath:@"me" parameters:nil]
@@ -664,7 +582,7 @@
     
     if (user[@"matchCount"] == nil) user[@"matchCount"] = @2;
     
-    [self updateCounts];
+    [self updateCountsForUser:user];
         
     
     AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
@@ -680,6 +598,7 @@
     }
     
     [self loadFriends];
+    [self updateTimelineForUser:user];
     
     [defaults synchronize];
     [user pinInBackground];
@@ -706,10 +625,10 @@
     
 }
 
-- (void)updateTimeline {
+- (void)updateTimelineForUser:(PFUser *)user {
     
     PFQuery *timelineQuery = [PFQuery queryWithClassName:@"Timeline"];
-    [timelineQuery whereKey:@"userId" equalTo:currentUser.objectId];
+    [timelineQuery whereKey:@"userId" equalTo:user.objectId];
     timelineQuery.limit = 1000;
     [timelineQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         
@@ -722,29 +641,27 @@
     
 }
 
-- (void)updateCounts {
+- (void)updateCountsForUser:(PFUser *)user {
     
     PFQuery *createdEventsQuery = [PFQuery queryWithClassName:@"Event"];
-    [createdEventsQuery whereKey:@"CreatedBy" equalTo:currentUser.objectId];
+    [createdEventsQuery whereKey:@"CreatedBy" equalTo:user.objectId];
     [createdEventsQuery orderByDescending:@"Date"];
     createdEventsQuery.limit = 1000;
     [createdEventsQuery countObjectsInBackgroundWithBlock:^(int count, NSError *error) {
         
         if (!error) {
             
-            currentUser[@"createdCount"] = [NSNumber numberWithInt:count];
-            [currentUser saveEventually];
+            user[@"createdCount"] = [NSNumber numberWithInt:count];
+            [user saveEventually];
         }
     }];
     
     PFQuery *swipesQuery = [PFQuery queryWithClassName:@"Swipes"];
     [swipesQuery whereKey:@"UserID" equalTo:currentUser.objectId];
     [swipesQuery whereKey:@"swipedRight" equalTo:@YES];
-    [swipesQuery fromLocalDatastore];
     swipesQuery.limit = 1000;
     
     PFQuery *swipedRightEventQuery = [PFQuery queryWithClassName:@"Event"];
-    [swipedRightEventQuery fromLocalDatastore];
     [swipedRightEventQuery whereKey:@"objectId" matchesKey:@"EventID" inQuery:swipesQuery];
     [swipedRightEventQuery orderByAscending:@"Date"];
     swipedRightEventQuery.limit = 1000;
@@ -753,8 +670,8 @@
         
         if (!error) {
             
-            currentUser[@"eventCount"] = [NSNumber numberWithInt:count];
-            [currentUser saveEventually];
+            user[@"eventCount"] = [NSNumber numberWithInt:count];
+            [user saveEventually];
         }
     }];
     

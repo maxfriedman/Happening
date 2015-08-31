@@ -10,4 +10,18 @@
 
 @implementation reminderCell
 
+- (void)awakeFromNib {
+    
+    [self.eventImageView setContentMode:UIViewContentModeScaleAspectFill];
+    self.eventImageView.clipsToBounds = YES;
+    self.eventImageView.autoresizingMask =
+    ( UIViewAutoresizingFlexibleBottomMargin
+     | UIViewAutoresizingFlexibleHeight
+     | UIViewAutoresizingFlexibleLeftMargin
+     | UIViewAutoresizingFlexibleRightMargin
+     | UIViewAutoresizingFlexibleTopMargin
+     | UIViewAutoresizingFlexibleWidth );
+    
+}
+
 @end

@@ -1443,6 +1443,11 @@
                                 [SVProgressHUD showSuccessWithStatus:@"Boom"];
                                 [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"refreshGroups"];
                                 [[NSUserDefaults standardUserDefaults] synchronize];
+                                
+                                AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+                                [appDelegate.mh.groupHub increment];
+                                [appDelegate.mh.groupHub bump];
+
                             }];
                             
                         }
@@ -1781,6 +1786,10 @@
                                         [SVProgressHUD showSuccessWithStatus:@"Boom"];
                                         [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"refreshGroups"];
                                         [[NSUserDefaults standardUserDefaults] synchronize];
+                                        
+                                        AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+                                        [appDelegate.mh.groupHub increment];
+                                        [appDelegate.mh.groupHub bump];
                                     }];
                                 }
                             }
@@ -1991,6 +2000,11 @@
                                         [SVProgressHUD showSuccessWithStatus:@"Boom"];
                                         [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"refreshGroups"];
                                         [[NSUserDefaults standardUserDefaults] synchronize];
+                                        
+                                        AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+                                        [appDelegate.mh.groupHub increment];
+                                        [appDelegate.mh.groupHub bump];
+
                                     }];
                                 }
                                 
