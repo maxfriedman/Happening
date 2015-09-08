@@ -459,9 +459,12 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
                         groupEvent[@"GroupID"] = group.objectId;
                         groupEvent[@"invitedByName"] = [NSString stringWithFormat:@"%@ %@", currentUser[@"firstName"], currentUser[@"lastName"]];
                         groupEvent[@"invitedByID"] = currentUser.objectId;
+                        
                         [event pinInBackground];
-                        [groupEvent pinInBackground];
-                        [groupEvent saveEventually:^(BOOL success, NSError *error) {
+
+                        [groupEvent saveInBackgroundWithBlock:^(BOOL success, NSError *error) {
+                            
+                            [groupEvent pinInBackground];
                             
                             PFObject *rsvpObject = [PFObject objectWithClassName:@"Group_RSVP"];
                             rsvpObject[@"EventID"] = event.objectId;
@@ -471,9 +474,9 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
                             rsvpObject[@"User_Object"] = currentUser;
                             rsvpObject[@"UserFBID"] = currentUser[@"FBObjectID"];
                             rsvpObject[@"GoingType"] = @"yes";
-                            [rsvpObject pinInBackground];
-                            [rsvpObject saveEventually];
-                            
+                            [rsvpObject saveInBackgroundWithBlock:^(BOOL success, NSError *error){
+                                [rsvpObject pinInBackground];
+                            }];
                         }];
                         
                         PFQuery *swipesQuery = [PFQuery queryWithClassName:@"Swipes"];
@@ -499,8 +502,9 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
                                 if ([[PFUser currentUser][@"socialMode"] isEqualToNumber:@YES] && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
                                     swipesObject[@"FBObjectID"] = currentUser[@"FBObjectID"];
                                 }
-                                [swipesObject pinInBackground];
-                                [swipesObject saveEventually];
+                                [swipesObject saveInBackgroundWithBlock:^(BOOL success, NSError *error) {
+                                    if (success) [swipesObject pinInBackground];
+                                }];
                                 
                                 PFObject *timelineObject = [PFObject objectWithClassName:@"Timeline"];
                                 timelineObject[@"type"] = @"eventInvite";
@@ -531,6 +535,25 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
                     
                     [currentUser incrementKey:@"score" byAmount:@15];
                     [currentUser saveEventually];
+
+                    NSMutableArray *tempArray = [[NSMutableArray alloc] init];
+                    for (NSDictionary *dict in userDictsArray) {
+                        if (![[dict objectForKey:@"parseId"] isEqualToString:currentUser.objectId]) {
+                            NSString *name = [dict valueForKey:@"name"];
+                            [tempArray addObject:[NSString stringWithFormat:@"%@", [[name componentsSeparatedByString:@" "] objectAtIndex:0]]];
+                        }
+                    }
+                    
+                    NSString *memberString = [NSString stringWithFormat:@"%@", tempArray[0]];
+                    
+                    for (int i = 1; i < tempArray.count - 1; i++) {
+                        memberString = [memberString stringByAppendingString:[NSString stringWithFormat:@", %@", tempArray[i]]];
+                    }
+                    
+                    if (tempArray.count > 1) {
+                        NSString *name = [tempArray lastObject];
+                        memberString = [memberString stringByAppendingString:[NSString stringWithFormat:@" and %@", name]];
+                    }
                     
                     NSString *pushMessage = @"";
                     
@@ -542,7 +565,7 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
                             pushMessage = [NSString stringWithFormat:@"%@ %@ added you and %d others to the group \"%@\" and invited you all to an event - check it out!", currentUser[@"firstName"], currentUser[@"lastName"],  memCount - 2, group[@"name"]];
                         }
                         
-                        [self setupConversationWithMessage:[NSString stringWithFormat:@"%@ %@ created \"%@\" and invited the group to an event.", currentUser[@"firstName"], currentUser[@"lastName"], group[@"name"]] forGroup:group];
+                        [self setupConversationWithMessage:[NSString stringWithFormat:@"%@ %@ created \"%@\" with %@ and invited the group to an event.", currentUser[@"firstName"], currentUser[@"lastName"], group[@"name"], memberString] forGroup:group];
                         
                     } else {
                         
@@ -552,7 +575,7 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
                             pushMessage = [NSString stringWithFormat:@"%@ %@ added you and %d others to the group \"%@.\"", currentUser[@"firstName"], currentUser[@"lastName"],  memCount - 2, group[@"name"]];
                         }
                         
-                        [self setupConversationWithMessage:[NSString stringWithFormat:@"%@ %@ created \"%@\".", currentUser[@"firstName"], currentUser[@"lastName"], group[@"name"]] forGroup:group];
+                        [self setupConversationWithMessage:[NSString stringWithFormat:@"%@ %@ created \"%@\" with %@.", currentUser[@"firstName"], currentUser[@"lastName"], group[@"name"], memberString] forGroup:group];
                         
                     }
                     

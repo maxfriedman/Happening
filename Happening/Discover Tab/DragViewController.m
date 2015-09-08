@@ -32,6 +32,7 @@
 #import "UIImage+ImageEffects.h"
 #import "CreateHappeningView.h"
 #import "InviteFromCreateView.h"
+#import "LocationSearching.h"
 
 #define MCANIMATE_SHORTHAND
 #import <POP+MCAnimate.h>
@@ -223,6 +224,13 @@
     settingsView.layer.masksToBounds = YES;
     [self.view addSubview:settingsView];
      */
+    
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    
+    [self refreshData];
     
 }
 
@@ -1684,6 +1692,11 @@
         vc.delegate = createHappeningView;
         //vc.convo = self.convo;
         //vc.group = self.group;
+    } else if ([segue.identifier isEqualToString:@"createSetLoc"]) {
+        
+        LocationSearching *vc = (LocationSearching *)[segue destinationViewController];
+        vc.delegate = createHappeningView;
+    
     }
     
     /*

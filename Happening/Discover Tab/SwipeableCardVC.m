@@ -445,9 +445,9 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             
             dragView.moreButton.alpha = 0;
             
-        } completion:^(BOOL finished) {
-            
             dragView.subtitle.alpha = 0;
+            
+        } completion:^(BOOL finished) {
             
         }];
         
@@ -650,6 +650,8 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                 object[@"swipedRight"] = @NO;
                 object[@"swipedLeft"] = @YES;
                 
+                if (user[@"eventCount"] != nil) { [user incrementKey:@"eventCount" byAmount:@(-1)]; [user pinInBackground]; }
+                
                 PFQuery *timelineQuery = [PFQuery queryWithClassName:@"Timeline"];
                 [timelineQuery fromLocalDatastore];
                 [timelineQuery whereKey:@"userId" equalTo:user.objectId];
@@ -835,11 +837,14 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             [timelineObject pinInBackground];
             [timelineObject saveEventually];
             
-            [swipesObject pinInBackground];
             [swipesObject saveEventually:^(BOOL success, NSError *error){
                 
-                if (success && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
-                    
+                [swipesObject pinInBackground];
+                
+                NSString *privacyString = @"";
+                if (success && c.eventObject[@"privacy"] != nil) privacyString = c.eventObject[@"privacy"];
+                
+                if (![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]] && ![privacyString isEqualToString:@"private"]) {
                     NSString *locString = [c.location.text stringByReplacingOccurrencesOfString:@"at " withString:@""];
                     NSString *name = [NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]];
                     

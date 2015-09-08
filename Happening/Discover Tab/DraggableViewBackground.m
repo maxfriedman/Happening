@@ -187,19 +187,29 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
          */
         
         PFQuery *weightedQuery = [PFQuery queryWithClassName:@"Event"];
-        [weightedQuery whereKey:@"globalWeight" greaterThan:@0];
+        [weightedQuery whereKey:@"globalWeight" greaterThan:@(-1)];
         [weightedQuery whereKey:@"Date" greaterThan:[NSDate dateWithTimeIntervalSinceNow:-60*60*4]];
-        [weightedQuery whereKey:@"private" notEqualTo:@YES];
+        [weightedQuery whereKey:@"privacy" equalTo:@"public"];
         
         if (![PFAnonymousUtils isLinkedWithUser:user]) {
         
             PFQuery *weightedQuery2 = [PFQuery queryWithClassName:@"Event"];
-            [weightedQuery2 whereKey:@"globalWeight" greaterThan:@0];
+            [weightedQuery2 whereKey:@"privacy" equalTo:@"friends"];
             [weightedQuery2 whereKey:@"Date" greaterThan:[NSDate dateWithTimeIntervalSinceNow:-60*60*4]];
-            [weightedQuery2 whereKey:@"private" equalTo:@YES];
-            [weightedQuery2 whereKey:@"invitedIds" containsAllObjectsInArray:@[[PFUser currentUser][@"FBObjectID"]]];
+            NSArray *friends = [[PFUser currentUser] objectForKey:@"friends"];
+            NSMutableArray *friendIds = [NSMutableArray new];
+            [friendIds addObject:user[@"FBObjectID"]];
+            for (NSDictionary *dict in friends) {
+                [friendIds addObject:[dict valueForKey:@"id"]];
+            }
+            [weightedQuery2 whereKey:@"CreatedByFBID" containedIn:friendIds];
             
-            finalQuery = [PFQuery orQueryWithSubqueries:@[eventQuery, weightedQuery, weightedQuery2]];
+            PFQuery *weightedQuery3 = [PFQuery queryWithClassName:@"Event"];
+            [weightedQuery3 whereKey:@"privacy" equalTo:@"private"];
+            [weightedQuery3 whereKey:@"Date" greaterThan:[NSDate dateWithTimeIntervalSinceNow:-60*60*4]];
+            [weightedQuery3 whereKey:@"invitedIds" containsAllObjectsInArray:@[[PFUser currentUser][@"FBObjectID"]]];
+            
+            finalQuery = [PFQuery orQueryWithSubqueries:@[eventQuery, weightedQuery, weightedQuery2, weightedQuery3]];
 
         } else {
             
@@ -899,25 +909,27 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                 object[@"swipedRight"] = @NO;
                 object[@"swipedLeft"] = @YES;
                 
+                if (user[@"eventCount"] != nil) { [user incrementKey:@"eventCount" byAmount:@(-1)]; [user pinInBackground]; }
+                
                 PFQuery *timelineQuery = [PFQuery queryWithClassName:@"Timeline"];
                 [timelineQuery fromLocalDatastore];
                 [timelineQuery whereKey:@"userId" equalTo:user.objectId];
-                [timelineQuery whereKey:@"eventId" equalTo:c.objectID];
+                [timelineQuery whereKey:@"eventId" equalTo:c.eventObject.objectId];
                 [timelineQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
-                   
-                    if (!error) {
+                    
+                    if (!error && object) {
                         [PFObject unpinAllInBackground:@[object]];
                         [object deleteEventually];
                     }
                 }];
                 
                 PFQuery *activityQuery = [PFQuery queryWithClassName:@"Timeline"];
-                [activityQuery fromLocalDatastore];
+                //[activityQuery fromLocalDatastore];
                 [activityQuery whereKey:@"userParseId" equalTo:user.objectId];
-                [activityQuery whereKey:@"eventId" equalTo:c.objectID];
+                [activityQuery whereKey:@"eventId" equalTo:c.eventObject.objectId];
                 [activityQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
                     
-                    if (!error) {
+                    if (!error && object) {
                         [PFObject unpinAllInBackground:@[object]];
                         [object deleteEventually];
                     }
@@ -1098,11 +1110,11 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             [timelineQuery fromLocalDatastore];
             [timelineQuery whereKey:@"userId" equalTo:user.objectId];
             [timelineQuery whereKey:@"eventId" equalTo:c.objectID];
-            [timelineQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
+            [timelineQuery getFirstObjectInBackgroundWithBlock:^(PFObject *timelineObject, NSError *error) {
                 
-                if (isGoing) object[@"type"] = @"going";
-                else object[@"type"] = @"swipeRight";
-                [object saveEventually];
+                if (isGoing) timelineObject[@"type"] = @"going";
+                else timelineObject[@"type"] = @"swipeRight";
+                [timelineObject saveEventually];
                 
             }];
             
@@ -1110,12 +1122,12 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             [activityQuery fromLocalDatastore];
             [activityQuery whereKey:@"userParseId" equalTo:user.objectId];
             [activityQuery whereKey:@"eventId" equalTo:c.objectID];
-            [activityQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
+            [activityQuery getFirstObjectInBackgroundWithBlock:^(PFObject *activityObject, NSError *error) {
                 
                 if (!error) {
-                    if (isGoing) object[@"type"] = @"going";
-                    else object[@"type"] = @"swipeRight";
-                    [object saveEventually];
+                    if (isGoing) activityObject[@"type"] = @"going";
+                    else activityObject[@"type"] = @"swipeRight";
+                    [activityObject saveEventually];
                 }
                 
             }];
@@ -1171,7 +1183,6 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             swipesObject[@"swipedLeft"] = @NO;
             swipesObject[@"isGoing"] = @(isGoing);
             swipesObject[@"friendCount"] = @(c.friendsInterestedCount);
-            [swipesObject pinInBackground];
             
             if (shouldLimit) {
                 swipesObject[@"swipedAgain"] = @YES;
@@ -1181,11 +1192,16 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                 swipesObject[@"FBObjectID"] = user[@"FBObjectID"];
             }
             
-            [swipesObject saveEventually:^(BOOL succeeded, NSError *error) {
+            [swipesObject saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+                
+                [swipesObject pinInBackground];
                 
                 if (succeeded) {
                     
-                    if (![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
+                    NSString *privacyString = @"";
+                    if (c.eventObject[@"privacy"] != nil) privacyString = c.eventObject[@"privacy"];
+                    
+                    if (![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]] && ![privacyString isEqualToString:@"private"]) {
                         
                         NSString *locString = [c.location.text stringByReplacingOccurrencesOfString:@"at " withString:@""];
                         NSString *name = [NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]];

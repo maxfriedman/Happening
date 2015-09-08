@@ -96,6 +96,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
         [self createDraggableView];
         [scrollView addSubview:dragView];
         dragView.panGestureRecognizer.enabled = NO;
+        dragView.subtitle.alpha = 1.0;
         
         scrollView.contentSize = CGSizeMake(320, dragView.frame.size.height + 36);
         
@@ -124,6 +125,19 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             noButton.layer.borderWidth = 1.0;
             noButton.tag = 0;
             [noButton addTarget:self action:@selector(NOTgoingButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+            
+            if (self.event != nil) {
+                if ([[self.event[@"Date"] beginningOfDay] compare:[[NSDate date] beginningOfDay]] == NSOrderedAscending) {
+                    noButton.enabled = NO;
+                    yesButton.enabled = NO;
+                }
+            }
+            
+            if (self.fbids.count > 4) {
+                self.dragView.friendArrow.alpha = 1;
+            } else {
+                self.dragView.friendArrow.alpha = 0;
+            }
             
             UIView *picViewContainer = [[UIView alloc] initWithFrame:CGRectMake(10, 5, 50, 50)];
             FBSDKProfilePictureView *ppView = [[FBSDKProfilePictureView alloc] initWithFrame:picViewContainer.bounds];
@@ -467,6 +481,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                     [imageFile getDataInBackgroundWithBlock:^(NSData *imageData, NSError *error) {
                         
                         if (!error) {
+                            self.image = [UIImage imageWithData:imageData];
                             dragView.eventImage.image = [UIImage imageWithData:imageData];
                         } else {
                             NSLog(@"Error retrieving image");
@@ -479,6 +494,7 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                     
                     if (event[@"Hashtag"] != nil ) {
                         NSString *tag = event[@"Hashtag"];
+                        self.image = [UIImage imageNamed:tag];
                         dragView.eventImage.image = [UIImage imageNamed:tag];
                         [self createDraggableView];
                     }
@@ -1065,10 +1081,14 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                 swipesObject[@"FBObjectID"] = user[@"FBObjectID"];
             }
             
-            [swipesObject pinInBackground];
-            [swipesObject saveEventually:^(BOOL success, NSError *error){
+            [swipesObject saveInBackgroundWithBlock:^(BOOL success, NSError *error){
+                
+                [swipesObject pinInBackground];
             
-                if (success && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
+                NSString *privacyString = @"";
+                if (c.eventObject[@"privacy"] != nil) privacyString = c.eventObject[@"privacy"];
+                
+                if (success && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]] && ![privacyString isEqualToString:@"private"]) {
                     
                     NSString *locString = [c.location.text stringByReplacingOccurrencesOfString:@"at " withString:@""];
                     NSString *name = [NSString stringWithFormat:@"%@ %@", user[@"firstName"], user[@"lastName"]];
@@ -1121,8 +1141,11 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             
         }
         
-        [self.delegate didChangeRSVP];
-        
+        if (isGoing)
+            [self.delegate didChangeRSVPforEvent:event type:@"going"];
+        else
+            [self.delegate didChangeRSVPforEvent:event type:@"interested"];
+
     }];
     
     if (isGoing && !self.isFromGroup) {
@@ -1183,28 +1206,38 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
                 object[@"swipedRight"] = @NO;
                 object[@"swipedLeft"] = @YES;
                 
+                if (user[@"eventCount"] != nil) { [user incrementKey:@"eventCount" byAmount:@(-1)]; [user pinInBackground]; }
+                
                 PFQuery *timelineQuery = [PFQuery queryWithClassName:@"Timeline"];
                 [timelineQuery fromLocalDatastore];
                 [timelineQuery whereKey:@"userId" equalTo:user.objectId];
-                [timelineQuery whereKey:@"eventId" equalTo:c.objectID];
+                [timelineQuery whereKey:@"eventId" equalTo:c.eventObject.objectId];
                 [timelineQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
                     
-                    [PFObject unpinAllInBackground:@[object]];
-                    [object deleteEventually];
+                    if (!error && object) {
+                        [PFObject unpinAllInBackground:@[object]];
+                        [object deleteEventually];
+                    }
                 }];
                 
                 PFQuery *activityQuery = [PFQuery queryWithClassName:@"Timeline"];
-                [activityQuery fromLocalDatastore];
+                //[activityQuery fromLocalDatastore];
                 [activityQuery whereKey:@"userParseId" equalTo:user.objectId];
-                [activityQuery whereKey:@"eventId" equalTo:c.objectID];
+                [activityQuery whereKey:@"eventId" equalTo:c.eventObject.objectId];
                 [activityQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
                     
-                    [PFObject unpinAllInBackground:@[object]];
-                    [object deleteEventually];
+                    if (!error && object) {
+                        [PFObject unpinAllInBackground:@[object]];
+                        [object deleteEventually];
+                    }
                 }];
                 
                 [object saveInBackground];
-                [swipesObject unpinInBackground];
+                
+                [object unpinInBackground];
+                [event unpinInBackground];
+                
+                [self.delegate didChangeRSVPforEvent:event type:@"no"];
                 
             }];
             
@@ -1231,9 +1264,9 @@ static const float CARD_WIDTH = 284; //%%% width of the draggable card
             
             [swipesObject saveInBackground];
             
+            [self.delegate didChangeRSVPforEvent:event type:@"no"];
+            
         }
-        
-        [self.delegate didChangeRSVP];
         
     }];
     

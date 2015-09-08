@@ -17,7 +17,7 @@
 #import "ProfilePictureView.h"
 #import "CustomConstants.h"
 
-@interface CreateHappeningView () <UITextFieldDelegate, UIActionSheetDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, FastttCameraDelegate, DraggableViewDelegate, UIPickerViewDataSource, UIPickerViewDelegate>
+@interface CreateHappeningView () <UITextFieldDelegate, UIActionSheetDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, FastttCameraDelegate, DraggableViewDelegate, UIPickerViewDataSource, UIPickerViewDelegate, UIAlertViewDelegate>
 
 @property (nonatomic, strong) UIButton *flashButton;
 @property (nonatomic, strong) UIButton *switchCameraButton;
@@ -40,6 +40,13 @@
     UIButton *chooseImageButton;
     UIButton *changeButton;
     UIView *containerView;
+    
+    UIButton *privacyButton;
+    UIButton *descriptionButton;
+    UIButton *locationButton;
+    UITextView *descriptionTextView;
+    MKMapItem *item;
+    NSString *privacyString;
     
     UILabel *inviteLabel;
     UILabel *subInviteLabel;
@@ -150,6 +157,64 @@
         [dragView.cardView addSubview:changeImageLabel];
         
         
+        privacyButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 50, 50)];
+        [privacyButton addTarget:self action:@selector(privacyButtonTapped) forControlEvents:UIControlEventTouchUpInside];
+        
+        descriptionButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 50, 50)];
+        [descriptionButton addTarget:self action:@selector(descriptionButtonTapped) forControlEvents:UIControlEventTouchUpInside];
+
+        locationButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 50, 50)];
+        [locationButton addTarget:self action:@selector(locationButtonTapped) forControlEvents:UIControlEventTouchUpInside];
+
+        NSArray *buttons = @[privacyButton, descriptionButton, locationButton];
+        NSArray *images = @[[UIImage imageNamed:@"unlocked-blue"], [UIImage imageNamed:@"more-blue"], [UIImage imageNamed:@"pin-blue"]];
+        for (int i = 0; i < buttons.count; i++) {
+            
+            UIButton *button = (UIButton *)buttons[i];
+            button.clipsToBounds = YES;
+            button.layer.cornerRadius = button.frame.size.height/2;
+            button.layer.borderColor = [UIColor colorWithRed:0 green:176.0/255 blue:242.0/255 alpha:1.0].CGColor;
+            button.layer.borderWidth = 2.0;
+            [button setImage:(UIImage *)images[i] forState:UIControlStateNormal];
+            
+            [dragView.cardView addSubview:button];
+        }
+        
+        [privacyButton setCenter:CGPointMake(privacyButton.frame.size.width, 275)];
+        [descriptionButton setCenter:CGPointMake(dragView.cardView.frame.size.width/2, 275)];
+        [locationButton setCenter:CGPointMake(dragView.cardView.frame.size.width - locationButton.frame.size.width, 275)];
+        
+        UILabel *sublabel1 = [[UILabel alloc] init];
+        UILabel *sublabel2 = [[UILabel alloc] init];
+        UILabel *sublabel3 = [[UILabel alloc] init];
+        NSArray *labels = @[sublabel1, sublabel2, sublabel3];
+        
+        for (int i = 0; i < labels.count; i++) {
+            
+            UILabel *label = (UILabel *)labels[i];
+            label.font = [UIFont fontWithName:@"OpenSans" size:10.0];
+            label.textColor = [UIColor darkGrayColor];
+            label.textAlignment = NSTextAlignmentCenter;
+            
+            UIButton *button = (UIButton *)buttons[i];
+            label.frame = CGRectMake(0, 0, 100, 20);
+            label.center = CGPointMake(button.center.x, 310);
+            
+            [dragView.cardView addSubview:label];
+        }
+        
+        privacyString = @"public";
+        
+        sublabel1.text = @"Edit Privacy";
+        sublabel1.tag = 11;
+        sublabel2.text = @"Add Description";
+        sublabel2.tag = 22;
+        sublabel3.text = @"Set Address";
+        sublabel3.tag = 44;
+        
+        dragView.hapLogoButton.alpha = 0;
+        
+        /*
         inviteLabel = [[UILabel alloc] initWithFrame:CGRectMake(dragView.hapLogoButton.frame.size.width + 10 + 15, dragView.hapLogoButton.frame.origin.y,dragView.frame.size.width - dragView.hapLogoButton.frame.size.width - 45, 30)];
         inviteLabel.font = [UIFont fontWithName:@"OpenSans-Semibold" size:11.0];
         inviteLabel.textColor = [UIColor darkGrayColor];
@@ -162,7 +227,7 @@
         subInviteLabel.textColor = [UIColor darkGrayColor];
         subInviteLabel.text = @"unless you tap to invite specific friends/groups.";
         [dragView.cardView addSubview:subInviteLabel];
-        
+        */
         
         
         [dragView addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(cardTap)]];
@@ -217,6 +282,128 @@
     }
     
 }
+
+- (void)privacyButtonTapped {
+    
+    UIAlertView *alert =  [[UIAlertView alloc] initWithTitle:@"Who can come to your event?" message:nil delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"Anyone (public)", @"Friends only (semi-private)", @"Invite only (private)", nil];
+    alert.tag = 1;
+    [alert show];
+    
+}
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
+    
+    if (alertView.tag == 1) {
+        
+        if (buttonIndex != 0) {
+            
+            UILabel *label = (UILabel *)[dragView.cardView viewWithTag:11];
+            label.font = [UIFont fontWithName:@"OpenSans-Semibold" size:10.0];
+        
+            if (buttonIndex == 1) {
+                
+                label.text = @"Public";
+                privacyString = @"public";
+                [privacyButton setImage:[UIImage imageNamed:@"unlocked-white"] forState:UIControlStateNormal];
+                
+            } else if (buttonIndex == 2) {
+                
+                label.text = @"Friends Only";
+                privacyString = @"semi";
+                [privacyButton setImage:[UIImage imageNamed:@"locked-white"] forState:UIControlStateNormal];
+                
+            } else {
+                
+                label.text = @"Invite Only";
+                privacyString = @"private";
+                [privacyButton setImage:[UIImage imageNamed:@"locked-white"] forState:UIControlStateNormal];
+
+                [self inviteButtonTap];
+                
+            }
+            
+            [self setButtonPressed:privacyButton];
+            
+        }
+    
+    } else {
+        
+        if (buttonIndex != 0) {
+            
+            UILabel *label = (UILabel *)[dragView.cardView viewWithTag:22];
+            label.text = @"Added";
+            label.font = [UIFont fontWithName:@"OpenSans-Semibold" size:10.0];
+            
+            [descriptionButton setImage:[UIImage imageNamed:@"more-white"] forState:UIControlStateNormal];
+            [self setButtonPressed:descriptionButton];
+            
+            NSString *description = [alertView textFieldAtIndex:0].text;
+            if (description != nil && ![description isEqualToString:@""]) {
+                
+                if (!descriptionTextView) {
+                    
+                    descriptionTextView = [[UITextView alloc] initWithFrame:CGRectMake(15, 330, dragView.cardView.frame.size.width - 30, 80)];
+                    descriptionTextView.editable = NO;
+                    descriptionTextView.scrollEnabled = YES;
+                    descriptionTextView.canCancelContentTouches = NO;
+                    descriptionTextView.font = [UIFont fontWithName:@"OpenSans" size:11.0];
+                    descriptionTextView.textColor = [UIColor colorWithRed:80.0/255 green:80.0/255 blue:80.0/255 alpha:1.0];
+                    [descriptionTextView setDataDetectorTypes:UIDataDetectorTypeAll];
+                    [dragView.cardView addSubview:descriptionTextView];
+                    
+                    descriptionTextView.userInteractionEnabled = YES;
+                    [descriptionTextView addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(descriptionButtonTapped)]];
+                
+                }
+                
+                descriptionTextView.text = description;
+            
+            }
+        
+        }
+        
+    }
+    
+}
+
+- (void)setButtonPressed:(UIButton *)button {
+    
+    [button setBackgroundColor:[UIColor colorWithRed:0 green:176.0/255 blue:242.0/255 alpha:1.0]];
+}
+
+- (void)descriptionButtonTapped {
+    
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Add Description"
+                                                    message:@"URLs, dates, phone numbers and addresses will appear as hyperlinks"
+                                                   delegate:self
+                                          cancelButtonTitle:@"Cancel"
+                                          otherButtonTitles:@"Done", nil];
+    alert.alertViewStyle = UIAlertViewStylePlainTextInput;
+    
+    if (descriptionTextView.text) [alert textFieldAtIndex:0].text = descriptionTextView.text;
+    
+    [alert show];
+    
+}
+
+- (void)locationButtonTapped {
+    
+    [self.vc performSegueWithIdentifier:@"createSetLoc" sender:self.vc];
+    
+}
+
+- (void)addItemViewController:(LocationSearching *)controller didFinishEnteringItem:(MKMapItem *)mapItem {
+    
+    UILabel *label = (UILabel *)[dragView.cardView viewWithTag:44];
+    label.text = @"Set";
+    label.font = [UIFont fontWithName:@"OpenSans-Semibold" size:10.0];
+    
+    [locationButton setImage:[UIImage imageNamed:@"pin-white"] forState:UIControlStateNormal];
+    [self setButtonPressed:locationButton];
+    
+    item = mapItem;
+}
+
 
 - (NSInteger)pickerView:(UIPickerView *)pickerView numberOfRowsInComponent:(NSInteger)component {
     
@@ -1064,9 +1251,6 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
         if (dateTextField.text.length > 0)
             event[@"Date"] = eventDate;
         
-        event[@"weight"] = @3;
-        event[@"globalWeight"] = @1;
-        
         
         /*
         if (selectedIds.count > 0) {
@@ -1075,36 +1259,62 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
             event[@"private"] = @NO;
         }*/
         
-        event[@"private"] = @YES;
-        
-
-        PFGeoPoint *userLoc = currentUser[@"userLoc"];
-        NSInteger radius = [currentUser[@"radius"] integerValue];
-        
-        LocationConstants *locConstants = [[LocationConstants alloc] init];
-        
-        NSString *selectedCity = currentUser[@"userLocTitle"];
-        CLLocation *theCityLoc = [locConstants getLocForCity:selectedCity];
-        CLLocation *theUserLoc = [[CLLocation alloc] initWithLatitude:userLoc.latitude longitude:userLoc.longitude];
-        
-        CLLocationDistance distance = [theUserLoc distanceFromLocation:theCityLoc];
-        
-        //NSLog(@"%f", distance);
-        
-        CLLocationCoordinate2D finalLoc;
-        
-        if (distance > 20 * 1609.344 || distance == 0) { // User's current location is > 20 miles outside of the city, use default
+        if ([privacyString isEqualToString:@"public"]) {
             
-            NSLog(@"User's current location is > 20 miles outside of the city, use default");
-            finalLoc = theCityLoc.coordinate;
+            event[@"privacy"] = @"public";
+            event[@"weight"] = @4;
+            event[@"globalWeight"] = @0;
             
-        } else {
+        } else if ([privacyString isEqualToString:@"semi"]) {
             
-            NSLog(@"Use the user's current location!");
-            finalLoc = theUserLoc.coordinate;
+            event[@"privacy"] = @"friends";
+            event[@"weight"] = @5;
+            event[@"globalWeight"] = @1;
+            
+        } else if ([privacyString isEqualToString:@"private"]) {
+            
+            event[@"privacy"] = @"private";
+            event[@"weight"] = @5;
+            event[@"globalWeight"] = @1;
+            
         }
         
-        event[@"GeoLoc"] = [PFGeoPoint geoPointWithLatitude:finalLoc.latitude longitude:finalLoc.longitude];
+        if (item != nil) {
+            
+            PFGeoPoint *loc = [PFGeoPoint geoPointWithLocation:item.placemark.location];
+            event[@"GeoLoc"] = loc;
+            
+        } else {
+        
+            PFGeoPoint *userLoc = currentUser[@"userLoc"];
+            NSInteger radius = [currentUser[@"radius"] integerValue];
+            
+            LocationConstants *locConstants = [[LocationConstants alloc] init];
+            
+            NSString *selectedCity = currentUser[@"userLocTitle"];
+            CLLocation *theCityLoc = [locConstants getLocForCity:selectedCity];
+            CLLocation *theUserLoc = [[CLLocation alloc] initWithLatitude:userLoc.latitude longitude:userLoc.longitude];
+            
+            CLLocationDistance distance = [theUserLoc distanceFromLocation:theCityLoc];
+            
+            //NSLog(@"%f", distance);
+            
+            CLLocationCoordinate2D finalLoc;
+            
+            if (distance > 20 * 1609.344 || distance == 0) { // User's current location is > 20 miles outside of the city, use default
+                
+                NSLog(@"User's current location is > 20 miles outside of the city, use default");
+                finalLoc = theCityLoc.coordinate;
+                
+            } else {
+                
+                NSLog(@"Use the user's current location!");
+                finalLoc = theUserLoc.coordinate;
+            }
+            
+            event[@"GeoLoc"] = [PFGeoPoint geoPointWithLatitude:finalLoc.latitude longitude:finalLoc.longitude];
+        }
+        
         event[@"CreatedByName"] = [NSString stringWithFormat:@"%@ %@", currentUser[@"firstName"], currentUser[@"lastName"] ];
         event[@"CreatedByFBID"] = currentUser[@"FBObjectID"];
         event[@"CreatedBy"] = currentUser.objectId;
@@ -1113,6 +1323,11 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
         
         event[@"swipesLeft"] = @0;
         event[@"swipesRight"] = @1;
+        
+        if (descriptionTextView.text != nil && ![descriptionTextView.text isEqualToString:@""]) {
+            
+            event[@"Description"] = descriptionTextView.text;
+        }
         
         NSMutableArray *userIds = [[NSMutableArray alloc] initWithObjects:currentUser[@"FBObjectID"], nil];
         finalUserIdArray = [NSMutableArray new];
@@ -1212,8 +1427,11 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
             if ([[PFUser currentUser][@"socialMode"] isEqualToNumber:@YES] && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
                 swipesObject[@"FBObjectID"] = currentUser[@"FBObjectID"];
             }
-            [swipesObject pinInBackground];
-            [swipesObject saveEventually];
+            
+            [swipesObject saveInBackgroundWithBlock:^(BOOL success, NSError *error) {
+                
+                if (success) [swipesObject pinInBackground];
+            }];
             
             NSString *name = [NSString stringWithFormat:@"%@ %@", currentUser[@"firstName"], currentUser[@"lastName"]];
             
@@ -1224,7 +1442,7 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
             if (selectedIds.count == 0) {
             
                 [PFCloud callFunctionInBackground:@"newUserEvent"
-                                   withParameters:@{@"user":currentUser.objectId, @"event":event.objectId, @"fbID":currentUser[@"FBObjectID"], @"fbToken":[FBSDKAccessToken currentAccessToken].tokenString, @"title":event[@"Title"], @"name":name, @"loc":locString, @"eventDate":event[@"Date"]}
+                                   withParameters:@{@"user":currentUser.objectId, @"event":event.objectId, @"fbID":currentUser[@"FBObjectID"], @"fbToken":[FBSDKAccessToken currentAccessToken].tokenString, @"title":event[@"Title"], @"name":name, @"loc":locString, @"eventDate":event[@"Date"], @"privacy":privacyString}
                                             block:^(NSString *result, NSError *error) {
                                                 if (!error) {
                                                     
@@ -1249,10 +1467,12 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
                             groupEvent[@"GroupID"] = group.objectId;
                             groupEvent[@"invitedByName"] = [NSString stringWithFormat:@"%@ %@", currentUser[@"firstName"], currentUser[@"lastName"]];
                             groupEvent[@"invitedByID"] = currentUser.objectId;
-                            groupEvent[@"eventObject"] = event;
+                            
                             [event pinInBackground];
-                            [groupEvent pinInBackground];
-                            [groupEvent saveEventually:^(BOOL success, NSError *error) {
+                            
+                            [groupEvent saveInBackgroundWithBlock:^(BOOL success, NSError *error) {
+                                
+                                [groupEvent pinInBackground];
                                 
                                 PFObject *rsvpObject = [PFObject objectWithClassName:@"Group_RSVP"];
                                 rsvpObject[@"EventID"] = event.objectId;
@@ -1262,9 +1482,9 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
                                 rsvpObject[@"User_Object"] = currentUser;
                                 rsvpObject[@"UserFBID"] = currentUser[@"FBObjectID"];
                                 rsvpObject[@"GoingType"] = @"yes";
-                                [rsvpObject pinInBackground];
-                                [rsvpObject saveEventually];
-                                
+                                [rsvpObject saveInBackgroundWithBlock:^(BOOL success, NSError *error){
+                                    [rsvpObject pinInBackground];
+                                }];
                             }];
                             
                             PFObject *timelineObject = [PFObject objectWithClassName:@"Timeline"];
@@ -1339,10 +1559,12 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
                                     groupEvent[@"GroupID"] = group.objectId;
                                     groupEvent[@"invitedByName"] = [NSString stringWithFormat:@"%@ %@", currentUser[@"firstName"], currentUser[@"lastName"]];
                                     groupEvent[@"invitedByID"] = currentUser.objectId;
-                                    groupEvent[@"eventObject"] = event;
+                                    
                                     [event pinInBackground];
-                                    [groupEvent pinInBackground];
-                                    [groupEvent saveEventually:^(BOOL success, NSError *error) {
+
+                                    [groupEvent saveInBackgroundWithBlock:^(BOOL success, NSError *error) {
+                                        
+                                        [groupEvent pinInBackground];
                                         
                                         PFObject *rsvpObject = [PFObject objectWithClassName:@"Group_RSVP"];
                                         rsvpObject[@"EventID"] = event.objectId;
@@ -1352,9 +1574,9 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
                                         rsvpObject[@"User_Object"] = currentUser;
                                         rsvpObject[@"UserFBID"] = currentUser[@"FBObjectID"];
                                         rsvpObject[@"GoingType"] = @"yes";
-                                        [rsvpObject pinInBackground];
-                                        [rsvpObject saveEventually];
-                                        
+                                        [rsvpObject saveInBackgroundWithBlock:^(BOOL success, NSError *error){
+                                            [rsvpObject pinInBackground];
+                                        }];
                                     }];
                                     
                                     PFObject *timelineObject = [PFObject objectWithClassName:@"Timeline"];
@@ -1429,10 +1651,12 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
                                             groupEvent[@"GroupID"] = group.objectId;
                                             groupEvent[@"invitedByName"] = [NSString stringWithFormat:@"%@ %@", currentUser[@"firstName"], currentUser[@"lastName"]];
                                             groupEvent[@"invitedByID"] = currentUser.objectId;
-                                            groupEvent[@"eventObject"] = event;
-                                            [groupEvent pinInBackground];
+
                                             [event pinInBackground];
-                                            [groupEvent saveEventually:^(BOOL success, NSError *error) {
+                                            
+                                            [groupEvent saveInBackgroundWithBlock:^(BOOL success, NSError *error) {
+                                                
+                                                [groupEvent pinInBackground];
                                                 
                                                 PFObject *rsvpObject = [PFObject objectWithClassName:@"Group_RSVP"];
                                                 rsvpObject[@"EventID"] = event.objectId;
@@ -1442,9 +1666,9 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
                                                 rsvpObject[@"User_Object"] = currentUser;
                                                 rsvpObject[@"UserFBID"] = currentUser[@"FBObjectID"];
                                                 rsvpObject[@"GoingType"] = @"yes";
-                                                [rsvpObject pinInBackground];
-                                                [rsvpObject saveEventually];
-                                                
+                                                [rsvpObject saveInBackgroundWithBlock:^(BOOL success, NSError *error){
+                                                    [rsvpObject pinInBackground];
+                                                }];
                                             }];
                                             
                                             PFObject *groupCreateTimelineObject = [PFObject objectWithClassName:@"Timeline"];
@@ -1699,7 +1923,7 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
         }
         
         view.frame = CGRectMake(50 * i, 0, 40, 40);
-        [dragView.friendScrollView addSubview:view];
+        //[dragView.friendScrollView addSubview:view];
         dragView.friendScrollView.contentSize = CGSizeMake((50 * i) + 40 + 5, 50);
         
         if (i > 4) {

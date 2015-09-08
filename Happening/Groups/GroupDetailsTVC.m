@@ -339,24 +339,31 @@
                 }
             }
             
-            group[@"user_objects"] = [NSArray arrayWithArray:userDicts];
+            group[@"user_dicts"] = [NSArray arrayWithArray:userDicts];
             [group incrementKey:@"memberCount" byAmount:@(-1)];
-            [group saveInBackground];
-            
-            
-            PFQuery *groupUserQuery = [PFQuery queryWithClassName:@"Group_User"];
-            [groupUserQuery whereKey:@"user_id" equalTo:currentUser.objectId];
-            [groupUserQuery whereKey:@"group_id" equalTo:group.objectId];
-            
-            [groupUserQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
-               
-                [object deleteInBackground];
+            [group saveInBackgroundWithBlock:^(BOOL success, NSError *error) {
+                
+                if (!error) {
+                
+                    AppDelegate *ad = (AppDelegate *)[UIApplication sharedApplication].delegate;
+                    [ad.groupDict setObject:group forKey:group.objectId];
+                    
+                    PFQuery *groupUserQuery = [PFQuery queryWithClassName:@"Group_User"];
+                    [groupUserQuery whereKey:@"user_id" equalTo:currentUser.objectId];
+                    [groupUserQuery whereKey:@"group_id" equalTo:group.objectId];
+                    
+                    [groupUserQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
+                       
+                        [object deleteInBackground];
+                        
+                    }];
+                    
+                    [self sendMessage:[NSString stringWithFormat:@"%@ %@ has left the group.", currentUser[@"firstName"], currentUser[@"lastName"]] type:@"leave"];
+                    
+                    [self.navigationController popToRootViewControllerAnimated:YES];
+                }
                 
             }];
-            
-            [self sendMessage:[NSString stringWithFormat:@"%@ %@ has left the group.", currentUser[@"firstName"], currentUser[@"lastName"]] type:@"leave"];
-            
-            [self.navigationController popToRootViewControllerAnimated:YES];
         }
         
     }
@@ -404,6 +411,8 @@
         else if ([type isEqualToString:@"remove"])
             [self.convo removeParticipants:[NSSet setWithObject:parseIds[selectedIndex]] error:nil];
         
+        [self.navigationController popToRootViewControllerAnimated:YES];
+        
     } else {
         NSLog(@"Message send failed: %@", error);
     }
@@ -418,6 +427,11 @@
     UIActionSheet *sheet = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"Take Photo", @"Choose Photo", @"Use Default", nil];
     [sheet showInView:self.view];
     
+}
+
+-(BOOL)doesString:(NSString *)first contain:(NSString*)other {
+    NSRange range = [first rangeOfString:other];
+    return range.length != 0;
 }
 
 - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex {
@@ -441,16 +455,54 @@
                 } else {
                     
                     for (int i = 0; i < userDicts.count; i++) {
-                        
                         NSDictionary *userDict = userDicts[i];
-                        
                         if ([[userDict objectForKey:@"id"] isEqualToString:fbIds[selectedIndex]]) {
                             [userDicts removeObjectAtIndex:i];
                             break;
                         }
                     }
                     
-                    group[@"user_objects"] = [NSArray arrayWithArray:userDicts];
+                    if ([group[@"isDefaultName"] boolValue] == YES) {
+                        
+                        NSString *name = @"";
+                        
+                        if (userDicts.count > 2) {
+                        
+                            for (int m = 0; m < userDicts.count; m++) {
+                                
+                                NSDictionary *userDict = userDicts[m];
+                                NSString *fullName = [userDict objectForKey:@"name"];
+                                NSRange range = [fullName rangeOfString:@" "];
+                                NSString *firstName = [fullName substringToIndex:range.location];
+                                
+                                if (m == 0) {
+                                    name = firstName;
+                                } else {
+                                    name = [name stringByAppendingString:[NSString stringWithFormat:@", %@", firstName]];
+                                }
+                                
+                            }
+                        
+                        } else {
+                            
+                            NSDictionary *userDict = userDicts[0];
+                            NSString *fullName = [userDict objectForKey:@"name"];
+                            NSRange range = [fullName rangeOfString:@" "];
+                            NSString *firstName = [fullName substringToIndex:range.location];
+                            
+                            NSDictionary *userDict2 = userDicts[1];
+                            NSString *fullName2 = [userDict2 objectForKey:@"name"];
+                            NSRange range2 = [fullName2 rangeOfString:@" "];
+                            NSString *firstName2 = [fullName2 substringToIndex:range2.location];
+                            
+                            name = [NSString stringWithFormat:@"%@ and %@", firstName, firstName2];
+                        }
+
+                        group[@"name"] = name;
+                        
+                    }
+
+                    group[@"user_dicts"] = [NSArray arrayWithArray:userDicts];
                     [group incrementKey:@"memberCount" byAmount:@(-1)];
                     [group saveInBackground];
                     
@@ -785,7 +837,7 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
      */
     
     NSLog(@"Image Acquired.");
-    groupImage = capturedImage.fullImage;
+    //groupImage = capturedImage.fullImage;
     [self saveImage:groupImage isDefault:NO];
 
     
@@ -865,6 +917,8 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
     
     NSLog(@"Boom");
     
+    [self.navigationController popToRootViewControllerAnimated:YES];
+    /*
     [SVProgressHUD setViewForExtension:self.view];
     [SVProgressHUD setOffsetFromCenter:UIOffsetMake(0, -66)];
     
@@ -907,8 +961,9 @@ didFinishNormalizingCapturedImage:(FastttCapturedImage *)capturedImage
     
     self.groupNameLabel.text = group[@"name"];
     
-    [self.tableView reloadData];
-    [self.delegate groupChanged];
+    //[self.tableView reloadData];
+    
+    [self.delegate groupChanged];*/
     
 }
 

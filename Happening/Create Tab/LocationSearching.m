@@ -129,7 +129,7 @@
     [self.searchDisplayController setActive:NO animated:YES];
     
     NSLog(@"Location was selected");
-    
+    /*
     AppDelegate *appDelegate=(AppDelegate *)[UIApplication sharedApplication].delegate;
     appDelegate.item = results.mapItems[indexPath.row];
     Event[@"LocTitle"] = appDelegate.item.name;
@@ -140,9 +140,12 @@
     if (zipCode)
         appDelegate.locSubtitle = [NSString stringWithFormat:@"%@, %@ %@, %@", cityName, stateName, zipCode, country];
     else appDelegate.locSubtitle = [NSString stringWithFormat:@"%@, %@, %@", cityName, stateName, country];
-    
+
     PFGeoPoint *loc = [PFGeoPoint geoPointWithLocation:appDelegate.item.placemark.location];
     Event[@"GeoLoc"] = loc;
+     */
+    
+    [self.delegate addItemViewController:self didFinishEnteringItem:results.mapItems[indexPath.row]];
     
     [self dismissViewControllerAnimated:YES completion:nil];
 

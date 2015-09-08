@@ -910,18 +910,22 @@
             swipesObject[@"swipedRight"] = @YES;
             swipesObject[@"swipedLeft"] = @NO;
             swipesObject[@"isGoing"] = @YES;
-            swipesObject[@"friendCount"] = 0;
-            [swipesObject pinInBackground];
+            swipesObject[@"friendCount"] = @0;
             
             if ([[PFUser currentUser][@"socialMode"] isEqualToNumber:@YES] && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
                 swipesObject[@"FBObjectID"] = currentUser[@"FBObjectID"];
             }
             
-            [swipesObject saveEventually:^(BOOL succeeded, NSError *error) {
+            [swipesObject saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
                 
                 if (succeeded) {
                     
-                    if (![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
+                    [swipesObject pinInBackground];
+                    
+                    NSString *privacyString = @"";
+                    if (self.event[@"privacy"] != nil) privacyString = self.event[@"privacy"];
+                    
+                    if (![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]] && ![privacyString isEqualToString:@"private"]) {
                         
                         NSString *locString = [self.location.text stringByReplacingOccurrencesOfString:@"at " withString:@""];
                         NSString *name = [NSString stringWithFormat:@"%@ %@", currentUser[@"firstName"], currentUser[@"lastName"]];
@@ -976,21 +980,25 @@
                 PFQuery *timelineQuery = [PFQuery queryWithClassName:@"Timeline"];
                 [timelineQuery fromLocalDatastore];
                 [timelineQuery whereKey:@"userId" equalTo:user.objectId];
-                [timelineQuery whereKey:@"eventId" equalTo:event.objectId];
+                [timelineQuery whereKey:@"eventId" equalTo:self.event.objectId];
                 [timelineQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
                     
-                    [PFObject unpinAllInBackground:@[object]];
-                    [object deleteEventually];
+                    if (!error && object) {
+                        [PFObject unpinAllInBackground:@[object]];
+                        [object deleteEventually];
+                    }
                 }];
                 
                 PFQuery *activityQuery = [PFQuery queryWithClassName:@"Timeline"];
                 [activityQuery fromLocalDatastore];
                 [activityQuery whereKey:@"userParseId" equalTo:user.objectId];
-                [activityQuery whereKey:@"eventId" equalTo:event.objectId];
+                [activityQuery whereKey:@"eventId" equalTo:self.event.objectId];
                 [activityQuery getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
                     
-                    [PFObject unpinAllInBackground:@[object]];
-                    [object deleteEventually];
+                    if (!error && object) {
+                        [PFObject unpinAllInBackground:@[object]];
+                        [object deleteEventually];
+                    }
                 }];
                 
                 [object saveInBackground];

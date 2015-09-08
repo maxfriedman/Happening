@@ -848,71 +848,64 @@
             
             }
             
-            [group saveEventually];
-            
-            NSError *convoError = nil;
-            [convo addParticipants:[NSSet setWithArray:[NSArray arrayWithArray:idArray]] error:&convoError];
-            if (!convoError) {
+            [group saveInBackgroundWithBlock:^(BOOL success, NSError *error) {
                 
-                //Send message w data
-                NSString *messageText = [NSString stringWithFormat:@"%@ %@ added %@", currentUser[@"firstName"], currentUser[@"lastName"], selectedNamesArray[0]];
-                for (int i = 1; i < selectedNamesArray.count - 1; i++) {
-                    messageText = [messageText stringByAppendingString:[NSString stringWithFormat:@", %@", selectedNamesArray[i]]];
-                }
-                
-                if (selectedNamesArray.count > 1) {
-                    messageText = [messageText stringByAppendingString:[NSString stringWithFormat:@" and %@", [selectedNamesArray lastObject]]];
-                }
-                
-                messageText = [messageText stringByAppendingString:@" to the group."];
-                
-                NSDictionary *dataDictionary = @{@"message":messageText,
-                                                 @"type":@"add",
-                                                 @"groupId":group.objectId,
-                                                 };
-                NSError *JSONSerializerError;
-                NSData *dataDictionaryJSON = [NSJSONSerialization dataWithJSONObject:dataDictionary options:NSJSONWritingPrettyPrinted error:&JSONSerializerError];
-                LYRMessagePart *dataMessagePart = [LYRMessagePart messagePartWithMIMEType:ATLMimeTypeSystemObject data:dataDictionaryJSON];
-                // Create messagepart with info about cell
-                float actualLineSize = [messageText boundingRectWithSize:CGSizeMake(270, CGFLOAT_MAX)
-                                                               options:NSStringDrawingUsesLineFragmentOrigin
-                                                            attributes:@{NSFontAttributeName:[UIFont fontWithName:@"OpenSans" size:10.0]}
-                                                               context:nil].size.height;
-                NSDictionary *cellInfoDictionary = @{@"height": [NSString stringWithFormat:@"%f", actualLineSize]};
-                NSData *cellInfoDictionaryJSON = [NSJSONSerialization dataWithJSONObject:cellInfoDictionary options:NSJSONWritingPrettyPrinted error:&JSONSerializerError];
-                LYRMessagePart *cellInfoMessagePart = [LYRMessagePart messagePartWithMIMEType:ATLMimeTypeSystemCellInfo data:cellInfoDictionaryJSON];
-                // Add message to ordered set.  This ordered set messages will get sent to the participants
-                AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
-                LYRMessage *message = [appDelegate.layerClient newMessageWithParts:@[dataMessagePart,cellInfoMessagePart] options:@{LYRMessageOptionsPushNotificationAlertKey: messageText} error:&error];
-                
-                // Creates and returns a new message object with the given conversation and array of message parts
-                //LYRMessage *message = [appDelegate.layerClient newMessageWithParts:@[messagePart] options:@{LYRMessageOptionsPushNotificationAlertKey: messageText} error:nil];
-                
-                // Sends the specified message
-                BOOL success = [convo sendMessage:message error:&error];
                 if (success) {
-                    NSLog(@"Message queued to be sent: %@", message);
+            
                     [self dismissViewControllerAnimated:YES completion:^{
-                        [self.delegate showBoom];
-                        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"refreshGroups"];
-                        [[NSUserDefaults standardUserDefaults] synchronize];
-                    }];
-
-                } else {
-                    NSLog(@"Message send failed: %@", error);
                     
-                    [self dismissViewControllerAnimated:YES completion:^{
-                        [self.delegate showError:@"Something went wrong :("];
-                        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"refreshGroups"];
-                        [[NSUserDefaults standardUserDefaults] synchronize];
+                        [self.delegate showBoom];
+                        
+                        NSError *convoError = nil;
+                        [convo addParticipants:[NSSet setWithArray:[NSArray arrayWithArray:idArray]] error:nil];
+                        if (!convoError) {
+                            
+                            //Send message w data
+                            NSString *messageText = [NSString stringWithFormat:@"%@ %@ added %@", currentUser[@"firstName"], currentUser[@"lastName"], selectedNamesArray[0]];
+                            for (int i = 1; i < selectedNamesArray.count - 1; i++) {
+                                messageText = [messageText stringByAppendingString:[NSString stringWithFormat:@", %@", selectedNamesArray[i]]];
+                            }
+                            
+                            if (selectedNamesArray.count > 1) {
+                                messageText = [messageText stringByAppendingString:[NSString stringWithFormat:@" and %@", [selectedNamesArray lastObject]]];
+                            }
+                            
+                            messageText = [messageText stringByAppendingString:@" to the group."];
+                            
+                            NSDictionary *dataDictionary = @{@"message":messageText,
+                                                             @"type":@"add",
+                                                             @"groupId":group.objectId,
+                                                             };
+                            NSError *JSONSerializerError;
+                            NSData *dataDictionaryJSON = [NSJSONSerialization dataWithJSONObject:dataDictionary options:NSJSONWritingPrettyPrinted error:&JSONSerializerError];
+                            LYRMessagePart *dataMessagePart = [LYRMessagePart messagePartWithMIMEType:ATLMimeTypeSystemObject data:dataDictionaryJSON];
+                            // Create messagepart with info about cell
+                            float actualLineSize = [messageText boundingRectWithSize:CGSizeMake(270, CGFLOAT_MAX)
+                                                                           options:NSStringDrawingUsesLineFragmentOrigin
+                                                                        attributes:@{NSFontAttributeName:[UIFont fontWithName:@"OpenSans" size:10.0]}
+                                                                           context:nil].size.height;
+                            NSDictionary *cellInfoDictionary = @{@"height": [NSString stringWithFormat:@"%f", actualLineSize]};
+                            NSData *cellInfoDictionaryJSON = [NSJSONSerialization dataWithJSONObject:cellInfoDictionary options:NSJSONWritingPrettyPrinted error:&JSONSerializerError];
+                            LYRMessagePart *cellInfoMessagePart = [LYRMessagePart messagePartWithMIMEType:ATLMimeTypeSystemCellInfo data:cellInfoDictionaryJSON];
+                            // Add message to ordered set.  This ordered set messages will get sent to the participants
+                            AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+                            LYRMessage *message = [appDelegate.layerClient newMessageWithParts:@[dataMessagePart,cellInfoMessagePart] options:@{LYRMessageOptionsPushNotificationAlertKey: messageText} error:nil];
+                            
+                            // Creates and returns a new message object with the given conversation and array of message parts
+                            //LYRMessage *message = [appDelegate.layerClient newMessageWithParts:@[messagePart] options:@{LYRMessageOptionsPushNotificationAlertKey: messageText} error:nil];
+                            
+                            // Sends the specified message
+                            BOOL success = [convo sendMessage:message error:nil];
+                            
+                        } else {
+                            
+                            [SVProgressHUD showErrorWithStatus:@"Something went wrong :("];
+                        }
+                        
                     }];
                 }
-
-                
-                
-            } else {
-                [SVProgressHUD showErrorWithStatus:@"Something went wrong :("];
-            }
+            }];
+            
         } else {
             [SVProgressHUD showErrorWithStatus:@"Something went wrong :("];
         }
@@ -929,7 +922,7 @@
 
 - (NSInteger)tableView:(UITableView *)tableView sectionForSectionIndexTitle:(NSString *)title atIndex:(NSInteger)index
 {
-    return [sortedFriendsLetters indexOfObject:title] + 1;
+    return [sortedFriendsLetters indexOfObject:title];
 }
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="7706" systemVersion="14E46" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="dWi-8I-Xi7">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="7706" systemVersion="14F27" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="dWi-8I-Xi7">
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="7703"/>
@@ -543,6 +543,7 @@
                         <segue destination="uSS-2u-Iai" kind="show" identifier="showFriendProfile" id="0U0-L8-Zui"/>
                         <segue destination="uSS-2u-Iai" kind="show" identifier="showFriendProf" id="4xV-A8-VSm"/>
                         <segue destination="bzh-Lx-VuH" kind="presentation" identifier="toCreateInvite" id="YBu-h2-PES"/>
+                        <segue destination="TLe-30-SE5" kind="presentation" identifier="createSetLoc" id="jHe-O7-VgC"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="x5A-6p-PRh" sceneMemberID="firstResponder"/>
@@ -1578,7 +1579,7 @@
                                     <offsetWrapper key="textShadowOffset" horizontal="0.0" vertical="0.0"/>
                                 </textAttributes>
                                 <items>
-                                    <navigationItem title="Location" id="ISQ-AF-tn7">
+                                    <navigationItem title="Set Address" id="ISQ-AF-tn7">
                                         <barButtonItem key="rightBarButtonItem" systemItem="cancel" id="k3x-a5-29Z">
                                             <connections>
                                                 <action selector="didClick:" destination="TLe-30-SE5" id="agL-ou-duz"/>
@@ -7472,17 +7473,17 @@ By signing in you agree to our </string>
         <image name="xButton" width="120" height="120"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="1ec-on-H4U"/>
-        <segue reference="6NW-5m-x55"/>
         <segue reference="g2v-Tz-Hql"/>
-        <segue reference="sd9-zV-ihv"/>
-        <segue reference="UJY-NU-Mxu"/>
-        <segue reference="1W1-wd-rZd"/>
-        <segue reference="cjw-Xv-3IZ"/>
-        <segue reference="CBJ-jo-VT2"/>
         <segue reference="lRk-4C-UL1"/>
-        <segue reference="9RL-pu-q9f"/>
+        <segue reference="cjw-Xv-3IZ"/>
+        <segue reference="1W1-wd-rZd"/>
+        <segue reference="sd9-zV-ihv"/>
+        <segue reference="CBJ-jo-VT2"/>
+        <segue reference="jHe-O7-VgC"/>
+        <segue reference="UJY-NU-Mxu"/>
         <segue reference="BCo-nf-KY4"/>
-        <segue reference="yr5-Tu-v5G"/>
+        <segue reference="9RL-pu-q9f"/>
+        <segue reference="6NW-5m-x55"/>
+        <segue reference="1ec-on-H4U"/>
     </inferredMetricsTieBreakers>
 </document>

@@ -1368,10 +1368,12 @@
                         groupEvent[@"GroupID"] = group.objectId;
                         groupEvent[@"invitedByName"] = [NSString stringWithFormat:@"%@ %@", currentUser[@"firstName"], currentUser[@"lastName"]];
                         groupEvent[@"invitedByID"] = currentUser.objectId;
-                        groupEvent[@"eventObject"] = event;
+                        
                         [event pinInBackground];
-                        [groupEvent pinInBackground];
-                        [groupEvent saveEventually:^(BOOL success, NSError *error) {
+
+                        [groupEvent saveInBackgroundWithBlock:^(BOOL success, NSError *error) {
+                            
+                            [groupEvent pinInBackground];
                             
                             PFObject *rsvpObject = [PFObject objectWithClassName:@"Group_RSVP"];
                             rsvpObject[@"EventID"] = event.objectId;
@@ -1381,9 +1383,9 @@
                             rsvpObject[@"User_Object"] = currentUser;
                             rsvpObject[@"UserFBID"] = currentUser[@"FBObjectID"];
                             rsvpObject[@"GoingType"] = @"yes";
-                            [rsvpObject pinInBackground];
-                            [rsvpObject saveEventually];
-                            
+                            [rsvpObject saveInBackgroundWithBlock:^(BOOL success, NSError *error){
+                                [rsvpObject pinInBackground];
+                            }];
                         }];
                         
                         PFQuery *swipesQuery = [PFQuery queryWithClassName:@"Swipes"];
@@ -1409,8 +1411,9 @@
                                 if ([[PFUser currentUser][@"socialMode"] isEqualToNumber:@YES] && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
                                     swipesObject[@"FBObjectID"] = currentUser[@"FBObjectID"];
                                 }
-                                [swipesObject pinInBackground];
-                                [swipesObject saveEventually];
+                                [swipesObject saveInBackgroundWithBlock:^(BOOL success, NSError *error) {
+                                    if (success) [swipesObject pinInBackground];
+                                }];
                                 
                                 PFObject *timelineObject = [PFObject objectWithClassName:@"Timeline"];
                                 timelineObject[@"type"] = @"eventInvite";
@@ -1715,10 +1718,12 @@
                                 groupEvent[@"GroupID"] = group.objectId;
                                 groupEvent[@"invitedByName"] = [NSString stringWithFormat:@"%@ %@", currentUser[@"firstName"], currentUser[@"lastName"]];
                                 groupEvent[@"invitedByID"] = currentUser.objectId;
-                                groupEvent[@"eventObject"] = event;
+                                
                                 [event pinInBackground];
-                                [groupEvent pinInBackground];
-                                [groupEvent saveEventually:^(BOOL success, NSError *error) {
+                                
+                                [groupEvent saveInBackgroundWithBlock:^(BOOL success, NSError *error) {
+                                    
+                                    [groupEvent pinInBackground];
                                     
                                     PFObject *rsvpObject = [PFObject objectWithClassName:@"Group_RSVP"];
                                     rsvpObject[@"EventID"] = event.objectId;
@@ -1728,9 +1733,9 @@
                                     rsvpObject[@"User_Object"] = currentUser;
                                     rsvpObject[@"UserFBID"] = currentUser[@"FBObjectID"];
                                     rsvpObject[@"GoingType"] = @"yes";
-                                    [rsvpObject pinInBackground];
-                                    [rsvpObject saveEventually];
-                                    
+                                    [rsvpObject saveInBackgroundWithBlock:^(BOOL success, NSError *error){
+                                        [rsvpObject pinInBackground];
+                                    }];
                                 }];
                                 
                                 PFQuery *swipesQuery = [PFQuery queryWithClassName:@"Swipes"];
@@ -1756,8 +1761,9 @@
                                         if ([[PFUser currentUser][@"socialMode"] isEqualToNumber:@YES] && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
                                             swipesObject[@"FBObjectID"] = currentUser[@"FBObjectID"];
                                         }
-                                        [swipesObject pinInBackground];
-                                        [swipesObject saveEventually];
+                                        [swipesObject saveInBackgroundWithBlock:^(BOOL success, NSError *error) {
+                                            if (success) [swipesObject pinInBackground];
+                                        }];
                                         
                                         PFObject *timelineObject = [PFObject objectWithClassName:@"Timeline"];
                                         timelineObject[@"type"] = @"eventInvite";
@@ -1918,10 +1924,12 @@
                                 groupEvent[@"GroupID"] = group.objectId;
                                 groupEvent[@"invitedByName"] = [NSString stringWithFormat:@"%@ %@", currentUser[@"firstName"], currentUser[@"lastName"]];
                                 groupEvent[@"invitedByID"] = currentUser.objectId;
-                                groupEvent[@"eventObject"] = event;
-                                [groupEvent pinInBackground];
+                                
                                 [event pinInBackground];
-                                [groupEvent saveEventually:^(BOOL success, NSError *error) {
+                                
+                                [groupEvent saveInBackgroundWithBlock:^(BOOL success, NSError *error) {
+                                    
+                                    [groupEvent pinInBackground];
                                     
                                     PFObject *rsvpObject = [PFObject objectWithClassName:@"Group_RSVP"];
                                     rsvpObject[@"EventID"] = event.objectId;
@@ -1931,9 +1939,9 @@
                                     rsvpObject[@"User_Object"] = currentUser;
                                     rsvpObject[@"UserFBID"] = currentUser[@"FBObjectID"];
                                     rsvpObject[@"GoingType"] = @"yes";
-                                    [rsvpObject pinInBackground];
-                                    [rsvpObject saveEventually];
-                                    
+                                    [rsvpObject saveInBackgroundWithBlock:^(BOOL success, NSError *error){
+                                        [rsvpObject pinInBackground];
+                                    }];
                                 }];
                                 
                                 PFQuery *swipesQuery = [PFQuery queryWithClassName:@"Swipes"];
@@ -1959,8 +1967,9 @@
                                         if ([[PFUser currentUser][@"socialMode"] isEqualToNumber:@YES] && ![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) {
                                             swipesObject[@"FBObjectID"] = currentUser[@"FBObjectID"];
                                         }
-                                        [swipesObject pinInBackground];
-                                        [swipesObject saveEventually];
+                                        [swipesObject saveInBackgroundWithBlock:^(BOOL success, NSError *error) {
+                                            if (success) [swipesObject pinInBackground];
+                                        }];
                                         
                                         PFObject *timelineObject = [PFObject objectWithClassName:@"Timeline"];
                                         timelineObject[@"type"] = @"eventInvite";

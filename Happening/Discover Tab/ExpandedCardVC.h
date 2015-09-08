@@ -18,7 +18,7 @@
 
 @protocol ExpandedCardVCDelegate <NSObject>
 
-- (void)didChangeRSVP;
+- (void)didChangeRSVPforEvent:(PFObject *)object type:(NSString *)type;
 
 @end
 

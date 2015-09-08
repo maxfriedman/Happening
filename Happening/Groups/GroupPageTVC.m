@@ -192,10 +192,10 @@
     rsvpYesArray = [NSMutableArray array];
     extraSections = [NSMutableDictionary dictionary];
     
-    /*
+    
     [SVProgressHUD setViewForExtension:self.view];
     [SVProgressHUD showWithStatus:@"Loading Events..."];
-    */
+    
     
     PFQuery *groupEventQuery = [PFQuery queryWithClassName:@"Group_Event"];
     [groupEventQuery fromLocalDatastore];
@@ -208,25 +208,29 @@
             
             //[object pinInBackground];
             
-            NSMutableDictionary *extras = [NSMutableDictionary dictionary];
-            [extraSections setObject:extras forKey:object[@"EventID"]];
-            [extras setObject:object.objectId forKey:@"ID"];
-            [extras setObject:object forKey:@"groupEventObject"];
-            [extras setObject:@NO forKey:@"hasLoaded"];
-        
-            [idsArray addObject:object[@"EventID"]];
+            if (object.objectId != nil) {
             
-            [extras setObject:[NSMutableArray arrayWithArray:fbIds] forKey:@"maybe"];
-            [extras setObject:[NSMutableArray array] forKey:@"no"];
-            [extras setObject:[NSMutableArray array] forKey:@"yes"];
+                NSMutableDictionary *extras = [NSMutableDictionary dictionary];
+                [extraSections setObject:extras forKey:object[@"EventID"]];
+                [extras setObject:object.objectId forKey:@"ID"];
+                [extras setObject:object forKey:@"groupEventObject"];
+                [extras setObject:@NO forKey:@"hasLoaded"];
             
-            NSMutableArray *picsArray = [NSMutableArray array];
-            for (NSString *fbid in fbIds) {
-                [picsArray addObject:[self ppViewForId:fbid]];
+                [idsArray addObject:object[@"EventID"]];
+                
+                [extras setObject:[NSMutableArray arrayWithArray:fbIds] forKey:@"maybe"];
+                [extras setObject:[NSMutableArray array] forKey:@"no"];
+                [extras setObject:[NSMutableArray array] forKey:@"yes"];
+                
+                NSMutableArray *picsArray = [NSMutableArray array];
+                for (NSString *fbid in fbIds) {
+                    [picsArray addObject:[self ppViewForId:fbid]];
+                }
+                [extras setObject:picsArray forKey:@"maybePics"];
+                [extras setObject:[NSMutableArray array] forKey:@"yesPics"];
+                [extras setObject:[NSMutableArray array] forKey:@"noPics"];
+            
             }
-            [extras setObject:picsArray forKey:@"maybePics"];
-            [extras setObject:[NSMutableArray array] forKey:@"yesPics"];
-            [extras setObject:[NSMutableArray array] forKey:@"noPics"];
         
         }
         
@@ -240,60 +244,119 @@
         
         [eventQuery findObjectsInBackgroundWithBlock:^(NSArray *events, NSError *error){
             
-            for (PFObject *event in events) {
+            if (!error && events.count > 0) {
                 
-                [eventIdsArray addObject:event.objectId];
-                
-                //[event pinInBackground];
-                
-                // Reduce event start date to date components (year, month, day)
-                NSDate *dateRepresentingThisDay = [self dateAtBeginningOfDayForDate:event[@"Date"]];
-                if ([dateRepresentingThisDay compare:[NSDate date]] == NSOrderedAscending) {
-                    dateRepresentingThisDay = [self dateAtBeginningOfDayForDate:[NSDate date]];
-                }
-                
-                // If we don't yet have an array to hold the events for this day, create one
-                NSMutableArray *eventsOnThisDay = [self.sections objectForKey:dateRepresentingThisDay];
-                if (eventsOnThisDay == nil) {
-                    eventsOnThisDay = [NSMutableArray array];
+                for (PFObject *event in events) {
                     
-                    // Use the reduced date as dictionary key to later retrieve the event list this day
-                    [self.sections setObject:eventsOnThisDay forKey:dateRepresentingThisDay];
-                }
-                
-                // Add the event to the list for this day
-                [eventsOnThisDay addObject:event];
-                
-                NSMutableDictionary *dict = [extraSections objectForKey:event.objectId];
-                if ([dict objectForKey:@"Image"] == nil) {
-                    if (event[@"Image"] != nil) [dict setObject:event[@"Image"] forKey:@"Image"];
-                    else [dict setObject:[UIImage imageNamed:event[@"Hashtag"]] forKey:@"Image"];
-                }
+                    [eventIdsArray addObject:event.objectId];
+                    
+                    //[event pinInBackground];
+                    
+                    // Reduce event start date to date components (year, month, day)
+                    NSDate *dateRepresentingThisDay = [self dateAtBeginningOfDayForDate:event[@"Date"]];
+                    if ([dateRepresentingThisDay compare:[NSDate date]] == NSOrderedAscending) {
+                        dateRepresentingThisDay = [self dateAtBeginningOfDayForDate:[NSDate date]];
+                    }
+                    
+                    // If we don't yet have an array to hold the events for this day, create one
+                    NSMutableArray *eventsOnThisDay = [self.sections objectForKey:dateRepresentingThisDay];
+                    if (eventsOnThisDay == nil) {
+                        eventsOnThisDay = [NSMutableArray array];
+                        
+                        // Use the reduced date as dictionary key to later retrieve the event list this day
+                        [self.sections setObject:eventsOnThisDay forKey:dateRepresentingThisDay];
+                    }
+                    
+                    // Add the event to the list for this day
+                    [eventsOnThisDay addObject:event];
+                    
+                    NSMutableDictionary *dict = [extraSections objectForKey:event.objectId];
+                    if ([dict objectForKey:@"Image"] == nil) {
+                        if (event[@"Image"] != nil) [dict setObject:event[@"Image"] forKey:@"Image"];
+                        else [dict setObject:[UIImage imageNamed:event[@"Hashtag"]] forKey:@"Image"];
+                    }
 
+                    
+                    count++;
+                }
                 
-                count++;
-            }
-            
-            // Create a sorted list of days
-            NSArray *unsortedDays = [self.sections allKeys];
-            self.sortedDays = [unsortedDays sortedArrayUsingSelector:@selector(compare:)];
-            
-            if (events.count == 0) {
+                // Create a sorted list of days
+                NSArray *unsortedDays = [self.sections allKeys];
+                self.sortedDays = [unsortedDays sortedArrayUsingSelector:@selector(compare:)];
                 
-                [self.view addSubview:noEventsView];
+                [SVProgressHUD dismiss];
+                [self.tableView reloadData];
+                
                 
             } else {
                 
-                [noEventsView removeFromSuperview];
+                PFQuery *eventQuery = [PFQuery queryWithClassName:@"Event"];
+                [eventQuery whereKey:@"objectId" containedIn:idsArray];
+                [eventQuery whereKey:@"Date" greaterThan:[[NSDate date] beginningOfDay]];
+                [eventQuery orderByAscending:@"Date"];
+                
+                count = 0;
+                
+                [eventQuery findObjectsInBackgroundWithBlock:^(NSArray *events, NSError *error){
+                    
+                    if (!error) {
+                        
+                        for (PFObject *event in events) {
+                            
+                            [eventIdsArray addObject:event.objectId];
+                            
+                            //[event pinInBackground];
+                            
+                            // Reduce event start date to date components (year, month, day)
+                            NSDate *dateRepresentingThisDay = [self dateAtBeginningOfDayForDate:event[@"Date"]];
+                            if ([dateRepresentingThisDay compare:[NSDate date]] == NSOrderedAscending) {
+                                dateRepresentingThisDay = [self dateAtBeginningOfDayForDate:[NSDate date]];
+                            }
+                            
+                            // If we don't yet have an array to hold the events for this day, create one
+                            NSMutableArray *eventsOnThisDay = [self.sections objectForKey:dateRepresentingThisDay];
+                            if (eventsOnThisDay == nil) {
+                                eventsOnThisDay = [NSMutableArray array];
+                                
+                                // Use the reduced date as dictionary key to later retrieve the event list this day
+                                [self.sections setObject:eventsOnThisDay forKey:dateRepresentingThisDay];
+                            }
+                            
+                            // Add the event to the list for this day
+                            [eventsOnThisDay addObject:event];
+                            
+                            NSMutableDictionary *dict = [extraSections objectForKey:event.objectId];
+                            if ([dict objectForKey:@"Image"] == nil) {
+                                if (event[@"Image"] != nil) [dict setObject:event[@"Image"] forKey:@"Image"];
+                                else [dict setObject:[UIImage imageNamed:event[@"Hashtag"]] forKey:@"Image"];
+                            }
+                            
+                            
+                            count++;
+                        }
+                        
+                        // Create a sorted list of days
+                        NSArray *unsortedDays = [self.sections allKeys];
+                        self.sortedDays = [unsortedDays sortedArrayUsingSelector:@selector(compare:)];
+                        
+                        if (events.count == 0) {
+                            
+                            [self.view addSubview:noEventsView];
+                            
+                        } else {
+                            
+                            [noEventsView removeFromSuperview];
+                        }
+                        
+                        [SVProgressHUD dismiss];
+                        [self.tableView reloadData];
+                        
+                    }
+                }];
+                
             }
             
-            //[self updateEvents];
-         
-            //[SVProgressHUD dismiss];
-            //[self loadPastEvents];
-            [self.tableView reloadData];
-            
-          }];
+        }];
         
         //[self loadRsvpsWithEventIds:idArray];
         
@@ -1098,7 +1161,7 @@
         //PFUser *user = yes[i];
         NSString *fbId = yesUsers[i];
         
-        if (userCount < 5 && ![fbId isEqualToString:currentUser[@"FBObjectID"]]) {
+        if (userCount < 4 && ![fbId isEqualToString:currentUser[@"FBObjectID"]]) {
 
             for (FBSDKProfilePictureView *ppview in yesPics) {
                 if ([ppview.profileID isEqualToString:fbId]) {
@@ -1130,7 +1193,7 @@
         
         NSString *fbId = maybeUsers[i];
         
-        if (userCount < 5 && ![fbId isEqualToString:currentUser[@"FBObjectID"]]) {
+        if (userCount < 4 && ![fbId isEqualToString:currentUser[@"FBObjectID"]]) {
             
             for (FBSDKProfilePictureView *ppview in maybePics) {
                 if ([ppview.profileID isEqualToString:fbId]) {
@@ -1160,7 +1223,7 @@
         
         NSString *fbId = noUsers[i];
         
-        if (userCount < 5 && ![fbId isEqualToString:currentUser[@"FBObjectID"]]) {
+        if (userCount < 4 && ![fbId isEqualToString:currentUser[@"FBObjectID"]]) {
             
             for (FBSDKProfilePictureView *ppview in noPics) {
                 if ([ppview.profileID isEqualToString:fbId]) {
@@ -1521,7 +1584,7 @@
     NSInteger userCount = fbIds.count;
     if (userCount > 5) userCount = 5;
     
-    userCount = fbIds.count;
+    //userCount = fbIds.count;
     
     for (int i = 0; i < userCount; i++) {
                 

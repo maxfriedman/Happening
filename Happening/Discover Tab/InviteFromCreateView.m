@@ -1117,7 +1117,7 @@
 
 - (NSInteger)tableView:(UITableView *)tableView sectionForSectionIndexTitle:(NSString *)title atIndex:(NSInteger)index
 {
-    return [sortedFriendsLetters indexOfObject:title] + 1;
+    return [sortedFriendsLetters indexOfObject:title];
 }
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {

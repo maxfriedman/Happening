@@ -901,7 +901,7 @@
         
         if ([activityDict objectForKey:@"event"] == nil) {
             PFObject *event = object[@"eventObject"];
-            [event fetchInBackgroundWithBlock:^(PFObject *event, NSError *error) {
+            [event fetchIfNeededInBackgroundWithBlock:^(PFObject *event, NSError *error) {
                 [activityDict setObject:event forKey:@"event"];
                 cell.eventObject = event;
                 PFFile *file = event[@"Image"];
@@ -978,25 +978,41 @@
         UITapGestureRecognizer *gr = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(showFriendProfile:)];
         [profPicView addGestureRecognizer:gr]; */
         
-        UIFont *font = [UIFont fontWithName:@"OpenSans-Semibold" size:10.0];
+        UIFont *font = [UIFont fontWithName:@"OpenSans-Bold" size:12.0];
         NSMutableDictionary *attrsDictionary = [NSMutableDictionary dictionaryWithObject:font
                                                                                   forKey:NSFontAttributeName];
         //[attrsDictionary setObject:[UIColor colorWithRed:0.0/255 green:176.0/255 blue:242.0/255 alpha:1.0] forKey:NSForegroundColorAttributeName];
         NSMutableAttributedString *aAttrString1 = [[NSMutableAttributedString alloc] initWithString:@"Reminder: " attributes:attrsDictionary];
-        NSMutableAttributedString *aAttrString2 = [[NSMutableAttributedString alloc] initWithString:@"event starts in "];
-        NSString *timeFromNow = [NSString stringWithFormat:@"%.f minutes.", [object[@"eventDate"] timeIntervalSinceNow] / 60];
-        NSMutableAttributedString *aAttrString3 = [[NSMutableAttributedString alloc] initWithString:timeFromNow attributes:attrsDictionary];
-        [aAttrString1 appendAttributedString:aAttrString2];
-        [aAttrString1 appendAttributedString:aAttrString3];
         
-        cell.messageLabel.attributedText = aAttrString1;
+        NSDate *eventDate = object[@"eventDate"];
+        if ([eventDate compare:[NSDate date]] == NSOrderedDescending) {
+            
+            NSMutableAttributedString *aAttrString2 = [[NSMutableAttributedString alloc] initWithString:@"event starts in "];
+            NSString *timeFromNow = [NSString stringWithFormat:@"%.f minutes.", [object[@"eventDate"] timeIntervalSinceNow] / 60];
+            NSMutableAttributedString *aAttrString3 = [[NSMutableAttributedString alloc] initWithString:timeFromNow attributes:attrsDictionary];
+            [aAttrString1 appendAttributedString:aAttrString2];
+            [aAttrString1 appendAttributedString:aAttrString3];
+            cell.messageLabel.attributedText = aAttrString1;
+        
+        } else if ([[eventDate beginningOfDay] isEqualToDate:[[NSDate date] beginningOfDay]]) {
+            
+            NSMutableAttributedString *aAttrString2 = [[NSMutableAttributedString alloc] initWithString:@"event has started."];
+            [aAttrString1 appendAttributedString:aAttrString2];
+            cell.messageLabel.attributedText = aAttrString1;
+        
+        } else {
+            
+            NSMutableAttributedString *aAttrString2 = [[NSMutableAttributedString alloc] initWithString:@"event has ended."];
+            [aAttrString1 appendAttributedString:aAttrString2];
+            cell.messageLabel.attributedText = aAttrString1;
+            
+        }
         
         cell.eventTitleLabel.text = object[@"eventName"];
         cell.eventLocationLabel.text = object[@"eventLoc"];
         
         NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
         [formatter setDateFormat:@"EEE, MMM d"];
-        NSDate *eventDate = object[@"eventDate"];
         cell.eventDateLabel.text = [formatter stringFromDate:eventDate];
         
         cell.eventImageView.image = nil;
@@ -1390,7 +1406,7 @@
                         vc.image = [dict objectForKey:@"image"];
                 }
                 
-                vc.eventID = activityObject.objectId;
+                vc.eventID = activityObject[@"eventId"];
                 
             } else if ([type isEqualToString:@"reminder"]) {
                 
@@ -1407,7 +1423,7 @@
                         vc.image = [dict objectForKey:@"image"];
                 }
                 
-                vc.eventID = activityObject.objectId;
+                vc.eventID = activityObject[@"eventId"];
                 
             } else if ([type isEqualToString:@"match"]) {
                 

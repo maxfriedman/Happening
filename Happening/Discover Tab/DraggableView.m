@@ -255,6 +255,7 @@
         [hapLogoButton addTarget:delegate action:@selector(inviteButtonTap) forControlEvents:UIControlEventTouchUpInside];
         [hapLogoButton addTarget:self action:@selector(buttonHighlight:) forControlEvents:UIControlEventTouchDown];
         [hapLogoButton addTarget:self action:@selector(buttonNormal:) forControlEvents:UIControlEventTouchUpInside];
+        [hapLogoButton addTarget:self action:@selector(buttonNormal:) forControlEvents:UIControlEventTouchCancel];
         [hapLogoButton addTarget:self action:@selector(buttonNormal:) forControlEvents:UIControlEventTouchDragExit];
         
         
@@ -471,7 +472,7 @@
         // show your more button
         subtitle.numberOfLines = 2;
         CGRect subtitleFrame = subtitle.frame;
-        subtitleFrame.origin.y += -12;
+        subtitleFrame.origin.y += -15;
         subtitle.frame = subtitleFrame;
         lineSizeTotal = 27;
         
@@ -584,6 +585,7 @@
     
     [ticketsButton addTarget:self action:@selector(tixButtonHighlight:) forControlEvents:UIControlEventTouchDown];
     [ticketsButton addTarget:self action:@selector(tixButtonNormal:) forControlEvents:UIControlEventTouchUpInside];
+    [ticketsButton addTarget:self action:@selector(tixButtonNormal:) forControlEvents:UIControlEventTouchCancel];
     [ticketsButton addTarget:self action:@selector(tixButtonNormal:) forControlEvents:UIControlEventTouchDragExit];
     
     
@@ -694,25 +696,26 @@
             
             [ticketsButton setTitle:@"RSVP TO FACEBOOK EVENT" forState:UIControlStateNormal];
             ticketsButton.frame = CGRectMake(15, 360.5 + extraDescHeight - 62, 200, 25);
-            ticketsButton.center = CGPointMake(self.center.x, ticketsButton.center.y);
+            ticketsButton.center = CGPointMake(self.cardView.center.x, ticketsButton.center.y);
             
         } else if ([self doesString:ticketLink contain:@"meetup.com"]) {
             
             [ticketsButton setTitle:@"RSVP ON MEETUP.COM" forState:UIControlStateNormal];
             ticketsButton.frame = CGRectMake(15, 360.5 + extraDescHeight - 62, 200, 25);
-            ticketsButton.center = CGPointMake(self.center.x, ticketsButton.center.y);
+            ticketsButton.center = CGPointMake(self.cardView.center.x, ticketsButton.center.y);
             
         } else if ([[self.eventObject objectForKey:@"isFreeEvent"] isEqualToNumber:@YES]) {
             
             [ticketsButton setTitle:@"THIS EVENT IS FREE!" forState:UIControlStateNormal];
             ticketsButton.frame = CGRectMake(15, 360.5 + extraDescHeight - 62, 200, 25);
-            ticketsButton.center = CGPointMake(self.center.x, ticketsButton.center.y);
+            ticketsButton.center = CGPointMake(self.cardView.center.x, ticketsButton.center.y);
             
         }
         
     } else if (url != nil && (![url isEqualToString:@""] || ![url isEqualToString:@"$0"])) {
         
         [ticketsButton setTitle:@"MORE INFO ON WEBSITE" forState:UIControlStateNormal];
+        ticketsButton.accessibilityIdentifier = url;
         
     } else { //no tix
 
@@ -727,12 +730,41 @@
             noTixLabel.text = @"This event does not have tickets.";
         } else if ([[self.eventObject objectForKey:@"isFreeEvent"] isEqualToNumber:@YES]){
             noTixLabel.text = @"This event is free! No tickets required.";
-        } else if ([[self.eventObject objectForKey:@"private"] isEqualToNumber:@YES]) {
+        } /*else if ([[self.eventObject objectForKey:@"private"] isEqualToNumber:@YES]) {
         
-        } else {
+        }*/else {
             /*
             noTixLabel.text = @"No ticket information is available.";*/
             noTixLabel.text = @"";
+            
+            NSString *privacyString = self.eventObject[@"privacy"];
+            if (privacyString != nil && ![privacyString isEqualToString:@""]) {
+             
+                NSString *name = self.eventObject[@"CreatedByName"];
+                NSString *firstName = [[name componentsSeparatedByString:@" "] objectAtIndex:0];
+                
+                if ([privacyString isEqualToString:@"public"]) {
+                    noTixLabel.text = @"This is a public event.";
+                } else if ([privacyString isEqualToString:@"friends"]) {
+                    //noTixLabel.text = [NSString stringWithFormat:@".", firstName];
+                } else if ([privacyString isEqualToString:@"private"]) {
+                    
+                    if ([self.eventObject[@"CreatedByFBID"] isEqualToString:[PFUser currentUser][@"FBObjectID"]]) {
+                        noTixLabel.text = @"Only people you invite can see this event.";
+                    } else {
+                        noTixLabel.text = [NSString stringWithFormat:@"Only people %@ invites can see this event.", firstName];
+                        [hapLogoButton setTitle:@"" forState:UIControlStateNormal];
+                        hapLogoButton.enabled = NO;
+                        [hapLogoButton setImage:[UIImage imageNamed:@"locked-blue"] forState:UIControlStateNormal];
+                        hapLogoButton.layer.borderWidth = 2.0;
+                    }
+                    
+                    noTixLabel.font = [UIFont fontWithName:@"OpenSans" size:12.0];
+                    [noTixLabel sizeToFit];
+                }
+                
+            }
+            
         }
         
         [ticketsButton removeFromSuperview];
@@ -942,7 +974,7 @@
 
 -(void)arrangeCornerViews {
     
-    if ([self.eventObject[@"private"] boolValue] == YES && self.eventObject[@"CreatedByFBID"] != nil) {
+    if (self.eventObject[@"CreatedByFBID"] != nil) {
         
         ProfilePictureView *ppview = [[ProfilePictureView alloc] initWithFrame:CGRectMake(10, 10, 40, 40) type:@"create" fbid:self.eventObject[@"CreatedByFBID"]];
         ppview.parseId = self.eventObject[@"CreatedBy"];
@@ -976,46 +1008,49 @@
             hashtag.text = @"";
         }
         
-        PFQuery *query = [PFQuery queryWithClassName:@"Swipes"];
-        [query whereKey:@"EventID" equalTo:self.eventObject.objectId];
-        [query fromLocalDatastore];
-        //[query getObjectInBackgroundWithId:event.objectId block:^(PFObject *object, NSError *error){
-        [query getFirstObjectInBackgroundWithBlock:^(PFObject *swipe, NSError *error) {
-            
-            if (!error /* && [swipe[@"EventID"] isEqualToString:event.objectId] && [[event[@"Date"] beginningOfDay] isEqualToDate:[[NSDate date] beginningOfDay]]*/) {
+        if ([[self.eventObject[@"Date"] beginningOfDay] compare:[[NSDate date] beginningOfDay]] != NSOrderedAscending) {
+        
+            PFQuery *query = [PFQuery queryWithClassName:@"Swipes"];
+            [query whereKey:@"EventID" equalTo:self.eventObject.objectId];
+            [query fromLocalDatastore];
+            //[query getObjectInBackgroundWithId:event.objectId block:^(PFObject *object, NSError *error){
+            [query getFirstObjectInBackgroundWithBlock:^(PFObject *swipe, NSError *error) {
                 
-                if ([swipe[@"isGoing"] boolValue] == YES) {
-                    CategoryBubbleView *stillInterestedView = [[CategoryBubbleView alloc] initWithText:@"Still Going?" type:@"repeat-going"];
-                    [cardView addSubview:stillInterestedView];
-                } else {
-                    CategoryBubbleView *stillInterestedView = [[CategoryBubbleView alloc] initWithText:@"Still Interested?" type:@"repeat"];
-                    [cardView addSubview:stillInterestedView];
-                }
-                
-                NSMutableArray *views = [NSMutableArray array];
-                for (UIView *view in self.cardView.subviews) {
-                    if (view.tag == 123) {
-                        [views addObject:view];
-                    }
-                }
-                
-                if (views.count == 2) {
+                if (!error /* && [swipe[@"EventID"] isEqualToString:event.objectId] && [[event[@"Date"] beginningOfDay] isEqualToDate:[[NSDate date] beginningOfDay]]*/) {
                     
-                    for (CategoryBubbleView *view in views) {
-                        
-                        if ([view.bubbleType isEqualToString:@"normal"]) {
-                            
-                            view.center = CGPointMake(view.center.x, view.frame.size.height + view.center.y + 5);
-                            
+                    if ([swipe[@"isGoing"] boolValue] == YES) {
+                        CategoryBubbleView *stillInterestedView = [[CategoryBubbleView alloc] initWithText:@"Still Going?" type:@"repeat-going"];
+                        [cardView addSubview:stillInterestedView];
+                    } else {
+                        CategoryBubbleView *stillInterestedView = [[CategoryBubbleView alloc] initWithText:@"Still Interested?" type:@"repeat"];
+                        [cardView addSubview:stillInterestedView];
+                    }
+                    
+                    NSMutableArray *views = [NSMutableArray array];
+                    for (UIView *view in self.cardView.subviews) {
+                        if (view.tag == 123) {
+                            [views addObject:view];
                         }
                     }
+                    
+                    if (views.count == 2) {
+                        
+                        for (CategoryBubbleView *view in views) {
+                            
+                            if ([view.bubbleType isEqualToString:@"normal"]) {
+                                
+                                view.center = CGPointMake(view.center.x, view.frame.size.height + view.center.y + 5);
+                                
+                            }
+                        }
+                    }
+                    
+                } else {
+                    
                 }
                 
-            } else {
-                
-            }
-            
-        }];
+            }];
+        }
     }
 }
 
@@ -1082,19 +1117,31 @@
             
             for (int i = 0; i < orderedObjects.count; i++) {
                 PFObject *object = orderedObjects[i];
-                if ([idsArray containsObject:object[@"FBObjectID"]]) {
-                    [orderedObjects removeObject:object];
-                    [orderedObjects insertObject:object atIndex:0];
-                }
-            }
-            
-            for (int i = 0; i < orderedObjects.count; i++) {
-                PFObject *object = orderedObjects[i];
                 if ([object[@"isGoing"] boolValue] == YES) {
                     [orderedObjects removeObject:object];
                     [orderedObjects insertObject:object atIndex:0];
                 }
             }
+            
+            NSMutableArray *friendsArray = [NSMutableArray array];
+            for (int i = (int)orderedObjects.count - 1; i >= 0; i--) {
+                PFObject *object = orderedObjects[i];
+                if ([idsArray containsObject:object[@"FBObjectID"]]) {
+                    
+                    [orderedObjects removeObject:object];
+                    
+                    if ([object[@"isGoing"] boolValue] == YES) {
+                        [friendsArray removeObject:object];
+                        [friendsArray insertObject:object atIndex:0];
+                    } else {
+                        [friendsArray removeObject:object];
+                        [friendsArray addObject:object];
+                    }
+                }
+            }
+            
+            [friendsArray addObjectsFromArray:orderedObjects];
+            orderedObjects = friendsArray;
             
             for (int i = 0; i < orderedObjects.count; i++) {
                 PFObject *object = orderedObjects[i];
@@ -1160,12 +1207,17 @@
                                 goingButton.backgroundColor = [UIColor colorWithRed:0.0 green:1.0 blue:120.0/255 alpha:1.0];
                             } completion:nil];
                             
+                        } else if ([object[@"swipedLeft"] boolValue] == YES) {
+                            
+                            [UIView animateWithDuration:0.4 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+                                notInterestedButton.backgroundColor = [UIColor colorWithRed:1.0 green:0 blue:0.0/255 alpha:1.0];
+                            } completion:nil];
+                            
                         } else {
                             
                             [UIView animateWithDuration:0.4 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
                                 interestedButton.backgroundColor = [UIColor colorWithRed:1.0 green:0 blue:121.0/255 alpha:1.0];
                             } completion:nil];
-                            
                         }
                         
                         /*

@@ -163,6 +163,7 @@ static Rdio * _rdioInstance;
         }];*/
     }
     
+    self.groupDict = [NSMutableDictionary dictionary];
     
     NSURL *appID = [NSURL URLWithString:@"layer:///apps/production/337f70da-0eb7-11e5-9a48-aa9e2d006589"];
     self.layerClient = [LYRClient clientWithAppID:appID];
@@ -513,7 +514,7 @@ static Rdio * _rdioInstance;
             currentInstallation.badge = 0;
             [currentInstallation saveEventually];
         }
-    
+        
         [self loadEvents];
         
         [self loadGroups];
@@ -683,6 +684,7 @@ static Rdio * _rdioInstance;
                     NSMutableArray *groupIds = [NSMutableArray array];
                     for (PFObject *group in groups2) {
                         [groupIds addObject:group.objectId];
+                        [self.groupDict setObject:group forKey:group.objectId];
                     }
                     
                     PFQuery *groupEventQuery = [PFQuery queryWithClassName:@"Group_Event"];

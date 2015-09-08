@@ -31,6 +31,8 @@
 
 @property (strong, nonatomic) NSString *locSubtitle;
 
+@property (strong, nonatomic) NSMutableDictionary *groupDict;
+
 @property int sliderValue;
 
 @property BOOL wasHandled;

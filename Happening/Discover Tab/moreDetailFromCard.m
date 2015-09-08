@@ -11,7 +11,7 @@
 @interface moreDetailFromCard ()
 
 @property (strong, nonatomic) UILabel *titleLabel;
-@property (strong, nonatomic) UILabel *subtitleLabel;
+@property (strong, nonatomic) UITextView *subtitleTextView;
 @property (strong, nonatomic) UILabel *locationLabel;
 
 @property (strong, nonatomic) IBOutlet UIScrollView *scrollView;
@@ -20,7 +20,7 @@
 
 @implementation moreDetailFromCard
 
-@synthesize titleLabel, subtitleLabel, locationLabel, scrollView;
+@synthesize titleLabel, subtitleTextView, locationLabel, scrollView;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -57,15 +57,18 @@
 
 - (void)layoutSubtitleLabel {
     
-    subtitleLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, locationLabel.frame.origin.y + locationLabel.frame.size.height + 20, 280, 2000)];
-    subtitleLabel.font = [UIFont fontWithName:@"OpenSans" size:12.0];
-    subtitleLabel.text = self.subtitleText;
-    subtitleLabel.numberOfLines = 0;
-    [subtitleLabel sizeToFit];
-    [scrollView addSubview:subtitleLabel];
+    subtitleTextView = [[UITextView alloc] initWithFrame:CGRectMake(17, locationLabel.frame.origin.y + locationLabel.frame.size.height + 15, 290, 2000)];
+    subtitleTextView.editable = NO;
+    subtitleTextView.scrollEnabled = NO;
+    subtitleTextView.canCancelContentTouches = NO;
+    subtitleTextView.font = [UIFont fontWithName:@"OpenSans" size:12.0];
+    subtitleTextView.text = self.subtitleText;
+    [subtitleTextView setDataDetectorTypes:UIDataDetectorTypeAll];
+    [subtitleTextView sizeToFit];
+    [scrollView addSubview:subtitleTextView];
     
-    if (subtitleLabel.frame.size.height + subtitleLabel.frame.origin.y + 50 > self.view.frame.size.height) {
-        scrollView.contentSize = CGSizeMake(self.view.frame.size.width, subtitleLabel.frame.size.height + subtitleLabel.frame.origin.y + 50);
+    if (subtitleTextView.frame.size.height + subtitleTextView.frame.origin.y + 50 > self.view.frame.size.height) {
+        scrollView.contentSize = CGSizeMake(self.view.frame.size.width, subtitleTextView.frame.size.height + subtitleTextView.frame.origin.y + 50);
     }
     
 }

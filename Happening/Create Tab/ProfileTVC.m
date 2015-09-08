@@ -70,7 +70,6 @@
     UIView *noEventsView;
     UIButton *createButton;
     UIButton *noFriendsButton;
-    NSArray *eventsArray;
     
     CAGradientLayer *maskLayer;
     
@@ -93,7 +92,7 @@
     BOOL tableViewIsUp;
     
     NSString *selectedFriendId;
-
+    
 }
 
 //@synthesize locManager, refreshControl;
@@ -580,7 +579,7 @@
                     [array addObject:swipe[@"FBObjectID"]];
                     
                     NSMutableArray *picArray = [dict objectForKey:@"profilePictures"];
-                    if (picArray.count <= 5) {
+                    if (picArray.count < 5) {
                         
                         ProfilePictureView *ppview = [[ProfilePictureView alloc] initWithFrame:CGRectMake(30 + 50 * picArray.count, 93, 40, 40) type:type fbid:swipe[@"FBObjectID"]];
                         ppview.layer.borderColor = [UIColor whiteColor].CGColor;
@@ -2016,11 +2015,13 @@
     
 }
 
-- (void)didChangeRSVP {
+- (void)didChangeRSVPforEvent:(PFObject *)object type:(NSString *)type {
     
     NSLog(@"rsvps changed");
-    eventsArray = [NSArray new];
-    self.sections = [NSMutableDictionary dictionary];
+    eventsArray = nil;
+    self.sections = nil;
+    self.sortedDays = nil;
+    friendEventDict = nil;
     [self loadData];
 }
 

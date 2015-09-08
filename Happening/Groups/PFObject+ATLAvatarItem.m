@@ -17,15 +17,29 @@
         NSDictionary *dict = [self getOtherUserDict];
         
         NSString *name = [dict valueForKey:@"name"];
-        name = [name stringByReplacingOccurrencesOfString:[PFUser currentUser][@"firstName"] withString:@""];
-        name = [name stringByReplacingOccurrencesOfString:@"and" withString:@""];
-        name = [name stringByReplacingOccurrencesOfString:@" " withString:@""];
+        if ([self doesString:name contain:[PFUser currentUser][@"firstName"]]) {
+            name = [name stringByReplacingOccurrencesOfString:[PFUser currentUser][@"firstName"] withString:@""];
+        
+            if ([self doesString:name contain:@"and"]) {
+                name = [name stringByReplacingOccurrencesOfString:@"and" withString:@""];
+        
+                if ([self doesString:name contain:@" "]) {
+                    name = [name stringByReplacingOccurrencesOfString:@" " withString:@""];
+                
+                }
+            }
+        }
         
         return name;
 
     }
 
     return self[@"name"];;
+}
+
+-(BOOL)doesString:(NSString *)first contain:(NSString*)other {
+    NSRange range = [first rangeOfString:other];
+    return range.length != 0;
 }
 
 - (UIImage *)avatarImage

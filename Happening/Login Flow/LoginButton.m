@@ -420,89 +420,161 @@
                      
                      NSDictionary *user = result;
                      
-                     currentUser.username = [user objectForKey:@"id"];
-                     currentUser.password = [NSString stringWithFormat:@"password"];
-                     currentUser[@"FBObjectID"] = [user objectForKey:@"id"];
-                     currentUser[@"link"] = [user objectForKey:@"link"];
-                     currentUser[@"fbToken"] = [FBSDKAccessToken currentAccessToken].tokenString;
-                     
-                     if ([user objectForKey:@"email"] != nil) {
-                         currentUser.email = [user objectForKey:@"email"];
-                         currentUser.username = [user objectForKey:@"email"];
-                     }
-                     if ([user objectForKey:@"first_name"] != nil)
-                         currentUser[@"firstName"] = [user objectForKey:@"first_name"];
-                     if ([user objectForKey:@"last_name"] != nil)
-                         currentUser[@"lastName"] = [user objectForKey:@"last_name"];
-                     if ([user objectForKey:@"gender"] != nil)
-                         currentUser[@"gender"] = [user objectForKey:@"gender"];
-                     if ([user objectForKey:@"birthday"] != nil)
-                         currentUser[@"birthday"] = [user objectForKey:@"birthday"];
-                     if ([user objectForKey:@"location"] != nil) {
-                         NSDictionary *locationDict = [user objectForKey:@"location"];
-                         if ([locationDict objectForKey:@"name"] != nil) {
-                             currentUser[@"fbLocationName"] = [locationDict objectForKey:@"name"];
-                             currentUser[@"city"] = [locationDict objectForKey:@"name"];
-                         }
-                     }
-                     
-                     currentUser[@"fbToken"] = [FBSDKAccessToken currentAccessToken].tokenString;
-                     //parseUser[@"userLoc"] = [PFGeoPoint geoPointWithLatitude:38.907192 longitude:-77.036871];
-                     
-                     [currentUser signUpInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
-                         if (!error) {
-                             NSLog(@"New user successfully signed up.");
+                     PFQuery *userQuery = [PFUser query];
+                     [userQuery whereKey:@"FBObjectID" equalTo:[user objectForKey:@"id"]];
+                     [userQuery getFirstObjectInBackgroundWithBlock:^(PFObject *userObject, NSError *error) {
+                         
+                         if (!error) { // User exists, log in
                              
-                             // Hooray! Let them use the app now.
-                             NSLog(@"New user: %@", currentUser.username);
+                             PFUser *user1 = (PFUser *)userObject;
                              
-                             if (currentUser) {
+                             [PFUser logInWithUsernameInBackground:user1.username password:[user objectForKey:@"link"] block:^(PFUser *user2, NSError *error) {
                                  
-                                 NSString *name = @"";
-                                 if (currentUser[@"firstName"] != nil)
-                                     name = currentUser[@"firstName"];
-                                 
-                                 if (currentUser[@"lastName"] != nil)
-                                     name = [NSString stringWithFormat:@"%@ %@", name, currentUser[@"lastName"]];
-                                 
-                                 [PFCloud callFunctionInBackground:@"newUser"
-                                                    withParameters:@{@"user":currentUser.objectId, @"name":name, @"fbID":currentUser[@"FBObjectID"], @"fbToken":[FBSDKAccessToken currentAccessToken].tokenString}
-                                                             block:^(NSString *result, NSError *error) {
-                                                                 if (!error) {
-                                                                     NSLog(@"%@", result);
-                                                                 }
-                                                             }];
-                                 
-                                 PFObject *timelineObject = [PFObject objectWithClassName:@"Timeline"];
-                                 timelineObject[@"type"] = @"newUser";
-                                 timelineObject[@"userId"] = currentUser.objectId;
-                                 timelineObject[@"createdDate"] = [NSDate date];
-                                 [timelineObject pinInBackground];
-                                 [timelineObject saveEventually];
-                                 
-                                 [self setDefaultsForUser:currentUser];
-                                 
-                             }
+                                 if (user2  && !error) {
+                                     // Do stuff after successful login.
+                                     [self setDefaultsForUser:user2];
+                                     
+                                 } else {
+                                     
+                                     NSLog(@"Trying again...");
+                                     
+                                     [PFUser logInWithUsernameInBackground:user1.username password:[NSString stringWithFormat:@"password"] block:^(PFUser *user3, NSError *error) {
+                                         
+                                         if (user3  && !error) {
+                                             // Do stuff after successful login.
+                                             [self setDefaultsForUser:user3];
+                                             
+                                         } else {
+                                             
+                                             [self.delegate buttonPressEnd];
+                                             [self.delegate loginUnsuccessful];
+                                             NSLog(@"Error ~~ %@", error);
+                                         }
+                                     }];
+                                 }
+                             }];
                              
                          } else {
                              
-                             NSLog(@"User exists.");
+                             //PFUser *newUser = [PFUser user];
+                             currentUser.username = [user objectForKey:@"id"];
+                             currentUser.password = [NSString stringWithFormat:@"password"];
+                             currentUser[@"FBObjectID"] = [user objectForKey:@"id"];
+                             currentUser[@"link"] = [user objectForKey:@"link"];
+                             currentUser[@"fbToken"] = [FBSDKAccessToken currentAccessToken].tokenString;
                              
-                             if (currentUser) {
-                                 
-                                 [PFUser logInWithUsernameInBackground:currentUser.username password:currentUser.password block:^(PFUser *user, NSError *error) {
-                                     if (user) {
-                                         // Do stuff after successful login.
-                                         [self setDefaultsForUser:user];
-                                         
-                                     } else {
-                                         // The login failed. Check error to see why.
-                                         [self.delegate buttonPressEnd];
-                                         [self.delegate loginUnsuccessful];
-                                         NSLog(@"%@", error);
-                                     }
-                                 }];
+                             if ([user objectForKey:@"email"] != nil) {
+                                 currentUser.email = [user objectForKey:@"email"];
+                                 currentUser.username = [user objectForKey:@"email"];
                              }
+                             if ([user objectForKey:@"first_name"] != nil)
+                                 currentUser[@"firstName"] = [user objectForKey:@"first_name"];
+                             if ([user objectForKey:@"last_name"] != nil)
+                                 currentUser[@"lastName"] = [user objectForKey:@"last_name"];
+                             if ([user objectForKey:@"gender"] != nil)
+                                 currentUser[@"gender"] = [user objectForKey:@"gender"];
+                             if ([user objectForKey:@"birthday"] != nil)
+                                 currentUser[@"birthday"] = [user objectForKey:@"birthday"];
+                             if ([user objectForKey:@"location"] != nil) {
+                                 NSDictionary *locationDict = [user objectForKey:@"location"];
+                                 if ([locationDict objectForKey:@"name"] != nil) {
+                                     currentUser[@"fbLocationName"] = [locationDict objectForKey:@"name"];
+                                     currentUser[@"city"] = [locationDict objectForKey:@"name"];
+                                 }
+                             }
+                             /*
+                              if ([grantedPermissions containsObject:@"bio"])
+                              parseUser[@"bio"] = [user objectForKey:@"bio"];
+                              */
+                             
+                             NSLog(@"%@", currentUser);
+                             
+                             [currentUser saveInBackgroundWithBlock:^(BOOL success, NSError *error) {
+                                 
+                                 if (success) {
+                                     [PFUser logInWithUsernameInBackground:currentUser.username password:currentUser.password block:^(PFUser *theUser, NSError *error) {
+                                         
+                                         if (theUser) {
+                                             // Do stuff after successful login.
+                                             
+                                             NSString *name = @"";
+                                             if (theUser[@"firstName"] != nil)
+                                                 name = theUser[@"firstName"];
+                                             
+                                             if (theUser[@"lastName"] != nil)
+                                                 name = [NSString stringWithFormat:@"%@ %@", name, theUser[@"lastName"]];
+                                             
+                                             [PFCloud callFunctionInBackground:@"newUser"
+                                                                withParameters:@{@"user":currentUser.objectId, @"name":name, @"fbID":currentUser[@"FBObjectID"], @"fbToken":[FBSDKAccessToken currentAccessToken].tokenString}
+                                                                         block:^(NSString *result, NSError *error) {
+                                                                             if (!error) {
+                                                                                 NSLog(@"%@", result);
+                                                                             }
+                                                                         }];
+                                             
+                                             PFObject *timelineObject = [PFObject objectWithClassName:@"Timeline"];
+                                             timelineObject[@"type"] = @"newUser";
+                                             timelineObject[@"userId"] = currentUser.objectId;
+                                             timelineObject[@"createdDate"] = [NSDate date];
+                                             [timelineObject pinInBackground];
+                                             [timelineObject saveEventually];
+                                             
+                                             [self setDefaultsForUser:theUser];
+                                             
+                                         } else {
+                                             // The login failed. Check error to see why.
+                                             [self.delegate buttonPressEnd];
+                                             [self.delegate loginUnsuccessful];
+                                             NSLog(@"%@", error);
+                                         }
+                                     }];
+                                     
+                                 } else {
+                                     // The login failed. Check error to see why.
+                                     [self.delegate buttonPressEnd];
+                                     [self.delegate loginUnsuccessful];
+                                     NSLog(@"%@", error);
+                                 }
+                             }];
+                             
+                             
+                             /*
+                              [currentUser signUpInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+                              
+                              if (!error) {
+                              
+                              NSLog(@"New user successfully signed up.");
+                              
+                              // Hooray! Let them use the app now.
+                              NSLog(@"New user: %@", currentUser);
+                              
+                              NSString *name = @"";
+                              if ([user objectForKey:@"first_name"] != nil)
+                              name = [user objectForKey:@"first_name"];
+                              
+                              if ([user objectForKey:@"last_name"] != nil)
+                              name = [NSString stringWithFormat:@"%@ %@", name, [user objectForKey:@"last_name"]];
+                              
+                              [PFCloud callFunctionInBackground:@"newUser"
+                              withParameters:@{@"user":currentUser.objectId, @"name":name, @"fbID":currentUser[@"FBObjectID"], @"fbToken":[FBSDKAccessToken currentAccessToken].tokenString}
+                              block:^(NSString *result, NSError *error) {
+                              if (!error) {
+                              // result is @"Hello world!"
+                              NSLog(@"%@", result);
+                              }
+                              }];
+                              
+                              [self setDefaultsForUser:currentUser];
+                              
+                              } else {
+                              
+                              [self.delegate buttonPressEnd];
+                              [self.delegate loginUnsuccessful];
+                              NSLog(@"Error ~~ %@", error);
+                              
+                              }
+                              }];*/
+                             
                          }
                      }];
                  }
@@ -536,7 +608,7 @@
     
     // Associate the device with a user
     currentInstallation.channels = @[@"global", @"reminders", @"matches", @"friendJoined", @"popularEvents", @"allGroups", @"bestFriends"];
-    currentInstallation[@"matchCount"] = @3;
+    currentInstallation[@"matchCount"] = @2;
     currentInstallation[@"userID"] = user.objectId;
     currentInstallation[@"enabled"] = @(notisEnabled);
     

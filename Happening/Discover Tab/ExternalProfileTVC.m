@@ -20,6 +20,7 @@
 #import "UIImage+ImageEffects.h"
 #import "TimelineCell.h"
 #import "inviteHomiesCell.h"
+#import "SVProgressHUD.h"
 #import "ExternalProfileTVC.h"
 
 #define SYSTEM_VERSION_EQUAL_TO(v)                  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedSame)
@@ -71,6 +72,7 @@
     int tableVersion;
     BOOL showTimeline;
     BOOL isAnimatingScoreButton;
+    BOOL clearTable;
     
     UILabel *scoreLabel;
     UILabel *hapsLabel;
@@ -119,11 +121,15 @@
     [self.navigationController setNavigationBarHidden:YES animated:NO];
     
     if (!user) {
+        
+        [self isLoading:YES];
     
         PFQuery *userQuery = [PFUser query];
         [userQuery getObjectInBackgroundWithId:self.userID block:^(PFObject *ob, NSError *error) {
             
             if (!error) {
+                
+                [self isLoading:NO];
                 
                 user = (PFUser *)ob;
                 
@@ -137,6 +143,7 @@
                     PFQuery *createdEventsQuery = [PFQuery queryWithClassName:@"Event"];
                     [createdEventsQuery whereKey:@"CreatedBy" equalTo:user.objectId];
                     [createdEventsQuery orderByDescending:@"Date"];
+                    [createdEventsQuery whereKey:@"privacy" notEqualTo:@"private"];
                     createdEventsQuery.limit = 1000;
                     [createdEventsQuery countObjectsInBackgroundWithBlock:^(int count, NSError *error) {
                         
@@ -167,6 +174,7 @@
                     PFQuery *swipedRightEventQuery = [PFQuery queryWithClassName:@"Event"];
                     [swipedRightEventQuery whereKey:@"objectId" matchesKey:@"EventID" inQuery:swipesQuery];
                     [swipedRightEventQuery orderByAscending:@"Date"];
+                    [swipedRightEventQuery whereKey:@"privacy" notEqualTo:@"private"];
                     swipedRightEventQuery.limit = 1000;
                     
                     [swipedRightEventQuery countObjectsInBackgroundWithBlock:^(int count, NSError *error) {
@@ -432,6 +440,18 @@
     //[self.navigationController setNavigationBarHidden:YES animated:NO];
 }
 
+- (void)isLoading:(BOOL)isLoading {
+    
+    if (isLoading) {
+        [SVProgressHUD setViewForExtension:self.view];
+        [SVProgressHUD show];
+        self.backButton.backgroundColor = [UIColor colorWithWhite:0 alpha:0.3];
+    } else {
+        [SVProgressHUD dismiss];
+        self.backButton.backgroundColor = [UIColor clearColor];
+    }
+}
+
 - (void)loadData {
     
     tableVersion = 2;
@@ -445,6 +465,7 @@
     [eventQuery whereKey:@"objectId" matchesKey:@"EventID" inQuery:swipesQuery];
     [eventQuery whereKey:@"Date" greaterThan:[[NSDate date]beginningOfDay]];
     [eventQuery orderByAscending:@"Date"];
+    [eventQuery whereKey:@"privacy" notEqualTo:@"private"];
     eventQuery.limit = 1000;
     
     BOOL firstTime = NO;
@@ -706,6 +727,8 @@
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     
+    if (clearTable) return 0;
+    
     if (showTimeline) return 1;
     
     if (tableVersion == 1) return self.createdSections.count;
@@ -924,7 +947,23 @@
         cell.eventObject = Event;
         cell.eventID = Event.objectId;
         
-        cell.eventObject = Event;
+        /*
+        NSString *privacyString = @"";
+        if (Event[@"privacy"] != nil) privacyString = Event[@"privacy"];
+        if ([privacyString isEqualToString:@"private"]) {
+            
+            UIImageView *imv = [[UIImageView alloc] initWithFrame:cell.eventImageView.bounds];
+            imv.tag = 357;
+            imv.image = [UIImage imageNamed:@"private event"];
+            [cell.eventImageView.superview addSubview:imv];
+            cell.userInteractionEnabled = NO;
+            
+        } else {
+            
+            cell.userInteractionEnabled = YES;
+            [[cell.eventImageView.superview viewWithTag:357] removeFromSuperview];;
+            
+        } */
         
         [cell.titleLabel setText:[NSString stringWithFormat:@"%@",Event[@"Title"]]];
         
@@ -1375,6 +1414,10 @@
     
     //if (self.tableView.contentOffset.y == 0) {
     
+    clearTable = YES;
+    [self.tableView reloadData];
+    clearTable = NO;
+    
     isAnimatingScoreButton = YES;
     self.scoreButton.enabled = NO;
     xButton.enabled = NO;
@@ -1645,9 +1688,9 @@
     
     PFQuery *pastEventQuery = [PFQuery queryWithClassName:@"Event"];
     [pastEventQuery whereKey:@"objectId" matchesKey:@"EventID" inQuery:swipesQuery];
-    
     [pastEventQuery whereKey:@"Date" lessThan:[[NSDate date] beginningOfDay]];
     [pastEventQuery addDescendingOrder:@"Date"];
+    [pastEventQuery whereKey:@"privacy" notEqualTo:@"private"];
     
     [pastEventQuery findObjectsInBackgroundWithBlock:^(NSArray *events, NSError *error){
         
@@ -1694,12 +1737,17 @@
     //[eventQuery fromLocalDatastore];
     [eventQuery whereKey:@"CreatedBy" equalTo:user.objectId];
     [eventQuery orderByDescending:@"Date"];
+    [eventQuery whereKey:@"privacy" notEqualTo:@"private"];
     eventQuery.limit = 1000;
     
     if (!createdEventsArray)
         createdEventsArray = [NSArray new];
     
     BOOL firstTime = NO;
+    
+    clearTable = YES;
+    [self.tableView reloadData];
+    clearTable = NO;
     
     if (!self.createdSections) {
         self.createdSections = [NSMutableDictionary dictionary];

@@ -123,6 +123,9 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
+    [[UIApplication sharedApplication] setStatusBarHidden:NO];
+    [self.navigationController setNavigationBarHidden:NO animated:YES];
+    
     [SVProgressHUD dismiss];
     
     currentUser = [PFUser currentUser];
@@ -383,6 +386,7 @@
 
 - (id<ATLAvatarItem>)conversationListViewController:(ATLConversationListViewController *)conversationListViewController avatarItemForConversation:(LYRConversation *)conversation {
     
+    /*
     PFQuery *query = [PFQuery queryWithClassName:@"Group"];
     //[query includeKey:@"user_objects"];
     [query fromLocalDatastore];
@@ -397,6 +401,17 @@
     }
     //NSArray *array = ob[@"user_objects"];
     //NSLog(@"%lu", array.count);
+    */
+    
+    AppDelegate *ad = (AppDelegate *)[UIApplication sharedApplication].delegate;
+    PFObject *ob = [ad.groupDict objectForKey:[conversation.metadata valueForKey:@"groupId"]];
+    
+    if (ob != nil) [groupDict setObject:ob forKey:[conversation.metadata valueForKey:@"groupId"]];
+    else { ob = [PFObject objectWithoutDataWithClassName:@"Group" objectId:[conversation.metadata valueForKey:@"groupId"]];
+        [ob fetchIfNeeded];
+        [groupDict setObject:ob forKey:[conversation.metadata valueForKey:@"groupId"]];
+        [ob pinInBackground];
+    }
     
     return ob;
 }

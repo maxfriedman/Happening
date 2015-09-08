@@ -10,6 +10,7 @@
 #import <FastttCamera.h>
 #import "DragViewController.h"
 #import "InviteFromCreateView.h"
+#import "LocationSearching.h"
 
 @protocol CreateHappeningViewDelegate <NSObject>
 
@@ -17,7 +18,7 @@
 
 @end
 
-@interface CreateHappeningView : UIView <InviteFromCreateViewDelegate>
+@interface CreateHappeningView : UIView <InviteFromCreateViewDelegate, LocationSearchingDelegate>
 
 @property (weak) id <CreateHappeningViewDelegate> delegate;
 
